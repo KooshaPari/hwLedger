@@ -92,6 +92,14 @@ public struct TelemetrySample {
     }
 }
 
+/// Token poll result enumeration (mirrors TokenPollState from Rust FFI).
+public enum TokenPollState: UInt8 {
+    case pending = 0
+    case token = 1
+    case eof = 2
+    case error = 3
+}
+
 /// Input to the memory planner.
 internal struct CPlannerInput {
     var configJson: UnsafeMutablePointer<Int8>
@@ -241,6 +249,100 @@ public struct HwLedger {
 
         return TelemetrySample(from: samplePtr.pointee)
     }
+
+    // MARK: - MLX Inference (WP19 stub mode)
+
+    /// Spawn an MLX sidecar.
+    ///
+    /// For v1 (WP19), this is a stub returning a mock handle.
+    /// Real MLX integration via JSON-RPC subprocess deferred to WP20.
+    ///
+    /// - Parameters:
+    ///   - pythonPath: Path to Python executable (ignored in v1 stub)
+    ///   - omlxModule: oMlx module name (ignored in v1 stub)
+    /// - Returns: Opaque MLX handle for use in generate/poll calls
+    /// - Throws: HwLedgerError if spawn fails
+    public static func mlxSpawn(pythonPath: String = "python3", omlxModule: String = "omlx") throws -> MlxHandle {
+        let pythonCStr = UnsafeMutablePointer<Int8>(
+            mutating: (pythonPath as NSString).utf8String!
+        )
+        let moduleCStr = UnsafeMutablePointer<Int8>(
+            mutating: (omlxModule as NSString).utf8String!
+        )
+
+        guard let handle = hwledger_mlx_spawn(pythonCStr, moduleCStr) else {
+            throw HwLedgerError.runtimeError("failed to spawn MLX sidecar")
+        }
+
+        return MlxHandle(ptr: handle)
+    }
+
+    /// Begin generating tokens for a prompt.
+    ///
+    /// - Parameters:
+    ///   - handle: MLX handle from mlxSpawn
+    ///   - prompt: Input prompt text
+    ///   - paramsJson: Inference parameters as JSON (e.g., {"temp": 0.7, "top_p": 0.9})
+    /// - Returns: Request ID for use in pollToken calls
+    public static func mlxGenerateBegin(handle: MlxHandle, prompt: String, paramsJson: String = "{}") -> UInt64 {
+        let promptCStr = UnsafeMutablePointer<Int8>(
+            mutating: (prompt as NSString).utf8String!
+        )
+        let paramsCStr = UnsafeMutablePointer<Int8>(
+            mutating: (paramsJson as NSString).utf8String!
+        )
+        return hwledger_mlx_generate_begin(handle.ptr, promptCStr, paramsCStr)
+    }
+
+    /// Poll for the next token.
+    ///
+    /// Returns the current state (pending, token, EOF, error) and fills the token buffer
+    /// if state is .token.
+    ///
+    /// - Parameters:
+    ///   - requestId: Request ID from mlxGenerateBegin
+    ///   - bufferCapacity: Size of token buffer (recommended: 256)
+    /// - Returns: (state, token text or empty if not .token)
+    public static func mlxPollToken(requestId: UInt64, bufferCapacity: Int = 256) -> (state: TokenPollState, token: String) {
+        var buf = [Int8](repeating: 0, count: bufferCapacity)
+        let state = hwledger_mlx_poll_token(requestId, &buf, bufferCapacity)
+
+        guard let stateEnum = TokenPollState(rawValue: state) else {
+            return (.error, "")
+        }
+
+        if stateEnum == .token {
+            let token = String(cString: buf)
+            return (.token, token)
+        }
+
+        return (stateEnum, "")
+    }
+
+    /// Cancel an in-flight inference request.
+    ///
+    /// - Parameters:
+    ///   - requestId: Request ID from mlxGenerateBegin
+    public static func mlxCancel(requestId: UInt64) {
+        hwledger_mlx_cancel(requestId)
+    }
+
+    /// Shut down MLX sidecar and free resources.
+    ///
+    /// - Parameters:
+    ///   - handle: MLX handle from mlxSpawn
+    public static func mlxShutdown(handle: MlxHandle) {
+        hwledger_mlx_shutdown(handle.ptr)
+    }
+}
+
+/// Opaque MLX handle for inference control.
+public struct MlxHandle {
+    fileprivate let ptr: UnsafeMutableRawPointer
+
+    fileprivate init(ptr: UnsafeMutableRawPointer) {
+        self.ptr = ptr
+    }
 }
 
 // MARK: - C FFI Declarations
@@ -268,6 +370,21 @@ internal func hwledger_probe_sample_free(_ sample: UnsafeMutablePointer<hwledger
 
 @_silgen_name("hwledger_core_version")
 internal func hwledger_core_version() -> UnsafePointer<Int8>
+
+@_silgen_name("hwledger_mlx_spawn")
+internal func hwledger_mlx_spawn(_ pythonPath: UnsafeMutablePointer<Int8>?, _ omlxModule: UnsafeMutablePointer<Int8>?) -> UnsafeMutableRawPointer?
+
+@_silgen_name("hwledger_mlx_generate_begin")
+internal func hwledger_mlx_generate_begin(_ handle: UnsafeMutableRawPointer?, _ prompt: UnsafeMutablePointer<Int8>?, _ paramsJson: UnsafeMutablePointer<Int8>?) -> UInt64
+
+@_silgen_name("hwledger_mlx_poll_token")
+internal func hwledger_mlx_poll_token(_ requestId: UInt64, _ outBuf: UnsafeMutablePointer<Int8>, _ outLen: Int) -> UInt8
+
+@_silgen_name("hwledger_mlx_cancel")
+internal func hwledger_mlx_cancel(_ requestId: UInt64)
+
+@_silgen_name("hwledger_mlx_shutdown")
+internal func hwledger_mlx_shutdown(_ handle: UnsafeMutableRawPointer?)
 
 // MARK: - C Type Declarations
 

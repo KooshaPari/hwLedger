@@ -153,6 +153,26 @@ pub struct HwLedgerErrorResult {
     pub message: *const c_char,
 }
 
+/// MLX inference handle (opaque to C caller).
+///
+/// Traces to: FR-INF-001, FR-INF-002
+#[repr(C)]
+pub struct MlxHandle {
+    _private: [u8; 0],
+}
+
+/// Token poll result.
+///
+/// Traces to: FR-INF-002
+#[repr(u8)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TokenPollState {
+    Pending = 0,
+    Token = 1,
+    Eof = 2,
+    Error = 3,
+}
+
 /// Plan memory requirements for a model on a given device.
 ///
 /// Parses config_json, classifies architecture, applies KV formula, and computes
@@ -451,6 +471,141 @@ fn attention_kind_label(kind: &AttentionKind) -> String {
         _ => "Unknown",
     }
     .to_string()
+}
+
+// ============================================================================
+// MLX Inference Control (Traces to: FR-INF-001, FR-INF-002)
+// ============================================================================
+
+/// Spawn MLX sidecar.
+///
+/// For v1 (WP19), this is a stub that tracks stub token state.
+/// Real MLX integration deferred to WP20.
+///
+/// Returns: opaque handle for use in subsequent calls, or null on error.
+///
+/// # Safety
+///
+/// Caller must ensure proper cleanup via hwledger_mlx_shutdown.
+///
+/// # Safety
+///
+/// `python_path` and `omlx_module` must be valid pointers to null-terminated
+/// UTF-8 strings, or null. The caller owns the returned `MlxHandle` pointer
+/// and must free it via [`hwledger_mlx_shutdown`].
+///
+/// Traces to: FR-INF-001
+#[no_mangle]
+pub unsafe extern "C" fn hwledger_mlx_spawn(
+    _python_path: *const c_char,
+    _omlx_module: *const c_char,
+) -> *mut MlxHandle {
+    info!("mlx_spawn: stub (WP20 real implementation deferred)");
+    Box::into_raw(Box::new(MlxHandle { _private: [] }))
+}
+
+/// Begin generating tokens for a prompt (stub mode).
+///
+/// For v1, returns a mock request_id. Actual token generation deferred to WP20.
+///
+/// # Safety
+///
+/// `handle` must be a pointer previously returned by [`hwledger_mlx_spawn`].
+/// `prompt` and `params_json` must be valid null-terminated UTF-8 strings.
+///
+/// Traces to: FR-INF-002
+#[no_mangle]
+pub unsafe extern "C" fn hwledger_mlx_generate_begin(
+    _handle: *mut MlxHandle,
+    _prompt: *const c_char,
+    _params_json: *const c_char,
+) -> u64 {
+    info!("mlx_generate_begin: stub");
+    1u64
+}
+
+/// Poll for the next token (stub mode).
+///
+/// In stub mode, yields canned token sequence on repeated calls.
+/// Real implementation deferred to WP20.
+///
+/// Returns state enum (Pending=0, Token=1, Eof=2, Error=3).
+/// If state==Token, out_buf is filled with up to out_len bytes of the token text.
+///
+/// # Safety
+///
+/// Caller must provide valid out_buf with capacity out_len.
+///
+/// Traces to: FR-INF-002
+#[no_mangle]
+pub unsafe extern "C" fn hwledger_mlx_poll_token(
+    _request_id: u64,
+    out_buf: *mut c_char,
+    out_len: usize,
+) -> u8 {
+    info!("mlx_poll_token: stub");
+
+    // Stub: cycle through canned tokens
+    static mut STUB_CALL_COUNT: usize = 0;
+    STUB_CALL_COUNT = STUB_CALL_COUNT.wrapping_add(1);
+
+    let tokens = [
+        "Hello",
+        ", ",
+        "world",
+        ". ",
+        "This ",
+        "is ",
+        "a ",
+        "stub ",
+        "token ",
+        "stream",
+        ".",
+    ];
+
+    let idx = STUB_CALL_COUNT % (tokens.len() + 2);
+
+    if idx < tokens.len() {
+        let token = tokens[idx];
+        let len = token.len().min(out_len - 1);
+        std::ptr::copy_nonoverlapping(token.as_ptr() as *const c_char, out_buf, len);
+        *out_buf.add(len) = 0;
+        TokenPollState::Token as u8
+    } else if idx == tokens.len() {
+        // One final Pending to simulate tail
+        TokenPollState::Pending as u8
+    } else {
+        TokenPollState::Eof as u8
+    }
+}
+
+/// Cancel a running inference request.
+///
+/// # Safety
+///
+/// The `request_id` must correspond to an active request previously returned by
+/// [`hwledger_mlx_generate_begin`], or the call is a no-op.
+///
+/// Traces to: FR-INF-002
+#[no_mangle]
+pub unsafe extern "C" fn hwledger_mlx_cancel(_request_id: u64) {
+    info!("mlx_cancel: stub");
+}
+
+/// Shut down MLX sidecar and free handle.
+///
+/// # Safety
+///
+/// `handle` must be a pointer previously returned by [`hwledger_mlx_spawn`],
+/// or null. After this call the handle is invalidated and must not be used again.
+///
+/// Traces to: FR-INF-001
+#[no_mangle]
+pub unsafe extern "C" fn hwledger_mlx_shutdown(handle: *mut MlxHandle) {
+    info!("mlx_shutdown: stub");
+    if !handle.is_null() {
+        let _ = Box::from_raw(handle);
+    }
 }
 
 #[cfg(test)]

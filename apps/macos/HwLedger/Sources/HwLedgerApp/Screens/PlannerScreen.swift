@@ -71,6 +71,20 @@ struct PlannerScreen: View {
                     .font(.caption)
             }
             Slider(value: value, in: range)
+                .accessibilityIdentifier(sliderIdentifier(for: label))
+        }
+    }
+
+    private func sliderIdentifier(for label: String) -> String {
+        switch label {
+        case "Sequence Length":
+            return "seq-len-slider"
+        case "Concurrent Users":
+            return "users-slider"
+        case "Batch Size":
+            return "batch-slider"
+        default:
+            return label.lowercased().replacingOccurrences(of: " ", with: "-")
         }
     }
 
@@ -89,23 +103,28 @@ struct PlannerScreen: View {
             ]
 
             StackedBar(segments: segments, total: Double(result.totalBytes))
+                .accessibilityIdentifier("stacked-bar")
 
             Divider()
 
             VStack(alignment: .leading, spacing: 6) {
                 detailRow("Total VRAM", bytes: result.totalBytes)
+                    .accessibilityIdentifier("footer-live-tokens")
                 detailRow("Weights", bytes: result.weightsBytes)
                 detailRow("KV Cache", bytes: result.kvBytes)
                 detailRow("Runtime Overhead", bytes: result.runtimeOverheadBytes)
                 detailRow("Prefill Activations", bytes: result.prefillActivationBytes)
                 detailRow("Attention Kind", text: result.attentionKindLabel)
+                    .accessibilityIdentifier("attention-kind-label")
                 detailRow("Effective Batch", text: "\(result.effectiveBatch)")
+                    .accessibilityIdentifier("footer-effective-batch")
             }
             .font(.caption)
         }
         .padding(12)
         .background(Color.gray.opacity(0.05))
         .cornerRadius(6)
+        .accessibilityIdentifier("planner-result-section")
     }
 
     private func detailRow(_ label: String, bytes: UInt64) -> some View {
