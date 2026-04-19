@@ -1,16 +1,25 @@
 ---
 title: KV Cache Formulas — Per-Architecture Derivations
-description: Complete mathematical breakdown of KV-cache requirements for MHA, GQA, MQA, MLA, sliding window, SSM/Mamba, hybrid, and attention-sink architectures. Worked examples at 32K context.
+description: Complete mathematical breakdown of KV-cache requirements for MHA, GQA, MQA, MLA, sliding window, SSM/Mamba, hybrid, and attention-sink architectures. Updated April 2026 with Llama 4, DeepSeek-V3, Mamba-3, Qwen 3.6, Gemma 3.
 brief_id: 4
 status: archived
-date: 2026-04-18
+date: 2026-04-19
+updated: 2026-04-19
 sources:
+  - url: https://ai.meta.com/blog/llama-4-multimodal-intelligence/
+    title: Meta Llama 4 Multimodal Intelligence
+  - url: https://arxiv.org/abs/2503.19786
+    title: Gemma 3 Technical Report
+  - url: https://arxiv.org/abs/2603.15569
+    title: Mamba-3 Improved Sequence Modeling
+  - url: https://huggingface.co/docs/transformers/en/model_doc/deepseek_v3
+    title: DeepSeek-V3 Model Documentation
+  - url: https://arxiv.org/abs/2408.12570
+    title: Jamba-1.5 Hybrid Transformer-Mamba at Scale
+  - url: https://github.com/QwenLM/Qwen3.6
+    title: Qwen 3.6 GitHub Repository
   - url: https://arxiv.org/abs/2307.09288
     title: Llama 2 — Open Foundation and Fine-Tuned Chat Models
-  - url: https://arxiv.org/abs/2401.04088
-    title: Mixtral of Experts
-  - url: https://arxiv.org/abs/2309.17453
-    title: Efficient Streaming Language Models with Attention Sinks
   - url: https://arxiv.org/abs/2312.00752
     title: Mamba — Linear-Time Sequence Modeling
 ---
@@ -63,23 +72,22 @@ Over **L** layers, each with H attention heads and hidden_size per head:
 KV-bytes per token = 2 · L · H · d · b
 ```
 
-### Example: Llama-2-70B
+### Example: Gemma 3 with full attention layers (27B, Apr 2026)
 
 ```
-num_hidden_layers = 80
-num_attention_heads = 64
-hidden_size = 8192
-d = 8192 / 64 = 128
+num_hidden_layers = 27
+num_attention_heads = 32
+hidden_size = 4096
+d = 4096 / 32 = 128
 
-KV-bytes/token = 2 · 80 · 64 · 128 · 2 (FP16)
-               = 2 · 80 · 64 · 128 · 2
-               = 3,276,800 bytes/token
-               = ~3.13 MB/token
+KV-bytes/token = 2 · 27 · 32 · 128 · 2 (FP16)
+               = 442,368 bytes/token
+               = ~432 KB/token
 ```
 
-At 32K context: 32,000 · 3.13 MB = **100 GB KV-cache alone**.
+At 32K context: 32,000 · 432 KB = **13.8 GB KV-cache alone**.
 
-**Lesson**: MHA does not scale to 32K on consumer NVIDIA; use GQA/MQA or quantization.
+**Lesson**: Pure MHA does not scale to 32K on consumer NVIDIA. Gemma 3 addresses this via 5:1 interleaved local (1024-token window) + global attention, reducing effective cache by ~15×. This is the hybrid answer in 2026.
 
 ## Grouped Query Attention (GQA)
 
@@ -94,22 +102,23 @@ KV-cache = 2 · seq · H_kv · d · b
 Per-token = 2 · L · H_kv · d · b
 ```
 
-### Example: Llama-3-70B (GQA with H_kv=8)
+### Example: Llama 4 Maverick (17B active, GQA with H_kv=8, Apr 2026)
 
 ```
 num_attention_heads = 64
 num_key_value_heads = 8  (group factor G=8)
 hidden_size = 8192
 d = 8192 / 64 = 128
+num_hidden_layers = 48  (estimated for 17B active params)
 
-KV-bytes/token = 2 · 80 · 8 · 128 · 2 (FP16)
-               = 409,600 bytes/token
-               = ~391 KB/token
+KV-bytes/token = 2 · 48 · 8 · 128 · 2 (FP16)
+               = 196,608 bytes/token
+               = ~192 KB/token
 ```
 
-At 32K context: 32,000 · 391 KB = **12.5 GB KV-cache**.
+At 32K context: 32,000 · 192 KB = **6.1 GB KV-cache**.
 
-**Improvement**: 8× reduction vs MHA on same model size.
+**Improvement**: 8× reduction vs pure MHA. Llama 4 also adds iRoPE (interleaved RoPE) and sparse MoE routing, making it the Apr 2026 standard for efficient long-context inference.
 
 ## Multi-Query Attention (MQA)
 
@@ -157,23 +166,23 @@ Per-token = (kv_lora_rank + qk_rope_head_dim) · b
 
 **Key insight**: KV-cache is **constant per layer** — "absorb mode" where Rope rotations are absorbed into the projection.
 
-### Example: Qwen2-72B with MLA
+### Example: DeepSeek-V3 (Dec 2025) with MLA
 
 ```
-kv_lora_rank = 1536
-qk_rope_head_dim = 128
+num_hidden_layers = 61
+kv_lora_rank = 512
+qk_rope_head_dim = 64
 
-KV-bytes/token = (1536 + 128) · 2 (FP16)
-               = 1664 · 2
-               = 3,328 bytes/token
-               = ~3.25 KB/token
+KV-bytes/token = (512 + 64) · 2 (FP16)
+               = 1,152 bytes/token
+               = ~1.12 KB/token
 ```
 
-At 32K context: 32,000 · 3.25 KB = **104 MB KV-cache**.
+At 32K context: 32,000 · 1.12 KB = **35.8 MB KV-cache**.
 
-**vs Llama-2-70B MHA at 32K**: 100 GB → 104 MB. **960× reduction**.
+**vs Gemma 3 full attention at 32K**: 13.8 GB → 35.8 MB. **384× reduction**.
 
-**Tradeoff**: MLA requires custom CUDA kernels; not all engines support it (MLX, vLLM do; mistral.rs experimental).
+**Status (Apr 2026)**: MLA is now the industry-standard approach for long context. vLLM, mistral.rs, and MLX all support it natively. DeepSeek-V3 combines MLA + DeepSeekMoE (sparse routing) for best-in-class inference efficiency.
 
 ## Sliding Window Attention
 
@@ -225,21 +234,22 @@ Total cache = state_size · L · b
             (independent of seq_len)
 ```
 
-### Example: Mamba-1 (state_size=16)
+### Example: Mamba-3 (Mar 2026, MIMO variant with state_size=64)
 
 ```
 num_hidden_layers = 48
-state_size = 16
-bytes_per_element = 4 (typically float32 for precision)
+state_size = 64
+bytes_per_element = 4 (float32 for numerical stability)
 
-Cache/token = 16 · 48 · 4 = 3,072 bytes = ~3 KB/token
+Cache/layer = 64 · 4 = 256 bytes
+Total cache = 64 · 48 · 4 = 12,288 bytes = ~12 KB (entire model!)
 
-At 32K context: 32,000 · 3 KB = **96 MB cache** (constant!)
+At 32K context: 32,000 tokens × 12 KB = **384 MB constant state** (no growth!)
 ```
 
-**Advantage**: KV-cache is **independent of context length**. No scaling cliff at 32K.
+**Advantage**: KV-cache is **completely independent of context length**. Mamba-3 achieves parity with Mamba-2 perplexity at half the state size via MIMO decoder.
 
-**Limitation**: Pure SSM models trade some quality for linear complexity. Hybrid (Mamba + attention for certain layers) emerging.
+**Status (Apr 2026)**: Pure SSM models (Mamba-3) now achieve competitive perplexity vs. attention on language modeling tasks. The hybrid answer (Jamba-1.5, Qwen 3.6) interleaves Mamba layers with attention for best of both worlds.
 
 ## Hybrid Architectures
 

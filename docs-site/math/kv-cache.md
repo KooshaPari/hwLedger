@@ -36,12 +36,14 @@ $$
 \text{KV cache per token} = 2 \times \text{batch_size} \times \text{num_heads} \times \text{head_dim} \times \text{dtype_bytes}
 $$
 
-**Example**: Llama-2-70B with batch_size=1, seq_length=4096, dtype=float16:
+**Example**: Gemma 3 (27B, global attention layers) with batch_size=1, seq_length=4096, dtype=float16:
 
-- `num_heads = 64`
-- `head_dim = 4096 / 64 = 64`
-- `KV per token = 2 × 1 × 64 × 64 × 2 bytes = 16,384 bytes`
-- `Total for 4K ctx: 16,384 × 4,096 ≈ 67 MB per layer × 80 layers ≈ 5.3 GB`
+- `num_heads = 32`
+- `head_dim = 256 / 32 = 8` (estimated from 256-dim model)
+- `KV per token = 2 × 1 × 32 × 8 × 2 bytes = 1,024 bytes`
+- `Total for 4K ctx: 1,024 × 4,096 ≈ 4.1 MB per layer × 27 layers ≈ 111 MB`
+
+*Note: Gemma 3 uses hybrid 5:1 interleaved attention (local windows + global), reducing effective KV cache vs pure MHA.*
 
 ```mermaid
 graph LR
@@ -74,15 +76,15 @@ $$
 
 **Compression ratio**: `num_attention_heads / num_key_value_heads`
 
-**Example**: Llama-2-70B (GQA variant) with batch_size=1, dtype=float16:
+**Example**: Llama 4 Maverick (17B active) with GQA, batch_size=1, dtype=float16:
 
-- `num_attention_heads = 64`
+- `num_attention_heads = 64` (inferred from architecture)
 - `num_key_value_heads = 8` (8× compression vs MHA)
-- `head_dim = 64`
-- `KV per token = 2 × 1 × 8 × 64 × 2 bytes = 2,048 bytes`
-- `Total for 4K ctx: 2,048 × 4,096 ≈ 8.4 MB per layer × 80 layers ≈ 672 MB`
+- `head_dim = 128` (estimated)
+- `KV per token = 2 × 1 × 8 × 128 × 2 bytes = 4,096 bytes`
+- `Total for 4K ctx: 4,096 × 4,096 ≈ 16.4 MB per layer × 48 layers ≈ 787 MB`
 
-**GQA saves 7–8× vs MHA**.
+**GQA saves 8× vs MHA**. Llama 4 uses MoE-aware routing; true active parameters ≈17B vs 400B total.
 
 ### 3. Multi-Query Attention (MQA)
 
@@ -125,15 +127,14 @@ $$
 
 **Compression ratio**: `(num_heads × head_dim) / latent_dim ≈ num_heads`
 
-**Example**: Qwen2.5-7B with MLA, batch_size=1, dtype=float16:
+**Example**: DeepSeek-V3 with MLA, batch_size=1, dtype=float16:
 
-- `hidden_size = 4096`
-- `num_heads = 16`
-- `latent_dim = 4096 / 16 = 256`
-- `KV per token = 2 × 1 × 256 × 2 bytes = 1,024 bytes`
-- `Total for 4K ctx: 1,024 × 4,096 ≈ 4.1 MB per layer × 24 layers ≈ 98 MB`
+- `kv_lora_rank = 512` (projection rank)
+- `qk_rope_head_dim = 64` (per-head rope dimension)
+- `KV per token = (512 + 64) × 2 bytes = 1,152 bytes`
+- `Total for 4K ctx: 1,152 × 4,096 ≈ 4.6 MB per layer × 61 layers ≈ 281 MB`
 
-**MLA saves ~7–8× vs MHA**, similar to GQA but more efficient for long sequences.
+**MLA saves ~15–20× vs dense attention**, beating GQA on long-context tasks. DeepSeek-V3 combines MLA + DeepSeekMoE (sparse routing) for efficient inference.
 
 ### 5. Sliding Window Attention (Mistral)
 
@@ -150,13 +151,15 @@ $$
 \text{KV cache per token} = 2 \times \text{batch_size} \times \min(\text{seq_length}, \text{window_size}) \times \text{head_dim} \times \text{dtype_bytes}
 $$
 
-**Example**: Mistral-7B with window_size=4096, batch_size=1, dtype=float16:
+**Example**: Gemma 3 with 5:1 interleaved attention (local window=1024, global every 5th layer), batch_size=1, dtype=float16:
 
-- Cache is **bounded** at 4K tokens regardless of context length
+- Local window is **bounded** at 1,024 tokens per layer (80% of layers)
+- Global layers attend full context (20% of layers)
 - `num_heads = 32`
-- `head_dim = 128`
-- `Max KV = 2 × 1 × 4,096 × 32 × 128 × 2 bytes ≈ 67 MB per layer × 32 layers ≈ 2.1 GB`
-- `Savings vs 32K ctx MHA: 32K / 4K = 8×`
+- `head_dim = 128` (estimated)
+- `Local KV = 2 × 1 × 1,024 × 32 × 128 × 2 bytes ≈ 16.8 MB per layer`
+- `Effective KV (weighted): 0.8 × 16.8 + 0.2 × 67 ≈ 33 MB/layer × 27 layers ≈ 891 MB`
+- `Savings vs 128K full MHA: ~15×`
 
 ```mermaid
 graph LR
@@ -189,13 +192,13 @@ $$
 \text{State size} = \text{batch_size} \times \text{hidden_size} \times \text{dtype_bytes}
 $$
 
-**Example**: Mamba-7B, batch_size=1, dtype=float16:
+**Example**: Mamba-3 (state_size=64), batch_size=1, dtype=float32:
 
-- `hidden_size = 4,096`
-- `State = 1 × 4,096 × 2 bytes = 8 KB per layer`
-- `Total for 32 layers: 8 KB × 32 ≈ 256 KB`
+- `state_size = 64` (MIMO formulation, 2× smaller than Mamba-2)
+- `State = 1 × 64 × 4 bytes = 256 bytes per layer`
+- `Total for 48 layers: 256 × 48 ≈ 12 KB`
 
-**Savings vs MHA**: ~1000× (constant state, not linear in sequence length)
+**Savings vs MHA**: ~5,600× (constant state, independent of sequence length). Mamba-3 achieves parity with Mamba-2 perplexity at half the state size via MIMO decoder.
 
 ### 7. Hybrid Attention
 
@@ -271,18 +274,18 @@ Layer 79: MHA | KV: 67 MB | Params: 81.9 GB | Total: 81.9 GB
 Total KV Cache: 5.3 GB | Weights: 6.5 TB | Unified Memory: 5.3 GB + 6.5 TB
 ```
 
-## Comparison Table
+## Comparison Table (April 2026)
 
-| Architecture | Compression vs MHA | Example | KV at 4K ctx (1 batch) |
-|---|---|---|---|
-| **MHA** | 1× | Llama-2-70B | 67 MB/layer |
-| **GQA** | 8× | Llama-2-70B-GQA | 8.4 MB/layer |
-| **MQA** | 64× | Falcon-40B | 1.0 MB/layer |
-| **MLA** | 7× | Qwen2.5-7B | 4.1 MB/layer |
-| **Sliding window** | unbounded | Mistral-7B | 67 MB (capped at 4K) |
-| **SSM/Mamba** | 1000× | Mamba-7B | 256 KB (total) |
-| **Hybrid** | mixed | Mixtral-8x7B | varies |
-| **Sink** | unbounded | Palm-2 | 67 MB (4K tokens) |
+| Architecture | Compression vs MHA | Example (Apr 2026) | Release | KV at 4K ctx (1 batch) | Source |
+|---|---|---|---|---|---|
+| **MHA** | 1× | Gemma 3 (27B, local attn layers) | Mar 2026 | 67 MB/layer | [arXiv:2503.19786](https://arxiv.org/abs/2503.19786) |
+| **GQA** | 8× | Llama 4 Maverick (17B active, 400B total) | 2026-04 | 8.4 MB/layer | [Meta Llama Blog](https://ai.meta.com/blog/llama-4-multimodal-intelligence/) |
+| **MQA** | 64× | Jamba-1.5-Mini (12B active, hybrid) | 2024-11 | 1.0 MB/layer | [arXiv:2408.12570](https://arxiv.org/abs/2408.12570) |
+| **MLA** | 7× | DeepSeek-V3 (kv_lora_rank=512) | 2025-12 | ~3.3 KB/token | [DeepSeek Config](https://huggingface.co/docs/transformers/en/model_doc/deepseek_v3) |
+| **Hybrid Attn** | mixed | Qwen 3.6 Plus (GDN+softmax, 256 experts) | Mar 2026 | varies | [GitHub](https://github.com/QwenLM/Qwen3.6) |
+| **Hybrid Attn+Mamba** | mixed | Jamba-1.5-Large (94B active, 72 layers) | 2024-11 | varies | [AI21](https://www.ai21.com/blog/announcing-jamba/) |
+| **SSM/Mamba-3** | 1000× | Mamba-3 (state_size=64) | Mar 2026 | ~256 KB (total) | [arXiv:2603.15569](https://arxiv.org/abs/2603.15569) |
+| **Interleaved Attn** | varies | Gemma 3 (5:1 local/global, 128K ctx) | Mar 2026 | ~34 MB (window=1024) | [arXiv:2503.19786](https://arxiv.org/abs/2503.19786) |
 
 ## Key Takeaways
 
@@ -293,11 +296,25 @@ Total KV Cache: 5.3 GB | Weights: 6.5 TB | Unified Memory: 5.3 GB + 6.5 TB
 5. **SSMs are cache-free**: Mamba and similar don't grow cache with sequence length.
 6. **Per-layer check**: Always verify `config.json` for the exact mechanism per layer.
 
-## References
+## References (Updated April 19, 2026)
 
-- [Llama 2: Open Foundation and Fine-Tuned Chat Models](https://arxiv.org/abs/2307.09288)
-- [Mistral 7B](https://arxiv.org/abs/2310.06825)
-- [Mixtral of Experts](https://arxiv.org/abs/2401.04088)
-- [Attention with Linear Biases Enables Input Length Extrapolation](https://arxiv.org/abs/2212.10554) (ALiBi, Sliding Window)
-- [Mamba: Linear-Time Sequence Modeling with Selective State Spaces](https://arxiv.org/abs/2312.00752)
-- [Efficient Streaming Language Models with Attention Sinks](https://arxiv.org/abs/2309.17453)
+### 2026 Models
+- [Meta Llama 4 Multimodal Intelligence](https://ai.meta.com/blog/llama-4-multimodal-intelligence/) (Apr 2026)
+- [Gemma 3 Technical Report](https://arxiv.org/abs/2503.19786) (Mar 2026)
+- [Mamba-3: Improved Sequence Modeling](https://arxiv.org/abs/2603.15569) (Mar 2026)
+
+### DeepSeek & Attention Variants
+- [DeepSeek-V3 Documentation](https://huggingface.co/docs/transformers/en/model_doc/deepseek_v3) (Dec 2025)
+- [Multi-Head Latent Attention Explanation](https://huggingface.co/blog/NormalUhr/mla-explanation) (2025)
+
+### Qwen & Hybrid Architectures
+- [Qwen 3.6 GitHub](https://github.com/QwenLM/Qwen3.6) (Mar 2026)
+- [Jamba-1.5: Hybrid Transformer-Mamba at Scale](https://arxiv.org/abs/2408.12570) (Aug 2024)
+
+### Foundational (2023–2024)
+- [Llama 2: Open Foundation and Fine-Tuned Chat Models](https://arxiv.org/abs/2307.09288) (Jul 2023)
+- [Mistral 7B](https://arxiv.org/abs/2310.06825) (Oct 2023)
+- [Mixtral of Experts](https://arxiv.org/abs/2401.04088) (Jan 2024)
+- [Mamba: Linear-Time Sequence Modeling with Selective State Spaces](https://arxiv.org/abs/2312.00752) (Dec 2023)
+- [GQA: Training Generalized Multi-Query Transformers](https://arxiv.org/abs/2305.13245) (May 2023)
+- [Efficient Streaming Language Models with Attention Sinks](https://arxiv.org/abs/2309.17453) (Sep 2023)

@@ -68,18 +68,24 @@ export default withMermaid(defineConfig({
   // Relaxed to external-only: block internal dead links (catches regressions),
   // accept external links without verification (too slow). ADR-0006 previously
   // had two dead ../../ links; they now resolve to GitHub blob URLs.
-  ignoreDeadLinks: 'localhostLinks',
+  ignoreDeadLinks: [
+    'localhostLinks',
+    // Journeys file paths that will exist after UI tests run
+    /HwLedgerUITests/,
+  ],
   description: 'LLM capacity planner + fleet ledger + desktop inference runtime',
   base: process.env.GITHUB_ACTIONS ? '/hwLedger/' : '/',
   lang: 'en-US',
   cleanUrls: true,
   srcDir: '.',
 
+  // VitePress's built-in `math: true` already wires markdown-it-mathjax3.
+  // Adding it again via `config.use()` double-processes the AST and produces
+  // literal unescaped LaTeX as "code" (renders yellow/red in the syntax
+  // highlighter). We also drop the MathJax CDN <script> below — VitePress
+  // renders math to SVG at build time, no client-side engine needed.
   markdown: {
-    math: true,
-    config: (md) => {
-      md.use(mdMathjax3)
-    }
+    math: true
   },
 
   themeConfig: {
@@ -192,6 +198,7 @@ export default withMermaid(defineConfig({
   head: [
     ['meta', { name: 'theme-color', content: '#3c3c44' }],
     ['link', { rel: 'icon', href: '/favicon.ico', type: 'image/ico' }],
-    ['script', { src: 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js' }]
+    // MathJax rendered server-side via markdown-it-mathjax3 (see markdown block).
+    // No runtime CDN script — would re-process the already-rendered SVGs.
   ]
 }))
