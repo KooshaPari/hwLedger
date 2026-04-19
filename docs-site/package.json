@@ -1,0 +1,28 @@
+{
+  "name": "hwledger-docs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sync:adrs": "bash scripts/sync-adrs.sh",
+    "sync:journeys": "bash scripts/sync-journey-artefacts.sh",
+    "sync": "bash scripts/sync-adrs.sh && bash scripts/sync-journey-artefacts.sh",
+    "dev": "bun run sync && vitepress dev .",
+    "build": "bun run sync && vitepress build .",
+    "preview": "vitepress preview .",
+    "link-check": "linkinator .vitepress/dist --recurse --markdown",
+    "lint": "markdownlint-cli2 \"**/*.md\" \"#node_modules\"",
+    "markdownlint": "markdownlint-cli2 \"**/*.md\" \"#node_modules\""
+  },
+  "dependencies": {
+    "vue": "^3.5.0"
+  },
+  "devDependencies": {
+    "vitepress": "1.6.4",
+    "mermaid": "^10.9.0",
+    "vitepress-plugin-mermaid": "^2.0.16",
+    "linkinator": "^6.0.0",
+    "markdownlint-cli2": "^0.13.0",
+    "markdown-it-mathjax3": "^4.3.2"
+  }
+}
