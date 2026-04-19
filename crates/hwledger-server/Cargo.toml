@@ -27,6 +27,7 @@ thiserror.workspace = true
 uuid.workspace = true
 anyhow.workspace = true
 chrono.workspace = true
+reqwest.workspace = true
 hwledger-fleet-proto = { path = "../hwledger-fleet-proto" }
 axum-server = { version = "0.7", features = ["tls-rustls"] }
 time = "0.3"
@@ -36,3 +37,9 @@ rsa = "0.9"
 p256 = "0.13"
 rand = "0.8"
 tempfile.workspace = true
+base64 = "0.22"
+urlencoding = "2.1"
+async-trait = "0.1"
+
+[dev-dependencies]
+hwledger-ledger = { path = "../hwledger-ledger" }

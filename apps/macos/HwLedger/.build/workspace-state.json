@@ -1,0 +1,44 @@
+{
+  "object" : {
+    "artifacts" : [
+      {
+        "kind" : {
+          "xcframework" : {
+
+          }
+        },
+        "packageRef" : {
+          "identity" : "hwledger-swift",
+          "kind" : "fileSystem",
+          "location" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/hwledger-swift",
+          "name" : "HwLedger"
+        },
+        "path" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/xcframework/HwLedgerCore.xcframework",
+        "source" : {
+          "type" : "local"
+        },
+        "targetName" : "HwLedgerCore"
+      }
+    ],
+    "dependencies" : [
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "hwledger-swift",
+          "kind" : "fileSystem",
+          "location" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/hwledger-swift",
+          "name" : "HwLedger"
+        },
+        "state" : {
+          "name" : "fileSystem",
+          "path" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/hwledger-swift"
+        },
+        "subpath" : "hwledger-swift"
+      }
+    ],
+    "prebuilts" : [
+
+    ]
+  },
+  "version" : 7
+}

@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/master.swiftdeps"
+  },
+  "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Tests/HwLedgerAppTests/AppStateTests.swift": {
+    "dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/AppStateTests.d",
+    "object": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/AppStateTests.swift.o",
+    "swiftmodule": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/AppStateTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/AppStateTests.swiftdeps",
+    "diagnostics": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/AppStateTests.dia"
+  }
+}

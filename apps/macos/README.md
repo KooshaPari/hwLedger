@@ -260,6 +260,35 @@ The build uses:
 
 All memory is freed explicitly in Swift wrapper destructors to prevent leaks.
 
+## Subdirectories
+
+| Directory | Purpose |
+|-----------|---------|
+| `xcframework/` | Compiled XCFramework bundle (output of `build-xcframework.sh`) |
+| `hwledger-swift/` | Swift Package wrapper (exposes `HwLedger` public API) |
+| `HwLedger/` | SwiftUI macOS application (WP17) |
+
+## Building the App
+
+1. Build the XCFramework from the repo root:
+   ```bash
+   ./scripts/build-xcframework.sh --release
+   ```
+
+2. Run the app:
+   ```bash
+   cd apps/macos/HwLedger
+   swift run HwLedgerApp
+   ```
+
+3. Run tests:
+   ```bash
+   cd apps/macos/HwLedger
+   swift test
+   ```
+
+For detailed app documentation, see `apps/macos/HwLedger/README.md`.
+
 ## Related Files
 
 - `crates/hwledger-ffi/src/lib.rs` — C FFI surface
@@ -267,6 +296,7 @@ All memory is freed explicitly in Swift wrapper destructors to prevent leaks.
 - `scripts/build-xcframework.sh` — Build orchestration
 - `apps/macos/hwledger-swift/Package.swift` — Swift Package manifest
 - `apps/macos/hwledger-swift/Sources/HwLedger/HwLedger.swift` — Swift wrapper
+- `apps/macos/HwLedger/Package.swift` — App executable Package manifest
 
 ## License
 

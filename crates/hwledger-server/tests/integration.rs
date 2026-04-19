@@ -87,3 +87,47 @@ async fn test_registration_ack_round_trip() {
     let ack2: RegistrationAck = serde_json::from_str(&json).expect("deserialize");
     assert_eq!(ack, ack2);
 }
+
+#[tokio::test]
+async fn test_audit_log_agent_registration_event() {
+    // Traces to: FR-FLEET-006
+    use hwledger_ledger::HwLedgerEvent;
+
+    let audit = hwledger_ledger::AuditLog::new_in_memory();
+    let agent_id = Uuid::new_v4();
+
+    let reg_event = HwLedgerEvent::AgentRegistered {
+        agent_id,
+        hostname: "test-gpu-box".to_string(),
+        platform: Platform {
+            os: "linux".to_string(),
+            arch: "x86_64".to_string(),
+            kernel: "6.8.0".to_string(),
+            total_ram_bytes: 64 * 1024 * 1024 * 1024,
+            cpu_model: "Intel Xeon".to_string(),
+        },
+    };
+
+    // Append registration event
+    let receipt = audit.append(reg_event.clone()).await.expect("append failed");
+    assert_eq!(receipt.seq, 1);
+    assert!(!receipt.hash.is_empty());
+
+    // Retrieve history
+    let history = audit.history(10).await.expect("history failed");
+    assert_eq!(history.len(), 1);
+    assert_eq!(history[0].seq, 1);
+
+    // Verify the event matches
+    match &history[0].event {
+        HwLedgerEvent::AgentRegistered { agent_id: fetched_id, hostname, .. } => {
+            assert_eq!(*fetched_id, agent_id);
+            assert_eq!(hostname, "test-gpu-box");
+        }
+        _ => panic!("Expected AgentRegistered event"),
+    }
+
+    // Verify chain is valid
+    let chain_valid = audit.verify_chain().await.expect("verify failed");
+    assert!(chain_valid);
+}

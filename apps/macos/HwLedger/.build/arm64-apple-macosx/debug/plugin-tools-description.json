@@ -1,0 +1,1140 @@
+{
+  "builtTestProducts" : [
+    {
+      "binaryPath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.xctest/Contents/MacOS/HwLedgerAppPackageTests",
+      "packagePath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger",
+      "productName" : "HwLedgerAppPackageTests"
+    }
+  ],
+  "copyCommands" : {
+    "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/libhwledger_ffi.a" : {
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/xcframework/HwLedgerCore.xcframework/macos-arm64/libhwledger_ffi.a"
+        }
+      ],
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/libhwledger_ffi.a"
+        }
+      ]
+    }
+  },
+  "explicitTargetDependencyImportCheckingMode" : {
+    "none" : {
+
+    }
+  },
+  "generatedSourceTargetSet" : [
+
+  ],
+  "pluginDescriptions" : [
+
+  ],
+  "swiftCommands" : {
+    "C.HwLedger-arm64-apple-macosx26.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedger.build/sources",
+      "importPath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/hwledger-swift/Sources/HwLedger/HwLedger.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/libhwledger_ffi.a"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedger.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "HwLedger",
+      "moduleOutputPath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/Modules/HwLedger.swiftmodule",
+      "objects" : [
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedger.build/HwLedger.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx14.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j10",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-I",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/xcframework/HwLedgerCore.xcframework/macos-arm64/Headers",
+        "-Xcc",
+        "-I",
+        "-Xcc",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/xcframework/HwLedgerCore.xcframework/macos-arm64/Headers",
+        "-module-cache-path",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-F",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedger.build/include/HwLedger-Swift.h",
+        "-swift-version",
+        "5",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "hwledger_swift"
+      ],
+      "outputFileMapPath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedger.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedger.build/HwLedger.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/Modules/HwLedger.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/hwledger-swift/Sources/HwLedger/HwLedger.swift"
+      ],
+      "tempsPath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedger.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.HwLedgerApp-arm64-apple-macosx26.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/sources",
+      "importPath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/AppState.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Components/Gauge.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Components/StackedBar.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/ContentView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/HwLedgerApp.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/FleetScreen.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/LedgerScreen.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/LibraryScreen.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/PlannerScreen.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/RunScreen.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/SettingsScreen.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/Modules/HwLedger.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/libhwledger_ffi.a"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/sources"
+        }
+      ],
+      "isLibrary" : false,
+      "moduleName" : "HwLedgerApp",
+      "moduleOutputPath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/Modules/HwLedgerApp.swiftmodule",
+      "objects" : [
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/AppState.swift.o",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/Gauge.swift.o",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/StackedBar.swift.o",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/ContentView.swift.o",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/HwLedgerApp.swift.o",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/FleetScreen.swift.o",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/LedgerScreen.swift.o",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/LibraryScreen.swift.o",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/PlannerScreen.swift.o",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/RunScreen.swift.o",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/SettingsScreen.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx14.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j10",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-I",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/xcframework/HwLedgerCore.xcframework/macos-arm64/Headers",
+        "-Xcc",
+        "-I",
+        "-Xcc",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/xcframework/HwLedgerCore.xcframework/macos-arm64/Headers",
+        "-module-cache-path",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-Xfrontend",
+        "-entry-point-function-name",
+        "-Xfrontend",
+        "HwLedgerApp_main",
+        "-F",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug",
+        "-swift-version",
+        "5",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "hwledger"
+      ],
+      "outputFileMapPath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/AppState.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/Gauge.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/StackedBar.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/ContentView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/HwLedgerApp.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/FleetScreen.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/LedgerScreen.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/LibraryScreen.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/PlannerScreen.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/RunScreen.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/SettingsScreen.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/Modules/HwLedgerApp.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/AppState.swift",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Components/Gauge.swift",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Components/StackedBar.swift",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/ContentView.swift",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/HwLedgerApp.swift",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/FleetScreen.swift",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/LedgerScreen.swift",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/LibraryScreen.swift",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/PlannerScreen.swift",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/RunScreen.swift",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/SettingsScreen.swift"
+      ],
+      "tempsPath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.HwLedgerAppPackageTests-arm64-apple-macosx26.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.build/sources",
+      "importPath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.derived/runner.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/Modules/HwLedgerAppTests.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/libhwledger_ffi.a"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "HwLedgerAppPackageTests",
+      "moduleOutputPath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/Modules/HwLedgerAppPackageTests.swiftmodule",
+      "objects" : [
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.build/runner.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx14.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-Xfrontend",
+        "-enable-cross-import-overlays",
+        "-j10",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-I",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/xcframework/HwLedgerCore.xcframework/macos-arm64/Headers",
+        "-Xcc",
+        "-I",
+        "-Xcc",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/xcframework/HwLedgerCore.xcframework/macos-arm64/Headers",
+        "-module-cache-path",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-F",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.build/include/HwLedgerAppPackageTests-Swift.h",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "hwledger"
+      ],
+      "outputFileMapPath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.build/runner.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/Modules/HwLedgerAppPackageTests.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.derived/runner.swift"
+      ],
+      "tempsPath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.HwLedgerAppTests-arm64-apple-macosx26.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/sources",
+      "importPath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Tests/HwLedgerAppTests/AppStateTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/Modules/HwLedger.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/libhwledger_ffi.a"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "HwLedgerAppTests",
+      "moduleOutputPath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/Modules/HwLedgerAppTests.swiftmodule",
+      "objects" : [
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/AppStateTests.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx14.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-Xfrontend",
+        "-enable-cross-import-overlays",
+        "-j10",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-I",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/xcframework/HwLedgerCore.xcframework/macos-arm64/Headers",
+        "-Xcc",
+        "-I",
+        "-Xcc",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/xcframework/HwLedgerCore.xcframework/macos-arm64/Headers",
+        "-module-cache-path",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-F",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug",
+        "-swift-version",
+        "5",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "hwledger"
+      ],
+      "outputFileMapPath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/AppStateTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/Modules/HwLedgerAppTests.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Tests/HwLedgerAppTests/AppStateTests.swift"
+      ],
+      "tempsPath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build",
+      "wholeModuleOptimization" : false
+    }
+  },
+  "swiftFrontendCommands" : {
+
+  },
+  "swiftTargetScanArgs" : {
+    "HwLedger" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "HwLedger",
+      "-package-name",
+      "hwledger_swift",
+      "-c",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/hwledger-swift/Sources/HwLedger/HwLedger.swift",
+      "-I",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx14.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j10",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-I",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/xcframework/HwLedgerCore.xcframework/macos-arm64/Headers",
+      "-Xcc",
+      "-I",
+      "-Xcc",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/xcframework/HwLedgerCore.xcframework/macos-arm64/Headers",
+      "-module-cache-path",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-F",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedger.build/include/HwLedger-Swift.h",
+      "-swift-version",
+      "5",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "hwledger_swift",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "HwLedgerApp" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "HwLedgerApp",
+      "-package-name",
+      "hwledger",
+      "-c",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/AppState.swift",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Components/Gauge.swift",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Components/StackedBar.swift",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/ContentView.swift",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/HwLedgerApp.swift",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/FleetScreen.swift",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/LedgerScreen.swift",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/LibraryScreen.swift",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/PlannerScreen.swift",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/RunScreen.swift",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/SettingsScreen.swift",
+      "-I",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx14.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j10",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-I",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/xcframework/HwLedgerCore.xcframework/macos-arm64/Headers",
+      "-Xcc",
+      "-I",
+      "-Xcc",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/xcframework/HwLedgerCore.xcframework/macos-arm64/Headers",
+      "-module-cache-path",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-Xfrontend",
+      "-entry-point-function-name",
+      "-Xfrontend",
+      "HwLedgerApp_main",
+      "-F",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug",
+      "-swift-version",
+      "5",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "hwledger",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "HwLedgerAppPackageTests" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "HwLedgerAppPackageTests",
+      "-package-name",
+      "hwledger",
+      "-c",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.derived/runner.swift",
+      "-I",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx14.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-Xfrontend",
+      "-enable-cross-import-overlays",
+      "-j10",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-I",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/xcframework/HwLedgerCore.xcframework/macos-arm64/Headers",
+      "-Xcc",
+      "-I",
+      "-Xcc",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/xcframework/HwLedgerCore.xcframework/macos-arm64/Headers",
+      "-module-cache-path",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-F",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.build/include/HwLedgerAppPackageTests-Swift.h",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "hwledger",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "HwLedgerAppTests" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "HwLedgerAppTests",
+      "-package-name",
+      "hwledger",
+      "-c",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Tests/HwLedgerAppTests/AppStateTests.swift",
+      "-I",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx14.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-Xfrontend",
+      "-enable-cross-import-overlays",
+      "-j10",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-I",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/xcframework/HwLedgerCore.xcframework/macos-arm64/Headers",
+      "-Xcc",
+      "-I",
+      "-Xcc",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/xcframework/HwLedgerCore.xcframework/macos-arm64/Headers",
+      "-module-cache-path",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-F",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug",
+      "-swift-version",
+      "5",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "hwledger",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ]
+  },
+  "targetDependencyMap" : {
+    "HwLedger" : [
+      "HwLedgerCore"
+    ],
+    "HwLedgerApp" : [
+      "HwLedger",
+      "HwLedgerCore"
+    ],
+    "HwLedgerAppPackageTests" : [
+      "HwLedgerAppTests",
+      "HwLedger",
+      "HwLedgerCore"
+    ],
+    "HwLedgerAppTests" : [
+      "HwLedger",
+      "HwLedgerCore"
+    ]
+  },
+  "testDiscoveryCommands" : {
+
+  },
+  "testEntryPointCommands" : {
+    "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.derived/runner.swift" : {
+      "inputs" : [
+
+      ],
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.derived/runner.swift"
+        }
+      ]
+    }
+  },
+  "traitConfiguration" : {
+    "default" : {
+
+    }
+  },
+  "writeCommands" : {
+    "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedger.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/hwledger-swift/Sources/HwLedger/HwLedger.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedger.build/sources"
+    },
+    "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp-entitlement.plist" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<entitlement-plist>"
+        },
+        {
+          "kind" : "virtual",
+          "name" : "<com.apple.security.get-task-allow>"
+        }
+      ],
+      "outputFilePath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp-entitlement.plist"
+    },
+    "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/AppState.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Components/Gauge.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Components/StackedBar.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/ContentView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/HwLedgerApp.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/FleetScreen.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/LedgerScreen.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/LibraryScreen.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/PlannerScreen.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/RunScreen.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/SettingsScreen.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/sources"
+    },
+    "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedger.build/HwLedger.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/AppState.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/ContentView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/FleetScreen.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/Gauge.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/HwLedgerApp.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/LedgerScreen.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/LibraryScreen.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/PlannerScreen.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/RunScreen.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/SettingsScreen.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/StackedBar.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.product/Objects.LinkFileList"
+    },
+    "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.derived/runner.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.build/sources"
+    },
+    "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedger.build/HwLedger.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.build/runner.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/AppStateTests.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.product/Objects.LinkFileList"
+    },
+    "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Tests/HwLedgerAppTests/AppStateTests.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/sources"
+    },
+    "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt" : {
+      "alwaysOutOfDate" : true,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<swift-get-version>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+        }
+      ],
+      "outputFilePath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+    }
+  }
+}

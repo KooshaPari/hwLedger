@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.build/master.swiftdeps"
+  },
+  "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.derived/runner.swift": {
+    "dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.build/runner.d",
+    "object": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.build/runner.swift.o",
+    "swiftmodule": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.build/runner~partial.swiftmodule",
+    "swift-dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.build/runner.swiftdeps",
+    "diagnostics": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.build/runner.dia"
+  }
+}

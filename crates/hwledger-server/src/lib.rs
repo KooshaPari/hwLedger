@@ -9,6 +9,9 @@ pub mod config;
 pub mod db;
 pub mod error;
 pub mod routes;
+pub mod ssh;
+pub mod tailscale;
+pub mod rentals;
 
 pub use config::ServerConfig;
 pub use error::ServerError;
@@ -18,6 +21,7 @@ use axum::extract::DefaultBodyLimit;
 use axum::routing::{get, post};
 use axum::Router;
 use std::sync::Arc;
+use tokio::sync::RwLock;
 use tracing::info;
 
 /// Application state shared across all handlers.
@@ -25,6 +29,7 @@ pub struct AppState {
     pub db: sqlx::SqlitePool,
     pub ca: ca::CertificateAuthority,
     pub config: ServerConfig,
+    pub rentals_catalog: RwLock<Option<rentals::RentalCatalog>>,
 }
 
 /// Main entry point: initialize DB, CA, and start the HTTP/2 mTLS server.
@@ -39,7 +44,12 @@ pub async fn run(config: ServerConfig) -> Result<()> {
     info!("Certificate authority initialized");
 
     // Create app state
-    let state = Arc::new(AppState { db, ca, config });
+    let state = Arc::new(AppState {
+        db,
+        ca,
+        config,
+        rentals_catalog: RwLock::new(None),
+    });
 
     // Bind listener before moving state
     let bind_addr = state.config.bind;
@@ -59,6 +69,14 @@ pub async fn run(config: ServerConfig) -> Result<()> {
         .route("/v1/agents/:agent_id/jobs", get(routes::get_pending_jobs))
         // Report job completion (FR-FLEET-008)
         .route("/v1/jobs/:job_id/report", post(routes::report_job))
+        // SSH agentless probing (FR-FLEET-003)
+        .route("/v1/fleet/ssh_probe", get(routes::ssh_probe))
+        // Tailscale peer discovery (FR-FLEET-004)
+        .route("/v1/fleet/tailscale", get(routes::tailscale_peers))
+        // Cloud rental offerings (FR-FLEET-005)
+        .route("/v1/fleet/rentals", get(routes::get_rentals))
+        // Placement suggestions (FR-FLEET-007)
+        .route("/v1/fleet/placement", get(routes::placement_suggestions))
         // Health check
         .route("/v1/health", get(routes::health))
         .layer(DefaultBodyLimit::max(10 * 1024 * 1024)) // 10 MB limit

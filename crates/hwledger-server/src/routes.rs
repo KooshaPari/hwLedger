@@ -4,7 +4,7 @@
 //! Traces to: FR-FLEET-001, FR-FLEET-002, FR-FLEET-008
 
 use crate::error::ServerError;
-use crate::AppState;
+use crate::{ssh, tailscale, rentals, AppState};
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::Json;
@@ -16,6 +16,8 @@ use serde::Serialize;
 use serde_json::json;
 use std::sync::Arc;
 use uuid::Uuid;
+use std::collections::HashMap;
+use base64::engine::{general_purpose, Engine};
 
 /// Health check response.
 #[derive(Debug, Serialize)]
@@ -278,6 +280,123 @@ pub async fn health(State(state): State<Arc<AppState>>) -> Json<HealthResponse> 
     })
 }
 
+/// Probe a remote host via SSH for GPU devices.
+/// Query parameter: `host` is base64-encoded JSON of SshHost struct.
+/// Traces to: FR-FLEET-003
+pub async fn ssh_probe(
+    State(_state): State<Arc<AppState>>,
+    axum::extract::Query(params): axum::extract::Query<HashMap<String, String>>,
+) -> Result<Json<Vec<hwledger_fleet_proto::DeviceReport>>, ServerError> {
+    let host_b64 = params
+        .get("host")
+        .ok_or_else(|| ServerError::Validation {
+            reason: "missing 'host' query parameter".to_string(),
+        })?;
+
+    let host_bytes = general_purpose::STANDARD
+        .decode(host_b64)
+        .map_err(|e| ServerError::Validation {
+            reason: format!("invalid base64 host encoding: {}", e),
+        })?;
+
+    let host_json = String::from_utf8(host_bytes).map_err(|e| ServerError::Validation {
+        reason: format!("host bytes are not valid UTF-8: {}", e),
+    })?;
+
+    let _host: ssh::SshHost = serde_json::from_str(&host_json).map_err(|e| ServerError::Validation {
+        reason: format!("failed to parse SSH host JSON: {}", e),
+    })?;
+
+    // TODO(fleet-ssh-exec-v1): implement actual SSH connection pool
+    Err(ServerError::Internal {
+        reason: "SSH probe not yet implemented in MVP".to_string(),
+    })
+}
+
+/// Discover Tailscale peers in the local network.
+/// Traces to: FR-FLEET-004
+pub async fn tailscale_peers(
+    State(_state): State<Arc<AppState>>,
+) -> Result<Json<tailscale::TailscaleStatus>, ServerError> {
+    tailscale::discover().await.map(Json)
+}
+
+/// Get or refresh the rental offerings catalog.
+/// Caches results for 1 hour.
+/// Traces to: FR-FLEET-005
+pub async fn get_rentals(
+    State(state): State<Arc<AppState>>,
+) -> Result<Json<rentals::RentalCatalog>, ServerError> {
+    // Check if cache is fresh
+    let now_ms = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_millis() as u64)
+        .unwrap_or(0);
+
+    let ttl_ms = 3600 * 1000; // 1 hour
+
+    {
+        let catalog = state.rentals_catalog.read().await;
+        if let Some(cached) = catalog.as_ref() {
+            if now_ms.saturating_sub(cached.refreshed_at_ms) < ttl_ms {
+                return Ok(Json(cached.clone()));
+            }
+        }
+    }
+
+    // Refresh catalog
+    let api_keys = rentals::RentalApiKeys {
+        vast_ai: std::env::var("HWLEDGER_VAST_API_KEY").ok(),
+        runpod: std::env::var("HWLEDGER_RUNPOD_API_KEY").ok(),
+        lambda: std::env::var("HWLEDGER_LAMBDA_API_KEY").ok(),
+        modal: std::env::var("HWLEDGER_MODAL_API_KEY").ok(),
+    };
+
+    let new_catalog = rentals::RentalCatalog::refresh(api_keys).await?;
+    let catalog_clone = new_catalog.clone();
+
+    let mut cache = state.rentals_catalog.write().await;
+    *cache = Some(new_catalog);
+
+    Ok(Json(catalog_clone))
+}
+
+/// Query placement suggestions across agents, peers, and rentals.
+/// Filters by model reference and minimum VRAM requirement.
+/// Ranks by (fit_score, cost_per_hour).
+/// Traces to: FR-FLEET-007
+pub async fn placement_suggestions(
+    State(_state): State<Arc<AppState>>,
+    axum::extract::Query(params): axum::extract::Query<HashMap<String, String>>,
+) -> Result<Json<Vec<PlacementSuggestion>>, ServerError> {
+    let _model_ref = params
+        .get("model_ref")
+        .ok_or_else(|| ServerError::Validation {
+            reason: "missing 'model_ref' query parameter".to_string(),
+        })?;
+
+    let _min_vram_gb: u32 = params
+        .get("min_vram_gb")
+        .ok_or_else(|| ServerError::Validation {
+            reason: "missing 'min_vram_gb' query parameter".to_string(),
+        })?
+        .parse()
+        .map_err(|_| ServerError::Validation {
+            reason: "invalid 'min_vram_gb' (expected integer)".to_string(),
+        })?;
+
+    // TODO(fleet-placement-v2): implement placement ranking
+    Ok(Json(vec![]))
+}
+
+/// Placement suggestion with location, fit score, and estimated cost.
+#[derive(Debug, Serialize)]
+pub struct PlacementSuggestion {
+    pub location: String,
+    pub fit_score: f32,
+    pub cost_per_hour_usd: f64,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -292,3 +411,4 @@ mod tests {
         assert_eq!(state, state2);
     }
 }
+

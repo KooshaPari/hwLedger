@@ -1,0 +1,82 @@
+{
+  "": {
+    "swift-dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/master.swiftdeps"
+  },
+  "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/AppState.swift": {
+    "dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/AppState.d",
+    "object": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/AppState.swift.o",
+    "swiftmodule": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/AppState~partial.swiftmodule",
+    "swift-dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/AppState.swiftdeps",
+    "diagnostics": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/AppState.dia"
+  },
+  "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Components/Gauge.swift": {
+    "dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/Gauge.d",
+    "object": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/Gauge.swift.o",
+    "swiftmodule": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/Gauge~partial.swiftmodule",
+    "swift-dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/Gauge.swiftdeps",
+    "diagnostics": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/Gauge.dia"
+  },
+  "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Components/StackedBar.swift": {
+    "dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/StackedBar.d",
+    "object": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/StackedBar.swift.o",
+    "swiftmodule": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/StackedBar~partial.swiftmodule",
+    "swift-dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/StackedBar.swiftdeps",
+    "diagnostics": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/StackedBar.dia"
+  },
+  "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/ContentView.swift": {
+    "dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/ContentView.d",
+    "object": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/ContentView.swift.o",
+    "swiftmodule": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/ContentView~partial.swiftmodule",
+    "swift-dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/ContentView.swiftdeps",
+    "diagnostics": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/ContentView.dia"
+  },
+  "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/HwLedgerApp.swift": {
+    "dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/HwLedgerApp.d",
+    "object": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/HwLedgerApp.swift.o",
+    "swiftmodule": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/HwLedgerApp~partial.swiftmodule",
+    "swift-dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/HwLedgerApp.swiftdeps",
+    "diagnostics": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/HwLedgerApp.dia"
+  },
+  "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/FleetScreen.swift": {
+    "dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/FleetScreen.d",
+    "object": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/FleetScreen.swift.o",
+    "swiftmodule": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/FleetScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/FleetScreen.swiftdeps",
+    "diagnostics": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/FleetScreen.dia"
+  },
+  "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/LedgerScreen.swift": {
+    "dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/LedgerScreen.d",
+    "object": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/LedgerScreen.swift.o",
+    "swiftmodule": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/LedgerScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/LedgerScreen.swiftdeps",
+    "diagnostics": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/LedgerScreen.dia"
+  },
+  "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/LibraryScreen.swift": {
+    "dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/LibraryScreen.d",
+    "object": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/LibraryScreen.swift.o",
+    "swiftmodule": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/LibraryScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/LibraryScreen.swiftdeps",
+    "diagnostics": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/LibraryScreen.dia"
+  },
+  "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/PlannerScreen.swift": {
+    "dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/PlannerScreen.d",
+    "object": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/PlannerScreen.swift.o",
+    "swiftmodule": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/PlannerScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/PlannerScreen.swiftdeps",
+    "diagnostics": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/PlannerScreen.dia"
+  },
+  "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/RunScreen.swift": {
+    "dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/RunScreen.d",
+    "object": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/RunScreen.swift.o",
+    "swiftmodule": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/RunScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/RunScreen.swiftdeps",
+    "diagnostics": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/RunScreen.dia"
+  },
+  "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Sources/HwLedgerApp/Screens/SettingsScreen.swift": {
+    "dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/SettingsScreen.d",
+    "object": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/SettingsScreen.swift.o",
+    "swiftmodule": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/SettingsScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/SettingsScreen.swiftdeps",
+    "diagnostics": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerApp.build/SettingsScreen.dia"
+  }
+}
