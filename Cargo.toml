@@ -15,6 +15,7 @@ members = [
     "crates/hwledger-ffi",
     "crates/hwledger-verify",
     "crates/hwledger-traceability",
+    "crates/hwledger-release",
 ]
 exclude = [
     # Vendored phenotype-event-sourcing is a path dep, not a member;
