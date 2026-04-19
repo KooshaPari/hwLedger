@@ -8,5 +8,12 @@
     "swiftmodule": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/AppStateTests~partial.swiftmodule",
     "swift-dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/AppStateTests.swiftdeps",
     "diagnostics": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/AppStateTests.dia"
+  },
+  "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Tests/HwLedgerAppTests/PlannerScreenTests.swift": {
+    "dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/PlannerScreenTests.d",
+    "object": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/PlannerScreenTests.swift.o",
+    "swiftmodule": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/PlannerScreenTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/PlannerScreenTests.swiftdeps",
+    "diagnostics": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/PlannerScreenTests.dia"
   }
 }

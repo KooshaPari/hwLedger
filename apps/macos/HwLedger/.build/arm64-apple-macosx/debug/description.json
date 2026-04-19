@@ -480,6 +480,10 @@
         },
         {
           "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Tests/HwLedgerAppTests/PlannerScreenTests.swift"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
         },
         {
@@ -499,7 +503,8 @@
       "moduleName" : "HwLedgerAppTests",
       "moduleOutputPath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/Modules/HwLedgerAppTests.swiftmodule",
       "objects" : [
-        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/AppStateTests.swift.o"
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/AppStateTests.swift.o",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/PlannerScreenTests.swift.o"
       ],
       "otherArguments" : [
         "-target",
@@ -571,12 +576,17 @@
         },
         {
           "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/PlannerScreenTests.swift.o"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/Modules/HwLedgerAppTests.swiftmodule"
         }
       ],
       "prepareForIndexing" : false,
       "sources" : [
-        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Tests/HwLedgerAppTests/AppStateTests.swift"
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Tests/HwLedgerAppTests/AppStateTests.swift",
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Tests/HwLedgerAppTests/PlannerScreenTests.swift"
       ],
       "tempsPath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build",
       "wholeModuleOptimization" : false
@@ -826,6 +836,7 @@
       "hwledger",
       "-c",
       "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Tests/HwLedgerAppTests/AppStateTests.swift",
+      "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Tests/HwLedgerAppTests/PlannerScreenTests.swift",
       "-I",
       "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/Modules",
       "-target",
@@ -1104,6 +1115,10 @@
         {
           "kind" : "file",
           "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/AppStateTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/PlannerScreenTests.swift.o"
         }
       ],
       "outputFilePath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppPackageTests.product/Objects.LinkFileList"
@@ -1118,6 +1133,10 @@
         {
           "kind" : "file",
           "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Tests/HwLedgerAppTests/AppStateTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/Tests/HwLedgerAppTests/PlannerScreenTests.swift"
         }
       ],
       "outputFilePath" : "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/HwLedger/.build/arm64-apple-macosx/debug/HwLedgerAppTests.build/sources"
