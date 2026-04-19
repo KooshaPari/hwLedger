@@ -34,7 +34,7 @@ public struct PlannerResult {
     public let effectiveBatch: UInt32
 
     internal init(from cResult: hwledger_PlannerResult) throws {
-        guard cResult.attention_kind_label != nil else {
+        guard let labelPtr = cResult.attention_kind_label else {
             throw HwLedgerError.invalidData("attention_kind_label is null")
         }
 
@@ -43,7 +43,7 @@ public struct PlannerResult {
         self.prefillActivationBytes = cResult.prefill_activation_bytes
         self.runtimeOverheadBytes = cResult.runtime_overhead_bytes
         self.totalBytes = cResult.total_bytes
-        self.attentionKindLabel = String(cString: cResult.attention_kind_label)
+        self.attentionKindLabel = String(cString: labelPtr)
         self.effectiveBatch = cResult.effective_batch
     }
 }
@@ -57,14 +57,18 @@ public struct DeviceInfo {
     public let totalVramBytes: UInt64
 
     internal init(from cDevice: hwledger_DeviceInfo) throws {
-        guard cDevice.backend != nil, cDevice.name != nil else {
+        guard let backendPtr = cDevice.backend, let namePtr = cDevice.name else {
             throw HwLedgerError.invalidData("device backend or name is null")
         }
 
         self.id = cDevice.id
-        self.backend = String(cString: cDevice.backend)
-        self.name = String(cString: cDevice.name)
-        self.uuid = cDevice.uuid != nil ? String(cString: cDevice.uuid) : ""
+        self.backend = String(cString: backendPtr)
+        self.name = String(cString: namePtr)
+        if let uuidPtr = cDevice.uuid {
+            self.uuid = String(cString: uuidPtr)
+        } else {
+            self.uuid = ""
+        }
         self.totalVramBytes = cDevice.total_vram_bytes
     }
 }

@@ -6,7 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 authors.workspace = true
 repository.workspace = true
-description = "REST and gRPC server for hwLedger API endpoints"
+description = "Central ledger server for hwLedger fleet management (FR-FLEET-001)"
 
 [[bin]]
 name = "hwledger-server"
@@ -16,3 +16,23 @@ path = "src/main.rs"
 tokio.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
+axum.workspace = true
+tower.workspace = true
+rustls.workspace = true
+rcgen.workspace = true
+sqlx.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+anyhow.workspace = true
+chrono.workspace = true
+hwledger-fleet-proto = { path = "../hwledger-fleet-proto" }
+axum-server = { version = "0.7", features = ["tls-rustls"] }
+time = "0.3"
+x509-parser = "0.16"
+der = "0.7"
+rsa = "0.9"
+p256 = "0.13"
+rand = "0.8"
+tempfile.workspace = true

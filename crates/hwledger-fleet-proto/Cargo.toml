@@ -6,7 +6,11 @@ rust-version.workspace = true
 license.workspace = true
 authors.workspace = true
 repository.workspace = true
-description = "Protocol buffers and serialization for hwLedger fleet management"
+description = "Shared JSON wire protocol types for hwLedger fleet management"
 
 [dependencies]
 thiserror.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+uuid.workspace = true
+chrono.workspace = true

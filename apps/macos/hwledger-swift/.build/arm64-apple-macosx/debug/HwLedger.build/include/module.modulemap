@@ -1,0 +1,3 @@
+module HwLedger {
+    header "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/macos/hwledger-swift/.build/arm64-apple-macosx/debug/HwLedger.build/include/HwLedger-Swift.h"
+}

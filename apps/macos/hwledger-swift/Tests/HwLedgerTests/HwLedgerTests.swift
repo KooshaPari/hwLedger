@@ -52,7 +52,9 @@ final class HwLedgerTests: XCTestCase {
         {
           "model_type": "llama",
           "num_hidden_layers": 32,
-          "hidden_size": 4096
+          "hidden_size": 4096,
+          "num_attention_heads": 32,
+          "num_key_value_heads": 32
         }
         """
 
@@ -110,7 +112,9 @@ final class HwLedgerTests: XCTestCase {
         {
           "model_type": "qwen",
           "num_hidden_layers": 32,
-          "hidden_size": 4096
+          "hidden_size": 4096,
+          "num_attention_heads": 32,
+          "num_key_value_heads": 8
         }
         """
 

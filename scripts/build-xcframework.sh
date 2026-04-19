@@ -61,8 +61,14 @@ if ! command -v xcodebuild &>/dev/null; then
   exit 1
 fi
 
+# === Arch selection ===
+# MVP targets Apple Silicon. Pass HWLEDGER_UNIVERSAL=1 to also attempt x86_64
+# (requires rustup stable toolchain with x86_64-apple-darwin rust-std installed).
+UNIVERSAL="${HWLEDGER_UNIVERSAL:-0}"
+
 echo "=== hwLedger XCFramework Builder ==="
 echo "Mode: ${BUILD_MODE}"
+echo "Universal (arm64+x86_64): ${UNIVERSAL}"
 echo "Project root: ${PROJECT_ROOT}"
 echo ""
 
@@ -83,28 +89,33 @@ if [[ ! -f "${ARM64_LIB}" ]]; then
   echo "Error: ARM64 static library not found at ${ARM64_LIB}"
   exit 1
 fi
-echo "✓ ARM64 library: ${ARM64_LIB}"
+echo "  ARM64 library: ${ARM64_LIB}"
 
-# === Build x86_64 ===
-echo "[3/6] Building hwledger-ffi for x86_64-apple-darwin..."
-cargo build ${CARGO_FLAGS} \
-  --target x86_64-apple-darwin \
-  -p hwledger-ffi \
-  --manifest-path "${CARGO_MANIFEST}"
-
-X86_64_LIB="${PROJECT_ROOT}/target/x86_64-apple-darwin/${BUILD_MODE}/libhwledger_ffi.a"
-if [[ ! -f "${X86_64_LIB}" ]]; then
-  echo "Error: x86_64 static library not found at ${X86_64_LIB}"
-  exit 1
+# === Build x86_64 (optional) ===
+if [[ "${UNIVERSAL}" == "1" ]]; then
+  echo "[3/6] Building hwledger-ffi for x86_64-apple-darwin..."
+  cargo build ${CARGO_FLAGS} \
+    --target x86_64-apple-darwin \
+    -p hwledger-ffi \
+    --manifest-path "${CARGO_MANIFEST}"
+  X86_64_LIB="${PROJECT_ROOT}/target/x86_64-apple-darwin/${BUILD_MODE}/libhwledger_ffi.a"
+  if [[ ! -f "${X86_64_LIB}" ]]; then
+    echo "Error: x86_64 static library not found at ${X86_64_LIB}"
+    exit 1
+  fi
+  echo "  x86_64 library: ${X86_64_LIB}"
+else
+  echo "[3/6] Skipping x86_64 (HWLEDGER_UNIVERSAL!=1; arm64-only XCFramework)"
+  X86_64_LIB=""
 fi
-echo "✓ x86_64 library: ${X86_64_LIB}"
 
 # === Create universal binary ===
-echo "[4/6] Creating universal static library with lipo..."
-lipo -create \
-  "${ARM64_LIB}" \
-  "${X86_64_LIB}" \
-  -output "${UNIVERSAL_DIR}/libhwledger_ffi.a"
+echo "[4/6] Creating static library at ${UNIVERSAL_DIR}/libhwledger_ffi.a..."
+if [[ -n "${X86_64_LIB}" ]]; then
+  lipo -create "${ARM64_LIB}" "${X86_64_LIB}" -output "${UNIVERSAL_DIR}/libhwledger_ffi.a"
+else
+  cp "${ARM64_LIB}" "${UNIVERSAL_DIR}/libhwledger_ffi.a"
+fi
 
 if [[ ! -f "${UNIVERSAL_DIR}/libhwledger_ffi.a" ]]; then
   echo "Error: failed to create universal library"

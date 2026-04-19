@@ -6,7 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 authors.workspace = true
 repository.workspace = true
-description = "Autonomous agent for distributed hwLedger node coordination"
+description = "Per-host agent for hwLedger fleet telemetry & job execution (FR-FLEET-002)"
 
 [[bin]]
 name = "hwledger-agent"
@@ -16,3 +16,24 @@ path = "src/main.rs"
 tokio.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
+reqwest.workspace = true
+rustls.workspace = true
+rcgen.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+anyhow.workspace = true
+chrono.workspace = true
+hwledger-fleet-proto = { path = "../hwledger-fleet-proto" }
+hwledger-probe = { path = "../hwledger-probe" }
+dirs.workspace = true
+pem.workspace = true
+time.workspace = true
+x509-parser.workspace = true
+der.workspace = true
+rsa.workspace = true
+p256.workspace = true
+rand.workspace = true
+hostname.workspace = true
+tempfile.workspace = true

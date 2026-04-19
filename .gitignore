@@ -51,3 +51,4 @@ ledger.db
 ledger.db-*
 *.sqlite
 *.sqlite-journal
+apps/macos/xcframework/
