@@ -30,7 +30,7 @@ def _load_library() -> Optional[ctypes.CDLL]:
         return None
 
     # Try relative paths from this file
-    base = Path(__file__).parent.parent.parent.parent
+    base = Path(__file__).parent.parent.parent
     candidates = [
         base / "target" / "release" / libname,
         Path.home() / ".cargo" / "target" / "release" / libname,
