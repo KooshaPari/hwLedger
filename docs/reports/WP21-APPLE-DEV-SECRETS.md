@@ -1,6 +1,6 @@
 # WP21 — Apple Developer + Sparkle secrets setup
 
-Current status of the release pipeline: **3 of 4 credential groups wired, 1 blocker for first tag push**.
+Current status of the release pipeline: **4 of 4 credential groups configured in GitHub Secrets; 1 open diagnostic (notary key validation)**.
 
 ## Secrets already configured in GitHub Actions
 
@@ -11,6 +11,8 @@ Current status of the release pipeline: **3 of 4 credential groups wired, 1 bloc
 | `APPLE_NOTARY_KEY_BASE64` | `base64 < ~/.appstoreconnect/private_keys/AuthKey_2GU85D9582.p8` | 2026-04-19 |
 | `SPARKLE_PUBLIC_KEY` | generated 2026-04-19, stored in repo + committed Info.plist placeholder | 2026-04-19 |
 | `SPARKLE_PRIVATE_KEY_BASE64` | local generate, base64-encoded | 2026-04-19 |
+| `APPLE_DEVELOPER_ID_CERT_P12` | `security export -t identities -f pkcs12 -k login.keychain-db` | 2026-04-19 |
+| `APPLE_DEVELOPER_ID_CERT_PASSWORD` | random 32-byte base64 generated at export time | 2026-04-19 |
 
 Values — **do not paste private secrets into PRs**:
 
@@ -21,40 +23,9 @@ Values — **do not paste private secrets into PRs**:
 - **Sparkle public key**: `OIZuw+nbKJZkyDQ/QFUWyEOdHXC2UEWka/4UUdMGeMg=`
 - **Sparkle private key**: `~/.config/hwledger/sparkle_ed25519_private.key` (chmod 600). **Back this up to 1Password / Bitwarden immediately.**
 
-## Still blocking first release
+## Still needs attention
 
-### 1. Developer ID cert must be uploaded as GitHub secret for CI signing
-
-CI doesn't have your local keychain. Export the Developer ID Application cert as a password-protected .p12 and upload:
-
-```bash
-# pick any strong password
-export P12_PASSWORD="replace-with-strong-pw"
-
-# export cert from login keychain to a .p12 file
-security export -t identities -f pkcs12 \
-    -k ~/Library/Keychains/login.keychain-db \
-    -P "$P12_PASSWORD" \
-    -o /tmp/hwledger-dev-id.p12
-
-# upload to GitHub secrets
-base64 < /tmp/hwledger-dev-id.p12 | gh secret set APPLE_DEVELOPER_ID_CERT_P12 --repo KooshaPari/hwLedger
-echo "$P12_PASSWORD" | gh secret set APPLE_DEVELOPER_ID_CERT_PASSWORD --repo KooshaPari/hwLedger
-rm /tmp/hwledger-dev-id.p12
-unset P12_PASSWORD
-```
-
-If `security export` prompts you repeatedly for each keychain item, narrow the export with a specific identity name:
-
-```bash
-security export -t identities -f pkcs12 \
-    -k ~/Library/Keychains/login.keychain-db \
-    -P "$P12_PASSWORD" \
-    -o /tmp/hwledger-dev-id.p12 \
-    -T /usr/bin/codesign
-```
-
-### 2. Verify the `.p8` notarization key isn't revoked
+### 1. `.p8` notarization key validation is failing — verify it isn't revoked
 
 `xcrun notarytool store-credentials` validation failed against the key dated 2025-03-30 — it may have been revoked. Verify at https://appstoreconnect.apple.com/access/integrations/api . If the row shows "Revoked", regenerate:
 
@@ -64,7 +35,7 @@ security export -t identities -f pkcs12 \
 4. `mv ~/Downloads/AuthKey_*.p8 ~/.appstoreconnect/private_keys/ && chmod 600 ~/.appstoreconnect/private_keys/AuthKey_*.p8`.
 5. Tell me the new Key ID and I'll update the 3 GitHub secrets (`APPLE_NOTARY_KEY_ID` + `APPLE_NOTARY_KEY_BASE64` + re-run `xcrun notarytool store-credentials hwledger`).
 
-### 3. (Optional) store the Apple creds as a notarytool keychain profile for local use
+### 2. (Optional) store the Apple creds as a notarytool keychain profile for local use
 
 ```bash
 xcrun notarytool store-credentials hwledger \
