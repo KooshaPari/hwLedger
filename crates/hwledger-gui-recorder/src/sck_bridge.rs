@@ -63,9 +63,10 @@ pub fn check_screen_capture_permission() -> RecorderResult<bool> {
         match result {
             1 => Ok(true),
             0 => Ok(false),
-            _ => Err(RecorderError::StreamConfigurationError(
-                format!("permission check failed with code: {}", result),
-            )),
+            _ => Err(RecorderError::StreamConfigurationError(format!(
+                "permission check failed with code: {}",
+                result
+            ))),
         }
     }
 }
@@ -83,14 +84,11 @@ pub fn start_recording(
     height: u32,
     fps: u32,
 ) -> RecorderResult<()> {
-    let bundle_id_cstring =
-        CString::new(app_bundle_id).map_err(|_| {
-            RecorderError::InvalidOutputPath("invalid bundle ID".to_string())
-        })?;
+    let bundle_id_cstring = CString::new(app_bundle_id)
+        .map_err(|_| RecorderError::InvalidOutputPath("invalid bundle ID".to_string()))?;
 
-    let output_path_cstring = CString::new(output_path).map_err(|_| {
-        RecorderError::InvalidOutputPath("invalid output path".to_string())
-    })?;
+    let output_path_cstring = CString::new(output_path)
+        .map_err(|_| RecorderError::InvalidOutputPath("invalid output path".to_string()))?;
 
     // SAFETY: Both CString objects are valid for the duration of this call.
     // The FFI function is idempotent and thread-safe per the Swift implementation.

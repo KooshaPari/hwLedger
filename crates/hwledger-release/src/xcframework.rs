@@ -12,7 +12,7 @@ pub enum BuildMode {
 }
 
 impl BuildMode {
-    fn cargo_flag(&self) -> Option<&str> {
+    pub fn cargo_flag(&self) -> Option<&str> {
         match self {
             BuildMode::Release => Some("--release"),
             BuildMode::Debug => None,

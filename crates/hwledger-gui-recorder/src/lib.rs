@@ -68,15 +68,8 @@ impl JourneyRecorder {
     ///
     /// * `recording_path` - Path to the MP4 file produced by ScreenRecorder
     /// * `journey_dir` - Root directory for journey output (keyframes, manifest, GIF)
-    pub fn new(
-        recording_path: std::path::PathBuf,
-        journey_dir: std::path::PathBuf,
-    ) -> Self {
-        Self {
-            recording_path,
-            journey_dir,
-            config: RecordingConfig::default(),
-        }
+    pub fn new(recording_path: std::path::PathBuf, journey_dir: std::path::PathBuf) -> Self {
+        Self { recording_path, journey_dir, config: RecordingConfig::default() }
     }
 
     /// Fully process a recorded journey: extract keyframes, GIF, and generate manifest.
@@ -92,8 +85,7 @@ impl JourneyRecorder {
         self.generate_gif(&gif_path).await?;
 
         // Generate manifest
-        let manifest =
-            JourneyManifest::from_directory(&self.journey_dir, &keyframes_dir).await?;
+        let manifest = JourneyManifest::from_directory(&self.journey_dir, &keyframes_dir).await?;
 
         // Write manifest
         let manifest_path = self.journey_dir.join("manifest.json");

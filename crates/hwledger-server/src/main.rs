@@ -8,7 +8,11 @@ use std::path::PathBuf;
 use tracing_subscriber::EnvFilter;
 
 #[derive(Parser, Debug)]
-#[command(name = "hwledger-server", version, about = "Central ledger server for hwLedger fleet management")]
+#[command(
+    name = "hwledger-server",
+    version,
+    about = "Central ledger server for hwLedger fleet management"
+)]
 struct Args {
     /// Port to listen on (default: 6443)
     #[arg(long, default_value = "6443")]

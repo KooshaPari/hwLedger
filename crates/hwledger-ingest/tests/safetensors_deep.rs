@@ -129,7 +129,8 @@ fn test_safetensors_quantized_dtype() {
 #[test]
 fn test_safetensors_high_dim_tensor() {
     let mut cursor = std::io::Cursor::new(Vec::new());
-    let header = r#"{"model.weight":{"dtype":"F32","shape":[2,3,4,5,6,7],"data_offsets":[0,1000000]}}"#;
+    let header =
+        r#"{"model.weight":{"dtype":"F32","shape":[2,3,4,5,6,7],"data_offsets":[0,1000000]}}"#;
     write_safetensors_header(&mut cursor, header);
 
     let mut file = NamedTempFile::new().unwrap();

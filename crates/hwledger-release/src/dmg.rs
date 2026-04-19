@@ -39,7 +39,7 @@ pub fn build_dmg(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    
 
     #[test]
     fn test_dmg_params() {

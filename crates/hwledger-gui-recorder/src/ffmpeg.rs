@@ -9,7 +9,7 @@ use std::process::Stdio;
 use tokio::process::Command;
 use tracing::info;
 
-#[allow(dead_code)]
+#[expect(dead_code, reason = "scaffold for future GUI recorder integration — see docs/checklists/GUI-RECORDING-INTEGRATION-CHECKLIST.md")]
 const FFMPEG_TIMEOUT_SECS: u64 = 300;
 
 /// Extract I-frames (true keyframes) from MP4 recording.
@@ -28,9 +28,7 @@ pub async fn extract_i_frames(
     );
 
     if !recording_path.exists() {
-        return Err(RecorderError::RecordingNotFound(
-            recording_path.to_path_buf(),
-        ));
+        return Err(RecorderError::RecordingNotFound(recording_path.to_path_buf()));
     }
 
     let out_pattern = format!("{}/{}", output_dir.display(), pattern);
@@ -59,19 +57,14 @@ pub async fn extract_i_frames(
         })?;
 
     if !status.success() {
-        return Err(RecorderError::FfmpegFailed(
-            "I-frame extraction failed".to_string(),
-        ));
+        return Err(RecorderError::FfmpegFailed("I-frame extraction failed".to_string()));
     }
 
     // Count extracted frames
     let frame_count = count_keyframes(output_dir).await?;
 
     if frame_count < 3 {
-        info!(
-            "only {} I-frames extracted; falling back to steady sampling at 1 fps",
-            frame_count
-        );
+        info!("only {} I-frames extracted; falling back to steady sampling at 1 fps", frame_count);
 
         // Clean up partial extraction
         clean_keyframes(output_dir).await?;
@@ -92,9 +85,7 @@ pub async fn extract_i_frames(
             .map_err(|e| RecorderError::FfmpegFailed(e.to_string()))?;
 
         if !status.success() {
-            return Err(RecorderError::FfmpegFailed(
-                "fallback frame sampling failed".to_string(),
-            ));
+            return Err(RecorderError::FfmpegFailed("fallback frame sampling failed".to_string()));
         }
 
         let final_count = count_keyframes(output_dir).await?;
@@ -109,11 +100,7 @@ pub async fn extract_i_frames(
 /// Generate optimized GIF preview from recording.
 ///
 /// Uses palette-based encoding with dithering for smaller file size.
-pub async fn generate_gif(
-    recording_path: &Path,
-    gif_path: &Path,
-    fps: u32,
-) -> RecorderResult<()> {
+pub async fn generate_gif(recording_path: &Path, gif_path: &Path, fps: u32) -> RecorderResult<()> {
     info!(
         "generating GIF preview from {} -> {} (fps: {})",
         recording_path.display(),
@@ -122,9 +109,7 @@ pub async fn generate_gif(
     );
 
     if !recording_path.exists() {
-        return Err(RecorderError::RecordingNotFound(
-            recording_path.to_path_buf(),
-        ));
+        return Err(RecorderError::RecordingNotFound(recording_path.to_path_buf()));
     }
 
     let filter = format!(
@@ -167,11 +152,7 @@ async fn count_keyframes(output_dir: &Path) -> RecorderResult<usize> {
 
     while let Some(entry) = entries.next_entry().await? {
         let path = entry.path();
-        if path
-            .extension()
-            .map(|ext| ext == "png")
-            .unwrap_or(false)
-        {
+        if path.extension().map(|ext| ext == "png").unwrap_or(false) {
             count += 1;
         }
     }
@@ -185,11 +166,7 @@ async fn clean_keyframes(output_dir: &Path) -> RecorderResult<()> {
 
     while let Some(entry) = entries.next_entry().await? {
         let path = entry.path();
-        if path
-            .extension()
-            .map(|ext| ext == "png")
-            .unwrap_or(false)
-        {
+        if path.extension().map(|ext| ext == "png").unwrap_or(false) {
             tokio::fs::remove_file(path).await?;
         }
     }

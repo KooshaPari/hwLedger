@@ -24,7 +24,7 @@ pub async fn record_all_tapes(base_dir: &Path, concurrency: usize) -> ReleaseRes
     for entry in walkdir::WalkDir::new(base_dir)
         .into_iter()
         .filter_map(|e| e.ok())
-        .filter(|e| e.path().extension().map_or(false, |ext| ext == "tape"))
+        .filter(|e| e.path().extension().is_some_and(|ext| ext == "tape"))
     {
         let path = entry.path().to_path_buf();
         let sem = Arc::clone(&semaphore);

@@ -130,8 +130,7 @@ async fn test_hf_api_unauthorized() {
     wiremock::Mock::given(wiremock::matchers::method("GET"))
         .and(wiremock::matchers::path("/api/models/test/model"))
         .respond_with(
-            wiremock::ResponseTemplate::new(401)
-                .set_body_string(r#"{"error":"Unauthorized"}"#)
+            wiremock::ResponseTemplate::new(401).set_body_string(r#"{"error":"Unauthorized"}"#),
         )
         .mount(&mock_server)
         .await;
@@ -151,13 +150,13 @@ async fn test_hf_api_gated_model_forbidden() {
     wiremock::Mock::given(wiremock::matchers::method("GET"))
         .respond_with(
             wiremock::ResponseTemplate::new(403)
-                .set_body_string(r#"{"error":"Model access requires gating"}"#)
+                .set_body_string(r#"{"error":"Model access requires gating"}"#),
         )
         .mount(&mock_server)
         .await;
 
     let client = reqwest::Client::new();
-    let resp = client.get(&mock_server.uri()).send().await.unwrap();
+    let resp = client.get(mock_server.uri()).send().await.unwrap();
     assert_eq!(resp.status(), 403);
 }
 
@@ -170,13 +169,13 @@ async fn test_hf_api_rate_limit() {
         .respond_with(
             wiremock::ResponseTemplate::new(429)
                 .append_header("Retry-After", "5")
-                .set_body_string(r#"{"error":"Rate limit exceeded"}"#)
+                .set_body_string(r#"{"error":"Rate limit exceeded"}"#),
         )
         .mount(&mock_server)
         .await;
 
     let client = reqwest::Client::new();
-    let resp = client.get(&mock_server.uri()).send().await.unwrap();
+    let resp = client.get(mock_server.uri()).send().await.unwrap();
     assert_eq!(resp.status(), 429);
     assert_eq!(resp.headers().get("Retry-After").map(|v| v.to_str().unwrap()), Some("5"));
 }
@@ -192,7 +191,7 @@ async fn test_hf_api_server_error() {
         .await;
 
     let client = reqwest::Client::new();
-    let resp = client.get(&mock_server.uri()).send().await.unwrap();
+    let resp = client.get(mock_server.uri()).send().await.unwrap();
     assert_eq!(resp.status(), 500);
 }
 
@@ -205,10 +204,7 @@ async fn test_hf_api_redirect() {
 
     wiremock::Mock::given(wiremock::matchers::method("GET"))
         .and(wiremock::matchers::path("/redirect"))
-        .respond_with(
-            wiremock::ResponseTemplate::new(302)
-                .append_header("Location", &final_url)
-        )
+        .respond_with(wiremock::ResponseTemplate::new(302).append_header("Location", &final_url))
         .mount(&mock_server)
         .await;
 
@@ -245,7 +241,7 @@ async fn test_hf_api_model_info_success() {
         .await;
 
     let client = reqwest::Client::new();
-    let resp = client.get(&mock_server.uri()).send().await.unwrap();
+    let resp = client.get(mock_server.uri()).send().await.unwrap();
     assert_eq!(resp.status(), 200);
     let text = resp.text().await.unwrap();
     assert!(text.contains("meta-llama/Llama-2-7b"));
@@ -263,7 +259,8 @@ async fn test_hf_api_with_headers() {
         .await;
 
     let client = reqwest::Client::new();
-    let resp = client.get(&mock_server.uri())
+    let resp = client
+        .get(mock_server.uri())
         .header("Authorization", "Bearer test_token")
         .send()
         .await

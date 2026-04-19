@@ -11,7 +11,7 @@ use tracing::{debug, info};
 
 /// Load Ed25519 private key from base64-encoded file (raw 32-byte format).
 fn load_private_key(key_path: &Path) -> ReleaseResult<SigningKey> {
-    let key_b64 = fs::read_to_string(key_path).map_err(|e| ReleaseError::Io(e))?.trim().to_string();
+    let key_b64 = fs::read_to_string(key_path).map_err(ReleaseError::Io)?.trim().to_string();
 
     let key_bytes = STANDARD
         .decode(&key_b64)

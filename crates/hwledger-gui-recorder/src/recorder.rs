@@ -65,11 +65,7 @@ impl ScreenRecorder {
 
     /// Create a ScreenRecorder with custom configuration.
     pub fn with_config(output_path: PathBuf, config: RecordingConfig) -> Self {
-        Self {
-            config,
-            output_path,
-            state: Arc::new(Mutex::new(RecorderState::Idle)),
-        }
+        Self { config, output_path, state: Arc::new(Mutex::new(RecorderState::Idle)) }
     }
 
     /// Start recording the app window identified by bundle ID.

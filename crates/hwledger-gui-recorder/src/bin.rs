@@ -5,9 +5,7 @@
 //!   hwledger-gui-recorder extract <recording.mp4> <journey-dir>
 //!   hwledger-gui-recorder full <app-id> <journey-dir>
 
-use hwledger_gui_recorder::{
-    JourneyRecorder, ScreenRecorder,
-};
+use hwledger_gui_recorder::{JourneyRecorder, ScreenRecorder};
 use std::env;
 use std::path::PathBuf;
 use std::time::Duration;
@@ -88,10 +86,7 @@ async fn cmd_record(app_id: &str, output_path: &str) -> anyhow::Result<()> {
 }
 
 async fn cmd_extract(recording_path: &str, journey_dir: &str) -> anyhow::Result<()> {
-    let recorder = JourneyRecorder::new(
-        PathBuf::from(recording_path),
-        PathBuf::from(journey_dir),
-    );
+    let recorder = JourneyRecorder::new(PathBuf::from(recording_path), PathBuf::from(journey_dir));
 
     println!("Extracting keyframes from: {}", recording_path);
     let manifest = recorder.extract_all().await?;

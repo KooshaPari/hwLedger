@@ -61,10 +61,7 @@ impl JourneyManifest {
     ///
     /// Scans `keyframes_dir` for PNG files, orders them chronologically,
     /// and estimates timestamps based on file count and recording duration.
-    pub async fn from_directory(
-        journey_dir: &Path,
-        keyframes_dir: &Path,
-    ) -> RecorderResult<Self> {
+    pub async fn from_directory(journey_dir: &Path, keyframes_dir: &Path) -> RecorderResult<Self> {
         let journey_id = journey_dir
             .file_name()
             .and_then(|n| n.to_str())
@@ -77,11 +74,7 @@ impl JourneyManifest {
         let mut files: Vec<_> = Vec::new();
         while let Some(entry) = entries.next_entry().await? {
             let path = entry.path();
-            if path
-                .extension()
-                .map(|ext| ext == "png")
-                .unwrap_or(false)
-            {
+            if path.extension().map(|ext| ext == "png").unwrap_or(false) {
                 files.push(path);
             }
         }
@@ -137,9 +130,11 @@ impl JourneyManifest {
     /// with intent label (e.g., "user_tapped_button").
     pub fn merge_intents(&mut self, intents: &[(f64, String)]) {
         for (timestamp, intent) in intents {
-            if let Some(kf) = self.keyframes.iter_mut().min_by_key(|k| {
-                ((k.timestamp_secs - timestamp).abs() * 1000.0) as i32
-            }) {
+            if let Some(kf) = self
+                .keyframes
+                .iter_mut()
+                .min_by_key(|k| ((k.timestamp_secs - timestamp).abs() * 1000.0) as i32)
+            {
                 kf.intent = Some(intent.clone());
             }
         }
@@ -154,9 +149,7 @@ pub struct ManifestWriter {
 impl ManifestWriter {
     /// Create a new manifest writer targeting the given path.
     pub fn new(path: &Path) -> Self {
-        Self {
-            path: path.to_path_buf(),
-        }
+        Self { path: path.to_path_buf() }
     }
 
     /// Write manifest to JSON file.
@@ -200,8 +193,7 @@ mod tests {
 
         tokio::fs::write(kf_dir.join("keyframe-001.png"), b"fake").await?;
 
-        let mut manifest =
-            JourneyManifest::from_directory(temp_dir.path(), &kf_dir).await?;
+        let mut manifest = JourneyManifest::from_directory(temp_dir.path(), &kf_dir).await?;
 
         let intents = vec![(0.5, "tap_button".to_string())];
         manifest.merge_intents(&intents);
@@ -219,15 +211,13 @@ mod tests {
             journey_id: "test-journey".to_string(),
             name: "Test Journey".to_string(),
             duration_secs: 30.0,
-            keyframes: vec![
-                KeyframeInfo {
-                    frame_num: 1,
-                    path: PathBuf::from("keyframes/frame-001.png"),
-                    timestamp_secs: 0.0,
-                    intent: Some("start".to_string()),
-                    description: None,
-                },
-            ],
+            keyframes: vec![KeyframeInfo {
+                frame_num: 1,
+                path: PathBuf::from("keyframes/frame-001.png"),
+                timestamp_secs: 0.0,
+                intent: Some("start".to_string()),
+                description: None,
+            }],
             gif_path: PathBuf::from("preview.gif"),
             recording_path: PathBuf::from("recording.mp4"),
             generated_at: Utc::now(),

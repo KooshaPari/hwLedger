@@ -4,7 +4,7 @@
 //! Tests memory-based byte streams covering edge cases, error paths,
 //! and all major parsing branches in the GGUF format handler.
 
-use hwledger_ingest::{IngestError, gguf};
+use hwledger_ingest::{gguf, IngestError};
 use std::io::{Cursor, Write};
 use std::path::Path;
 use tempfile::NamedTempFile;
@@ -24,7 +24,7 @@ fn test_gguf_valid_header_no_kvs() {
     write_gguf_header(&mut buf, 3, 0, 0);
 
     let mut file = NamedTempFile::new().unwrap();
-    file.write_all(&buf.get_ref()).unwrap();
+    file.write_all(buf.get_ref()).unwrap();
     file.flush().unwrap();
 
     let result = gguf::inspect(file.path());
@@ -45,7 +45,10 @@ fn test_gguf_truncated_magic() {
     assert!(result.is_err(), "should error on truncated magic");
     match result {
         Err(IngestError::Parse(msg)) => {
-            assert!(msg.contains("magic") || msg.contains("read"), "error should mention magic or read");
+            assert!(
+                msg.contains("magic") || msg.contains("read"),
+                "error should mention magic or read"
+            );
         }
         _ => panic!("expected Parse error"),
     }
@@ -60,15 +63,17 @@ fn test_gguf_wrong_magic() {
     buf.write_all(&3u32.to_le_bytes()).unwrap();
 
     let mut file = NamedTempFile::new().unwrap();
-    file.write_all(&buf.get_ref()).unwrap();
+    file.write_all(buf.get_ref()).unwrap();
     file.flush().unwrap();
 
     let result = gguf::inspect(file.path());
     assert!(result.is_err(), "should error on wrong magic");
     match result {
         Err(IngestError::Parse(msg)) => {
-            assert!(msg.contains("Invalid GGUF magic") || msg.contains("magic"),
-                    "error should mention invalid magic");
+            assert!(
+                msg.contains("Invalid GGUF magic") || msg.contains("magic"),
+                "error should mention invalid magic"
+            );
         }
         _ => panic!("expected Parse error for invalid magic"),
     }
@@ -83,15 +88,17 @@ fn test_gguf_unsupported_version() {
     buf.write_all(&2u32.to_le_bytes()).unwrap(); // Version 2, not 3
 
     let mut file = NamedTempFile::new().unwrap();
-    file.write_all(&buf.get_ref()).unwrap();
+    file.write_all(buf.get_ref()).unwrap();
     file.flush().unwrap();
 
     let result = gguf::inspect(file.path());
     assert!(result.is_err(), "should error on unsupported version");
     match result {
         Err(IngestError::Parse(msg)) => {
-            assert!(msg.contains("Unsupported GGUF version") || msg.contains("expected 3"),
-                    "error should mention version mismatch");
+            assert!(
+                msg.contains("Unsupported GGUF version") || msg.contains("expected 3"),
+                "error should mention version mismatch"
+            );
         }
         _ => panic!("expected Parse error for version mismatch"),
     }
@@ -106,7 +113,7 @@ fn test_gguf_truncated_version() {
     let _ = buf.write_all(&[0x03, 0x00]); // Only 2 bytes of 4-byte version
 
     let mut file = NamedTempFile::new().unwrap();
-    file.write_all(&buf.get_ref()).unwrap();
+    file.write_all(buf.get_ref()).unwrap();
     file.flush().unwrap();
 
     let result = gguf::inspect(file.path());
@@ -123,7 +130,7 @@ fn test_gguf_truncated_tensor_size() {
     let _ = buf.write_all(&[0x00, 0x00]); // Only 2 bytes of 8-byte tensor_size
 
     let mut file = NamedTempFile::new().unwrap();
-    file.write_all(&buf.get_ref()).unwrap();
+    file.write_all(buf.get_ref()).unwrap();
     file.flush().unwrap();
 
     let result = gguf::inspect(file.path());
@@ -135,7 +142,7 @@ fn test_gguf_truncated_tensor_size() {
 #[test]
 fn test_gguf_string_metadata() {
     let mut buf = Cursor::new(Vec::new());
-    write_gguf_header(&mut buf, 3, 1024*1024, 1); // 1 KV pair
+    write_gguf_header(&mut buf, 3, 1024 * 1024, 1); // 1 KV pair
 
     // Write single KV: "general.name" = "llama-7b"
     let key = "general.name";
@@ -148,7 +155,7 @@ fn test_gguf_string_metadata() {
     buf.write_all(value.as_bytes()).unwrap();
 
     let mut file = NamedTempFile::new().unwrap();
-    file.write_all(&buf.get_ref()).unwrap();
+    file.write_all(buf.get_ref()).unwrap();
     file.flush().unwrap();
 
     let result = gguf::inspect(file.path());
@@ -165,7 +172,7 @@ fn test_gguf_truncated_key_length() {
     let _ = buf.write_all(&[0x00, 0x00]); // Only 2 bytes of 8-byte key_len
 
     let mut file = NamedTempFile::new().unwrap();
-    file.write_all(&buf.get_ref()).unwrap();
+    file.write_all(buf.get_ref()).unwrap();
     file.flush().unwrap();
 
     let result = gguf::inspect(file.path());
@@ -183,7 +190,7 @@ fn test_gguf_truncated_key_data() {
     buf.write_all(b"short").unwrap(); // Only 5 bytes provided
 
     let mut file = NamedTempFile::new().unwrap();
-    file.write_all(&buf.get_ref()).unwrap();
+    file.write_all(buf.get_ref()).unwrap();
     file.flush().unwrap();
 
     let result = gguf::inspect(file.path());
@@ -202,14 +209,17 @@ fn test_gguf_invalid_utf8_key() {
     buf.write_all(&invalid_utf8).unwrap();
 
     let mut file = NamedTempFile::new().unwrap();
-    file.write_all(&buf.get_ref()).unwrap();
+    file.write_all(buf.get_ref()).unwrap();
     file.flush().unwrap();
 
     let result = gguf::inspect(file.path());
     assert!(result.is_err(), "should error on invalid UTF-8 in key");
     match result {
         Err(IngestError::Parse(msg)) => {
-            assert!(msg.contains("UTF-8") || msg.contains("key"), "error should mention UTF-8 or key");
+            assert!(
+                msg.contains("UTF-8") || msg.contains("key"),
+                "error should mention UTF-8 or key"
+            );
         }
         _ => panic!("expected Parse error"),
     }
@@ -228,7 +238,7 @@ fn test_gguf_truncated_value_type() {
     let _ = buf.write_all(&[0x00, 0x00]); // Only 2 bytes of 4-byte type
 
     let mut file = NamedTempFile::new().unwrap();
-    file.write_all(&buf.get_ref()).unwrap();
+    file.write_all(buf.get_ref()).unwrap();
     file.flush().unwrap();
 
     let result = gguf::inspect(file.path());
@@ -249,7 +259,7 @@ fn test_gguf_uint8_value() {
     buf.write_all(&42u8.to_le_bytes()).unwrap();
 
     let mut file = NamedTempFile::new().unwrap();
-    file.write_all(&buf.get_ref()).unwrap();
+    file.write_all(buf.get_ref()).unwrap();
     file.flush().unwrap();
 
     let result = gguf::inspect(file.path());
@@ -267,10 +277,10 @@ fn test_gguf_float32_value() {
     buf.write_all(&(key.len() as u64).to_le_bytes()).unwrap();
     buf.write_all(key.as_bytes()).unwrap();
     buf.write_all(&8u32.to_le_bytes()).unwrap(); // type 8 = float32
-    buf.write_all(&3.14f32.to_le_bytes()).unwrap();
+    buf.write_all(&2.71f32.to_le_bytes()).unwrap();
 
     let mut file = NamedTempFile::new().unwrap();
-    file.write_all(&buf.get_ref()).unwrap();
+    file.write_all(buf.get_ref()).unwrap();
     file.flush().unwrap();
 
     let result = gguf::inspect(file.path());
@@ -291,7 +301,7 @@ fn test_gguf_bool_value() {
     buf.write_all(&1u8.to_le_bytes()).unwrap(); // true
 
     let mut file = NamedTempFile::new().unwrap();
-    file.write_all(&buf.get_ref()).unwrap();
+    file.write_all(buf.get_ref()).unwrap();
     file.flush().unwrap();
 
     let result = gguf::inspect(file.path());
@@ -311,15 +321,17 @@ fn test_gguf_unknown_value_type() {
     buf.write_all(&999u32.to_le_bytes()).unwrap(); // Invalid type
 
     let mut file = NamedTempFile::new().unwrap();
-    file.write_all(&buf.get_ref()).unwrap();
+    file.write_all(buf.get_ref()).unwrap();
     file.flush().unwrap();
 
     let result = gguf::inspect(file.path());
     assert!(result.is_err(), "should error on unknown value type");
     match result {
         Err(IngestError::Parse(msg)) => {
-            assert!(msg.contains("Unknown GGUF value type") || msg.contains("type"),
-                    "error should mention unknown type");
+            assert!(
+                msg.contains("Unknown GGUF value type") || msg.contains("type"),
+                "error should mention unknown type"
+            );
         }
         _ => panic!("expected Parse error"),
     }
@@ -356,7 +368,7 @@ fn test_gguf_multiple_kvs() {
     buf.write_all(val3.as_bytes()).unwrap();
 
     let mut file = NamedTempFile::new().unwrap();
-    file.write_all(&buf.get_ref()).unwrap();
+    file.write_all(buf.get_ref()).unwrap();
     file.flush().unwrap();
 
     let result = gguf::inspect(file.path());
@@ -377,7 +389,7 @@ fn test_gguf_truncated_string_length() {
     let _ = buf.write_all(&[0x00, 0x00]); // Only 2 bytes of 8-byte string_len
 
     let mut file = NamedTempFile::new().unwrap();
-    file.write_all(&buf.get_ref()).unwrap();
+    file.write_all(buf.get_ref()).unwrap();
     file.flush().unwrap();
 
     let result = gguf::inspect(file.path());
@@ -401,7 +413,7 @@ fn test_gguf_invalid_utf8_string_value() {
     buf.write_all(&bad_bytes).unwrap();
 
     let mut file = NamedTempFile::new().unwrap();
-    file.write_all(&buf.get_ref()).unwrap();
+    file.write_all(buf.get_ref()).unwrap();
     file.flush().unwrap();
 
     let result = gguf::inspect(file.path());
@@ -423,7 +435,7 @@ fn test_gguf_empty_string_value() {
     buf.write_all(&0u64.to_le_bytes()).unwrap(); // 0-length string
 
     let mut file = NamedTempFile::new().unwrap();
-    file.write_all(&buf.get_ref()).unwrap();
+    file.write_all(buf.get_ref()).unwrap();
     file.flush().unwrap();
 
     let result = gguf::inspect(file.path());
