@@ -53,3 +53,32 @@ jobs:
         uses: trufflesecurity/trufflehog@main
         with:
           extra_args: --only-verified --fail
+
+  # XCFramework build — manual trigger only (workflow_dispatch)
+  # Skipped on push/pull_request per billing constraint (free tier)
+  macos-build:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+      - uses: Swatinem/rust-cache@v2
+      - name: Install cbindgen
+        run: cargo install cbindgen
+      - name: Build XCFramework
+        run: ./scripts/build-xcframework.sh --release
+      - name: Verify XCFramework
+        run: |
+          if [[ ! -d "apps/macos/xcframework/HwLedgerCore.xcframework" ]]; then
+            echo "Error: XCFramework not created"
+            exit 1
+          fi
+          lipo -info "apps/macos/xcframework/build/universal/libhwledger_ffi.a"
+      - name: Upload XCFramework artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: HwLedgerCore.xcframework
+          path: apps/macos/xcframework/HwLedgerCore.xcframework
+          retention-days: 30
