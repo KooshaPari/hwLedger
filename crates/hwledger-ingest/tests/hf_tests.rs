@@ -1,13 +1,11 @@
 //! HuggingFace Hub API integration coverage tests.
 //! Traces to: FR-INF-003
 
-use serde_json::json;
-
-// Test 1: HF Hub model ID format validation
+// Test 1: HF Hub model ID format validation - simple string checks
 // Traces to: FR-INF-003
 #[test]
 fn test_hf_model_id_format() {
-    let ids = vec![
+    let ids = [
         "meta-llama/Llama-2-7b",
         "mistralai/Mistral-7B",
         "gpt2",
@@ -34,7 +32,7 @@ fn test_hf_download_url_construction() {
 // Traces to: FR-INF-003
 #[test]
 fn test_hf_revision_types() {
-    let revisions = vec![
+    let revisions = [
         "main",
         "pr/42",
         "abc123def456",  // git commit
@@ -145,6 +143,7 @@ fn test_hf_commit_history() {
         ]
     });
 
+    #[allow(unused_variables)]
     let count = commits["commits"].as_array().map(|a| a.len()).unwrap_or(0);
     assert_eq!(count, 3);
 }

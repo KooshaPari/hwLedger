@@ -2,6 +2,8 @@
 //! Traces to: FR-INF-003
 
 use serde_json::json;
+use std::io::Write;
+use tempfile::NamedTempFile;
 
 // Test 1: Safetensors header length format
 // Traces to: FR-INF-003
