@@ -3,9 +3,7 @@
 //!
 //! Tests load/save round-trips, concurrent access, and file integrity.
 
-use hwledger_agent::state;
 use serde_json::json;
-use std::path::PathBuf;
 use tempfile::TempDir;
 
 // Test 1: Basic state file creation and loading
@@ -283,6 +281,7 @@ fn test_state_concurrent_reads() {
     let results: Vec<_> = (0..5)
         .map(|_| {
             std::fs::read_to_string(&state_path)
+                .ok()
                 .and_then(|s| serde_json::from_str::<serde_json::Value>(&s).ok())
         })
         .collect();

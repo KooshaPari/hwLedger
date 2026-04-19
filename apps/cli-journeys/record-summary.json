@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-04-19T11:49:18Z\",
+  "timestamp": "2026-04-19T12:31:24Z\",
   "vhs_version": "0.11.0\",
   "cli_binary": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/target/release/hwledger\",
   "tapes": [
@@ -8,120 +8,102 @@
       "status": "passed",
       "exit_code": 0,
       "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/first-plan.gif",
-      "gif_size_bytes": 59952,
+      "gif_size_bytes": 46485,
       "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/first-plan.mp4",
-      "mp4_size_bytes": 43318
+      "mp4_size_bytes": 31964
     },
     {
       "name": "fleet-audit",
       "status": "passed",
       "exit_code": 0,
       "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/fleet-audit.gif",
-      "gif_size_bytes": 77187,
+      "gif_size_bytes": 104923,
       "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/fleet-audit.mp4",
-      "mp4_size_bytes": 81318
+      "mp4_size_bytes": 66019
     },
     {
       "name": "fleet-register",
       "status": "passed",
       "exit_code": 0,
       "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/fleet-register.gif",
-      "gif_size_bytes": 92611,
+      "gif_size_bytes": 122996,
       "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/fleet-register.mp4",
-      "mp4_size_bytes": 94928
+      "mp4_size_bytes": 78978
     },
     {
       "name": "ingest-error",
       "status": "passed",
       "exit_code": 0,
       "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/ingest-error.gif",
-      "gif_size_bytes": 78462,
+      "gif_size_bytes": 77962,
       "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/ingest-error.mp4",
-      "mp4_size_bytes": 64505
+      "mp4_size_bytes": 63958
     },
     {
-      "name": "ingest-hf",
+      "name": "ingest-local-gguf",
       "status": "passed",
       "exit_code": 0,
-      "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/ingest-hf.gif",
-      "gif_size_bytes": 74537,
-      "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/ingest-hf.mp4",
-      "mp4_size_bytes": 58820
+      "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/ingest-local-gguf.gif",
+      "gif_size_bytes": 55696,
+      "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/ingest-local-gguf.mp4",
+      "mp4_size_bytes": 42878
     },
     {
-      "name": "ingest-ollama",
+      "name": "install-cargo",
       "status": "passed",
       "exit_code": 0,
-      "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/ingest-ollama.gif",
-      "gif_size_bytes": 74082,
-      "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/ingest-ollama.mp4",
-      "mp4_size_bytes": 57151
-    },
-    {
-      "name": "install-from-source",
-      "status": "passed",
-      "exit_code": 0,
-      "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/install-from-source.gif",
-      "gif_size_bytes": 270275,
-      "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/install-from-source.mp4",
-      "mp4_size_bytes": 206448
+      "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/install-cargo.gif",
+      "gif_size_bytes": 369435,
+      "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/install-cargo.mp4",
+      "mp4_size_bytes": 192729
     },
     {
       "name": "plan-deepseek",
       "status": "passed",
       "exit_code": 0,
       "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/plan-deepseek.gif",
-      "gif_size_bytes": 73467,
+      "gif_size_bytes": 73392,
       "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/plan-deepseek.mp4",
-      "mp4_size_bytes": 62831
+      "mp4_size_bytes": 62666
     },
     {
       "name": "plan-help",
       "status": "passed",
       "exit_code": 0,
       "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/plan-help.gif",
-      "gif_size_bytes": 121567,
+      "gif_size_bytes": 121332,
       "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/plan-help.mp4",
-      "mp4_size_bytes": 75453
+      "mp4_size_bytes": 74807
     },
     {
       "name": "probe-list",
       "status": "passed",
       "exit_code": 0,
       "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/probe-list.gif",
-      "gif_size_bytes": 144565,
+      "gif_size_bytes": 144949,
       "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/probe-list.mp4",
-      "mp4_size_bytes": 95592
+      "mp4_size_bytes": 95292
     },
     {
       "name": "probe-watch",
       "status": "passed",
       "exit_code": 0,
       "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/probe-watch.gif",
-      "gif_size_bytes": 711014,
+      "gif_size_bytes": 709855,
       "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/probe-watch.mp4",
-      "mp4_size_bytes": 369013
-    },
-    {
-      "name": "release-signed-dmg",
-      "status": "passed",
-      "exit_code": 0,
-      "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/release-signed-dmg.gif",
-      "gif_size_bytes": 4028735,
-      "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/release-signed-dmg.mp4",
-      "mp4_size_bytes": 1478230
+      "mp4_size_bytes": 377830
     },
     {
       "name": "traceability-report",
       "status": "passed",
       "exit_code": 0,
       "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/traceability-report.gif",
-      "gif_size_bytes": 80719,
+      "gif_size_bytes": 55272,
       "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/traceability-report.mp4",
-      "mp4_size_bytes": 83720
+      "mp4_size_bytes": 41873
     }
   ],
-  "total_tapes": 13,
-  "passed": 13,
+  "total_tapes": 11,
+  "passed": 11,
   "failed": 0
 }

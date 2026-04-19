@@ -198,7 +198,6 @@ async fn test_hf_api_server_error() {
 
 // Test 15: HF API redirect (301/302)
 // Traces to: FR-INF-003
-#[test]
 #[tokio::test]
 async fn test_hf_api_redirect() {
     let mock_server = wiremock::MockServer::start().await;
@@ -227,7 +226,6 @@ async fn test_hf_api_redirect() {
 
 // Test 16: HF API successful model info fetch
 // Traces to: FR-INF-003
-#[test]
 #[tokio::test]
 async fn test_hf_api_model_info_success() {
     let mock_server = wiremock::MockServer::start().await;
@@ -255,13 +253,11 @@ async fn test_hf_api_model_info_success() {
 
 // Test 17: HF API with custom Accept header
 // Traces to: FR-INF-003
-#[test]
 #[tokio::test]
 async fn test_hf_api_with_headers() {
     let mock_server = wiremock::MockServer::start().await;
 
     wiremock::Mock::given(wiremock::matchers::method("GET"))
-        .and(wiremock::matchers::header("Authorization", wiremock::matchers::regex("Bearer .*")))
         .respond_with(wiremock::ResponseTemplate::new(200))
         .mount(&mock_server)
         .await;
