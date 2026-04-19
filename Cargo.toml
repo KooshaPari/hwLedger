@@ -17,14 +17,9 @@ members = [
     "crates/hwledger-traceability",
 ]
 exclude = [
-    # Vendored phenotype-shared crates are path-resolved deps, not members;
-    # their own benches/tests (e.g. criterion, not in our dev-deps) would
-    # otherwise break `cargo clippy --workspace --all-targets`.
+    # Vendored phenotype-event-sourcing is a path dep, not a member;
+    # its own benches (criterion) would otherwise break clippy --all-targets.
     "vendor/phenotype-event-sourcing",
-    "vendor/phenotype-error-core",
-    "vendor/phenotype-config",
-    "vendor/phenotype-cache-adapter",
-    "vendor/phenotype-health",
 ]
 
 [workspace.package]
@@ -120,11 +115,11 @@ hwledger-ffi = { path = "crates/hwledger-ffi" }
 # tip; release trains pin to commit hashes in release notes. Local dev can
 # override via `[patch."https://github.com/KooshaPari/PhenoKits"]` in a
 # workspace-level `.cargo/config.toml` or a top-level `[patch]` section.
+# Only phenotype-event-sourcing is actively consumed today (by hwledger-ledger).
+# The four others declared in ADR-0005 were planned but never wired; they'll
+# land via `cargo add` when first used, after those crates get proper Cargo.toml
+# files upstream. See docs/adr/0005-shared-crate-reuse.md for the contract.
 phenotype-event-sourcing = { path = "vendor/phenotype-event-sourcing" }
-phenotype-error-core     = { path = "vendor/phenotype-error-core" }
-phenotype-config         = { path = "vendor/phenotype-config" }
-phenotype-cache-adapter  = { path = "vendor/phenotype-cache-adapter" }
-phenotype-health         = { path = "vendor/phenotype-health" }
 
 # CLI framework & utilities
 clap = { version = "4", features = ["derive", "env", "string", "wrap_help"] }
