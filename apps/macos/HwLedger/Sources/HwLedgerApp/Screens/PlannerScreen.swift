@@ -188,6 +188,5 @@ struct PlannerScreen: View {
 }
 
 #Preview("With Result") {
-    let screen = PlannerScreen()
-    return screen
+    PlannerScreen()
 }

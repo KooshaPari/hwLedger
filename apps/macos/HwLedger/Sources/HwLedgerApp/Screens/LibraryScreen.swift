@@ -172,13 +172,3 @@ struct LibraryScreen: View {
     LibraryScreen()
         .environment(AppState())
 }
-
-#Preview("With Models") {
-    let state = AppState()
-    state.libraryModels = [
-        IngestedModelInfo(name: "deepseek-7b", source: "Local MLX", paramCount: 7_000_000_000),
-        IngestedModelInfo(name: "llama2-13b", source: "HF Hub", paramCount: 13_000_000_000),
-    ]
-    return LibraryScreen()
-        .environment(state)
-}

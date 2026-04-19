@@ -263,7 +263,13 @@ struct SettingsScreen: View {
     }
 }
 
-#Preview {
+#Preview("Defaults") {
     SettingsScreen()
         .environment(AppState())
+}
+
+#Preview("With Config") {
+    let state = AppState()
+    return SettingsScreen()
+        .environment(state)
 }

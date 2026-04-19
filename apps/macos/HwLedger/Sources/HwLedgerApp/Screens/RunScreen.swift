@@ -192,7 +192,13 @@ struct RunScreen: View {
     }
 }
 
-#Preview {
+#Preview("Idle") {
     RunScreen()
         .environment(AppState())
+}
+
+#Preview("Running") {
+    let state = AppState()
+    return RunScreen()
+        .environment(state)
 }

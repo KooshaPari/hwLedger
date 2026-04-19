@@ -270,7 +270,13 @@ struct LedgerScreen: View {
     }
 }
 
-#Preview {
+#Preview("Empty") {
     LedgerScreen()
         .environment(AppState())
+}
+
+#Preview("With Events") {
+    let state = AppState()
+    return LedgerScreen()
+        .environment(state)
 }
