@@ -24,7 +24,7 @@ if not is_available():
     st.stop()
 
 # Load golden fixture models
-golden_dir = Path(__file__).parent.parent.parent / "tests" / "golden"
+golden_dir = Path(__file__).parent.parent.parent.parent / "tests" / "golden"
 fixture_files = sorted(golden_dir.glob("*.json")) if golden_dir.exists() else []
 fixture_names = [f.stem for f in fixture_files]
 
