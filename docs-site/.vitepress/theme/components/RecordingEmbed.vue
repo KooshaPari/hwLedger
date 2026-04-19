@@ -123,19 +123,31 @@ function normaliseFramePath(raw: string | undefined, index: number): string {
   return withBase(`/cli-journeys/keyframes/${props.tape}/${raw}`)
 }
 
+// VitePress dev server returns index.html (200 OK) for missing paths, so
+// `response.ok` is not sufficient — we must also reject HTML responses.
+function isJsonResponse(response: Response): boolean {
+  const ct = response.headers.get('content-type') || ''
+  return ct.includes('application/json') || ct.includes('json')
+}
+
 onMounted(async () => {
   try {
-    const manifestPath = withBase(
+    const tryFetch = async (path: string): Promise<Response | null> => {
+      const res = await fetch(withBase(path))
+      if (!res.ok) return null
+      if (!isJsonResponse(res)) return null
+      return res
+    }
+
+    let response = await tryFetch(
       `/cli-journeys/manifests/${props.tape}/manifest.verified.json`
     )
-    let response = await fetch(manifestPath)
-    if (!response.ok) {
-      // Fall back to unverified manifest for tapes without a verify pass yet.
-      response = await fetch(
-        withBase(`/cli-journeys/manifests/${props.tape}/manifest.json`)
+    if (!response) {
+      response = await tryFetch(
+        `/cli-journeys/manifests/${props.tape}/manifest.json`
       )
     }
-    if (response.ok) {
+    if (response) {
       const manifest = await response.json()
       if (manifest.steps && Array.isArray(manifest.steps)) {
         keyframesData.value = manifest.steps
