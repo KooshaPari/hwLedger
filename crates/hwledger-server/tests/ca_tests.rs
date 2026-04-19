@@ -14,9 +14,7 @@ async fn test_ca_load_or_create_new() {
     assert!(!cert_path.exists());
     assert!(!key_path.exists());
 
-    let ca = CertificateAuthority::load_or_create(&cert_path, &key_path)
-        .await
-        .expect("create CA");
+    let ca = CertificateAuthority::load_or_create(&cert_path, &key_path).await.expect("create CA");
 
     assert!(cert_path.exists());
     assert!(key_path.exists());
@@ -32,15 +30,13 @@ async fn test_ca_load_existing() {
     let key_path = temp_dir.path().join("existing.key");
 
     // Create initial CA
-    let ca1 = CertificateAuthority::load_or_create(&cert_path, &key_path)
-        .await
-        .expect("create CA 1");
+    let ca1 =
+        CertificateAuthority::load_or_create(&cert_path, &key_path).await.expect("create CA 1");
     let cert1 = ca1.ca_cert_pem.clone();
 
     // Load again
-    let ca2 = CertificateAuthority::load_or_create(&cert_path, &key_path)
-        .await
-        .expect("create CA 2");
+    let ca2 =
+        CertificateAuthority::load_or_create(&cert_path, &key_path).await.expect("create CA 2");
 
     // Should be the same certificate
     assert_eq!(cert1, ca2.ca_cert_pem);
@@ -53,12 +49,9 @@ async fn test_ca_sign_csr_returns_valid_pem() {
     let cert_path = temp_dir.path().join("test.crt");
     let key_path = temp_dir.path().join("test.key");
 
-    let ca = CertificateAuthority::load_or_create(&cert_path, &key_path)
-        .await
-        .expect("create CA");
+    let ca = CertificateAuthority::load_or_create(&cert_path, &key_path).await.expect("create CA");
 
-    let signed = ca.sign_csr("any-csr-pem", "my-agent-hostname")
-        .expect("sign CSR");
+    let signed = ca.sign_csr("any-csr-pem", "my-agent-hostname").expect("sign CSR");
 
     assert!(signed.contains("BEGIN CERTIFICATE"));
     assert!(signed.contains("END CERTIFICATE"));
@@ -72,9 +65,7 @@ async fn test_ca_sign_csr_different_hostnames() {
     let cert_path = temp_dir.path().join("test.crt");
     let key_path = temp_dir.path().join("test.key");
 
-    let ca = CertificateAuthority::load_or_create(&cert_path, &key_path)
-        .await
-        .expect("create CA");
+    let ca = CertificateAuthority::load_or_create(&cert_path, &key_path).await.expect("create CA");
 
     let cert1 = ca.sign_csr("fake-csr", "agent-1").expect("sign CSR 1");
     let cert2 = ca.sign_csr("fake-csr", "agent-2").expect("sign CSR 2");
@@ -84,4 +75,3 @@ async fn test_ca_sign_csr_different_hostnames() {
     assert!(cert2.contains("BEGIN CERTIFICATE"));
     assert_ne!(cert1, cert2);
 }
-

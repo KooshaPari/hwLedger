@@ -107,10 +107,7 @@ impl CoverageReport {
         for anno in annotations {
             for fr in &anno.cited_frs {
                 if fr_map.contains_key(fr) {
-                    anno_by_fr_verb
-                        .entry((fr.clone(), anno.verb))
-                        .or_default()
-                        .push(anno.clone());
+                    anno_by_fr_verb.entry((fr.clone(), anno.verb)).or_default().push(anno.clone());
                 }
             }
         }
@@ -182,8 +179,7 @@ impl CoverageReport {
         }
 
         let total_frs = frs.len();
-        let total_tests =
-            anno_by_fr_verb.values().flatten().filter(|t| !t.is_ignored).count();
+        let total_tests = anno_by_fr_verb.values().flatten().filter(|t| !t.is_ignored).count();
         let covered_count = fully_traced_count + traced_count;
         let coverage_percent =
             if total_frs > 0 { (covered_count as f32 / total_frs as f32) * 100.0 } else { 0.0 };
@@ -200,11 +196,7 @@ impl CoverageReport {
             nonexistent_cites: Vec::new(),
         };
 
-        CoverageReport {
-            frs: coverage_list,
-            stats,
-            orphans: Vec::new(),
-        }
+        CoverageReport { frs: coverage_list, stats, orphans: Vec::new() }
     }
 
     /// Returns the top N best-covered FRs (by test count).
@@ -246,19 +238,32 @@ impl CoverageReport {
         md.push_str("## Summary\n\n");
         md.push_str(&format!("- **Total FRs/NFRs:** {}\n", self.stats.total_frs));
 
-        let fully_traced = self.frs.iter().filter(|f| f.coverage == CoverageLevel::FullyTraced).count();
+        let fully_traced =
+            self.frs.iter().filter(|f| f.coverage == CoverageLevel::FullyTraced).count();
         let traced = self.frs.iter().filter(|f| f.coverage == CoverageLevel::Traced).count();
         let doc_only = self.frs.iter().filter(|f| f.coverage == CoverageLevel::DocOnly).count();
         let zero = self.frs.iter().filter(|f| f.coverage == CoverageLevel::Zero).count();
 
-        md.push_str(&format!("- **Fully Traced** (test + impl + docs): {} ({:.1}%)\n",
-            fully_traced, (fully_traced as f32 / self.stats.total_frs as f32) * 100.0));
-        md.push_str(&format!("- **Traced** (test + partial): {} ({:.1}%)\n",
-            traced, (traced as f32 / self.stats.total_frs as f32) * 100.0));
-        md.push_str(&format!("- **Doc-Only** (docs but no test): {} ({:.1}%)\n",
-            doc_only, (doc_only as f32 / self.stats.total_frs as f32) * 100.0));
-        md.push_str(&format!("- **Zero Coverage:** {} ({:.1}%)\n",
-            zero, (zero as f32 / self.stats.total_frs as f32) * 100.0));
+        md.push_str(&format!(
+            "- **Fully Traced** (test + impl + docs): {} ({:.1}%)\n",
+            fully_traced,
+            (fully_traced as f32 / self.stats.total_frs as f32) * 100.0
+        ));
+        md.push_str(&format!(
+            "- **Traced** (test + partial): {} ({:.1}%)\n",
+            traced,
+            (traced as f32 / self.stats.total_frs as f32) * 100.0
+        ));
+        md.push_str(&format!(
+            "- **Doc-Only** (docs but no test): {} ({:.1}%)\n",
+            doc_only,
+            (doc_only as f32 / self.stats.total_frs as f32) * 100.0
+        ));
+        md.push_str(&format!(
+            "- **Zero Coverage:** {} ({:.1}%)\n",
+            zero,
+            (zero as f32 / self.stats.total_frs as f32) * 100.0
+        ));
         md.push_str(&format!("- **Total Tests:** {}\n\n", self.stats.total_tests));
 
         // Cross-dimensional matrix table
@@ -283,7 +288,13 @@ impl CoverageReport {
 
             md.push_str(&format!(
                 "| **{}** | {} | {} | {} | {} | {} | {} |\n",
-                cov.fr, test_count, impl_count, constraint_count, doc_count, journey_count, level_icon
+                cov.fr,
+                test_count,
+                impl_count,
+                constraint_count,
+                doc_count,
+                journey_count,
+                level_icon
             ));
         }
         md.push('\n');
@@ -345,7 +356,12 @@ impl CoverageReport {
         for (section, covs) in sections {
             let fully_traced_in_section =
                 covs.iter().filter(|c| c.coverage == CoverageLevel::FullyTraced).count();
-            md.push_str(&format!("### {} ({}/{})\n\n", section, fully_traced_in_section, covs.len()));
+            md.push_str(&format!(
+                "### {} ({}/{})\n\n",
+                section,
+                fully_traced_in_section,
+                covs.len()
+            ));
             for cov in covs {
                 let icon = match cov.coverage {
                     CoverageLevel::FullyTraced => "OK",
@@ -354,8 +370,14 @@ impl CoverageReport {
                     CoverageLevel::Zero => "NONE",
                     CoverageLevel::Orphaned => "IGN",
                 };
-                md.push_str(&format!("- [{}] **{}** (T:{}, I:{}, D:{})\n",
-                    icon, cov.fr, cov.test_count, cov.implementations.len(), cov.documentation.len()));
+                md.push_str(&format!(
+                    "- [{}] **{}** (T:{}, I:{}, D:{})\n",
+                    icon,
+                    cov.fr,
+                    cov.test_count,
+                    cov.implementations.len(),
+                    cov.documentation.len()
+                ));
             }
             md.push('\n');
         }
@@ -457,17 +479,15 @@ mod tests {
             section: "Test Section".to_string(),
         };
 
-        let annotations = vec![
-            TraceAnnotation {
-                citer: Citer::DocPage,
-                verb: AnnotationVerb::Documents,
-                file: "PLAN.md".to_string(),
-                line: 20,
-                cited_frs: vec!["FR-PLAN-002".to_string()],
-                context: "Overview".to_string(),
-                is_ignored: false,
-            },
-        ];
+        let annotations = vec![TraceAnnotation {
+            citer: Citer::DocPage,
+            verb: AnnotationVerb::Documents,
+            file: "PLAN.md".to_string(),
+            line: 20,
+            cited_frs: vec!["FR-PLAN-002".to_string()],
+            context: "Overview".to_string(),
+            is_ignored: false,
+        }];
 
         let report = CoverageReport::generate_from_annotations(vec![fr], annotations);
         assert_eq!(report.frs[0].coverage, CoverageLevel::DocOnly);

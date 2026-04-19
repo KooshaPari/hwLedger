@@ -33,10 +33,7 @@ mod common {
 
     /// Initialize a fresh in-memory SQLite pool for testing.
     pub async fn create_test_db() -> Result<sqlx::SqlitePool, Box<dyn std::error::Error>> {
-        let pool = sqlx::sqlite::SqlitePool::connect(
-            "sqlite::memory:",
-        )
-        .await?;
+        let pool = sqlx::sqlite::SqlitePool::connect("sqlite::memory:").await?;
 
         // Run inline migrations (matching db::init)
         sqlx::query(
@@ -119,8 +116,7 @@ mod common {
     }
 
     /// Build a test AppState with in-memory DB and CA.
-    pub async fn create_test_app_state(
-    ) -> Result<Arc<AppState>, Box<dyn std::error::Error>> {
+    pub async fn create_test_app_state() -> Result<Arc<AppState>, Box<dyn std::error::Error>> {
         let db = create_test_db().await?;
         let temp_dir = TempDir::new()?;
         let ca = create_test_ca(&temp_dir).await?;
@@ -133,12 +129,7 @@ mod common {
             bootstrap_tokens: vec!["test-bootstrap-token".to_string()],
         };
 
-        let state = Arc::new(AppState {
-            db,
-            ca,
-            config,
-            rentals_catalog: RwLock::new(None),
-        });
+        let state = Arc::new(AppState { db, ca, config, rentals_catalog: RwLock::new(None) });
 
         Ok(state)
     }
@@ -238,18 +229,12 @@ async fn test_health_check() {
     let state = common::create_test_app_state().await.expect("create state");
     let router = common::create_test_router(state.clone());
 
-    let request = Request::builder()
-        .method("GET")
-        .uri("/v1/health")
-        .body(Body::empty())
-        .unwrap();
+    let request = Request::builder().method("GET").uri("/v1/health").body(Body::empty()).unwrap();
 
     let response = router.oneshot(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
 
-    let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
-        .await
-        .unwrap();
+    let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
     let json: serde_json::Value = serde_json::from_slice(&body_bytes).unwrap();
     assert_eq!(json["status"], "ok");
     assert!(json["agent_count"].is_number());
@@ -261,18 +246,12 @@ async fn test_list_agents_empty() {
     let state = common::create_test_app_state().await.expect("create state");
     let router = common::create_test_router(state.clone());
 
-    let request = Request::builder()
-        .method("GET")
-        .uri("/v1/agents")
-        .body(Body::empty())
-        .unwrap();
+    let request = Request::builder().method("GET").uri("/v1/agents").body(Body::empty()).unwrap();
 
     let response = router.oneshot(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
 
-    let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
-        .await
-        .unwrap();
+    let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
     let agents: Vec<serde_json::Value> = serde_json::from_slice(&body_bytes).unwrap();
     assert_eq!(agents.len(), 0);
 }
@@ -316,11 +295,7 @@ async fn test_heartbeat_valid() {
 
     // Now send heartbeat
     let router = common::create_test_router(state.clone());
-    let heartbeat = Heartbeat {
-        agent_id,
-        uptime_s: 1000,
-        devices: vec![],
-    };
+    let heartbeat = Heartbeat { agent_id, uptime_s: 1000, devices: vec![] };
 
     let body = Body::from(serde_json::to_string(&heartbeat).unwrap());
     let request = Request::builder()
@@ -382,9 +357,7 @@ async fn test_create_job() {
     let response = router.oneshot(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::CREATED);
 
-    let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
-        .await
-        .unwrap();
+    let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
     let json: serde_json::Value = serde_json::from_slice(&body_bytes).unwrap();
     assert_eq!(json["job_id"], job_id.to_string());
 }
@@ -469,9 +442,7 @@ async fn test_get_pending_jobs_empty() {
     let response = router.oneshot(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
 
-    let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
-        .await
-        .unwrap();
+    let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
     let jobs: Vec<serde_json::Value> = serde_json::from_slice(&body_bytes).unwrap();
     assert_eq!(jobs.len(), 0);
 }
@@ -482,11 +453,8 @@ async fn test_ssh_probe_missing_host() {
     let state = common::create_test_app_state().await.expect("create state");
     let router = common::create_test_router(state.clone());
 
-    let request = Request::builder()
-        .method("GET")
-        .uri("/v1/fleet/ssh_probe")
-        .body(Body::empty())
-        .unwrap();
+    let request =
+        Request::builder().method("GET").uri("/v1/fleet/ssh_probe").body(Body::empty()).unwrap();
 
     let response = router.oneshot(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::BAD_REQUEST);
@@ -498,11 +466,8 @@ async fn test_placement_suggestions_missing_params() {
     let state = common::create_test_app_state().await.expect("create state");
     let router = common::create_test_router(state.clone());
 
-    let request = Request::builder()
-        .method("GET")
-        .uri("/v1/fleet/placement")
-        .body(Body::empty())
-        .unwrap();
+    let request =
+        Request::builder().method("GET").uri("/v1/fleet/placement").body(Body::empty()).unwrap();
 
     let response = router.oneshot(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::BAD_REQUEST);
@@ -523,9 +488,7 @@ async fn test_placement_suggestions_valid() {
     let response = router.oneshot(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
 
-    let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
-        .await
-        .unwrap();
+    let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
     let suggestions: Vec<serde_json::Value> = serde_json::from_slice(&body_bytes).unwrap();
     assert_eq!(suggestions.len(), 0); // MVP returns empty
 }
@@ -543,11 +506,7 @@ async fn test_heartbeat_id_mismatch() {
     let agent_id = Uuid::new_v4();
     let wrong_id = Uuid::new_v4();
 
-    let heartbeat = Heartbeat {
-        agent_id: wrong_id,
-        uptime_s: 1000,
-        devices: vec![],
-    };
+    let heartbeat = Heartbeat { agent_id: wrong_id, uptime_s: 1000, devices: vec![] };
 
     let body = Body::from(serde_json::to_string(&heartbeat).unwrap());
     let request = Request::builder()
@@ -638,8 +597,7 @@ async fn test_ca_generation_and_csr_signing() {
     assert!(ca.ca_cert_pem.contains("BEGIN CERTIFICATE"));
 
     // Sign a CSR
-    let signed_cert = ca.sign_csr("fake-csr-pem", "test-agent")
-        .expect("sign CSR");
+    let signed_cert = ca.sign_csr("fake-csr-pem", "test-agent").expect("sign CSR");
     assert!(signed_cert.contains("BEGIN CERTIFICATE"));
 }
 

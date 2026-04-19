@@ -1,9 +1,9 @@
 //! Tests for error types and HTTP response mapping.
 //! Traces to: FR-FLEET-001
 
-use axum::response::IntoResponse;
 use axum::http::StatusCode;
-use hwledger_server::error::{ServerError, ErrorResponse};
+use axum::response::IntoResponse;
+use hwledger_server::error::{ErrorResponse, ServerError};
 
 #[test]
 fn test_error_auth_response() {
@@ -57,10 +57,7 @@ fn test_error_response_structure() {
 #[test]
 fn test_error_response_no_reason() {
     // Traces to: FR-FLEET-001
-    let error_response = ErrorResponse {
-        error: "some error".to_string(),
-        reason: None,
-    };
+    let error_response = ErrorResponse { error: "some error".to_string(), reason: None };
 
     let json = serde_json::to_value(&error_response).unwrap();
     assert_eq!(json["error"], "some error");

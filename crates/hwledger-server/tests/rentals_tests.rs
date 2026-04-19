@@ -1,7 +1,9 @@
 //! Tests for cloud rental provider integration.
 //! Traces to: FR-FLEET-005, FR-FLEET-007
 
-use hwledger_server::rentals::{RentalApiKeys, RentalCatalog, RentalOffering, Provider, RentalAvailability};
+use hwledger_server::rentals::{
+    Provider, RentalApiKeys, RentalAvailability, RentalCatalog, RentalOffering,
+};
 
 #[test]
 fn test_rental_api_keys_default() {
@@ -91,18 +93,16 @@ fn test_provider_serde() {
 fn test_rental_catalog_serialization() {
     // Traces to: FR-FLEET-005, FR-FLEET-007
     let catalog = RentalCatalog {
-        entries: vec![
-            RentalOffering {
-                provider: Provider::VastAi,
-                gpu_model: "RTX 4090".to_string(),
-                vram_gb: 24,
-                cpu_cores: 16,
-                ram_gb: 128,
-                hourly_usd: 1.50,
-                region: "us-east-1".to_string(),
-                availability: RentalAvailability::Spot,
-            },
-        ],
+        entries: vec![RentalOffering {
+            provider: Provider::VastAi,
+            gpu_model: "RTX 4090".to_string(),
+            vram_gb: 24,
+            cpu_cores: 16,
+            ram_gb: 128,
+            hourly_usd: 1.50,
+            region: "us-east-1".to_string(),
+            availability: RentalAvailability::Spot,
+        }],
         refreshed_at_ms: 1000000,
     };
 
@@ -141,10 +141,7 @@ fn test_multiple_offerings() {
         },
     ];
 
-    let catalog = RentalCatalog {
-        entries: offerings,
-        refreshed_at_ms: 500000,
-    };
+    let catalog = RentalCatalog { entries: offerings, refreshed_at_ms: 500000 };
 
     assert_eq!(catalog.entries.len(), 2);
     assert_eq!(catalog.entries[0].vram_gb, 40);

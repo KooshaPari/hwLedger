@@ -4,7 +4,7 @@
 
 use anyhow::{Context, Result};
 use clap::Parser;
-use hwledger_traceability::{AnnotationScanner, CoverageReport, CoverageLevel, PrdParser};
+use hwledger_traceability::{AnnotationScanner, CoverageLevel, CoverageReport, PrdParser};
 use std::path::PathBuf;
 
 /// FR ↔ Test Traceability Checker
@@ -56,11 +56,13 @@ fn main() -> Result<()> {
     if args.verbose {
         eprintln!("Scanning annotations across all dimensions...");
     }
-    let annotations = AnnotationScanner::scan(&repo_path)
-        .context("Failed to scan annotations")?;
+    let annotations = AnnotationScanner::scan(&repo_path).context("Failed to scan annotations")?;
 
     if args.verbose {
-        eprintln!("Found {} annotations (Traces, Implements, Constrains, Documents, Exercises)", annotations.len());
+        eprintln!(
+            "Found {} annotations (Traces, Implements, Constrains, Documents, Exercises)",
+            annotations.len()
+        );
     }
 
     // Generate report
@@ -83,10 +85,8 @@ fn main() -> Result<()> {
 
     // Strict mode checks
     if args.strict {
-        let not_fully_traced: Vec<_> = report.frs
-            .iter()
-            .filter(|f| f.coverage != CoverageLevel::FullyTraced)
-            .collect();
+        let not_fully_traced: Vec<_> =
+            report.frs.iter().filter(|f| f.coverage != CoverageLevel::FullyTraced).collect();
 
         if !not_fully_traced.is_empty() {
             eprintln!("\nFAIL: Not all FRs are FullyTraced (--strict):");
@@ -99,7 +99,7 @@ fn main() -> Result<()> {
                         } else {
                             "missing docs".to_string()
                         }
-                    },
+                    }
                     CoverageLevel::DocOnly => "no test".to_string(),
                     CoverageLevel::Zero => "no annotation".to_string(),
                     CoverageLevel::Orphaned => "ignored only".to_string(),
@@ -117,19 +117,32 @@ fn print_report(report: &CoverageReport) {
     println!("\n=== Cross-Dimensional Traceability Report ===\n");
     println!("Total FRs/NFRs: {}", report.stats.total_frs);
 
-    let fully_traced = report.frs.iter().filter(|f| f.coverage == CoverageLevel::FullyTraced).count();
+    let fully_traced =
+        report.frs.iter().filter(|f| f.coverage == CoverageLevel::FullyTraced).count();
     let traced = report.frs.iter().filter(|f| f.coverage == CoverageLevel::Traced).count();
     let doc_only = report.frs.iter().filter(|f| f.coverage == CoverageLevel::DocOnly).count();
     let zero = report.frs.iter().filter(|f| f.coverage == CoverageLevel::Zero).count();
 
-    println!("Fully Traced (test + impl + docs): {} ({:.1}%)",
-        fully_traced, (fully_traced as f32 / report.stats.total_frs as f32) * 100.0);
-    println!("Traced (test + partial): {} ({:.1}%)",
-        traced, (traced as f32 / report.stats.total_frs as f32) * 100.0);
-    println!("Doc-Only (docs but no test): {} ({:.1}%)",
-        doc_only, (doc_only as f32 / report.stats.total_frs as f32) * 100.0);
-    println!("Zero Coverage: {} ({:.1}%)",
-        zero, (zero as f32 / report.stats.total_frs as f32) * 100.0);
+    println!(
+        "Fully Traced (test + impl + docs): {} ({:.1}%)",
+        fully_traced,
+        (fully_traced as f32 / report.stats.total_frs as f32) * 100.0
+    );
+    println!(
+        "Traced (test + partial): {} ({:.1}%)",
+        traced,
+        (traced as f32 / report.stats.total_frs as f32) * 100.0
+    );
+    println!(
+        "Doc-Only (docs but no test): {} ({:.1}%)",
+        doc_only,
+        (doc_only as f32 / report.stats.total_frs as f32) * 100.0
+    );
+    println!(
+        "Zero Coverage: {} ({:.1}%)",
+        zero,
+        (zero as f32 / report.stats.total_frs as f32) * 100.0
+    );
     println!("Total Tests: {}\n", report.stats.total_tests);
 
     if !report.stats.zero_coverage_frs.is_empty() {
@@ -144,8 +157,13 @@ fn print_report(report: &CoverageReport) {
     if !top.is_empty() {
         println!("Top 5 Best-Covered:");
         for cov in top {
-            println!("  {} (T:{} I:{} D:{})",
-                cov.fr, cov.test_count, cov.implementations.len(), cov.documentation.len());
+            println!(
+                "  {} (T:{} I:{} D:{})",
+                cov.fr,
+                cov.test_count,
+                cov.implementations.len(),
+                cov.documentation.len()
+            );
         }
         println!();
     }
@@ -163,7 +181,11 @@ fn print_report(report: &CoverageReport) {
             };
             println!(
                 "  {} [{}] (T:{} I:{} D:{})",
-                cov.fr, status, cov.test_count, cov.implementations.len(), cov.documentation.len()
+                cov.fr,
+                status,
+                cov.test_count,
+                cov.implementations.len(),
+                cov.documentation.len()
             );
         }
         println!();

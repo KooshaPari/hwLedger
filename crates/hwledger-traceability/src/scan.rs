@@ -63,7 +63,7 @@ pub struct TraceAnnotation {
     pub file: String,
     pub line: usize,
     pub cited_frs: Vec<String>,
-    pub context: String, // function name, doc section, etc.
+    pub context: String,  // function name, doc section, etc.
     pub is_ignored: bool, // applies only to tests
 }
 
@@ -99,14 +99,7 @@ impl AnnotationScanner {
     /// Traces to: NFR-006
     pub fn scan(repo_path: &str) -> Result<Vec<TraceAnnotation>, ScanError> {
         let mut annotations = Vec::new();
-        let skip_dirs = [
-            "target",
-            ".build",
-            "node_modules",
-            ".git",
-            "omlx-fork",
-            "sidecars",
-        ];
+        let skip_dirs = ["target", ".build", "node_modules", ".git", "omlx-fork", "sidecars"];
 
         for entry in WalkDir::new(repo_path).into_iter().filter_map(|e| e.ok()).filter(|e| {
             let path = e.path();
@@ -179,7 +172,9 @@ impl AnnotationScanner {
             r#"///?\s*Implements:\s*([A-Z]+(?:-[A-Z]+)*-\d+(?:\s*,\s*[A-Z]+(?:-[A-Z]+)*-\d+)*)"#,
         )?;
         let fn_pattern = Regex::new(r#"(?m)^\s*(?:async\s+)?fn\s+([a-z_][a-z0-9_]*)\s*\("#)?;
-        let struct_pattern = Regex::new(r#"(?m)^\s*(?:pub\s+)?(?:async\s+)?(?:impl|struct|enum|mod|const|static)\s+([a-z_A-Z][a-z0-9_]*)"#)?;
+        let struct_pattern = Regex::new(
+            r#"(?m)^\s*(?:pub\s+)?(?:async\s+)?(?:impl|struct|enum|mod|const|static)\s+([a-z_A-Z][a-z0-9_]*)"#,
+        )?;
 
         let lines: Vec<&str> = content.lines().collect();
 
@@ -246,7 +241,8 @@ impl AnnotationScanner {
                     let mut context = "unknown".to_string();
 
                     // Look forward for the next item definition
-                    for search_line in lines.iter().take(std::cmp::min(i + 10, lines.len())).skip(i) {
+                    for search_line in lines.iter().take(std::cmp::min(i + 10, lines.len())).skip(i)
+                    {
                         if let Some(caps) = struct_pattern.captures(search_line) {
                             if let Some(name) = caps.get(1) {
                                 context = name.as_str().to_string();
@@ -462,9 +458,9 @@ impl AnnotationScanner {
 
                     // Look forward for function name
                     for j in i..std::cmp::min(i + 5, content.lines().count()) {
-                        if let Some(caps) = test_func_pattern.captures(
-                            content.lines().nth(j).unwrap_or(""),
-                        ) {
+                        if let Some(caps) =
+                            test_func_pattern.captures(content.lines().nth(j).unwrap_or(""))
+                        {
                             if let Some(name) = caps.get(1) {
                                 test_name = name.as_str().to_string();
                                 break;

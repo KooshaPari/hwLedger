@@ -1,7 +1,9 @@
 //! Tests for verifier configuration and verdict aggregation.
 //! Traces to: FR-VERIFY-001, FR-VERIFY-002
 
-use hwledger_verify::{VerifierConfig, Description, JudgeVerdict, StepVerification, ManifestVerification};
+use hwledger_verify::{
+    Description, JudgeVerdict, ManifestVerification, StepVerification, VerifierConfig,
+};
 
 #[test]
 fn test_verifier_config_default() {
@@ -29,8 +31,7 @@ fn test_verifier_config_with_api_key() {
 #[test]
 fn test_verifier_config_with_describe_model() {
     // Traces to: FR-VERIFY-001
-    let config = VerifierConfig::default()
-        .with_describe_model("claude-opus-4-8".to_string());
+    let config = VerifierConfig::default().with_describe_model("claude-opus-4-8".to_string());
 
     assert_eq!(config.describe_model, "claude-opus-4-8");
 }
@@ -38,8 +39,7 @@ fn test_verifier_config_with_describe_model() {
 #[test]
 fn test_verifier_config_with_judge_model() {
     // Traces to: FR-VERIFY-001
-    let config = VerifierConfig::default()
-        .with_judge_model("claude-sonnet-4-7".to_string());
+    let config = VerifierConfig::default().with_judge_model("claude-sonnet-4-7".to_string());
 
     assert_eq!(config.judge_model, "claude-sonnet-4-7");
 }
@@ -47,8 +47,7 @@ fn test_verifier_config_with_judge_model() {
 #[test]
 fn test_verifier_config_with_base_url() {
     // Traces to: FR-VERIFY-001
-    let config = VerifierConfig::default()
-        .with_base_url("http://localhost:8080".to_string());
+    let config = VerifierConfig::default().with_base_url("http://localhost:8080".to_string());
 
     assert_eq!(config.base_url, Some("http://localhost:8080".to_string()));
 }
@@ -56,8 +55,7 @@ fn test_verifier_config_with_base_url() {
 #[test]
 fn test_verifier_config_disable_cache() {
     // Traces to: FR-VERIFY-001
-    let config = VerifierConfig::default()
-        .with_cache_disabled();
+    let config = VerifierConfig::default().with_cache_disabled();
 
     assert!(!config.cache_enabled);
 }
