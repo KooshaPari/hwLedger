@@ -134,7 +134,7 @@ export APPLE_NOTARY_KEY_PATH=~/.appstoreconnect/private_keys/AuthKey_ABC123DEFG.
 - EdDSA keypair (one-time via `sparkle/bin/generate_keys`)
 - Private key saved to `~/.config/hwledger/sparkle_ed25519_private.key` (chmod 600, backed up securely)
 
-See [docs/reports/WP21-APPLE-DEV-SECRETS.md](../../docs/reports/WP21-APPLE-DEV-SECRETS.md) for step-by-step setup.
+See [docs/reports/WP21-APPLE-DEV-SECRETS.md](https://github.com/KooshaPari/hwLedger/blob/main/docs/reports/WP21-APPLE-DEV-SECRETS.md) for step-by-step setup.
 
 ## Workflow: Tag to Release
 
@@ -211,8 +211,8 @@ git push --tags
 
 ## References
 
-- [WP21 Plan](../../PLAN.md#wp21)
-- [WP21 Setup Guide](../../docs/reports/WP21-APPLE-DEV-SECRETS.md)
+- [WP21 Plan](https://github.com/KooshaPari/hwLedger/blob/main/PLAN.md#wp21)
+- [WP21 Setup Guide](https://github.com/KooshaPari/hwLedger/blob/main/docs/reports/WP21-APPLE-DEV-SECRETS.md)
 - [Sparkle 2.6 Docs](https://sparkle-project.org/)
 - [Apple Notary API](https://developer.apple.com/documentation/notaryapi/)
 - [Code Signing Guide (Apple)](https://developer.apple.com/library/archive/documentation/Security/Conceptual/CodeSigningGuide/)

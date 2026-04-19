@@ -4,7 +4,10 @@ import { withMermaid } from 'vitepress-plugin-mermaid'
 
 export default withMermaid(defineConfig({
   title: 'hwLedger',
-  ignoreDeadLinks: true,
+  // Relaxed to external-only: block internal dead links (catches regressions),
+  // accept external links without verification (too slow). ADR-0006 previously
+  // had two dead ../../ links; they now resolve to GitHub blob URLs.
+  ignoreDeadLinks: 'localhostLinks',
   description: 'LLM capacity planner + fleet ledger + desktop inference runtime',
   base: process.env.GITHUB_ACTIONS ? '/hwLedger/' : '/',
   lang: 'en-US',
