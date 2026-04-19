@@ -1,6 +1,6 @@
 {
   "id": "fleet-register",
-  "intent": "User registers a host into the fleet via bootstrap token over mTLS",
+  "intent": "Register device as fleet node against local hwledger-server",
   "recording": "recordings/fleet-register.mp4",
   "recording_gif": "recordings/fleet-register.gif",
   "keyframe_count": 14,

@@ -8,10 +8,17 @@ Set LoopOffset 100%
 Output "apps/cli-journeys/recordings/fleet-register.gif"
 Output "apps/cli-journeys/recordings/fleet-register.mp4"
 
-Type "# Register this device as a fleet node"
+Hide
+Type "hwledger-server --port 8080 --db /tmp/hwl-fleet.db &"
+Sleep 500ms
+Enter
+Sleep 2s
+Type "sleep 1"
 Sleep 300ms
 Enter
-Sleep 300ms
+Sleep 1s
+Show
+
 Type "hwledger fleet register \\"
 Sleep 300ms
 Enter
@@ -20,19 +27,18 @@ Type "  --server http://localhost:8080 \\"
 Sleep 300ms
 Enter
 Sleep 200ms
-Type "  --token dev-token-abc123 \\"
+Type "  --token dev-bootstrap-token \\"
 Sleep 300ms
 Enter
 Sleep 200ms
-Type "  --hostname laptop-01 \\"
-Sleep 300ms
-Enter
-Sleep 200ms
-Type "  --arch x86_64 --os darwin"
+Type "  --hostname demo-laptop"
 Sleep 500ms
 Enter
-Sleep 1.5s
-Type "# Registration complete; device joined fleet"
+Sleep 2s
+
+Hide
+Type "kill %1; rm -f /tmp/hwl-fleet.db"
 Sleep 300ms
 Enter
 Sleep 500ms
+Show

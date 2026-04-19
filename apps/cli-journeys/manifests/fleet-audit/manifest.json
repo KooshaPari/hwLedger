@@ -1,6 +1,6 @@
 {
   "id": "fleet-audit",
-  "intent": "User pulls the last 10 audit events and verifies the hash chain",
+  "intent": "Audit fleet node health across local hwledger-server",
   "recording": "recordings/fleet-audit.mp4",
   "recording_gif": "recordings/fleet-audit.gif",
   "keyframe_count": 13,

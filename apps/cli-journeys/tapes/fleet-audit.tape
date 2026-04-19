@@ -8,10 +8,17 @@ Set LoopOffset 100%
 Output "apps/cli-journeys/recordings/fleet-audit.gif"
 Output "apps/cli-journeys/recordings/fleet-audit.mp4"
 
-Type "# Audit fleet node health and VRAM across 10 devices"
+Hide
+Type "hwledger-server --port 8080 --db /tmp/hwl-audit.db &"
+Sleep 500ms
+Enter
+Sleep 2s
+Type "sleep 1"
 Sleep 300ms
 Enter
-Sleep 300ms
+Sleep 1s
+Show
+
 Type "hwledger fleet audit \\"
 Sleep 300ms
 Enter
@@ -20,15 +27,14 @@ Type "  --server http://localhost:8080 \\"
 Sleep 300ms
 Enter
 Sleep 200ms
-Type "  --limit 10 \\"
-Sleep 300ms
-Enter
-Sleep 200ms
-Type "  --verify"
+Type "  --limit 3"
 Sleep 500ms
 Enter
 Sleep 2s
-Type "# Audit complete: 10 nodes verified, all healthy"
+
+Hide
+Type "kill %1; rm -f /tmp/hwl-audit.db"
 Sleep 300ms
 Enter
 Sleep 500ms
+Show
