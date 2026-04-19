@@ -303,11 +303,8 @@ async fn test_cache_hit_on_repeated_describe() {
 
     // Per-test unique bytes → unique cache key → no collisions with parallel tests.
     let png: Vec<u8> = b"TEST_cache_hit_on_repeated_describe-unique-png-bytes".to_vec();
-    let desc = Description {
-        text: "Test description".to_string(),
-        structured: None,
-        tokens_used: 100,
-    };
+    let desc =
+        Description { text: "Test description".to_string(), structured: None, tokens_used: 100 };
 
     let key = cache.key_for_screenshot(&png, "claude-opus-4-7");
     cache.set(&key, &desc).expect("cache set");
