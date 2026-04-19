@@ -37,7 +37,6 @@ pub fn bundle_app(
 
 #[cfg(test)]
 mod tests {
-    
 
     #[test]
     fn test_bundle_params() {

@@ -39,7 +39,6 @@ pub fn build_dmg(
 
 #[cfg(test)]
 mod tests {
-    
 
     #[test]
     fn test_dmg_params() {

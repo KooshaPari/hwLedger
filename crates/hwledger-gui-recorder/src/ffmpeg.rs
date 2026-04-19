@@ -9,7 +9,10 @@ use std::process::Stdio;
 use tokio::process::Command;
 use tracing::info;
 
-#[expect(dead_code, reason = "scaffold for future GUI recorder integration — see docs/checklists/GUI-RECORDING-INTEGRATION-CHECKLIST.md")]
+#[expect(
+    dead_code,
+    reason = "scaffold for future GUI recorder integration — see docs/checklists/GUI-RECORDING-INTEGRATION-CHECKLIST.md"
+)]
 const FFMPEG_TIMEOUT_SECS: u64 = 300;
 
 /// Extract I-frames (true keyframes) from MP4 recording.
