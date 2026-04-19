@@ -1,5 +1,7 @@
 # hwLedger — Implementation Plan
 
+Documents: FR-PLAN-001, FR-PLAN-002, FR-PLAN-003, FR-PLAN-004, FR-PLAN-005, FR-PLAN-006, FR-PLAN-007
+
 _Planner-only document. No production code. All concrete work will be scheduled through AgilePlus work packages after plan acceptance._
 
 Status: **DRAFT v0.1** — pending user answers on the open questions in §12.

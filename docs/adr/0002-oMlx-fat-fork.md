@@ -1,5 +1,7 @@
 # ADR 0002 — oMlx fat fork as Apple-Silicon inference sidecar
 
+Constrains: FR-INF-001, FR-INF-002, FR-INF-003, FR-INF-004
+
 Date: 2026-04-18
 Status: Accepted
 

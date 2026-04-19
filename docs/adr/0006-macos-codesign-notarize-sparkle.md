@@ -1,5 +1,7 @@
 # ADR-0006: macOS v1 Distribution — Developer ID + Notarization + Sparkle
 
+Constrains: FR-UI-002, FR-UI-003
+
 **Status:** Accepted (WP21)
 
 **Date:** 2026-04-18

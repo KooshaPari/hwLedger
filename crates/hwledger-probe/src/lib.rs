@@ -1,5 +1,7 @@
 //! Hardware probing and discovery for hwLedger endpoints.
 //!
+//! Implements: FR-TEL-001, FR-TEL-002, FR-TEL-004
+//!
 //! Provides a trait-based abstraction (`GpuProbe`) for enumerating GPU devices
 //! and querying telemetry across NVIDIA, AMD, Apple Silicon, and Intel hardware.
 //! Per NFR-004 ("fail loudly"), all query failures return explicit errors — never silent zeros.

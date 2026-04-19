@@ -112,60 +112,17 @@ if [ -z "${BACKGROUND_IMAGE}" ]; then
         # Create a simple 600x400 PNG with transparent background
         # Using sips (macOS built-in) to create a minimal placeholder
         if command -v sips &>/dev/null; then
-            # Create a simple white background image
-            # sips will create and output to the path specified
-            python3 << 'PYSCRIPT'
-import struct
-import zlib
-
-# Minimal 600x400 PNG (white background, no frills)
-# PNG header
-png_signature = b'\x89PNG\r\n\x1a\n'
-
-# IHDR chunk (image header)
-ihdr_data = struct.pack('>IIBBBBB', 600, 400, 8, 2, 0, 0, 0)  # 8-bit RGB
-ihdr_crc = zlib.crc32(b'IHDR' + ihdr_data) & 0xffffffff
-ihdr = struct.pack('>I', 13) + b'IHDR' + ihdr_data + struct.pack('>I', ihdr_crc)
-
-# IDAT chunk (image data - solid white)
-# Each scanline: 1 filter byte + 600 pixels * 3 bytes
-scanline = b'\x00' + (b'\xff\xff\xff' * 600)
-idat_data = zlib.compress(scanline * 400, 9)
-idat_crc = zlib.crc32(b'IDAT' + idat_data) & 0xffffffff
-idat = struct.pack('>I', len(idat_data)) + b'IDAT' + idat_data + struct.pack('>I', idat_crc)
-
-# IEND chunk
-iend = struct.pack('>I', 0) + b'IEND' + struct.pack('>I', 0xae426082)
-
-png = png_signature + ihdr + idat + iend
-
-import sys
-with open(sys.argv[1], 'wb') as f:
-    f.write(png)
+            python3 - "${BACKGROUND_IMAGE}" << 'PYSCRIPT' && echo "Generated background"
+import struct, zlib, sys
+sig = b"\x89PNG\r\n\x1a\n"
+ihdr_d = struct.pack(">IIBBBBB", 600, 400, 8, 2, 0, 0, 0)
+ihdr = struct.pack(">I", 13) + b"IHDR" + ihdr_d + struct.pack(">I", zlib.crc32(b"IHDR" + ihdr_d) & 0xffffffff)
+scan = b"\x00" + (b"\xff\xff\xff" * 600)
+idat_d = zlib.compress(scan * 400, 9)
+idat = struct.pack(">I", len(idat_d)) + b"IDAT" + idat_d + struct.pack(">I", zlib.crc32(b"IDAT" + idat_d) & 0xffffffff)
+iend = struct.pack(">I", 0) + b"IEND" + struct.pack(">I", 0xae426082)
+open(sys.argv[1], "wb").write(sig + ihdr + idat + iend)
 PYSCRIPT
-python3 << 'PYSCRIPT'
-import struct
-import zlib
-import sys
-
-# Minimal 600x400 PNG (white background)
-png_signature = b'\x89PNG\r\n\x1a\n'
-ihdr_data = struct.pack('>IIBBBBB', 600, 400, 8, 2, 0, 0, 0)
-ihdr_crc = zlib.crc32(b'IHDR' + ihdr_data) & 0xffffffff
-ihdr = struct.pack('>I', 13) + b'IHDR' + ihdr_data + struct.pack('>I', ihdr_crc)
-scanline = b'\x00' + (b'\xff\xff\xff' * 600)
-idat_data = zlib.compress(scanline * 400, 9)
-idat_crc = zlib.crc32(b'IDAT' + idat_data) & 0xffffffff
-idat = struct.pack('>I', len(idat_data)) + b'IDAT' + idat_data + struct.pack('>I', idat_crc)
-iend = struct.pack('>I', 0) + b'IEND' + struct.pack('>I', 0xae426082)
-png = png_signature + ihdr + idat + iend
-with open(sys.argv[1], 'wb') as f:
-    f.write(png)
-PYSCRIPT
-"${BACKGROUND_IMAGE}"
-            if [ $? -eq 0 ]; then
-                echo "✓ Generated background: ${BACKGROUND_IMAGE}"
-            fi
         else
             echo "Warning: sips not found, proceeding without background image"
             BACKGROUND_IMAGE=""

@@ -64,7 +64,7 @@ BUILD_LOG_DIR="${PROJECT_ROOT}/apps/macos/build"
 # env vars if the profile isn't present.
 NOTARY_PROFILE="${APPLE_NOTARY_KEYCHAIN_PROFILE:-hwledger}"
 USE_PROFILE=0
-if security find-generic-password -s "com.apple.gk.ma.notarytool" -a "${NOTARY_PROFILE}" >/dev/null 2>&1; then
+if xcrun notarytool history --keychain-profile "${NOTARY_PROFILE}" >/dev/null 2>&1; then
     USE_PROFILE=1
 fi
 
@@ -92,9 +92,11 @@ fi
 
 if [ "${USE_PROFILE}" -eq 0 ]; then
     KEY_PATH="${APPLE_NOTARY_KEY_PATH:-${HOME}/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8}"
+else
+    KEY_PATH=""
 fi
 
-if [ ! -f "${KEY_PATH}" ]; then
+if [ "${USE_PROFILE}" -eq 0 ] && [ ! -f "${KEY_PATH}" ]; then
     echo "Error: Notary key file not found:"
     echo "  ${KEY_PATH}"
     echo ""

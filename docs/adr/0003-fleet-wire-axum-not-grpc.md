@@ -1,5 +1,7 @@
 # ADR 0003 — Fleet wire: Axum + JSON/HTTPS + mTLS, not gRPC
 
+Constrains: FR-FLEET-001, FR-FLEET-002, FR-FLEET-003, FR-FLEET-004, FR-FLEET-005
+
 Date: 2026-04-18
 Status: Accepted
 

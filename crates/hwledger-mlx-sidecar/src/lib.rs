@@ -1,10 +1,10 @@
 //! MLX framework sidecar service for Apple Silicon GPU acceleration.
 //!
+//! Implements: FR-INF-001, FR-INF-002, FR-INF-004
+//!
 //! Manages a subprocess running the oMlx Python inference engine, communicating via JSON-RPC 2.0
 //! over stdin/stdout. Provides token streaming, model loading, memory introspection, and graceful
 //! lifecycle management.
-//!
-//! Traces to: FR-INF-001 (spawn + supervise), FR-INF-002 (JSON-RPC), FR-INF-004 (signal handling)
 
 pub mod error;
 pub mod protocol;

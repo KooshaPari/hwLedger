@@ -1,5 +1,7 @@
 //! Architecture classification from HuggingFace `config.json` to [`hwledger_core::math::AttentionKind`].
 //!
+//! Implements: FR-PLAN-002
+//!
 //! This crate handles the complexity of version-drifted transformer configs across
 //! Llama, Qwen, DeepSeek, Gemma, Mistral, Mixtral, Phi, Mamba, and hybrid families.
 //! All config fields are optional with sensible defaults; unknown fields are silently ignored.

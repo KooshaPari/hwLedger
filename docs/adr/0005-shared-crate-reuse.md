@@ -1,5 +1,7 @@
 # ADR 0005 — Shared-crate reuse contract with Phenotype workspace
 
+Constrains: FR-FLEET-006, FR-TEL-001
+
 Date: 2026-04-19
 Status: Accepted
 

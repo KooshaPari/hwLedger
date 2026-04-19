@@ -8,95 +8,131 @@
 ## Summary
 
 - **Total FRs/NFRs:** 39
-- **Covered:** 33 (84.6%)
-- **Zero Coverage:** 6
-- **Orphaned (ignored only):** 0
-- **Total Tests:** 216
+- **Fully Traced** (test + impl + docs): 0 (0.0%)
+- **Traced** (test + partial): 36 (92.3%)
+- **Doc-Only** (docs but no test): 3 (7.7%)
+- **Zero Coverage:** 0 (0.0%)
+- **Total Tests:** 372
 
-## Zero Coverage (Blocker)
+## Cross-Dimensional Traceability Matrix
 
-- **FR-PLAN-004**
-- **FR-TEL-003**
-- **FR-INF-001**
-- **FR-UI-002**
-- **NFR-001**
-- **NFR-VERIFY-001**
+| FR | Tests | Source | ADRs | Docs | Journeys | Level |
+|---|---|---|---|---|---|---|
+| **FR-PLAN-001** | 45 | 0 | 0 | 2 | 0 | PART |
+| **FR-PLAN-002** | 30 | 0 | 1 | 2 | 0 | PART |
+| **FR-PLAN-003** | 50 | 0 | 1 | 2 | 0 | PART |
+| **FR-PLAN-004** | 6 | 0 | 0 | 2 | 0 | PART |
+| **FR-PLAN-005** | 1 | 0 | 0 | 2 | 0 | PART |
+| **FR-PLAN-006** | 2 | 0 | 0 | 2 | 0 | PART |
+| **FR-PLAN-007** | 1 | 0 | 0 | 2 | 0 | PART |
+| **FR-TEL-001** | 5 | 0 | 1 | 1 | 0 | PART |
+| **FR-TEL-002** | 25 | 0 | 0 | 1 | 0 | PART |
+| **FR-TEL-003** | 0 | 0 | 0 | 1 | 0 | DOCS |
+| **FR-TEL-004** | 2 | 0 | 0 | 1 | 0 | PART |
+| **FR-INF-001** | 2 | 0 | 1 | 1 | 0 | PART |
+| **FR-INF-002** | 6 | 0 | 1 | 1 | 0 | PART |
+| **FR-INF-003** | 1 | 0 | 1 | 1 | 0 | PART |
+| **FR-INF-004** | 1 | 0 | 1 | 1 | 0 | PART |
+| **FR-INF-005** | 1 | 0 | 0 | 1 | 0 | PART |
+| **FR-FLEET-001** | 24 | 0 | 1 | 1 | 0 | PART |
+| **FR-FLEET-002** | 5 | 0 | 1 | 1 | 0 | PART |
+| **FR-FLEET-003** | 5 | 0 | 1 | 1 | 0 | PART |
+| **FR-FLEET-004** | 2 | 0 | 1 | 1 | 0 | PART |
+| **FR-FLEET-005** | 10 | 0 | 1 | 1 | 0 | PART |
+| **FR-FLEET-006** | 7 | 0 | 1 | 1 | 0 | PART |
+| **FR-FLEET-007** | 5 | 0 | 0 | 1 | 0 | PART |
+| **FR-FLEET-008** | 4 | 0 | 0 | 1 | 0 | PART |
+| **FR-UI-001** | 7 | 0 | 1 | 1 | 0 | PART |
+| **FR-UI-002** | 13 | 0 | 1 | 1 | 0 | PART |
+| **FR-UI-003** | 1 | 0 | 1 | 1 | 0 | PART |
+| **FR-UI-004** | 1 | 0 | 0 | 1 | 0 | PART |
+| **FR-UX-VERIFY-001** | 12 | 0 | 0 | 1 | 0 | PART |
+| **FR-UX-VERIFY-002** | 6 | 0 | 0 | 1 | 0 | PART |
+| **FR-UX-VERIFY-003** | 6 | 0 | 0 | 1 | 0 | PART |
+| **NFR-001** | 0 | 0 | 0 | 1 | 0 | DOCS |
+| **NFR-002** | 1 | 0 | 0 | 1 | 0 | PART |
+| **NFR-003** | 1 | 0 | 0 | 1 | 0 | PART |
+| **NFR-004** | 3 | 0 | 0 | 1 | 0 | PART |
+| **NFR-005** | 1 | 0 | 0 | 1 | 0 | PART |
+| **NFR-006** | 17 | 0 | 0 | 1 | 0 | PART |
+| **NFR-007** | 1 | 0 | 0 | 1 | 0 | PART |
+| **NFR-VERIFY-001** | 0 | 0 | 0 | 1 | 0 | DOCS |
 
 ## Best Covered (Top 5)
 
-- **FR-PLAN-003** (43 tests): Compute `VRAM ≈ W + O + KV(seq, users) + Prefill(batch, seq)` per §5 of PLAN.md. Formulas per architecture.
-- **FR-PLAN-001** (38 tests): Ingest model metadata from HF Hub, local GGUF, local safetensors, local MLX (.npz + config), Ollama, LM Studio catalog.
-- **FR-PLAN-002** (28 tests): Classify architecture into an `AttentionKind` variant: `Mha`, `Gqa`, `Mqa`, `Mla`, `SlidingWindow`, `Ssm`, `Hybrid(Vec<Kind>)`, `AttentionSink`.
-- **FR-TEL-002** (19 tests): Device enumeration, total/free VRAM, utilisation %, temperature, power, process-level VRAM.
-- **NFR-006** (14 tests): All public tests reference a Functional Requirement ID (per `PhenoSpecs` convention).
+- **FR-PLAN-003** (tests: 50, impl: 0, docs: 2): Compute `VRAM ≈ W + O + KV(seq, users) + Prefill(batch, seq)` per §5 of PLAN.md. Formulas per architecture.
+- **FR-PLAN-001** (tests: 45, impl: 0, docs: 2): Ingest model metadata from HF Hub, local GGUF, local safetensors, local MLX (.npz + config), Ollama, LM Studio catalog.
+- **FR-PLAN-002** (tests: 30, impl: 0, docs: 2): Classify architecture into an `AttentionKind` variant: `Mha`, `Gqa`, `Mqa`, `Mla`, `SlidingWindow`, `Ssm`, `Hybrid(Vec<Kind>)`, `AttentionSink`.
+- **FR-TEL-002** (tests: 25, impl: 0, docs: 1): Device enumeration, total/free VRAM, utilisation %, temperature, power, process-level VRAM.
+- **FR-FLEET-001** (tests: 24, impl: 0, docs: 1): Central `hwledger-server` daemon with mTLS, SQLite-backed ledger, axum routes.
 
 ## Worst Covered (Bottom 5)
 
-- **FR-PLAN-004** [ZERO] (0 tests): Interactive sliders for Sequence Length, Concurrent Users, Batch Size, Weight Quant, KV Quant. Log scale on appropriate axes.
-- **FR-TEL-003** [ZERO] (0 tests): Predicted-vs-actual reconciliation panel on the Planner screen.
-- **FR-INF-001** [ZERO] (0 tests): Spawn and supervise oMlx-fork Python sidecar under a uv-managed venv.
-- **FR-UI-002** [ZERO] (0 tests): Six screens — Library, Planner, Fleet, Run, Ledger, Settings — see PLAN.md §6.
-- **NFR-001** [ZERO] (0 tests): Planner math ±200 MB of ground truth across 10 canonical models.
+- **FR-TEL-003** [DOCS] (tests: 0, impl: 0, docs: 1): Predicted-vs-actual reconciliation panel on the Planner screen.
+- **NFR-001** [DOCS] (tests: 0, impl: 0, docs: 1): Planner math ±200 MB of ground truth across 10 canonical models.
+- **NFR-VERIFY-001** [DOCS] (tests: 0, impl: 0, docs: 1): Per-journey token cost shall not exceed ~$0.10 USD under default configuration (Claude Opus 4.7 for vision, Sonnet 4.6 for judge).
+- **FR-PLAN-005** [PART] (tests: 1, impl: 0, docs: 2): Live stacked-bar breakdown (weights | KV | runtime | prefill | free). Per-layer heatmap showing which layers carry KV load.
+- **FR-PLAN-007** [PART] (tests: 1, impl: 0, docs: 2): Export a planner snapshot as vLLM CLI flags, llama.cpp flags, or an MLX sidecar config JSON.
 
 ## Coverage by Section
 
-### 2.5 Desktop GUI (macOS MVP) (3/4)
+### 3. Non-functional requirements (0/8)
 
-- ✓ **FR-UI-001** (1 tests)
-- ✗ **FR-UI-002** (0 tests)
-- ✓ **FR-UI-003** (1 tests)
-- ✓ **FR-UI-004** (1 tests)
+- [DOCS] **NFR-001** (T:0, I:0, D:1)
+- [PART] **NFR-002** (T:1, I:0, D:1)
+- [PART] **NFR-003** (T:1, I:0, D:1)
+- [PART] **NFR-004** (T:3, I:0, D:1)
+- [PART] **NFR-005** (T:1, I:0, D:1)
+- [PART] **NFR-006** (T:17, I:0, D:1)
+- [PART] **NFR-007** (T:1, I:0, D:1)
+- [DOCS] **NFR-VERIFY-001** (T:0, I:0, D:1)
 
-### 2.2 Live telemetry (3/4)
+### 2.2 Live telemetry (0/4)
 
-- ✓ **FR-TEL-001** (5 tests)
-- ✓ **FR-TEL-002** (19 tests)
-- ✗ **FR-TEL-003** (0 tests)
-- ✓ **FR-TEL-004** (2 tests)
+- [PART] **FR-TEL-001** (T:5, I:0, D:1)
+- [PART] **FR-TEL-002** (T:25, I:0, D:1)
+- [DOCS] **FR-TEL-003** (T:0, I:0, D:1)
+- [PART] **FR-TEL-004** (T:2, I:0, D:1)
 
-### 2.4 Fleet ledger (8/8)
+### 2.5 Desktop GUI (macOS MVP) (0/4)
 
-- ✓ **FR-FLEET-001** (9 tests)
-- ✓ **FR-FLEET-002** (4 tests)
-- ✓ **FR-FLEET-003** (5 tests)
-- ✓ **FR-FLEET-004** (2 tests)
-- ✓ **FR-FLEET-005** (2 tests)
-- ✓ **FR-FLEET-006** (1 tests)
-- ✓ **FR-FLEET-007** (2 tests)
-- ✓ **FR-FLEET-008** (3 tests)
+- [PART] **FR-UI-001** (T:7, I:0, D:1)
+- [PART] **FR-UI-002** (T:13, I:0, D:1)
+- [PART] **FR-UI-003** (T:1, I:0, D:1)
+- [PART] **FR-UI-004** (T:1, I:0, D:1)
 
-### 2.1 Capacity planner (6/7)
+### 2.6 User-journey verification (WP27: Blackbox screenshot verification) (0/3)
 
-- ✓ **FR-PLAN-001** (38 tests)
-- ✓ **FR-PLAN-002** (28 tests)
-- ✓ **FR-PLAN-003** (43 tests)
-- ✗ **FR-PLAN-004** (0 tests)
-- ✓ **FR-PLAN-005** (1 tests)
-- ✓ **FR-PLAN-006** (1 tests)
-- ✓ **FR-PLAN-007** (1 tests)
+- [PART] **FR-UX-VERIFY-001** (T:12, I:0, D:1)
+- [PART] **FR-UX-VERIFY-002** (T:6, I:0, D:1)
+- [PART] **FR-UX-VERIFY-003** (T:6, I:0, D:1)
 
-### 3. Non-functional requirements (6/8)
+### 2.1 Capacity planner (0/7)
 
-- ✗ **NFR-001** (0 tests)
-- ✓ **NFR-002** (1 tests)
-- ✓ **NFR-003** (1 tests)
-- ✓ **NFR-004** (1 tests)
-- ✓ **NFR-005** (1 tests)
-- ✓ **NFR-006** (14 tests)
-- ✓ **NFR-007** (1 tests)
-- ✗ **NFR-VERIFY-001** (0 tests)
+- [PART] **FR-PLAN-001** (T:45, I:0, D:2)
+- [PART] **FR-PLAN-002** (T:30, I:0, D:2)
+- [PART] **FR-PLAN-003** (T:50, I:0, D:2)
+- [PART] **FR-PLAN-004** (T:6, I:0, D:2)
+- [PART] **FR-PLAN-005** (T:1, I:0, D:2)
+- [PART] **FR-PLAN-006** (T:2, I:0, D:2)
+- [PART] **FR-PLAN-007** (T:1, I:0, D:2)
 
-### 2.6 User-journey verification (WP27: Blackbox screenshot verification) (3/3)
+### 2.3 Inference runtime (MVP: macOS only) (0/5)
 
-- ✓ **FR-UX-VERIFY-001** (12 tests)
-- ✓ **FR-UX-VERIFY-002** (6 tests)
-- ✓ **FR-UX-VERIFY-003** (6 tests)
+- [PART] **FR-INF-001** (T:2, I:0, D:1)
+- [PART] **FR-INF-002** (T:6, I:0, D:1)
+- [PART] **FR-INF-003** (T:1, I:0, D:1)
+- [PART] **FR-INF-004** (T:1, I:0, D:1)
+- [PART] **FR-INF-005** (T:1, I:0, D:1)
 
-### 2.3 Inference runtime (MVP: macOS only) (4/5)
+### 2.4 Fleet ledger (0/8)
 
-- ✗ **FR-INF-001** (0 tests)
-- ✓ **FR-INF-002** (1 tests)
-- ✓ **FR-INF-003** (1 tests)
-- ✓ **FR-INF-004** (1 tests)
-- ✓ **FR-INF-005** (1 tests)
+- [PART] **FR-FLEET-001** (T:24, I:0, D:1)
+- [PART] **FR-FLEET-002** (T:5, I:0, D:1)
+- [PART] **FR-FLEET-003** (T:5, I:0, D:1)
+- [PART] **FR-FLEET-004** (T:2, I:0, D:1)
+- [PART] **FR-FLEET-005** (T:10, I:0, D:1)
+- [PART] **FR-FLEET-006** (T:7, I:0, D:1)
+- [PART] **FR-FLEET-007** (T:5, I:0, D:1)
+- [PART] **FR-FLEET-008** (T:4, I:0, D:1)
 

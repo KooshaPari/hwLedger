@@ -4,7 +4,7 @@
 
 use anyhow::{Context, Result};
 use clap::Parser;
-use hwledger_traceability::{CoverageReport, PrdParser, TestScanner};
+use hwledger_traceability::{AnnotationScanner, CoverageReport, CoverageLevel, PrdParser};
 use std::path::PathBuf;
 
 /// FR ↔ Test Traceability Checker
@@ -52,19 +52,19 @@ fn main() -> Result<()> {
         eprintln!("Found {} FR/NFR specifications", frs.len());
     }
 
-    // Scan tests
-    let crates_path = format!("{}/crates", repo_path);
+    // Scan all annotations (cross-dimensional)
     if args.verbose {
-        eprintln!("Scanning tests in: {}", crates_path);
+        eprintln!("Scanning annotations across all dimensions...");
     }
-    let traces = TestScanner::scan(&crates_path).context("Failed to scan test files")?;
+    let annotations = AnnotationScanner::scan(&repo_path)
+        .context("Failed to scan annotations")?;
 
     if args.verbose {
-        eprintln!("Found {} test traces", traces.len());
+        eprintln!("Found {} annotations (Traces, Implements, Constrains, Documents, Exercises)", annotations.len());
     }
 
     // Generate report
-    let report = CoverageReport::generate(frs, traces);
+    let report = CoverageReport::generate_from_annotations(frs, annotations);
 
     // Output handling
     if args.json {
@@ -83,18 +83,28 @@ fn main() -> Result<()> {
 
     // Strict mode checks
     if args.strict {
-        if !report.stats.zero_coverage_frs.is_empty() {
-            eprintln!("\nFAIL: Zero coverage FRs detected (--strict):");
-            for fr in &report.stats.zero_coverage_frs {
-                eprintln!("  - {}", fr);
-            }
-            std::process::exit(1);
-        }
+        let not_fully_traced: Vec<_> = report.frs
+            .iter()
+            .filter(|f| f.coverage != CoverageLevel::FullyTraced)
+            .collect();
 
-        if !report.stats.nonexistent_cites.is_empty() {
-            eprintln!("\nFAIL: Unknown FR citations detected (--strict):");
-            for (test, fr) in &report.stats.nonexistent_cites {
-                eprintln!("  - {} cites unknown {}", test, fr);
+        if !not_fully_traced.is_empty() {
+            eprintln!("\nFAIL: Not all FRs are FullyTraced (--strict):");
+            for cov in not_fully_traced {
+                let reason = match cov.coverage {
+                    CoverageLevel::FullyTraced => "OK".to_string(),
+                    CoverageLevel::Traced => {
+                        if cov.implementations.is_empty() {
+                            "missing impl".to_string()
+                        } else {
+                            "missing docs".to_string()
+                        }
+                    },
+                    CoverageLevel::DocOnly => "no test".to_string(),
+                    CoverageLevel::Zero => "no annotation".to_string(),
+                    CoverageLevel::Orphaned => "ignored only".to_string(),
+                };
+                eprintln!("  - {} ({})", cov.fr, reason);
             }
             std::process::exit(1);
         }
@@ -104,11 +114,22 @@ fn main() -> Result<()> {
 }
 
 fn print_report(report: &CoverageReport) {
-    println!("\n=== Traceability Report ===\n");
+    println!("\n=== Cross-Dimensional Traceability Report ===\n");
     println!("Total FRs/NFRs: {}", report.stats.total_frs);
-    println!("Covered: {} ({:.1}%)", report.stats.covered_count, report.stats.coverage_percent);
-    println!("Zero Coverage: {}", report.stats.zero_coverage_count);
-    println!("Orphaned (ignored-only): {}", report.stats.orphaned_count);
+
+    let fully_traced = report.frs.iter().filter(|f| f.coverage == CoverageLevel::FullyTraced).count();
+    let traced = report.frs.iter().filter(|f| f.coverage == CoverageLevel::Traced).count();
+    let doc_only = report.frs.iter().filter(|f| f.coverage == CoverageLevel::DocOnly).count();
+    let zero = report.frs.iter().filter(|f| f.coverage == CoverageLevel::Zero).count();
+
+    println!("Fully Traced (test + impl + docs): {} ({:.1}%)",
+        fully_traced, (fully_traced as f32 / report.stats.total_frs as f32) * 100.0);
+    println!("Traced (test + partial): {} ({:.1}%)",
+        traced, (traced as f32 / report.stats.total_frs as f32) * 100.0);
+    println!("Doc-Only (docs but no test): {} ({:.1}%)",
+        doc_only, (doc_only as f32 / report.stats.total_frs as f32) * 100.0);
+    println!("Zero Coverage: {} ({:.1}%)",
+        zero, (zero as f32 / report.stats.total_frs as f32) * 100.0);
     println!("Total Tests: {}\n", report.stats.total_tests);
 
     if !report.stats.zero_coverage_frs.is_empty() {
@@ -119,19 +140,12 @@ fn print_report(report: &CoverageReport) {
         println!();
     }
 
-    if !report.stats.nonexistent_cites.is_empty() {
-        println!("UNKNOWN FR CITATIONS (Typos):");
-        for (test, fr) in &report.stats.nonexistent_cites {
-            println!("  - {} cites unknown {}", test, fr);
-        }
-        println!();
-    }
-
     let top = report.top_covered(5);
     if !top.is_empty() {
         println!("Top 5 Best-Covered:");
         for cov in top {
-            println!("  {} ({} tests)", cov.fr, cov.test_count);
+            println!("  {} (T:{} I:{} D:{})",
+                cov.fr, cov.test_count, cov.implementations.len(), cov.documentation.len());
         }
         println!();
     }
@@ -140,15 +154,16 @@ fn print_report(report: &CoverageReport) {
     if !worst.is_empty() {
         println!("Bottom 5 Worst-Covered:");
         for cov in worst {
+            let status = match cov.coverage {
+                CoverageLevel::Zero => "ZERO",
+                CoverageLevel::DocOnly => "DOCS",
+                CoverageLevel::Traced => "PART",
+                CoverageLevel::FullyTraced => "FULL",
+                CoverageLevel::Orphaned => "IGN",
+            };
             println!(
-                "  {} ({} tests) [{}]",
-                cov.fr,
-                cov.test_count,
-                match cov.coverage {
-                    hwledger_traceability::CoverageLevel::Zero => "ZERO",
-                    hwledger_traceability::CoverageLevel::Orphaned => "ORPHANED",
-                    hwledger_traceability::CoverageLevel::Covered => "OK",
-                }
+                "  {} [{}] (T:{} I:{} D:{})",
+                cov.fr, status, cov.test_count, cov.implementations.len(), cov.documentation.len()
             );
         }
         println!();

@@ -1,4 +1,6 @@
-//! Central ledger server for hwLedger fleet management (FR-FLEET-001, FR-FLEET-002).
+//! Central ledger server for hwLedger fleet management.
+//!
+//! Implements: FR-FLEET-001, FR-FLEET-002, FR-FLEET-003, FR-FLEET-004, FR-FLEET-005, FR-FLEET-006, FR-FLEET-007, FR-FLEET-008
 //!
 //! Provides an Axum HTTP/2 server with mTLS support, accepting agent registrations,
 //! heartbeats, and job reports. SQLite backend persists agent state, device inventory,

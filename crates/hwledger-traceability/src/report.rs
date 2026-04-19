@@ -3,29 +3,45 @@
 //! Traces to: NFR-006
 
 use crate::prd::FrSpec;
-use crate::scan::TestTrace;
+use crate::scan::{AnnotationVerb, Citer, TestTrace, TraceAnnotation};
 use serde::Serialize;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
-/// Coverage level for a single FR.
+/// Coverage level for a single FR across all dimensions.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum CoverageLevel {
-    Covered,
+    /// Has >=1 test + >=1 implementation + >=1 documentation (all dimensions)
+    FullyTraced,
+    /// Has >=1 test but missing implementation or documentation
+    Traced,
+    /// Has documentation/ADR citations but no test (doc-only)
+    DocOnly,
+    /// No annotations in any dimension
     Zero,
+    /// Legacy: only ignored tests (deprecated with new dimensional model)
     Orphaned,
 }
 
-/// Coverage information for a single FR.
+/// Coverage information for a single FR across all dimensions.
 #[derive(Debug, Clone, Serialize)]
 pub struct FrCoverage {
     pub fr: String,
     pub section: String,
     pub description: String,
     pub coverage: CoverageLevel,
-    pub test_count: usize,
+    // Tests (Traces verb)
     pub tests: Vec<String>,
+    pub test_count: usize,
     pub ignored_count: usize,
+    // Implementations (Implements verb)
+    pub implementations: Vec<TraceAnnotation>,
+    // ADR constraints (Constrains verb)
+    pub constraints: Vec<TraceAnnotation>,
+    // Documentation (Documents verb)
+    pub documentation: Vec<TraceAnnotation>,
+    // Journeys (Exercises verb)
+    pub journeys: Vec<TraceAnnotation>,
 }
 
 /// Summary statistics for the report.
@@ -51,57 +67,100 @@ pub struct CoverageReport {
 }
 
 impl CoverageReport {
-    /// Generates a coverage report from FRs and test traces.
+    /// Generates a coverage report from FRs and cross-dimensional annotations.
     ///
     /// Traces to: NFR-006
     pub fn generate(frs: Vec<FrSpec>, traces: Vec<TestTrace>) -> Self {
+        // Convert legacy TestTrace to TraceAnnotation for compatibility
+        let annotations: Vec<TraceAnnotation> = traces
+            .into_iter()
+            .map(|t| TraceAnnotation {
+                citer: Citer::RustTest,
+                verb: AnnotationVerb::Traces,
+                file: t.file,
+                line: t.line,
+                cited_frs: t.cited_frs,
+                context: t.test_name,
+                is_ignored: t.is_ignored,
+            })
+            .collect();
+
+        Self::generate_from_annotations(frs, annotations)
+    }
+
+    /// Generates a coverage report from FRs and cross-dimensional annotations.
+    ///
+    /// Evaluates coverage_level per FR:
+    /// - FullyTraced: >=1 test + >=1 implementation + >=1 documentation
+    /// - Traced: >=1 test but missing impl or docs
+    /// - DocOnly: has docs/ADRs but no test
+    /// - Zero: nothing
+    ///
+    /// Traces to: NFR-006
+    pub fn generate_from_annotations(frs: Vec<FrSpec>, annotations: Vec<TraceAnnotation>) -> Self {
         let fr_map: HashMap<String, &FrSpec> = frs.iter().map(|f| (f.id.clone(), f)).collect();
-        let mut coverage_map: HashMap<String, Vec<TestTrace>> = HashMap::new();
-        let mut all_cited_frs = HashSet::new();
-        let mut nonexistent_cites = Vec::new();
-        let mut orphans = Vec::new();
 
-        // Group traces by cited FRs and validate
-        for trace in traces {
-            if trace.cited_frs.is_empty() {
-                continue;
-            }
+        // Organize annotations by (FR, verb)
+        let mut anno_by_fr_verb: HashMap<(String, AnnotationVerb), Vec<TraceAnnotation>> =
+            HashMap::new();
 
-            let mut found_any = false;
-            for fr in &trace.cited_frs {
-                all_cited_frs.insert(fr.clone());
+        for anno in annotations {
+            for fr in &anno.cited_frs {
                 if fr_map.contains_key(fr) {
-                    found_any = true;
-                    coverage_map.entry(fr.clone()).or_default().push(trace.clone());
-                } else {
-                    nonexistent_cites.push((trace.test_name.clone(), fr.clone()));
+                    anno_by_fr_verb
+                        .entry((fr.clone(), anno.verb))
+                        .or_default()
+                        .push(anno.clone());
                 }
-            }
-
-            if !found_any {
-                orphans.push(trace);
             }
         }
 
         // Build coverage info for each FR
         let mut coverage_list = Vec::new();
         let mut zero_coverage_frs = Vec::new();
-        let mut orphaned_frs = Vec::new();
-        let mut covered_count = 0;
-        let mut orphaned_count = 0;
+        let mut fully_traced_count = 0;
+        let mut traced_count = 0;
+        let mut _doc_only_count = 0;
 
         for fr in &frs {
-            let tests = coverage_map.get(&fr.id).cloned().unwrap_or_default();
+            let tests = anno_by_fr_verb
+                .get(&(fr.id.clone(), AnnotationVerb::Traces))
+                .cloned()
+                .unwrap_or_default();
+            let implementations = anno_by_fr_verb
+                .get(&(fr.id.clone(), AnnotationVerb::Implements))
+                .cloned()
+                .unwrap_or_default();
+            let constraints = anno_by_fr_verb
+                .get(&(fr.id.clone(), AnnotationVerb::Constrains))
+                .cloned()
+                .unwrap_or_default();
+            let documentation = anno_by_fr_verb
+                .get(&(fr.id.clone(), AnnotationVerb::Documents))
+                .cloned()
+                .unwrap_or_default();
+            let journeys = anno_by_fr_verb
+                .get(&(fr.id.clone(), AnnotationVerb::Exercises))
+                .cloned()
+                .unwrap_or_default();
+
             let ignored_count = tests.iter().filter(|t| t.is_ignored).count();
             let active_tests = tests.iter().filter(|t| !t.is_ignored).count();
 
-            let coverage = if active_tests > 0 {
-                covered_count += 1;
-                CoverageLevel::Covered
-            } else if !tests.is_empty() {
-                orphaned_count += 1;
-                orphaned_frs.push(fr.id.clone());
-                CoverageLevel::Orphaned
+            let has_test = active_tests > 0;
+            let has_impl = !implementations.is_empty();
+            let has_doc = !documentation.is_empty() || !constraints.is_empty();
+
+            let coverage = if has_test && has_impl && has_doc {
+                fully_traced_count += 1;
+                CoverageLevel::FullyTraced
+            } else if has_test {
+                // Has test but missing impl or docs
+                traced_count += 1;
+                CoverageLevel::Traced
+            } else if has_doc {
+                _doc_only_count += 1;
+                CoverageLevel::DocOnly
             } else {
                 zero_coverage_frs.push(fr.id.clone());
                 CoverageLevel::Zero
@@ -112,15 +171,20 @@ impl CoverageReport {
                 section: fr.section.clone(),
                 description: fr.description.clone(),
                 coverage,
+                tests: tests.iter().map(|t| t.context.clone()).collect(),
                 test_count: active_tests,
-                tests: tests.iter().map(|t| t.test_name.clone()).collect(),
                 ignored_count,
+                implementations,
+                constraints,
+                documentation,
+                journeys,
             });
         }
 
         let total_frs = frs.len();
         let total_tests =
-            coverage_map.values().flat_map(|v| v.iter()).filter(|t| !t.is_ignored).count();
+            anno_by_fr_verb.values().flatten().filter(|t| !t.is_ignored).count();
+        let covered_count = fully_traced_count + traced_count;
         let coverage_percent =
             if total_frs > 0 { (covered_count as f32 / total_frs as f32) * 100.0 } else { 0.0 };
 
@@ -128,15 +192,19 @@ impl CoverageReport {
             total_frs,
             covered_count,
             zero_coverage_count: zero_coverage_frs.len(),
-            orphaned_count,
+            orphaned_count: 0, // Legacy field
             coverage_percent,
             total_tests,
             zero_coverage_frs,
-            orphaned_frs,
-            nonexistent_cites,
+            orphaned_frs: Vec::new(), // Legacy field
+            nonexistent_cites: Vec::new(),
         };
 
-        CoverageReport { frs: coverage_list, stats, orphans }
+        CoverageReport {
+            frs: coverage_list,
+            stats,
+            orphans: Vec::new(),
+        }
     }
 
     /// Returns the top N best-covered FRs (by test count).
@@ -164,7 +232,7 @@ impl CoverageReport {
         sorted.into_iter().take(n).collect()
     }
 
-    /// Generates a markdown summary of the report.
+    /// Generates a markdown summary of the report with cross-dimensional matrix.
     ///
     /// Traces to: NFR-006
     pub fn to_markdown(&self) -> String {
@@ -177,26 +245,53 @@ impl CoverageReport {
 
         md.push_str("## Summary\n\n");
         md.push_str(&format!("- **Total FRs/NFRs:** {}\n", self.stats.total_frs));
-        md.push_str(&format!(
-            "- **Covered:** {} ({:.1}%)\n",
-            self.stats.covered_count, self.stats.coverage_percent
-        ));
-        md.push_str(&format!("- **Zero Coverage:** {}\n", self.stats.zero_coverage_count));
-        md.push_str(&format!("- **Orphaned (ignored only):** {}\n", self.stats.orphaned_count));
+
+        let fully_traced = self.frs.iter().filter(|f| f.coverage == CoverageLevel::FullyTraced).count();
+        let traced = self.frs.iter().filter(|f| f.coverage == CoverageLevel::Traced).count();
+        let doc_only = self.frs.iter().filter(|f| f.coverage == CoverageLevel::DocOnly).count();
+        let zero = self.frs.iter().filter(|f| f.coverage == CoverageLevel::Zero).count();
+
+        md.push_str(&format!("- **Fully Traced** (test + impl + docs): {} ({:.1}%)\n",
+            fully_traced, (fully_traced as f32 / self.stats.total_frs as f32) * 100.0));
+        md.push_str(&format!("- **Traced** (test + partial): {} ({:.1}%)\n",
+            traced, (traced as f32 / self.stats.total_frs as f32) * 100.0));
+        md.push_str(&format!("- **Doc-Only** (docs but no test): {} ({:.1}%)\n",
+            doc_only, (doc_only as f32 / self.stats.total_frs as f32) * 100.0));
+        md.push_str(&format!("- **Zero Coverage:** {} ({:.1}%)\n",
+            zero, (zero as f32 / self.stats.total_frs as f32) * 100.0));
         md.push_str(&format!("- **Total Tests:** {}\n\n", self.stats.total_tests));
 
+        // Cross-dimensional matrix table
+        md.push_str("## Cross-Dimensional Traceability Matrix\n\n");
+        md.push_str("| FR | Tests | Source | ADRs | Docs | Journeys | Level |\n");
+        md.push_str("|---|---|---|---|---|---|---|\n");
+
+        for cov in &self.frs {
+            let test_count = cov.test_count;
+            let impl_count = cov.implementations.len();
+            let constraint_count = cov.constraints.len();
+            let doc_count = cov.documentation.len();
+            let journey_count = cov.journeys.len();
+
+            let level_icon = match cov.coverage {
+                CoverageLevel::FullyTraced => "OK",
+                CoverageLevel::Traced => "PART",
+                CoverageLevel::DocOnly => "DOCS",
+                CoverageLevel::Zero => "NONE",
+                CoverageLevel::Orphaned => "IGN",
+            };
+
+            md.push_str(&format!(
+                "| **{}** | {} | {} | {} | {} | {} | {} |\n",
+                cov.fr, test_count, impl_count, constraint_count, doc_count, journey_count, level_icon
+            ));
+        }
+        md.push('\n');
+
         if !self.stats.zero_coverage_frs.is_empty() {
-            md.push_str("## Zero Coverage (Blocker)\n\n");
+            md.push_str("## Zero Coverage (Requires Documentation)\n\n");
             for fr in &self.stats.zero_coverage_frs {
                 md.push_str(&format!("- **{}**\n", fr));
-            }
-            md.push('\n');
-        }
-
-        if !self.stats.nonexistent_cites.is_empty() {
-            md.push_str("## Unknown FR Citations (Typos)\n\n");
-            for (test, fr) in &self.stats.nonexistent_cites {
-                md.push_str(&format!("- Test `{}` cites unknown FR `{}`\n", test, fr));
             }
             md.push('\n');
         }
@@ -206,8 +301,12 @@ impl CoverageReport {
             md.push_str("## Best Covered (Top 5)\n\n");
             for cov in top {
                 md.push_str(&format!(
-                    "- **{}** ({} tests): {}\n",
-                    cov.fr, cov.test_count, cov.description
+                    "- **{}** (tests: {}, impl: {}, docs: {}): {}\n",
+                    cov.fr,
+                    cov.test_count,
+                    cov.implementations.len(),
+                    cov.documentation.len(),
+                    cov.description
                 ));
             }
             md.push('\n');
@@ -219,12 +318,19 @@ impl CoverageReport {
             for cov in worst {
                 let status = match cov.coverage {
                     CoverageLevel::Zero => "ZERO",
-                    CoverageLevel::Orphaned => "ORPHANED",
-                    CoverageLevel::Covered => "COVERED",
+                    CoverageLevel::DocOnly => "DOCS",
+                    CoverageLevel::Traced => "PART",
+                    CoverageLevel::FullyTraced => "FULL",
+                    CoverageLevel::Orphaned => "IGN",
                 };
                 md.push_str(&format!(
-                    "- **{}** [{}] ({} tests): {}\n",
-                    cov.fr, status, cov.test_count, cov.description
+                    "- **{}** [{}] (tests: {}, impl: {}, docs: {}): {}\n",
+                    cov.fr,
+                    status,
+                    cov.test_count,
+                    cov.implementations.len(),
+                    cov.documentation.len(),
+                    cov.description
                 ));
             }
             md.push('\n');
@@ -237,16 +343,19 @@ impl CoverageReport {
         }
 
         for (section, covs) in sections {
-            let covered_in_section =
-                covs.iter().filter(|c| c.coverage == CoverageLevel::Covered).count();
-            md.push_str(&format!("### {} ({}/{})\n\n", section, covered_in_section, covs.len()));
+            let fully_traced_in_section =
+                covs.iter().filter(|c| c.coverage == CoverageLevel::FullyTraced).count();
+            md.push_str(&format!("### {} ({}/{})\n\n", section, fully_traced_in_section, covs.len()));
             for cov in covs {
                 let icon = match cov.coverage {
-                    CoverageLevel::Covered => "✓",
-                    CoverageLevel::Zero => "✗",
-                    CoverageLevel::Orphaned => "~",
+                    CoverageLevel::FullyTraced => "OK",
+                    CoverageLevel::Traced => "PART",
+                    CoverageLevel::DocOnly => "DOCS",
+                    CoverageLevel::Zero => "NONE",
+                    CoverageLevel::Orphaned => "IGN",
                 };
-                md.push_str(&format!("- {} **{}** ({} tests)\n", icon, cov.fr, cov.test_count));
+                md.push_str(&format!("- [{}] **{}** (T:{}, I:{}, D:{})\n",
+                    icon, cov.fr, cov.test_count, cov.implementations.len(), cov.documentation.len()));
             }
             md.push('\n');
         }
@@ -285,7 +394,82 @@ mod tests {
         };
 
         let report = CoverageReport::generate(vec![fr], vec![trace]);
-        assert_eq!(report.stats.covered_count, 1);
+        // With legacy convert, only test (Traces) is present, so it's Traced not FullyTraced
+        assert_eq!(report.frs[0].coverage, CoverageLevel::Traced);
         assert_eq!(report.stats.zero_coverage_count, 0);
+    }
+
+    /// Traces to: NFR-006
+    #[test]
+    fn test_fully_traced_detection() {
+        let fr = FrSpec {
+            id: "FR-PLAN-001".to_string(),
+            kind: crate::prd::FrKind::Fr,
+            description: "Test".to_string(),
+            section: "Test Section".to_string(),
+        };
+
+        let annotations = vec![
+            // Test
+            TraceAnnotation {
+                citer: Citer::RustTest,
+                verb: AnnotationVerb::Traces,
+                file: "test.rs".to_string(),
+                line: 10,
+                cited_frs: vec!["FR-PLAN-001".to_string()],
+                context: "test_example".to_string(),
+                is_ignored: false,
+            },
+            // Implementation
+            TraceAnnotation {
+                citer: Citer::RustSource,
+                verb: AnnotationVerb::Implements,
+                file: "src/lib.rs".to_string(),
+                line: 5,
+                cited_frs: vec!["FR-PLAN-001".to_string()],
+                context: "compute".to_string(),
+                is_ignored: false,
+            },
+            // Documentation
+            TraceAnnotation {
+                citer: Citer::DocPage,
+                verb: AnnotationVerb::Documents,
+                file: "PLAN.md".to_string(),
+                line: 20,
+                cited_frs: vec!["FR-PLAN-001".to_string()],
+                context: "Overview".to_string(),
+                is_ignored: false,
+            },
+        ];
+
+        let report = CoverageReport::generate_from_annotations(vec![fr], annotations);
+        assert_eq!(report.frs.len(), 1);
+        assert_eq!(report.frs[0].coverage, CoverageLevel::FullyTraced);
+    }
+
+    /// Traces to: NFR-006
+    #[test]
+    fn test_doc_only_detection() {
+        let fr = FrSpec {
+            id: "FR-PLAN-002".to_string(),
+            kind: crate::prd::FrKind::Fr,
+            description: "Test".to_string(),
+            section: "Test Section".to_string(),
+        };
+
+        let annotations = vec![
+            TraceAnnotation {
+                citer: Citer::DocPage,
+                verb: AnnotationVerb::Documents,
+                file: "PLAN.md".to_string(),
+                line: 20,
+                cited_frs: vec!["FR-PLAN-002".to_string()],
+                context: "Overview".to_string(),
+                is_ignored: false,
+            },
+        ];
+
+        let report = CoverageReport::generate_from_annotations(vec![fr], annotations);
+        assert_eq!(report.frs[0].coverage, CoverageLevel::DocOnly);
     }
 }

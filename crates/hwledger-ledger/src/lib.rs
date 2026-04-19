@@ -1,5 +1,7 @@
 //! Event-sourced audit log for hwLedger fleet operations.
 //!
+//! Implements: FR-FLEET-006
+//!
 //! Wraps `phenotype-event-sourcing` (provides `EventStore` trait, in-memory backend,
 //! hash-chain verification via `compute_hash` + `verify_chain`) with hwLedger-specific
 //! event payloads and a thin adapter layer for JSON serialization.
@@ -7,8 +9,6 @@
 //! The upstream crate exposes a generic `EventStore` that works with any `Serialize` type;
 //! we parameterize it with `HwLedgerEvent` and adapt the `EventEnvelope<HwLedgerEvent>`
 //! for storage and retrieval.
-//!
-//! Traces to: FR-FLEET-006 (event-sourced audit log).
 
 pub mod error;
 pub mod event;

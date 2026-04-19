@@ -1,5 +1,7 @@
 //! Blackbox screenshot verification via Claude VLM + LLM-judge equivalence.
 //!
+//! Implements: FR-UX-VERIFY-001, FR-UX-VERIFY-002, FR-UX-VERIFY-003
+//!
 //! This crate provides a verification harness for user-journey screenshots.
 //! It leverages Claude Opus 4.7 for vision-based description and Claude Sonnet 4.6
 //! for equivalence judging (intent vs. description match).

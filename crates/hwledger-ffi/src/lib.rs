@@ -1,11 +1,9 @@
 //! C FFI surface for hwLedger — single FFI contract for SwiftUI, WinUI, Qt.
 //!
+//! Implements: FR-UI-001
+//!
 //! Provides memory planning, hardware probing, and model ingestion via C-compatible exports.
 //! Language bindings: UniFFI for Swift/C#, cxx-qt for Qt, cbindgen for raw C.
-//!
-//! ## Tracing
-//!
-//! All public functions trace to either FR-UI-001, FR-PLAN-003, or FR-TEL-002.
 
 use hwledger_arch::{classify, Config as ArchConfig};
 use hwledger_core::math::{AttentionKind, KvFormula};

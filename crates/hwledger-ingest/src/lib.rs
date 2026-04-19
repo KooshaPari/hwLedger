@@ -1,5 +1,7 @@
 //! Model metadata ingestion pipeline for hwLedger.
 //!
+//! Implements: FR-PLAN-001
+//!
 //! Supports multiple sources: Hugging Face Hub, local GGUF files, local safetensors,
 //! and local model catalogs (Ollama, LM Studio, MLX). Each adapter returns a common
 //! [`IngestResult`] with parsed model metadata and architecture classification.
