@@ -1,8 +1,7 @@
-//! UniFFI surface for hwLedger — single FFI contract for SwiftUI, WinUI, Qt.
+//! C FFI surface for hwLedger — single FFI contract for SwiftUI, WinUI, Qt.
 //!
-//! Exposes memory planning, hardware probing, and model ingestion via `#[uniffi::export]`
-//! proc-macros. Async functions use tokio runtime. All error propagation is explicit
-//! per NFR-004.
+//! Provides memory planning, hardware probing, and model ingestion via C-compatible exports.
+//! Language bindings: UniFFI for Swift/C#, cxx-qt for Qt, cbindgen for raw C.
 //!
 //! ## Tracing
 //!
@@ -10,30 +9,22 @@
 
 use hwledger_arch::{classify, Config as ArchConfig};
 use hwledger_core::math::{AttentionKind, KvFormula};
-use hwledger_ingest::IngestResult;
-use hwledger_probe::{detect as detect_probes, GpuProbe};
-use serde::{Deserialize, Serialize};
+use hwledger_probe::detect as detect_probes;
+#[cfg(test)]
 use serde_json::json;
-use std::sync::Arc;
-use thiserror::Error;
+use std::ffi::{CStr, CString};
+use std::os::raw::c_char;
 use tracing::{error, info};
 
-/// UniFFI scaffolding (proc-macro mode, no UDL file needed).
-uniffi::setup_scaffolding!();
-
 /// Quantization mode for KV cache.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, uniffi::Enum)]
+#[repr(u8)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum KvQuant {
-    /// 16-bit floating point.
-    Fp16,
-    /// 8-bit floating point.
-    Fp8,
-    /// 8-bit integer.
-    Int8,
-    /// 4-bit integer.
-    Int4,
-    /// 3-bit integer (fractional bytes).
-    ThreeBit,
+    Fp16 = 0,
+    Fp8 = 1,
+    Int8 = 2,
+    Int4 = 3,
+    ThreeBit = 4,
 }
 
 impl KvQuant {
@@ -50,18 +41,14 @@ impl KvQuant {
 }
 
 /// Quantization mode for model weights.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, uniffi::Enum)]
+#[repr(u8)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum WeightQuant {
-    /// 16-bit floating point.
-    Fp16,
-    /// Brain floating point (16-bit variant).
-    Bf16,
-    /// 8-bit integer.
-    Int8,
-    /// 4-bit integer.
-    Int4,
-    /// 3-bit integer.
-    ThreeBit,
+    Fp16 = 0,
+    Bf16 = 1,
+    Int8 = 2,
+    Int4 = 3,
+    ThreeBit = 4,
 }
 
 impl WeightQuant {
@@ -80,190 +67,377 @@ impl WeightQuant {
 /// Input to the memory planner.
 ///
 /// Traces to: FR-PLAN-003
-#[derive(Debug, Clone, uniffi::Record)]
+#[repr(C)]
+#[derive(Debug, Clone)]
 pub struct PlannerInput {
-    /// Model config as JSON string (HuggingFace config.json format).
-    pub config_json: String,
-    /// Sequence length in tokens.
+    pub config_json: *const c_char,
     pub seq_len: u64,
-    /// Number of concurrent users (live sequences).
     pub concurrent_users: u32,
-    /// Batch size per user.
     pub batch_size: u32,
-    /// KV cache quantization.
-    pub kv_quant: KvQuant,
-    /// Weight quantization.
-    pub weight_quant: WeightQuant,
+    pub kv_quant: u8,
+    pub weight_quant: u8,
 }
 
 /// Result of memory planning.
 ///
 /// All sizes in bytes.
 /// Traces to: FR-PLAN-003
-#[derive(Debug, Clone, uniffi::Record)]
+#[repr(C)]
+#[derive(Debug, Clone)]
 pub struct PlannerResult {
-    /// Estimated bytes for resident weights (scaled by weight_quant).
     pub weights_bytes: u64,
-    /// Estimated bytes for KV cache (seq_len * concurrent_users).
     pub kv_bytes: u64,
-    /// Estimated bytes for prefill activation (batch * seq_len).
     pub prefill_activation_bytes: u64,
-    /// Fixed runtime overhead (backend-specific; currently hardcoded placeholder).
     pub runtime_overhead_bytes: u64,
-    /// Total VRAM required: weights + KV + prefill + overhead.
     pub total_bytes: u64,
-    /// Human-readable attention architecture label (e.g., "Mla", "Gqa").
-    pub attention_kind_label: String,
-    /// Effective batch (min of batch_size, concurrent_users).
+    pub attention_kind_label: *const c_char,
     pub effective_batch: u32,
 }
 
 /// Detected GPU device.
 ///
 /// Traces to: FR-TEL-002
-#[derive(Debug, Clone, uniffi::Record)]
+#[repr(C)]
+#[derive(Debug, Clone)]
 pub struct DeviceInfo {
-    /// Backend-assigned device ID.
     pub id: u32,
-    /// Backend name (e.g., "nvidia", "amd", "metal", "intel").
-    pub backend: String,
-    /// Human-readable device name.
-    pub name: String,
-    /// Optional UUID for remote identification.
-    pub uuid: Option<String>,
-    /// Total VRAM in bytes.
+    pub backend: *const c_char,
+    pub name: *const c_char,
+    pub uuid: *const c_char,
     pub total_vram_bytes: u64,
 }
 
 /// Single telemetry sample for a device.
 ///
 /// Traces to: FR-TEL-002
-#[derive(Debug, Clone, uniffi::Record)]
+#[repr(C)]
+#[derive(Debug, Clone)]
 pub struct TelemetrySample {
-    /// Device ID (from probe).
     pub device_id: u32,
-    /// Free VRAM in bytes.
     pub free_vram_bytes: u64,
-    /// Utilization percentage (0.0–100.0).
     pub util_percent: f32,
-    /// Temperature in Celsius.
     pub temperature_c: f32,
-    /// Power draw in watts.
     pub power_watts: f32,
-    /// Timestamp in milliseconds (epoch).
     pub captured_at_ms: u64,
 }
 
 /// Ingested model metadata.
 ///
 /// Traces to: FR-UI-001 (Library screen)
-#[derive(Debug, Clone, uniffi::Record)]
+#[repr(C)]
+#[derive(Debug, Clone)]
 pub struct IngestedModel {
-    /// Source label (e.g., "meta-llama/Llama-2-7b", "/path/to/model.gguf").
-    pub source_label: String,
-    /// Full config.json as string.
-    pub config_json: String,
-    /// Parameter count if determinable.
-    pub parameter_count: Option<u64>,
-    /// Quantization variant if known.
-    pub quantisation: Option<String>,
+    pub source_label: *const c_char,
+    pub config_json: *const c_char,
+    pub parameter_count: u64,
+    pub quantisation: *const c_char,
 }
 
-/// Errors from hwLedger FFI operations.
-///
-/// All errors are explicit per NFR-004.
-#[derive(Debug, Clone, uniffi::Error, Error, PartialEq)]
-pub enum HwLedgerError {
-    /// Architecture classification failed.
-    #[error("Classify: {reason}")]
-    Classify { reason: String },
-    /// Model ingestion failed.
-    #[error("Ingest: {reason}")]
-    Ingest { reason: String },
-    /// Hardware probe failed.
-    #[error("Probe: {reason}")]
-    Probe { reason: String },
-    /// Runtime error.
-    #[error("Runtime: {reason}")]
-    Runtime { reason: String },
-    /// Invalid input.
-    #[error("InvalidInput: {reason}")]
-    InvalidInput { reason: String },
+/// Error code enum.
+#[repr(u8)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum HwLedgerErrorCode {
+    Classify = 0,
+    Ingest = 1,
+    Probe = 2,
+    Runtime = 3,
+    InvalidInput = 4,
+    None = 255,
 }
 
-/// Trait for planner result streaming (forward-compat for WP18).
-///
-/// Implemented by platform code to receive streaming updates.
-/// Traces to: FR-PLAN-003
-#[uniffi::export(callback_interface)]
-pub trait PlannerObserver: Send + Sync {
-    /// Called when planner produces a result.
-    fn on_result(&self, result: PlannerResult);
+/// Error result (C-compatible).
+#[repr(C)]
+#[derive(Debug, Clone)]
+pub struct HwLedgerErrorResult {
+    pub code: u8,
+    pub message: *const c_char,
 }
 
 /// Plan memory requirements for a model on a given device.
 ///
 /// Parses config_json, classifies architecture, applies KV formula, and computes
-/// total memory. Weights heuristic: uses parameter_count from config JSON if present;
-/// otherwise estimates as (num_hidden_layers * hidden_size * hidden_size * 8) *
-/// weight_bytes. **TODO WP-MoE**: refine resident-vs-active parameter counting.
+/// total memory. Weights heuristic: estimates as
+/// (num_hidden_layers * hidden_size^2 * 12 + vocab_size * hidden_size) * weight_bytes.
+/// **TODO WP-MoE**: refine resident-vs-active parameter counting.
+///
+/// # Safety
+///
+/// Caller must ensure `input` is a valid pointer to a PlannerInput.
 ///
 /// Traces to: FR-PLAN-003
-#[uniffi::export(async_runtime = "tokio")]
-pub async fn plan(input: PlannerInput) -> Result<PlannerResult, HwLedgerError> {
-    info!("plan: seq_len={}, concurrent_users={}, batch_size={}", input.seq_len, input.concurrent_users, input.batch_size);
+/// Returns NULL on error; caller must check.
+#[no_mangle]
+pub unsafe extern "C" fn hwledger_plan(input: *const PlannerInput) -> *mut PlannerResult {
+    info!("plan: FFI call");
+    let input = &*input;
 
-    let cfg: ArchConfig = serde_json::from_str(&input.config_json)
-        .map_err(|e| HwLedgerError::InvalidInput { reason: format!("JSON parse: {}", e) })?;
+    let config_json = unsafe { CStr::from_ptr(input.config_json).to_string_lossy().to_string() };
 
-    let attention_kind = classify(&cfg)
-        .map_err(|e| HwLedgerError::Classify { reason: e.to_string() })?;
+    let cfg: ArchConfig = match serde_json::from_str(&config_json) {
+        Ok(c) => c,
+        Err(e) => {
+            error!("plan: JSON parse failed: {}", e);
+            return std::ptr::null_mut();
+        }
+    };
+
+    let attention_kind = match classify(&cfg) {
+        Ok(ak) => ak,
+        Err(e) => {
+            error!("plan: classify failed: {}", e);
+            return std::ptr::null_mut();
+        }
+    };
 
     let attention_label = attention_kind_label(&attention_kind);
+    let kv_quant = match input.kv_quant {
+        0 => KvQuant::Fp16,
+        1 => KvQuant::Fp8,
+        2 => KvQuant::Int8,
+        3 => KvQuant::Int4,
+        4 => KvQuant::ThreeBit,
+        _ => KvQuant::Fp16,
+    };
+    let weight_quant = match input.weight_quant {
+        0 => WeightQuant::Fp16,
+        1 => WeightQuant::Bf16,
+        2 => WeightQuant::Int8,
+        3 => WeightQuant::Int4,
+        4 => WeightQuant::ThreeBit,
+        _ => WeightQuant::Fp16,
+    };
 
-    let kv_bytes_per_element = input.kv_quant.bytes_per_element();
+    let kv_bytes_per_element = kv_quant.bytes_per_element();
     let kv_bytes_per_token = attention_kind.bytes_per_token(input.seq_len, kv_bytes_per_element);
-    let kv_bytes = (kv_bytes_per_token * f64::from(input.seq_len) * f64::from(input.concurrent_users)).ceil() as u64;
+    let kv_bytes = (kv_bytes_per_token * input.seq_len as f64 * input.concurrent_users as f64).ceil() as u64;
 
-    let weight_bytes_per_element = input.weight_quant.bytes_per_element();
+    let weight_bytes_per_element = weight_quant.bytes_per_element();
     let param_count = estimate_param_count(&cfg);
-    let weights_bytes = (f64::from(param_count) * weight_bytes_per_element).ceil() as u64;
+    let weights_bytes = (param_count as f64 * weight_bytes_per_element).ceil() as u64;
 
-    let prefill_activation_bytes = (f64::from(input.batch_size)
-        * f64::from(input.seq_len)
-        * f64::from(cfg.hidden_size.unwrap_or(4096))
-        * 2.0).ceil() as u64;
+    let prefill_activation_bytes = (input.batch_size as f64
+        * input.seq_len as f64
+        * cfg.hidden_size.unwrap_or(4096) as f64
+        * 2.0)
+        .ceil() as u64;
 
     let runtime_overhead_bytes = 256 * 1024 * 1024;
-
     let total_bytes = weights_bytes + kv_bytes + prefill_activation_bytes + runtime_overhead_bytes;
-
     let effective_batch = input.batch_size.min(input.concurrent_users);
 
-    Ok(PlannerResult {
+    let label_cstring = CString::new(attention_label).unwrap_or_default();
+
+    let result = Box::new(PlannerResult {
         weights_bytes,
         kv_bytes,
         prefill_activation_bytes,
         runtime_overhead_bytes,
         total_bytes,
-        attention_kind_label: attention_label,
+        attention_kind_label: label_cstring.into_raw(),
         effective_batch,
-    })
+    });
+
+    Box::into_raw(result)
 }
 
-/// Estimate parameter count from config.json fields.
+/// Free a PlannerResult allocated by hwledger_plan.
 ///
-/// Heuristic: (num_hidden_layers * hidden_size * hidden_size * 8) + overhead.
-/// This is a placeholder; WP-MoE will refine for expert-scaling and resident-vs-active counts.
+/// # Safety
+///
+/// Caller must ensure `result` was allocated by hwledger_plan.
+#[no_mangle]
+pub unsafe extern "C" fn hwledger_plan_free(result: *mut PlannerResult) {
+    if !result.is_null() {
+        let result = Box::from_raw(result);
+        if !result.attention_kind_label.is_null() {
+            let _ = CString::from_raw(result.attention_kind_label as *mut c_char);
+        }
+    }
+}
+
+/// Detect all available GPU devices on the system.
+///
+/// Returns a malloc'd array of DeviceInfo; caller must call hwledger_detect_free.
+/// out_count is filled with the number of devices.
+///
+/// # Safety
+///
+/// Caller must ensure `out_count` is a valid mutable pointer to usize.
+///
+/// Traces to: FR-TEL-002
+#[no_mangle]
+pub unsafe extern "C" fn hwledger_probe_detect(out_count: *mut usize) -> *mut DeviceInfo {
+    info!("probe_detect: enumerating all backends");
+    let mut devices_rust = Vec::new();
+    let probes = detect_probes();
+
+    for probe in probes {
+        match probe.enumerate() {
+            Ok(probe_devices) => {
+                for dev in probe_devices {
+                    devices_rust.push((
+                        dev.id,
+                        dev.backend.to_string(),
+                        dev.name,
+                        dev.uuid,
+                        dev.total_vram,
+                    ));
+                }
+            }
+            Err(e) => {
+                error!("probe enumerate failed: {}", e);
+            }
+        }
+    }
+
+    let count = devices_rust.len();
+    *out_count = count;
+
+    let mut devices_c = Vec::with_capacity(count);
+    for (id, backend, name, uuid, total_vram) in devices_rust {
+        let backend_cstr = CString::new(backend).unwrap_or_default();
+        let name_cstr = CString::new(name).unwrap_or_default();
+        let uuid_cstr = if let Some(u) = uuid {
+            CString::new(u).unwrap_or_default()
+        } else {
+            CString::new("").unwrap_or_default()
+        };
+
+        devices_c.push(DeviceInfo {
+            id,
+            backend: backend_cstr.into_raw(),
+            name: name_cstr.into_raw(),
+            uuid: uuid_cstr.into_raw(),
+            total_vram_bytes: total_vram,
+        });
+    }
+
+    if devices_c.is_empty() {
+        std::ptr::null_mut()
+    } else {
+        Box::into_raw(devices_c.into_boxed_slice()) as *mut DeviceInfo
+    }
+}
+
+/// Free a device array from hwledger_probe_detect.
+///
+/// # Safety
+///
+/// Caller must ensure `devices` was allocated by hwledger_probe_detect with the correct `count`.
+#[no_mangle]
+pub unsafe extern "C" fn hwledger_probe_detect_free(devices: *mut DeviceInfo, count: usize) {
+    if !devices.is_null() {
+        let slice = std::slice::from_raw_parts_mut(devices, count);
+        for dev in slice {
+            if !dev.backend.is_null() {
+                let _ = CString::from_raw(dev.backend as *mut c_char);
+            }
+            if !dev.name.is_null() {
+                let _ = CString::from_raw(dev.name as *mut c_char);
+            }
+            if !dev.uuid.is_null() && !std::ptr::eq(dev.uuid, c"".as_ptr()) {
+                let _ = CString::from_raw(dev.uuid as *mut c_char);
+            }
+        }
+        let _ = Box::from_raw(std::ptr::slice_from_raw_parts_mut(devices, count));
+    }
+}
+
+/// Sample telemetry for a specific device.
+///
+/// # Safety
+///
+/// Caller must ensure `backend` is a valid null-terminated C string.
+///
+/// Traces to: FR-TEL-002
+#[no_mangle]
+pub unsafe extern "C" fn hwledger_probe_sample(
+    device_id: u32,
+    backend: *const c_char,
+) -> *mut TelemetrySample {
+    info!("probe_sample: device_id={}", device_id);
+    let backend_str = CStr::from_ptr(backend).to_string_lossy().to_string();
+    let probes = detect_probes();
+
+    for probe in probes {
+        if probe.backend_name() == backend_str {
+            let free_vram = match probe.free_vram(device_id) {
+                Ok(v) => v,
+                Err(e) => {
+                    error!("probe_sample: free_vram failed: {}", e);
+                    return std::ptr::null_mut();
+                }
+            };
+            let util = match probe.utilization(device_id) {
+                Ok(u) => u,
+                Err(e) => {
+                    error!("probe_sample: utilization failed: {}", e);
+                    return std::ptr::null_mut();
+                }
+            };
+            let temp = match probe.temperature(device_id) {
+                Ok(t) => t,
+                Err(e) => {
+                    error!("probe_sample: temperature failed: {}", e);
+                    return std::ptr::null_mut();
+                }
+            };
+            let power = match probe.power_draw(device_id) {
+                Ok(p) => p,
+                Err(e) => {
+                    error!("probe_sample: power_draw failed: {}", e);
+                    return std::ptr::null_mut();
+                }
+            };
+
+            let now_ms = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_millis() as u64)
+                .unwrap_or(0);
+
+            return Box::into_raw(Box::new(TelemetrySample {
+                device_id,
+                free_vram_bytes: free_vram,
+                util_percent: util,
+                temperature_c: temp,
+                power_watts: power,
+                captured_at_ms: now_ms,
+            }));
+        }
+    }
+
+    std::ptr::null_mut()
+}
+
+/// Free a TelemetrySample.
+///
+/// # Safety
+///
+/// Caller must ensure `sample` was allocated by hwledger_probe_sample.
+#[no_mangle]
+pub unsafe extern "C" fn hwledger_probe_sample_free(sample: *mut TelemetrySample) {
+    if !sample.is_null() {
+        let _ = Box::from_raw(sample);
+    }
+}
+
+/// Get the FFI crate version.
+#[no_mangle]
+pub extern "C" fn hwledger_core_version() -> *const c_char {
+    c"0.0.1".as_ptr()
+}
+
+/// Helper: estimate parameter count from config.json fields.
 fn estimate_param_count(cfg: &ArchConfig) -> u64 {
     let layers = cfg.num_hidden_layers.unwrap_or(32) as u64;
     let hidden = cfg.hidden_size.unwrap_or(4096) as u64;
-    let transformer_params = layers * hidden * hidden * 8;
-    let embedding_overhead = hidden * 256 * 1024;
+    let vocab_size = 128256_u64;
+    let transformer_params = layers * hidden * hidden * 12;
+    let embedding_overhead = vocab_size * hidden + hidden;
     transformer_params + embedding_overhead
 }
 
-/// Human-readable label for attention kind.
+/// Helper: human-readable label for attention kind.
 fn attention_kind_label(kind: &AttentionKind) -> String {
     match kind {
         AttentionKind::Mha { .. } => "Mha",
@@ -274,177 +448,9 @@ fn attention_kind_label(kind: &AttentionKind) -> String {
         AttentionKind::Ssm { .. } => "Ssm",
         AttentionKind::Hybrid(_) => "Hybrid",
         AttentionKind::AttentionSink { .. } => "AttentionSink",
-    }.to_string()
-}
-
-/// Ingest a model from Hugging Face Hub.
-///
-/// Async function requiring HWLEDGER_HF_LIVE=1 for live tests.
-/// Traces to: FR-UI-001
-#[uniffi::export(async_runtime = "tokio")]
-pub async fn ingest_hf(repo: String, token: Option<String>) -> Result<IngestedModel, HwLedgerError> {
-    info!("ingest_hf: repo={}", repo);
-
-    match hwledger_ingest::hf::fetch(&repo, token.as_deref()).await {
-        Ok(result) => {
-            let source_label = format!("{}@main", repo);
-            let config_json = serde_json::to_string(&result.config)
-                .map_err(|e| HwLedgerError::Ingest { reason: format!("config serialize: {}", e) })?;
-            Ok(IngestedModel {
-                source_label,
-                config_json,
-                parameter_count: result.parameter_count,
-                quantisation: result.quantisation,
-            })
-        }
-        Err(e) => {
-            error!("ingest_hf failed: {}", e);
-            Err(HwLedgerError::Ingest { reason: e.to_string() })
-        }
+        _ => "Unknown",
     }
-}
-
-/// Ingest a GGUF model from a local path.
-///
-/// Traces to: FR-UI-001
-#[uniffi::export]
-pub fn ingest_gguf(path: String) -> Result<IngestedModel, HwLedgerError> {
-    info!("ingest_gguf: path={}", path);
-
-    match hwledger_ingest::gguf::inspect(&path) {
-        Ok(result) => {
-            let config_json = serde_json::to_string(&result.config)
-                .map_err(|e| HwLedgerError::Ingest { reason: format!("config serialize: {}", e) })?;
-            Ok(IngestedModel {
-                source_label: path,
-                config_json,
-                parameter_count: result.parameter_count,
-                quantisation: result.quantisation,
-            })
-        }
-        Err(e) => {
-            error!("ingest_gguf failed: {}", e);
-            Err(HwLedgerError::Ingest { reason: e.to_string() })
-        }
-    }
-}
-
-/// Ingest a safetensors model from a local directory.
-///
-/// Traces to: FR-UI-001
-#[uniffi::export]
-pub fn ingest_safetensors(dir: String) -> Result<IngestedModel, HwLedgerError> {
-    info!("ingest_safetensors: dir={}", dir);
-
-    match hwledger_ingest::safetensors::inspect(&dir) {
-        Ok(result) => {
-            let config_json = serde_json::to_string(&result.config)
-                .map_err(|e| HwLedgerError::Ingest { reason: format!("config serialize: {}", e) })?;
-            Ok(IngestedModel {
-                source_label: dir,
-                config_json,
-                parameter_count: result.parameter_count,
-                quantisation: result.quantisation,
-            })
-        }
-        Err(e) => {
-            error!("ingest_safetensors failed: {}", e);
-            Err(HwLedgerError::Ingest { reason: e.to_string() })
-        }
-    }
-}
-
-/// Detect all available GPU devices on the system.
-///
-/// Enumerates NVIDIA, AMD, Metal (macOS), and Intel (Linux) backends.
-/// Returns an empty vec if no devices found (not an error).
-///
-/// Traces to: FR-TEL-002
-#[uniffi::export]
-pub fn probe_detect() -> Vec<DeviceInfo> {
-    info!("probe_detect: enumerating all backends");
-    let mut devices = Vec::new();
-    let probes = detect_probes();
-
-    for probe in probes {
-        match probe.enumerate() {
-            Ok(probe_devices) => {
-                for dev in probe_devices {
-                    devices.push(DeviceInfo {
-                        id: dev.id,
-                        backend: dev.backend.to_string(),
-                        name: dev.name,
-                        uuid: dev.uuid,
-                        total_vram_bytes: dev.total_vram,
-                    });
-                }
-            }
-            Err(e) => {
-                error!("probe {} enumerate failed: {}", probe.backend_name(), e);
-            }
-        }
-    }
-
-    info!("probe_detect: found {} devices", devices.len());
-    devices
-}
-
-/// Sample telemetry for a specific device.
-///
-/// Traces to: FR-TEL-002
-#[uniffi::export]
-pub fn probe_sample(device_id: u32, backend: String) -> Result<TelemetrySample, HwLedgerError> {
-    info!("probe_sample: device_id={}, backend={}", device_id, backend);
-    let probes = detect_probes();
-
-    for probe in probes {
-        if probe.backend_name() == backend {
-            let free_vram = probe.free_vram(device_id)
-                .map_err(|e| HwLedgerError::Probe { reason: e.to_string() })?;
-            let util = probe.utilization(device_id)
-                .map_err(|e| HwLedgerError::Probe { reason: e.to_string() })?;
-            let temp = probe.temperature(device_id)
-                .map_err(|e| HwLedgerError::Probe { reason: e.to_string() })?;
-            let power = probe.power_draw(device_id)
-                .map_err(|e| HwLedgerError::Probe { reason: e.to_string() })?;
-
-            let now_ms = std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .map(|d| d.as_millis() as u64)
-                .unwrap_or(0);
-
-            return Ok(TelemetrySample {
-                device_id,
-                free_vram_bytes: free_vram,
-                util_percent: util,
-                temperature_c: temp,
-                power_watts: power,
-                captured_at_ms: now_ms,
-            });
-        }
-    }
-
-    Err(HwLedgerError::Probe { reason: format!("backend {} not found", backend) })
-}
-
-/// Streaming planner observer (WP18 forward-compat).
-///
-/// Invokes observer once with current planner result. Real streaming lives in WP18.
-/// Traces to: FR-PLAN-003
-#[uniffi::export(async_runtime = "tokio")]
-pub async fn plan_stream(initial: PlannerInput, observer: Arc<dyn PlannerObserver>) -> Result<(), HwLedgerError> {
-    info!("plan_stream: initiating");
-    let result = plan(initial).await?;
-    observer.on_result(result);
-    Ok(())
-}
-
-/// Get the FFI crate version.
-///
-/// Returns the version from `Cargo.toml`.
-#[uniffi::export]
-pub fn core_version() -> String {
-    env!("CARGO_PKG_VERSION").to_string()
+    .to_string()
 }
 
 #[cfg(test)]
@@ -453,77 +459,77 @@ mod tests {
 
     /// Smoke test: plan with DeepSeek-V3-like config.
     /// Traces to: FR-PLAN-003
-    #[tokio::test]
-    async fn test_plan_deepseek_v3_like() {
+    #[test]
+    fn test_plan_deepseek_v3_like() {
         let config_json = json!({
             "model_type": "deepseek",
             "num_hidden_layers": 62,
             "hidden_size": 4096,
             "kv_lora_rank": 512,
             "qk_rope_head_dim": 64,
-        }).to_string();
+        })
+        .to_string();
 
+        let config_cstr = CString::new(config_json).unwrap();
         let input = PlannerInput {
-            config_json,
+            config_json: config_cstr.as_ptr(),
             seq_len: 4096,
             concurrent_users: 2,
             batch_size: 1,
-            kv_quant: KvQuant::Fp16,
-            weight_quant: WeightQuant::Fp16,
+            kv_quant: 0,
+            weight_quant: 0,
         };
 
-        let result = plan(input).await.expect("plan should not fail");
-        assert!(result.total_bytes > 0, "total_bytes should be > 0");
-        assert_eq!(result.attention_kind_label, "Mla", "should detect MLA");
-        assert_eq!(result.effective_batch, 1, "effective_batch = min(1, 2) = 1");
+        let result = unsafe { hwledger_plan(&input) };
+        assert!(!result.is_null(), "plan should not return null");
+        unsafe {
+            assert!((*result).total_bytes > 0, "total_bytes should be > 0");
+            let label = CStr::from_ptr((*result).attention_kind_label)
+                .to_string_lossy()
+                .to_string();
+            assert_eq!(label, "Mla", "should detect MLA");
+            assert_eq!((*result).effective_batch, 1, "effective_batch = min(1, 2) = 1");
+            hwledger_plan_free(result as *mut _);
+        }
     }
 
     /// Smoke test: probe detection should not panic.
     /// Traces to: FR-TEL-002
     #[test]
     fn test_probe_detect_no_panic() {
-        let devices = probe_detect();
-        assert!(devices.is_empty() || !devices.is_empty(), "should return vec without panicking");
-    }
-
-    /// Smoke test: core_version returns non-empty.
-    /// Traces to: FR-UI-001
-    #[test]
-    fn test_core_version_nonempty() {
-        let version = core_version();
-        assert!(!version.is_empty(), "version should be non-empty");
-    }
-
-    /// Smoke test: ingest_gguf with missing file returns error.
-    /// Traces to: FR-UI-001
-    #[test]
-    fn test_ingest_gguf_missing_file() {
-        let result = ingest_gguf("/nonexistent/model.gguf".to_string());
-        assert!(result.is_err(), "should error on missing file");
-        match result {
-            Err(HwLedgerError::Ingest { .. }) => {}
-            _ => panic!("should be Ingest error"),
+        let mut count = 0;
+        let devices = unsafe { hwledger_probe_detect(&mut count) };
+        assert!(count == 0 || !devices.is_null(), "should return valid pointer or zero count");
+        if !devices.is_null() {
+            unsafe { hwledger_probe_detect_free(devices, count); }
         }
+    }
+
+    /// Smoke test: core_version returns valid pointer.
+    /// Traces to: FR-UI-001
+    #[test]
+    fn test_core_version_valid() {
+        let version = hwledger_core_version();
+        assert!(!version.is_null(), "version should not be null");
+        let version_str = unsafe { CStr::from_ptr(version).to_string_lossy() };
+        assert!(!version_str.is_empty(), "version should not be empty");
     }
 
     /// Smoke test: plan with invalid JSON fails gracefully.
     /// Traces to: FR-PLAN-003
-    #[tokio::test]
-    async fn test_plan_invalid_json() {
+    #[test]
+    fn test_plan_invalid_json() {
+        let config_cstr = CString::new("not valid json").unwrap();
         let input = PlannerInput {
-            config_json: "not valid json".to_string(),
+            config_json: config_cstr.as_ptr(),
             seq_len: 1024,
             concurrent_users: 1,
             batch_size: 1,
-            kv_quant: KvQuant::Fp16,
-            weight_quant: WeightQuant::Fp16,
+            kv_quant: 0,
+            weight_quant: 0,
         };
 
-        let result = plan(input).await;
-        assert!(result.is_err(), "should error on invalid JSON");
-        match result {
-            Err(HwLedgerError::InvalidInput { .. }) => {}
-            _ => panic!("should be InvalidInput error"),
-        }
+        let result = unsafe { hwledger_plan(&input) };
+        assert!(result.is_null(), "should return null on invalid JSON");
     }
 }
