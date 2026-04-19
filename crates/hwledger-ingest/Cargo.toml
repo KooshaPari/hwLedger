@@ -1,0 +1,12 @@
+[package]
+name = "hwledger-ingest"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "Data ingestion pipeline for hwLedger telemetry collection"
+
+[dependencies]
+thiserror.workspace = true

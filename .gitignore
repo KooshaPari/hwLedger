@@ -1,0 +1,53 @@
+/target
+/Cargo.lock.bak
+**/*.rs.bk
+
+# Xcode / Swift
+apps/macos/.build/
+apps/macos/DerivedData/
+apps/macos/*.xcworkspace/xcuserdata/
+apps/macos/*.xcodeproj/xcuserdata/
+apps/macos/*.xcodeproj/project.xcworkspace/xcuserdata/
+apps/macos/xcframework/
+*.xcframework
+*.dSYM
+
+# .NET / WinUI
+apps/windows/bin/
+apps/windows/obj/
+apps/windows/*.user
+apps/windows/AppPackages/
+
+# Qt / Slint
+apps/linux-qt/build/
+apps/linux-slint/build/
+*.autosave
+
+# Python venv for MLX sidecar
+sidecars/**/.venv/
+sidecars/**/__pycache__/
+sidecars/**/*.pyc
+sidecars/**/.uv-cache/
+sidecars/**/uv.lock.bak
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/
+*.swp
+.~*
+
+# Secrets / local config
+.env
+.env.*
+!.env.example
+hwledger.local.toml
+
+# Ledger data
+ledger.db
+ledger.db-*
+*.sqlite
+*.sqlite-journal
