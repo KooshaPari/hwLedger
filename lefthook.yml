@@ -56,9 +56,22 @@ pre-push:
         fi
 
     release-tag:
+      # Detect v* tags being pushed without re-invoking `git push` (infinite
+      # hook loop). Read stdin that git pipes to pre-push: lines look like
+      # "<local-ref> <local-sha> <remote-ref> <remote-sha>". Tags arrive as
+      # refs/tags/v*.
       run: |
-        TAG=$(git push --dry-run --tags 2>&1 | grep -oE 'v[0-9][^ ]*' | head -1)
+        if [ -n "${LEFTHOOK_SKIP_RELEASE:-}" ]; then exit 0; fi
+        TAG=""
+        while read -r local_ref _ remote_ref _; do
+          case "$remote_ref" in
+            refs/tags/v*)
+              TAG="${remote_ref#refs/tags/}"
+              break
+              ;;
+          esac
+        done < /dev/stdin
         if [ -n "$TAG" ]; then
           echo "Release tag $TAG detected — running local release pipeline"
-          ./scripts/release.sh "$TAG"
+          LEFTHOOK_SKIP_RELEASE=1 ./scripts/release.sh "$TAG"
         fi
