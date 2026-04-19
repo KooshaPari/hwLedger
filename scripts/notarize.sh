@@ -59,33 +59,40 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 BUILD_LOG_DIR="${PROJECT_ROOT}/apps/macos/build"
 
 # === Validate credentials ===
+# Preferred: use the `hwledger` keychain profile stored via
+# `xcrun notarytool store-credentials hwledger …`. Falls back to explicit
+# env vars if the profile isn't present.
+NOTARY_PROFILE="${APPLE_NOTARY_KEYCHAIN_PROFILE:-hwledger}"
+USE_PROFILE=0
+if security find-generic-password -s "com.apple.gk.ma.notarytool" -a "${NOTARY_PROFILE}" >/dev/null 2>&1; then
+    USE_PROFILE=1
+fi
+
 KEY_ID="${APPLE_NOTARY_KEY_ID:-}"
 ISSUER_ID="${APPLE_NOTARY_ISSUER_ID:-}"
 
-if [ -z "${KEY_ID}" ] || [ -z "${ISSUER_ID}" ]; then
-    echo "Error: Missing Apple Notary credentials."
+if [ "${USE_PROFILE}" -eq 0 ] && ([ -z "${KEY_ID}" ] || [ -z "${ISSUER_ID}" ]); then
+    echo "Error: No notarytool keychain profile '${NOTARY_PROFILE}' found, and APPLE_NOTARY_{KEY_ID,ISSUER_ID} env vars not set."
     echo ""
-    echo "Required environment variables:"
-    echo "  APPLE_NOTARY_KEY_ID       (10-char, e.g., ABC123DEFG)"
-    echo "  APPLE_NOTARY_ISSUER_ID    (UUID, e.g., 12345678-...)"
+    echo "Preferred fix — store credentials in keychain (one-time):"
+    echo "  xcrun notarytool store-credentials ${NOTARY_PROFILE} \\"
+    echo "      --key ~/.appstoreconnect/private_keys/AuthKey_<KEY_ID>.p8 \\"
+    echo "      --key-id <KEY_ID> \\"
+    echo "      --issuer <ISSUER_UUID>"
     echo ""
-
-    # Try to hint at available keys
     if [ -d ~/.appstoreconnect/private_keys ]; then
         AVAILABLE_KEYS=$(ls ~/.appstoreconnect/private_keys/AuthKey_*.p8 2>/dev/null || true)
         if [ -n "${AVAILABLE_KEYS}" ]; then
-            echo "Available keys found in ~/.appstoreconnect/private_keys/:"
+            echo "Available .p8 keys found:"
             ls -1 ~/.appstoreconnect/private_keys/AuthKey_*.p8 | sed 's/.*AuthKey_/  /' | sed 's/.p8//'
-            echo ""
-            echo "To use one of these keys, set:"
-            echo "  export APPLE_NOTARY_KEY_ID='<KEY_ID_FROM_ABOVE>'"
         fi
     fi
     exit 1
 fi
 
-# Determine .p8 path
-KEY_PATH="${APPLE_NOTARY_KEY_PATH:-${HOME}/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8}"
+if [ "${USE_PROFILE}" -eq 0 ]; then
+    KEY_PATH="${APPLE_NOTARY_KEY_PATH:-${HOME}/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8}"
+fi
 
 if [ ! -f "${KEY_PATH}" ]; then
     echo "Error: Notary key file not found:"
@@ -143,13 +150,19 @@ mkdir -p "${BUILD_LOG_DIR}"
 NOTARIZE_OUTPUT=$(mktemp)
 trap "rm -f ${NOTARIZE_OUTPUT}" EXIT
 
-xcrun notarytool submit "${SUBMIT_FILE}" \
-    --key "${KEY_PATH}" \
-    --key-id "${KEY_ID}" \
-    --issuer "${ISSUER_ID}" \
-    --wait \
-    --timeout 1800 \
-    2>&1 | tee "${NOTARIZE_OUTPUT}"
+if [ "${USE_PROFILE}" -eq 1 ]; then
+    xcrun notarytool submit "${SUBMIT_FILE}" \
+        --keychain-profile "${NOTARY_PROFILE}" \
+        --wait --timeout 1800 \
+        2>&1 | tee "${NOTARIZE_OUTPUT}"
+else
+    xcrun notarytool submit "${SUBMIT_FILE}" \
+        --key "${KEY_PATH}" \
+        --key-id "${KEY_ID}" \
+        --issuer "${ISSUER_ID}" \
+        --wait --timeout 1800 \
+        2>&1 | tee "${NOTARIZE_OUTPUT}"
+fi
 
 # Extract request ID from output
 REQUEST_ID=$(grep -i "id:" "${NOTARIZE_OUTPUT}" | head -1 | awk '{print $NF}' || echo "")
@@ -168,11 +181,17 @@ echo "✓ Notarization request ID: ${REQUEST_ID}"
 echo "Fetching notarization log..."
 LOG_PATH="${BUILD_LOG_DIR}/notarize-${REQUEST_ID}.log"
 
-xcrun notarytool log "${REQUEST_ID}" \
-    --key "${KEY_PATH}" \
-    --key-id "${KEY_ID}" \
-    --issuer "${ISSUER_ID}" \
-    > "${LOG_PATH}" 2>&1
+if [ "${USE_PROFILE}" -eq 1 ]; then
+    xcrun notarytool log "${REQUEST_ID}" \
+        --keychain-profile "${NOTARY_PROFILE}" \
+        > "${LOG_PATH}" 2>&1
+else
+    xcrun notarytool log "${REQUEST_ID}" \
+        --key "${KEY_PATH}" \
+        --key-id "${KEY_ID}" \
+        --issuer "${ISSUER_ID}" \
+        > "${LOG_PATH}" 2>&1
+fi
 
 echo "✓ Log saved: ${LOG_PATH}"
 

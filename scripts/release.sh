@@ -30,16 +30,19 @@ fi
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
-: "${APPLE_NOTARY_KEY_ID:?APPLE_NOTARY_KEY_ID env var required}"
-: "${APPLE_NOTARY_ISSUER_ID:?APPLE_NOTARY_ISSUER_ID env var required}"
-APPLE_NOTARY_KEY_PATH="${APPLE_NOTARY_KEY_PATH:-$HOME/.appstoreconnect/private_keys/AuthKey_${APPLE_NOTARY_KEY_ID}.p8}"
+# Credentials: prefer `notarytool store-credentials hwledger` keychain profile.
+# Falls back to explicit APPLE_NOTARY_{KEY_ID,ISSUER_ID} env vars.
+NOTARY_PROFILE="${APPLE_NOTARY_KEYCHAIN_PROFILE:-hwledger}"
+if ! security find-generic-password -s "com.apple.gk.ma.notarytool" -a "${NOTARY_PROFILE}" >/dev/null 2>&1; then
+  : "${APPLE_NOTARY_KEY_ID:?set APPLE_NOTARY_KEY_ID or store a keychain profile via: xcrun notarytool store-credentials ${NOTARY_PROFILE} --key … --key-id … --issuer …}"
+  : "${APPLE_NOTARY_ISSUER_ID:?APPLE_NOTARY_ISSUER_ID env var required}"
+  APPLE_NOTARY_KEY_PATH="${APPLE_NOTARY_KEY_PATH:-$HOME/.appstoreconnect/private_keys/AuthKey_${APPLE_NOTARY_KEY_ID}.p8}"
+  if [[ ! -f "$APPLE_NOTARY_KEY_PATH" ]]; then
+    echo "missing .p8: $APPLE_NOTARY_KEY_PATH" >&2; exit 1
+  fi
+fi
 SPARKLE_PRIVATE_KEY_PATH="${SPARKLE_PRIVATE_KEY_PATH:-$HOME/.config/hwledger/sparkle_ed25519_private.key}"
 DEVELOPER_ID_SIGNER="${DEVELOPER_ID_SIGNER:-Developer ID Application: Koosha Paridehpour (GCT2BN8WLL)}"
-
-if [[ ! -f "$APPLE_NOTARY_KEY_PATH" ]]; then
-  echo "missing .p8: $APPLE_NOTARY_KEY_PATH" >&2
-  exit 1
-fi
 if [[ ! -f "$SPARKLE_PRIVATE_KEY_PATH" ]]; then
   echo "missing Sparkle private key: $SPARKLE_PRIVATE_KEY_PATH" >&2
   echo "generate once: python3 -c 'from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey; from cryptography.hazmat.primitives import serialization; import base64; sk=Ed25519PrivateKey.generate(); print(base64.b64encode(sk.private_bytes(encoding=serialization.Encoding.Raw, format=serialization.PrivateFormat.Raw, encryption_algorithm=serialization.NoEncryption())).decode())' > \"$SPARKLE_PRIVATE_KEY_PATH\" && chmod 600 \"$SPARKLE_PRIVATE_KEY_PATH\"" >&2
@@ -75,12 +78,10 @@ echo "[3/6] Building + signing DMG"
 DMG_PATH="$REPO_ROOT/apps/macos/build/hwLedger-${TAG#v}.dmg"
 ./scripts/build-dmg.sh --app "$APP_PATH" --out "$DMG_PATH"
 
-# 4. Notarize + staple.
+# 4. Notarize + staple. notarize.sh auto-detects the `hwledger` keychain
+# profile set by `notarytool store-credentials`; env-var fallback works too.
 echo "[4/6] Submitting to Apple notary (may take 5-15 min)"
-APPLE_NOTARY_KEY_PATH="$APPLE_NOTARY_KEY_PATH" \
-APPLE_NOTARY_KEY_ID="$APPLE_NOTARY_KEY_ID" \
-APPLE_NOTARY_ISSUER_ID="$APPLE_NOTARY_ISSUER_ID" \
-  ./scripts/notarize.sh "$DMG_PATH"
+./scripts/notarize.sh "$DMG_PATH"
 
 # 5. Generate signed appcast.
 echo "[5/6] Generating signed appcast"
