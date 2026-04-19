@@ -2,9 +2,9 @@
 
 GUI journey automation is now **implemented and working** via the macOS Accessibility Framework (AXUIElement + CGEvent). This page documents the current capabilities and how to run GUI journeys.
 
-## Current Status: Live (WP-25 Complete)
+## Current Status: Live with Recording (WP-25 + GUI Recording Complete)
 
-The hwLedger macOS GUI automation layer is complete:
+The hwLedger macOS GUI automation layer is complete with integrated screen recording:
 
 1. **AppDriver: Real Accessibility API Implementation** (COMPLETE)
    - Uses macOS Accessibility Framework (public API since macOS 10.2)
@@ -24,6 +24,12 @@ The hwLedger macOS GUI automation layer is complete:
    - `screenshot()` captures real app state
    - Manifest tracking with step intent labels
    - Error propagation with clear diagnostics
+
+4. **Screen Recording: hwledger-gui-recorder Integration** (COMPLETE)
+   - ScreenCaptureKit wrapper (macOS 14+, native Swift)
+   - MP4 output with H.264 codec
+   - FFmpeg keyframe extraction
+   - Graceful degradation if Screen Recording permission denied
 
 ## Timeline
 

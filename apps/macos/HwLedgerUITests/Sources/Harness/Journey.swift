@@ -1,8 +1,10 @@
 import Foundation
 import AppKit
+import HwLedgerGuiRecorder
 
 /// Lightweight journey-authoring DSL for UI testing.
 /// Each journey captures screenshots after steps and maintains a manifest of execution.
+/// Can optionally record the screen using hwledger-gui-recorder.
 public class Journey {
     public let id: String
     private var steps: [(slug: String, intent: String, closure: () async throws -> Void)] = []
@@ -13,6 +15,9 @@ public class Journey {
     private var failureReason: String?
     private let appDriver: AppDriver
     private let journeyDirectory: URL
+    private var screenRecorder: ScreenCaptureRecorder?
+    private var recordingPath: URL?
+    private var recordingDenied: Bool = false
 
     /// Initialize a journey with an ID and app driver.
     /// - Parameters:
@@ -27,6 +32,29 @@ public class Journey {
 
         // Create journey directory
         try FileManager.default.createDirectory(at: journeyDirectory, withIntermediateDirectories: true)
+    }
+
+    /// Enable screen recording for this journey.
+    /// Must be called before run().
+    /// - Throws: RecorderError if recording cannot start
+    public func enableScreenRecording(appIdentifier: String) async throws {
+        let recordingPath = journeyDirectory.appendingPathComponent("recording.mp4")
+        let recorder = ScreenCaptureRecorder(outputPath: recordingPath)
+
+        // Check permission
+        let permission = await recorder.checkPermission()
+        if permission == .denied {
+            recordingDenied = true
+            print("Journey: Screen recording permission denied. Continuing without recording.")
+            self.screenRecorder = recorder
+            self.recordingPath = recordingPath
+            return
+        }
+
+        // Start recording
+        try await recorder.startRecording(appIdentifier: appIdentifier)
+        self.screenRecorder = recorder
+        self.recordingPath = recordingPath
     }
 
     /// Add a step to the journey.
@@ -59,9 +87,6 @@ public class Journey {
     /// Execute the journey and record the manifest.
     func run() async throws {
         startTime = Date()
-        defer {
-            finishTime = Date()
-        }
 
         do {
             for stepData in steps {
@@ -72,6 +97,17 @@ public class Journey {
         } catch {
             failureReason = String(describing: error)
             throw error
+        }
+
+        finishTime = Date()
+
+        // Stop recording if active (after journey, not in defer)
+        if let recorder = screenRecorder {
+            do {
+                _ = try await recorder.stopRecording()
+            } catch {
+                print("Journey: Failed to stop recording: \(error)")
+            }
         }
     }
 
@@ -91,9 +127,10 @@ public class Journey {
             finished_at: finishTime.map { ISO8601DateFormatter().string(from: $0) },
             passed: passed,
             failure: failureReason,
-            recording: FileManager.default.fileExists(
+            recording: !recordingDenied && FileManager.default.fileExists(
                 atPath: journeyDirectory.appendingPathComponent("recording.mp4").path
-            )
+            ),
+            recording_denied: recordingDenied
         )
 
         let encoder = JSONEncoder()
@@ -121,6 +158,7 @@ struct JourneyManifest: Codable {
     let passed: Bool
     let failure: String?
     let recording: Bool
+    let recording_denied: Bool?
 }
 
 struct JourneyStep: Codable {

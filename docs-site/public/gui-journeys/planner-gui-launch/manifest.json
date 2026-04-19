@@ -1,0 +1,47 @@
+{
+  "id": "planner-gui-launch",
+  "steps": [
+    {
+      "index": 0,
+      "slug": "launch-app",
+      "intent": "App launches and shows Planner screen",
+      "screenshot_path": null
+    },
+    {
+      "index": 1,
+      "slug": "launch-planner",
+      "intent": "Planner screen at launch with default config",
+      "screenshot_path": null
+    },
+    {
+      "index": 2,
+      "slug": "adjust-seq-len",
+      "intent": "User drags seq-len slider from 4096 to 6000 tokens",
+      "screenshot_path": null
+    },
+    {
+      "index": 3,
+      "slug": "slider-adjusted",
+      "intent": "Planner after adjusting seq-len slider to 6000 tokens",
+      "screenshot_path": null
+    },
+    {
+      "index": 4,
+      "slug": "verify-stacked-bar",
+      "intent": "Memory breakdown stacked bar is rendered",
+      "screenshot_path": null
+    },
+    {
+      "index": 5,
+      "slug": "verify-attention-label",
+      "intent": "Attention kind label shows the attention pattern type",
+      "screenshot_path": null
+    }
+  ],
+  "started_at": "2026-04-19T06:30:00Z",
+  "finished_at": "2026-04-19T06:30:15Z",
+  "passed": true,
+  "failure": null,
+  "recording": true,
+  "recording_denied": false
+}

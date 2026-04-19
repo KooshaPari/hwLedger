@@ -17,8 +17,18 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "HwLedgerUITestHarness",
+            name: "SckBridge",
             dependencies: [],
+            path: "Sources/SckBridge"
+        ),
+        .target(
+            name: "HwLedgerGuiRecorder",
+            dependencies: ["SckBridge"],
+            path: "Sources/GuiRecorder"
+        ),
+        .target(
+            name: "HwLedgerUITestHarness",
+            dependencies: ["HwLedgerGuiRecorder"],
             path: "Sources/Harness"
         ),
         .executableTarget(

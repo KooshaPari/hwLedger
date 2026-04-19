@@ -24,6 +24,14 @@ struct PlannerJourneyTests {
         let appDriver = try AppDriver(appPath: appPath)
         let journey = try Journey(id: "planner-gui-launch", appDriver: appDriver)
 
+        // Enable screen recording (graceful degradation if permission denied)
+        do {
+            try await journey.enableScreenRecording(appIdentifier: "com.kooshapari.hwLedger")
+        } catch {
+            print("DIAGNOSTIC: Screen recording failed to start: \(error)")
+            print("Recording will be skipped for this journey.")
+        }
+
         // Step 1: Verify Planner is visible at launch
         journey.step("launch-app", intent: "App launches and shows Planner screen") {
             // Verify the attention-kind-label is present (indicates Planner is rendered)

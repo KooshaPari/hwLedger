@@ -31,13 +31,13 @@ tempfile = "3.8"
 tokio = { version = "1.40", features = ["full"] }
 tracing-subscriber = "0.3"
 
+[build-dependencies]
+cbindgen = "0.26"
+
 [lib]
 name = "hwledger_gui_recorder"
 path = "src/lib.rs"
-
-[[bin]]
-name = "hwledger-gui-recorder"
-path = "src/bin.rs"
+crate-type = ["rlib", "staticlib"]
 
 [lints.rust]
 unsafe_code = "allow"
