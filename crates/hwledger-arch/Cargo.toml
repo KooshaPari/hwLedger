@@ -16,3 +16,8 @@ hwledger-core = { path = "../hwledger-core" }
 
 [dev-dependencies]
 proptest = "1"
+criterion = { workspace = true }
+
+[[bench]]
+name = "classify"
+harness = false

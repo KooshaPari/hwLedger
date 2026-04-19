@@ -1,5 +1,7 @@
 # ADR 0007 — FFI: raw C ABI (cbindgen-compatible) over UniFFI for v1
 
+Constrains: FR-UI-001
+
 Date: 2026-04-19
 Status: Accepted (amends ADR-0001)
 

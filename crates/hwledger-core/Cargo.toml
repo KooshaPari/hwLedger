@@ -14,3 +14,8 @@ thiserror.workspace = true
 [dev-dependencies]
 proptest = "1"
 serde_json.workspace = true
+criterion = { workspace = true }
+
+[[bench]]
+name = "kv_math"
+harness = false

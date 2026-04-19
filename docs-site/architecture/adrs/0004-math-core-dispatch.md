@@ -1,5 +1,7 @@
 # ADR 0004 — Math core: architecture-keyed `AttentionKind` dispatch
 
+Constrains: FR-PLAN-002, FR-PLAN-003
+
 Date: 2026-04-19
 Status: Accepted
 

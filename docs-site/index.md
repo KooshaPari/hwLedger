@@ -10,6 +10,9 @@ hero:
     alt: hwLedger
   actions:
     - theme: brand
+      text: Download v0.1.0-alpha
+      link: https://github.com/KooshaPari/hwLedger/releases/latest
+    - theme: alt
       text: Get Started
       link: /getting-started/install
     - theme: alt
