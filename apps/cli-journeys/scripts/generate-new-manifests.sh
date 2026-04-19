@@ -9,19 +9,24 @@ cd "$REPO_ROOT"
 
 intent_for() {
     case "$1" in
-        install-from-source) echo "User clones the repo, runs cargo install, and verifies hwledger --version" ;;
-        first-plan) echo "User runs their first plan command against a bundled Llama 3 golden fixture" ;;
-        fleet-register) echo "User registers a host into the fleet via bootstrap token over mTLS" ;;
-        fleet-audit) echo "User pulls the last 10 audit events and verifies the hash chain" ;;
-        ingest-hf) echo "User queries a Hugging Face repo for model metadata" ;;
-        ingest-ollama) echo "User queries a local Ollama server for model info" ;;
-        release-signed-dmg) echo "User triggers the local release pipeline to produce a signed + notarized DMG" ;;
-        traceability-report) echo "User generates the FR -> test traceability markdown report" ;;
+        install-cargo) echo "Install hwledger from source with cargo, then verify version and help" ;;
+        first-plan) echo "Run your first plan with colored output showing token distribution for 4 users" ;;
+        fleet-register) echo "Register a new agent with the fleet, then verify it appears in fleet status" ;;
+        fleet-audit) echo "Audit the fleet with a 3-agent limit to see agent metadata and status" ;;
+        ingest-error) echo "Show graceful error handling when a model file doesn't exist" ;;
+        ingest-local-gguf) echo "Ingest a local GGUF model file and output JSON metadata" ;;
+        plan-deepseek) echo "Plan with Deepseek at 2K seq, then at 32K to show KV growth under scaling" ;;
+        plan-help) echo "Show the plan command's help text with all available options" ;;
+        plan-mla-deepseek) echo "Show MLA classification and KV sequence invariance across 2K, 32K, 128K sequences" ;;
+        probe-list) echo "List all available probes in both table and JSON formats" ;;
+        probe-watch) echo "Watch probe metrics update in real time with 1-second refresh intervals" ;;
+        traceability-report) echo "Generate a markdown traceability report with coverage data and inspect the output" ;;
+        traceability-strict) echo "Show strict mode enforcement with passing and failing traceability checks" ;;
         *) echo "Journey recording for $1" ;;
     esac
 }
 
-for tape in install-from-source first-plan fleet-register fleet-audit ingest-hf ingest-ollama release-signed-dmg traceability-report; do
+for tape in install-cargo first-plan fleet-register fleet-audit ingest-error ingest-local-gguf plan-deepseek plan-help plan-mla-deepseek probe-list probe-watch traceability-report traceability-strict; do
     keyframes_dir="apps/cli-journeys/keyframes/${tape}"
     manifest_dir="apps/cli-journeys/manifests/${tape}"
     if [[ ! -d "$keyframes_dir" ]]; then

@@ -121,7 +121,7 @@ The journey uses three layers:
 
 ## See Also
 
-- [GUI Recording CI Notes](../reports/GUI-RECORDING-CI-NOTES.md) — CI strategy and troubleshooting
-- [hwledger-gui-recorder README](../../crates/hwledger-gui-recorder/README.md) — Rust crate details
+- [GUI Recording CI Notes](https://github.com/KooshaPari/hwLedger/blob/main/docs/reports/GUI-RECORDING-CI-NOTES.md) — CI strategy and troubleshooting
+- [hwledger-gui-recorder README](https://github.com/KooshaPari/hwLedger/blob/main/crates/hwledger-gui-recorder/README.md) — Rust crate details
 - [AppDriver.swift](../../apps/macos/HwLedgerUITests/Sources/Harness/AppDriver.swift) — UI automation API
 - [Journey.swift](../../apps/macos/HwLedgerUITests/Sources/Harness/Journey.swift) — Journey DSL

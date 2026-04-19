@@ -14,21 +14,30 @@ This directory contains end-to-end recorded CLI journeys for hwLedger using VHS 
 
 | Journey | Description | Tapes | Keyframes |
 |---------|-------------|-------|-----------|
-| `plan-deepseek` | Memory planning for DeepSeek-V3 with 2048 seq, 2 users | 1 | 5 |
-| `plan-help` | Help text for plan subcommand | 1 | 2 |
-| `probe-list` | GPU device enumeration (JSON) | 1 | 3 |
-| `probe-watch` | GPU monitoring with clean shutdown via Ctrl+C | 1 | 5 |
-| `ingest-error` | Error handling when GGUF file is missing | 1 | 4 |
+| `install-cargo` | Install from source with cargo, verify version and help | 1 | 9 |
+| `first-plan` | First plan with colored output for 4 users | 1 | 5 |
+| `fleet-register` | Register agent with fleet, verify in fleet status | 1 | 9 |
+| `fleet-audit` | Audit the fleet with 3-agent limit | 1 | 6 |
+| `ingest-error` | Error handling when GGUF file missing | 1 | 4 |
+| `ingest-local-gguf` | Ingest local GGUF and output JSON metadata | 1 | 4 |
+| `plan-deepseek` | Plan at 2K and 32K seq to show KV growth | 1 | 5 |
+| `plan-help` | Help text for plan subcommand | 1 | 6 |
+| `plan-mla-deepseek` | MLA classification across 2K, 32K, 128K sequences | 1 | 3 |
+| `probe-list` | GPU device enumeration in table and JSON formats | 1 | 3 |
+| `probe-watch` | GPU monitoring with 1-sec refresh, Ctrl+C to exit | 1 | 6 |
+| `traceability-report` | Generate markdown traceability report with coverage | 1 | 9 |
+| `traceability-strict` | Show strict mode passing and failing checks | 1 | 3 |
 
-**Total**: 5 journeys, 5 VHS tapes, 19 keyframes extracted, 5 verified manifests.
+**Total**: 13 journeys, 13 VHS tapes, 82 keyframes extracted, 13 verified manifests.
 
 ## Quick Start: Re-record All Journeys
 
-Requires: VHS (Homebrew or Go install), ffmpeg (Homebrew)
+Requires: VHS (Homebrew or Go install), ffmpeg (Homebrew), JetBrains Mono font
 
 ```bash
 # Install dependencies (macOS)
 brew install vhs ffmpeg
+brew install --cask font-jetbrains-mono
 
 # Build release binary
 cd /path/to/hwLedger
@@ -41,12 +50,14 @@ cd apps/cli-journeys
 # Extract keyframes
 ./scripts/extract-keyframes.sh
 
-# Generate manifests
-./scripts/generate-manifests.sh
+# Generate manifests (covers all 13 tapes)
+./scripts/generate-new-manifests.sh
 
 # Verify with mock Anthropic server
 ./scripts/verify-manifests.sh
 ```
+
+**Note**: All tapes use Catppuccin Mocha theme + JetBrains Mono (20pt) for consistent visual branding.
 
 ## Quick Start: Re-verify Existing Journeys
 
@@ -144,14 +155,11 @@ Each `manifest.verified.json` contains:
 
 ## File Sizes (Actual)
 
-| Recording | GIF | MP4 |
-|-----------|-----|-----|
-| ingest-error | 77 KB | 64 KB |
-| plan-deepseek | 71 KB | 61 KB |
-| plan-help | 118 KB | 73 KB |
-| probe-list | 142 KB | 93 KB |
-| probe-watch | 693 KB | 359 KB |
-| **Total** | **1.1 MB** | **650 KB** |
+Total recordings: 6.4 MB (all 13 tapes, MP4 + GIF combined)
+
+Per-tape average: 490 KB (MP4 + GIF)
+
+Keyframe extraction: 13 MB (82 PNG files across all tapes)
 
 ## Known Fragility
 
@@ -189,6 +197,8 @@ brew install ffmpeg
 - Check VHS version: `vhs --version` (should be >= 0.11.0)
 - Check PATH: `which hwledger` (should resolve to target/release/hwledger)
 - Check tape syntax: `vhs validate tapes/*.tape`
+- Check JetBrains Mono installed: `fc-list | grep -i jetbrains` (if empty, run `brew install --cask font-jetbrains-mono`)
+- Check Catppuccin Mocha available: `vhs themes | grep -i catppuccin`
 
 **Mock server fails to start**:
 - Port 8765 might be in use: `lsof -i :8765`

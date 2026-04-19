@@ -59,3 +59,4 @@ apps/**/.swiftpm/
 apps/**/*.xcodeproj/
 vendor/**/target
 .claude/worktrees/
+*.venv/

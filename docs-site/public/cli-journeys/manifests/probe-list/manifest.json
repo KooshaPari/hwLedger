@@ -1,29 +1,9 @@
 {
-  "id": "cli-probe-list",
-  "title": "hwledger probe-list",
-  "intent": "CLI probe list command showing GPU device enumeration",
-  "steps": [
-    {
-      "index": 0,
-      "slug": "launch",
-      "intent": "Frame 1 of 3",
-      "screenshot_path": "keyframes/probe-list/frame-001.png"
-    },
-    {
-      "index": 1,
-      "slug": "step_2",
-      "intent": "Frame 2 of 3",
-      "screenshot_path": "keyframes/probe-list/frame-002.png"
-    },
-    {
-      "index": 2,
-      "slug": "final",
-      "intent": "Frame 3 of 3",
-      "screenshot_path": "keyframes/probe-list/frame-003.png"
-    }
-  ],
+  "id": "probe-list",
+  "intent": "List all available probes in both table and JSON formats",
   "recording": "recordings/probe-list.mp4",
   "recording_gif": "recordings/probe-list.gif",
   "keyframe_count": 3,
-  "passed": true
+  "passed": true,
+  "steps": [{"index":0,"slug":"frame-0","intent":"List all available probes in both table and JSON formats (frame 1)","screenshot_path":"frame-001.png"},{"index":1,"slug":"frame-1","intent":"List all available probes in both table and JSON formats (frame 2)","screenshot_path":"frame-002.png"},{"index":2,"slug":"frame-2","intent":"List all available probes in both table and JSON formats (frame 3)","screenshot_path":"frame-003.png"}]
 }
