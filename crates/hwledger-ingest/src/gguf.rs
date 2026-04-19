@@ -275,8 +275,8 @@ fn build_config_from_gguf(kvs: &HashMap<String, GgufValue>) -> Result<Config, In
     // Calculate head_dim if not present
     if config.head_dim.is_none() {
         if let (Some(hidden), Some(heads)) = (config.hidden_size, config.num_attention_heads) {
-            if heads > 0 {
-                config.head_dim = Some(hidden / heads);
+            if let Some(d) = hidden.checked_div(heads) {
+                config.head_dim = Some(d);
             }
         }
     }
