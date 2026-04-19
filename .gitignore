@@ -52,3 +52,8 @@ ledger.db-*
 *.sqlite
 *.sqlite-journal
 apps/macos/xcframework/
+
+# Swift Package Manager build artefacts
+apps/**/.build/
+apps/**/.swiftpm/
+apps/**/*.xcodeproj/
