@@ -9,4 +9,9 @@ repository.workspace = true
 description = "MLX framework sidecar service for Apple Silicon GPU acceleration"
 
 [dependencies]
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
 thiserror.workspace = true
+tracing.workspace = true
+uuid.workspace = true

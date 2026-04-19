@@ -12,4 +12,6 @@ Numbered patch files follow `NNNN-kebab-title.patch`. Patches are applied in ord
 
 ## Current series
 
-_(empty — first patch will land with WP20 MLX sidecar integration)_
+### [0001-hwledger-rpc.md](0001-hwledger-rpc.md)
+JSON-RPC 2.0 stdio server for hwLedger inference sidecar (WP20, FR-INF-002).
+Files: `omlx/hwledger_rpc.py`, `omlx/__main_hwledger__.py`.
