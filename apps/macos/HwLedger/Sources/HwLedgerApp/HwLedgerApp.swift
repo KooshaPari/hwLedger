@@ -1,8 +1,16 @@
 import SwiftUI
+import Sparkle
 
 @main
 struct HwLedgerApp: App {
     @State private var appState = AppState()
+
+    // Sparkle updater controller
+    let updater = SPUStandardUpdaterController(
+        startingUpdater: true,
+        updaterDelegate: nil,
+        userDriverDelegate: nil
+    )
 
     var body: some Scene {
         WindowGroup("hwLedger", id: "main-window") {
@@ -14,6 +22,11 @@ struct HwLedgerApp: App {
             CommandGroup(replacing: .appInfo) {
                 Button("About hwLedger") {
                     showAbout()
+                }
+            }
+            CommandGroup(after: .appInfo) {
+                Button("Check for Updates…") {
+                    updater.updater.checkForUpdates()
                 }
             }
         }

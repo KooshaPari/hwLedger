@@ -9,8 +9,10 @@ Detailed records live in [`docs/adr/`](./docs/adr/). Index:
 | 0003 | [Fleet wire: Axum + JSON/HTTPS + mTLS, not gRPC](./docs/adr/0003-fleet-wire-axum-not-grpc.md) | Accepted |
 | 0004 | [Math core: architecture-keyed `AttentionKind` dispatch](./docs/adr/0004-math-core-dispatch.md) | Accepted |
 | 0005 | [Shared-crate reuse contract with Phenotype workspace](./docs/adr/0005-shared-crate-reuse.md) | Accepted |
+| 0006 | [macOS v1 distribution: Developer ID + notarization + Sparkle](./docs/adr/0006-macos-codesign-notarize-sparkle.md) | Accepted |
 | 0007 | [FFI: raw C ABI over UniFFI for v1 (amends 0001)](./docs/adr/0007-ffi-raw-c-over-uniffi.md) | Accepted |
 
 Pending ADRs (to be written alongside the corresponding work packages):
 
-- 0006 — Release engineering: codesign, notarisation, Velopack, MSIX, AppImage, Flatpak.
+- Windows distribution: Velopack + MSIX
+- Linux distribution: AppImage + Flatpak

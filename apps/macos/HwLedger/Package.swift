@@ -13,13 +13,15 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(path: "../hwledger-swift")
+        .package(path: "../hwledger-swift"),
+        .package(url: "https://github.com/sparkle-project/Sparkle", from: "2.6.0")
     ],
     targets: [
         .executableTarget(
             name: "HwLedgerApp",
             dependencies: [
-                .product(name: "HwLedger", package: "hwledger-swift")
+                .product(name: "HwLedger", package: "hwledger-swift"),
+                .product(name: "Sparkle", package: "Sparkle")
             ],
             path: "Sources/HwLedgerApp"
         ),

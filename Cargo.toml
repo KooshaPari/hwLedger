@@ -16,6 +16,16 @@ members = [
     "crates/hwledger-verify",
     "crates/hwledger-traceability",
 ]
+exclude = [
+    # Vendored phenotype-shared crates are path-resolved deps, not members;
+    # their own benches/tests (e.g. criterion, not in our dev-deps) would
+    # otherwise break `cargo clippy --workspace --all-targets`.
+    "vendor/phenotype-event-sourcing",
+    "vendor/phenotype-error-core",
+    "vendor/phenotype-config",
+    "vendor/phenotype-cache-adapter",
+    "vendor/phenotype-health",
+]
 
 [workspace.package]
 version = "0.0.1"
@@ -90,6 +100,7 @@ rand = "0.8"
 axum-server = { version = "0.7", features = ["tls-rustls"] }
 hostname = "0.4"
 sha2 = "0.10"
+hex = "0.4"
 
 # Internal workspace crates
 hwledger-core = { path = "crates/hwledger-core" }
@@ -104,14 +115,16 @@ hwledger-agent = { path = "crates/hwledger-agent" }
 hwledger-server = { path = "crates/hwledger-server" }
 hwledger-ffi = { path = "crates/hwledger-ffi" }
 
-# phenotype-shared reuse (ADR-0005). Path-resolved to the workspace-level
-# crates/ directory in repos/. Semver contracts live in the target crates'
-# READMEs; we consume the workspace tip and pin via git snapshot on release.
-phenotype-event-sourcing = { path = "../crates/phenotype-event-sourcing" }
-phenotype-error-core     = { path = "../crates/phenotype-error-core" }
-phenotype-config         = { path = "../crates/phenotype-config" }
-phenotype-cache-adapter  = { path = "../crates/phenotype-cache-adapter" }
-phenotype-health         = { path = "../crates/phenotype-health" }
+# phenotype-shared reuse (ADR-0005). Pulled from KooshaPari/PhenoKits via git
+# so CI builds reproducibly without the parent repos workspace. Locked to `main`
+# tip; release trains pin to commit hashes in release notes. Local dev can
+# override via `[patch."https://github.com/KooshaPari/PhenoKits"]` in a
+# workspace-level `.cargo/config.toml` or a top-level `[patch]` section.
+phenotype-event-sourcing = { path = "vendor/phenotype-event-sourcing" }
+phenotype-error-core     = { path = "vendor/phenotype-error-core" }
+phenotype-config         = { path = "vendor/phenotype-config" }
+phenotype-cache-adapter  = { path = "vendor/phenotype-cache-adapter" }
+phenotype-health         = { path = "vendor/phenotype-health" }
 
 # CLI framework & utilities
 clap = { version = "4", features = ["derive", "env", "string", "wrap_help"] }

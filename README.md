@@ -48,8 +48,16 @@ See the component diagram in [PLAN.md §4.1](./PLAN.md#41-component-map).
 | P5 Fleet | planned |
 | P6 Windows GUI | deferred |
 | P7 Linux GUI | deferred |
+| **WP21 macOS Release** | **code complete** (waiting notarization creds) |
 
 Tracked in AgilePlus: feature `hwledger-v1-macos-mvp` (see `agileplus status`).
+
+WP21 deliverables (macOS distribution):
+- Codesigning infrastructure: READY (Developer ID cert installed, entitlements defined, scripts complete)
+- GitHub Actions release workflow: READY (release.yml deployed)
+- DMG + notarization flow: READY (scripts deployed, awaiting App Store Connect credentials)
+- Sparkle integration: READY (Package.swift updated, updater wired, key generation documented)
+- Documentation: READY (docs/reports/WP21-APPLE-DEV-SECRETS.md with step-by-step setup)
 
 ## License
 
