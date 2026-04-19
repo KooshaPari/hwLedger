@@ -52,6 +52,12 @@
 - **FR-UI-003**: Codesigned, notarised, distributed as DMG with Sparkle-based auto-update.
 - **FR-UI-004**: Offline-first. No mandatory network except for HF metadata fetches and rental API calls.
 
+### 2.6 User-journey verification (WP27: Blackbox screenshot verification)
+
+- **FR-UX-VERIFY-001**: Every user-journey screenshot step must emit a blackbox description produced by Claude Opus 4.7 vision without prior context.
+- **FR-UX-VERIFY-002**: Each description is compared against its intent label by Claude Sonnet 4.6 (judge). Score <= 2 surfaces as a failing journey.
+- **FR-UX-VERIFY-003**: Verification results serialize to `manifest.verified.json` alongside journey manifest for VitePress rendering (WP28).
+
 ## 3. Non-functional requirements
 
 - **NFR-001**: Planner math ±200 MB of ground truth across 10 canonical models.
@@ -61,6 +67,7 @@
 - **NFR-005**: Apache-2.0 compatible transitive licences. LGPL dynamic-link (Qt) is fine; GPL-only is not.
 - **NFR-006**: All public tests reference a Functional Requirement ID (per `PhenoSpecs` convention).
 - **NFR-007**: Zero unjustified `#[allow(dead_code)]` / `// TODO` suppressions in shipped crates.
+- **NFR-VERIFY-001**: Per-journey token cost shall not exceed ~$0.10 USD under default configuration (Claude Opus 4.7 for vision, Sonnet 4.6 for judge).
 
 ## 4. Acceptance tests (v1)
 

@@ -13,6 +13,7 @@ members = [
     "crates/hwledger-server",
     "crates/hwledger-cli",
     "crates/hwledger-ffi",
+    "crates/hwledger-verify",
 ]
 
 [workspace.package]
@@ -87,6 +88,20 @@ p256 = "0.13"
 rand = "0.8"
 axum-server = { version = "0.7", features = ["tls-rustls"] }
 hostname = "0.4"
+sha2 = "0.10"
+
+# Internal workspace crates
+hwledger-core = { path = "crates/hwledger-core" }
+hwledger-arch = { path = "crates/hwledger-arch" }
+hwledger-ingest = { path = "crates/hwledger-ingest" }
+hwledger-probe = { path = "crates/hwledger-probe" }
+hwledger-inference = { path = "crates/hwledger-inference" }
+hwledger-mlx-sidecar = { path = "crates/hwledger-mlx-sidecar" }
+hwledger-ledger = { path = "crates/hwledger-ledger" }
+hwledger-fleet-proto = { path = "crates/hwledger-fleet-proto" }
+hwledger-agent = { path = "crates/hwledger-agent" }
+hwledger-server = { path = "crates/hwledger-server" }
+hwledger-ffi = { path = "crates/hwledger-ffi" }
 
 # phenotype-shared reuse (ADR-0005). Path-resolved to the workspace-level
 # crates/ directory in repos/. Semver contracts live in the target crates'
@@ -96,6 +111,18 @@ phenotype-error-core     = { path = "../crates/phenotype-error-core" }
 phenotype-config         = { path = "../crates/phenotype-config" }
 phenotype-cache-adapter  = { path = "../crates/phenotype-cache-adapter" }
 phenotype-health         = { path = "../crates/phenotype-health" }
+
+# CLI framework & utilities
+clap = { version = "4", features = ["derive", "env", "string", "wrap_help"] }
+clap_complete = "4"
+comfy-table = "7"
+humansize = "2"
+owo-colors = "4"
+atty = "0.2"
+
+# dev testing
+assert_cmd = "2"
+predicates = "3"
 
 [profile.release]
 lto = "fat"

@@ -13,6 +13,35 @@ name = "hwledger-cli"
 path = "src/main.rs"
 
 [dependencies]
+# core deps
 tokio.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
+anyhow.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+
+# CLI
+clap.workspace = true
+clap_complete.workspace = true
+comfy-table.workspace = true
+humansize.workspace = true
+owo-colors.workspace = true
+atty.workspace = true
+
+# hwledger crates
+hwledger-core.workspace = true
+hwledger-arch.workspace = true
+hwledger-ingest.workspace = true
+hwledger-probe.workspace = true
+hwledger-ledger.workspace = true
+hwledger-fleet-proto.workspace = true
+
+# HTTP client
+reqwest.workspace = true
+
+[dev-dependencies]
+assert_cmd.workspace = true
+predicates.workspace = true
+tempfile.workspace = true
