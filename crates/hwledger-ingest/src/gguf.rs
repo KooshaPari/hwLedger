@@ -23,7 +23,7 @@ const GGUF_MAGIC: &[u8; 4] = b"GGUF";
 /// Stores all GGUF value types per the spec. Some variants may not be used in
 /// current hwLedger classification, but are preserved for future extension.
 #[derive(Debug, Clone)]
-#[allow(dead_code)]
+#[expect(dead_code, reason = "surface wired for future flows — see WP32 follow-up")]
 enum GgufValue {
     Uint8(u8),
     Int8(i8),

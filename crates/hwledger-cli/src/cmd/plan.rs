@@ -67,7 +67,7 @@ impl WeightQuant {
         }
     }
 
-    #[allow(dead_code)]
+    #[expect(dead_code, reason = "surface wired for future flows — see WP32 follow-up")]
     fn label(&self) -> &'static str {
         match self {
             WeightQuant::Fp16 => "fp16",
@@ -99,7 +99,7 @@ impl KvQuant {
         }
     }
 
-    #[allow(dead_code)]
+    #[expect(dead_code, reason = "surface wired for future flows — see WP32 follow-up")]
     fn label(&self) -> &'static str {
         match self {
             KvQuant::Fp16 => "fp16",

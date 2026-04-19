@@ -22,7 +22,7 @@ pub struct ColoredString {
 }
 
 impl ColoredString {
-    #[allow(dead_code)]
+    #[expect(dead_code, reason = "surface wired for future flows — see WP32 follow-up")]
     pub fn new(text: impl Into<String>) -> Self {
         Self {
             text: text.into(),
@@ -30,7 +30,7 @@ impl ColoredString {
         }
     }
 
-    #[allow(dead_code)]
+    #[expect(dead_code, reason = "surface wired for future flows — see WP32 follow-up")]
     pub fn with_color(mut self, color: DynColors) -> Self {
         self.color = Some(color);
         self
@@ -65,14 +65,12 @@ pub fn format_percent(value: f32) -> String {
     format!("{:.1}%", value)
 }
 
-/// Format temperature in Celsius.
-#[allow(dead_code)]
+/// Format temperature in Celsius. Used by telemetry-rendering flows.
 pub fn format_temp(celsius: f32) -> String {
     format!("{:.1}°C", celsius)
 }
 
-/// Format power in watts.
-#[allow(dead_code)]
+/// Format power in watts. Used by telemetry-rendering flows.
 pub fn format_power(watts: f32) -> String {
     format!("{:.1}W", watts)
 }

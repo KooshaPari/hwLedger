@@ -79,7 +79,7 @@ pub struct ServerStatus {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(dead_code)]
+#[expect(dead_code, reason = "surface wired for future flows — see WP32 follow-up")]
 pub struct Agent {
     pub id: String,
     pub hostname: String,

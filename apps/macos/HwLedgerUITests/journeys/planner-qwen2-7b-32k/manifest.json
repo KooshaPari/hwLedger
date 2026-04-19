@@ -1,58 +1,41 @@
 {
-  "failure": null,
-  "finished_at": "2026-04-19T00:00:00Z",
-  "id": "planner-qwen2-7b-32k",
-  "passed": true,
-  "recording": false,
-  "started_at": "2026-04-19T00:00:00Z",
-  "steps": [
+  "finished_at" : "2026-04-19T07:52:34Z",
+  "id" : "planner-qwen2-7b-32k",
+  "passed" : true,
+  "recording" : false,
+  "started_at" : "2026-04-19T07:52:34Z",
+  "steps" : [
     {
-      "index": 0,
-      "intent": "App launches and shows Planner as default screen",
-      "screenshot_path": "step-000-launch-app.png",
-      "slug": "launch-app"
+      "index" : 0,
+      "intent" : "App launches and shows Planner as default screen",
+      "screenshot_path" : "step-000-planner-with-qwen2-7b-at-32k-shows-gqa-classification.png",
+      "slug" : "launch-app"
     },
     {
-      "index": 1,
-      "intent": "Planner screen is the default visible tab",
-      "screenshot_path": "step-001-verify-planner-visible.png",
-      "slug": "verify-planner-visible"
+      "index" : 1,
+      "intent" : "Planner screen is the default visible tab",
+      "screenshot_path" : "step-001-final-state-all-controls-responsive-memory-layout-valid.png",
+      "slug" : "verify-planner-visible"
     },
     {
-      "index": 2,
-      "intent": "User opens model picker and selects Qwen2-7B",
-      "screenshot_path": "step-002-select-model.png",
-      "slug": "select-model"
+      "index" : 2,
+      "intent" : "User opens model picker and selects Qwen2-7B",
+      "slug" : "select-model"
     },
     {
-      "index": 3,
-      "intent": "User drags seq-len slider to 32768 tokens",
-      "screenshot_path": "step-003-set-seq-len-32k.png",
-      "slug": "set-seq-len-32k"
+      "index" : 3,
+      "intent" : "User drags seq-len slider to 32768 tokens",
+      "slug" : "set-seq-len-32k"
     },
     {
-      "index": 4,
-      "intent": "Planner with Qwen2-7B at 32k shows GQA classification",
-      "screenshot_path": "step-004-planner-with-qwen2-7b-at-32k-shows-gqa-classification.png",
-      "slug": "planner-with-qwen2-7b-at-32k-shows-gqa-classification"
+      "index" : 4,
+      "intent" : "Attention kind label displays GQA",
+      "slug" : "verify-attention-gqa"
     },
     {
-      "index": 5,
-      "intent": "Attention kind label displays GQA",
-      "screenshot_path": "step-005-verify-attention-gqa.png",
-      "slug": "verify-attention-gqa"
-    },
-    {
-      "index": 6,
-      "intent": "Stacked bar memory breakdown is rendered",
-      "screenshot_path": "step-006-verify-stacked-bar.png",
-      "slug": "verify-stacked-bar"
-    },
-    {
-      "index": 7,
-      "intent": "Final state: all controls responsive, memory layout valid",
-      "screenshot_path": "step-007-final-state-all-controls-responsive-memory-layout-valid.png",
-      "slug": "final-state-all-controls-responsive-memory-layout-valid"
+      "index" : 5,
+      "intent" : "Stacked bar memory breakdown is rendered",
+      "slug" : "verify-stacked-bar"
     }
   ]
 }

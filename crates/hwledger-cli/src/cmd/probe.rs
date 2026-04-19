@@ -219,9 +219,9 @@ fn print_device_table(devices: &[DeviceSnapshot]) -> Result<()> {
             dev.name.clone(),
             dev.total_vram.clone(),
             dev.free_vram.clone(),
-            format!("{:.1}", dev.utilization),
-            format!("{:.1}", dev.temperature),
-            format!("{:.1}", dev.power),
+            crate::output::format_percent(dev.utilization),
+            crate::output::format_temp(dev.temperature),
+            crate::output::format_power(dev.power),
         ]);
     }
 
