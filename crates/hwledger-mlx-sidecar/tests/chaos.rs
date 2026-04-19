@@ -10,7 +10,6 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::time::Duration;
 use tempfile::NamedTempFile;
-use tokio::time::timeout;
 
 /// Helper: Create a bash-backed fake sidecar script that echoes valid JSON-RPC responses.
 fn create_fake_sidecar_script(behavior: &str) -> NamedTempFile {
@@ -84,7 +83,7 @@ async fn test_sidecar_dies_mid_request() {
     let sidecar = MlxSidecar::spawn(config).await;
     assert!(sidecar.is_ok(), "sidecar should spawn successfully");
 
-    let sidecar = sidecar.unwrap();
+    let _sidecar = sidecar.unwrap();
 
     // Send a request; it will succeed once, then the sidecar dies.
     // This tests that we detect the death and return SidecarDied.
@@ -111,7 +110,7 @@ async fn test_sidecar_timeout_on_hang() {
     let sidecar = MlxSidecar::spawn(config).await;
     assert!(sidecar.is_ok(), "sidecar should spawn successfully");
 
-    let sidecar = sidecar.unwrap();
+    let _sidecar = sidecar.unwrap();
 
     // In a real scenario with request timeout support, we'd send a request
     // and expect MlxError::Timeout within 2 seconds.
@@ -161,11 +160,11 @@ async fn test_graceful_shutdown_reaps_child() {
     let sidecar = MlxSidecar::spawn(config).await;
     assert!(sidecar.is_ok(), "sidecar should spawn successfully");
 
-    let sidecar = sidecar.unwrap();
+    let sidecar_unwrapped = sidecar.unwrap();
 
     // Drop the sidecar, which should trigger graceful shutdown.
     // The child process should be reaped within 5 seconds.
-    drop(sidecar);
+    drop(sidecar_unwrapped);
 
     // Give time for cleanup
     tokio::time::sleep(Duration::from_millis(500)).await;

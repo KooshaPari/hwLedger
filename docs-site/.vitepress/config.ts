@@ -1,6 +1,67 @@
 import { defineConfig } from 'vitepress'
 import mdMathjax3 from 'markdown-it-mathjax3'
 import { withMermaid } from 'vitepress-plugin-mermaid'
+import { readdirSync, readFileSync } from 'fs'
+import { join } from 'path'
+import matter from 'gray-matter'
+
+// Auto-generate sidebar for /research/ by reading frontmatter from research/*.md
+function buildResearchSidebar() {
+  const researchDir = join(__dirname, '../research')
+  const files = readdirSync(researchDir)
+    .filter(f => f.endsWith('.md') && f !== 'index.md')
+    .sort()
+
+  if (files.length === 0) {
+    // Fallback to static list if no files found
+    return [
+      { text: 'Research Index', link: '/research/' }
+    ]
+  }
+
+  const items = files.map(filename => {
+    const filepath = join(researchDir, filename)
+    const content = readFileSync(filepath, 'utf-8')
+    const { data } = matter(content)
+    const slug = filename.replace('.md', '')
+
+    return {
+      text: (data.title as string) || slug,
+      link: `/research/${slug}`
+    }
+  })
+
+  return [
+    { text: 'Research Index', link: '/research/' },
+    ...items
+  ]
+}
+
+// Auto-generate sidebar for /architecture/adrs/ by reading frontmatter from architecture/adrs/*.md
+function buildAdrSidebar() {
+  const adrDir = join(__dirname, '../architecture/adrs')
+  const files = readdirSync(adrDir)
+    .filter(f => f.endsWith('.md'))
+    .sort()
+
+  if (files.length === 0) {
+    return [{ text: 'ADRs', link: '/architecture/adrs' }]
+  }
+
+  const items = files.map(filename => {
+    const filepath = join(adrDir, filename)
+    const content = readFileSync(filepath, 'utf-8')
+    const { data } = matter(content)
+    const slug = filename.replace('.md', '')
+
+    return {
+      text: (data.title as string) || slug,
+      link: `/architecture/adrs/${slug}`
+    }
+  })
+
+  return items
+}
 
 export default withMermaid(defineConfig({
   title: 'hwLedger',
@@ -74,9 +135,7 @@ export default withMermaid(defineConfig({
         { text: 'Installation', link: '/getting-started/install' }
       ],
 
-      '/research/': [
-        { text: 'Research Index', link: '/research/' }
-      ],
+      '/research/': buildResearchSidebar(),
 
       '/journeys/': [
         { text: 'Overview', link: '/journeys/' },

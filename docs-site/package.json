@@ -6,7 +6,8 @@
   "scripts": {
     "sync:adrs": "bash scripts/sync-adrs.sh",
     "sync:journeys": "bash scripts/sync-journey-artefacts.sh",
-    "sync": "bash scripts/sync-adrs.sh && bash scripts/sync-journey-artefacts.sh",
+    "sync:research": "bash scripts/sync-research.sh",
+    "sync": "bash scripts/sync-adrs.sh && bash scripts/sync-journey-artefacts.sh && bash scripts/sync-research.sh",
     "dev": "bun run sync && vitepress dev .",
     "build": "bun run sync && vitepress build .",
     "preview": "vitepress preview .",
@@ -18,11 +19,12 @@
     "vue": "^3.5.0"
   },
   "devDependencies": {
-    "vitepress": "1.6.4",
-    "mermaid": "^10.9.0",
-    "vitepress-plugin-mermaid": "^2.0.16",
+    "gray-matter": "^4.0.3",
     "linkinator": "^6.0.0",
+    "markdown-it-mathjax3": "^4.3.2",
     "markdownlint-cli2": "^0.13.0",
-    "markdown-it-mathjax3": "^4.3.2"
+    "mermaid": "^10.9.0",
+    "vitepress": "1.6.4",
+    "vitepress-plugin-mermaid": "^2.0.16"
   }
 }

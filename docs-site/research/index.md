@@ -1,59 +1,54 @@
 # Research
 
-Archived research briefs from the Haiku research swarm that informed hwLedger's architecture and implementation decisions.
+Archived research briefs from the Haiku research swarm that informed hwLedger's architecture and implementation decisions. All 12 briefs are indexed below with direct links to their full analyses.
 
-## Research Topics
+## All Research Briefs
 
-All research briefs are available in `docs/research/`:
+### Inference Engines & Backends
 
-### Inference Engines
+1. [oMlx Analysis — MLX Fork Strategy](./01-omlx-analysis.md) — Architecture review, fork viability, sidecar integration design.
+2. [Inference Engine Matrix — April 2026](./03-inference-engine-matrix.md) — Comprehensive comparison of MLX, mistral.rs, llama.cpp, vLLM, TGI across platforms.
 
-- **oMlx (MLX fork)**: 10.6K⭐, Apache-2.0, active. Python-based with SSD-paged KV cache achieving 30–90s TTFT and 1–3s for agent loops.
-- **Inference engine matrix (Apr 2026)**: MLX for Apple peak, mistral.rs for Rust-native with MoE+GGUF support, llama.cpp as universal fallback, vLLM/TGI for remote.
+### Subprocess Communication & Integration
 
-### IPC & Subprocess Communication
+3. [MLX IPC Patterns](./02-mlx-ipc-patterns.md) — JSON-RPC over stdio vs protobuf; venv management; signal discipline.
 
-- **MLX IPC patterns**: JSON-RPC over stdio proven in mistral.rs + MCP + Ollama. Fallback to length-prefixed protobuf if throughput saturates.
-- **Dependency pinning**: uv for reproducible Python venv pinning; parent-managed subprocess with `signal_hook` for SIGTERM.
+### Memory & Architecture Formulas
 
-### KV Cache & Math
+4. [KV Cache Formulas — Per-Architecture Derivations](./04-kv-cache-formulas.md) — Complete math breakdown for MHA, GQA, MQA, MLA, SSM, hybrid, attention-sink.
 
-- **Architecture-keyed KV formulas**: Derivation for MHA, GQA, MQA, MLA, sliding window, SSM/Mamba, hybrid attention, sink tokens.
-- **Per-layer breakdown**: MoE treats resident vs active parameters separately; hybrid models check per-layer attention type.
+### Model Configuration
 
-### Config Ingestion
+5. [Config Ingestion — Model Metadata Loaders](./05-config-ingestion.md) — Pure-Rust loaders for HF Hub, GGUF, safetensors; subprocess fallback for MLX.
 
-- **Pure-Rust loaders**: hf-hub for HF Hub, gguf-rs-lib for GGUF, safetensors for safetensors.
-- **Subprocess fallback**: MLX .npz inspection via Python subprocess.
-- **REST APIs**: Ollama/LM Studio/vLLM CLI flag endpoints.
+### Hardware Telemetry
 
-### GPU Telemetry
+6. [GPU Telemetry Backends](./06-gpu-telemetry.md) — NVIDIA nvml-wrapper, AMD rocm-smi, Apple Silicon macmon, Intel Arc (deferred).
 
-- **NVIDIA**: nvml-wrapper is mature and canonical.
-- **AMD**: rocm-smi --json (no production-grade crate).
-- **Apple Silicon**: macmon --json (no public Metal memory API).
-- **Intel Arc**: Vacuum (deferred).
+### Language Bindings & FFI
 
-### FFI & Language Bindings
-
-- **UniFFI + cargo-xcframework**: Preferred for SwiftUI (Mozilla/Signal/1Password converged).
-- **C# .NET 9+ via csbindgen**: Windows WinUI 3 native AOT + Velopack auto-update.
-- **cxx-qt (KDAB)**: Qt 6.6+ active, LGPL dynamic-link compatible with Apache-2.0.
-- **Slint**: Credible escape hatch if cxx-qt integration proves painful.
+7. [FFI Survey — Rust ↔ Native Language Bindings](./07-ffi-survey.md) — UniFFI vs cbindgen vs csbindgen vs cxx-qt vs Slint for SwiftUI, WinUI, Qt.
 
 ### Fleet Architecture
 
-- **Axum + mTLS**: Preferred over gRPC for fleet-of-tens scale. rustls+rcgen for auto-generated certs (no PKI).
-- **russh + deadpool**: Agentless SSH with connection pooling.
-- **Vast/RunPod/Lambda/Modal**: reqwest async HTTP + vendor SDKs.
-- **phenotype-event-sourcing**: Reusable module for audit log.
+8. [Fleet Wire Design](./08-fleet-wire-design.md) — Axum + JSON/HTTPS + mTLS; russh + deadpool SSH; Tailscale integration; phenotype-event-sourcing audit log.
 
-### Competitors & Differentiation
+### Competitive Analysis
 
-- **Gap analysis**: HF Accelerate, can-it-run-llm, LM Studio all underweight KV cache and overweight MoE.
-- **hwLedger differentiator**: KV-cache-and-MoE-aware math plus slider UX over live per-layer breakdown.
+9. [Competitors Survey — Gap Analysis](./09-competitors-survey.md) — HF Accelerate, can-it-run-llm, LM Studio, vLLM internals. hwLedger differentiators.
 
-## Key Findings
+### Auditing & Cost Tracking
+
+10. [Event Sourcing — Audit Log & Cost Tracking](./10-event-sourcing.md) — phenotype-event-sourcing reuse; SHA-256 hash chains; LedgerError::Integrity tamper detection.
+
+### Additional Research
+
+11. [Competing VRAM Planners — Comparative Analysis](./11-competing-planners.md) — Deep-dive into existing capacity planning tools and their limitations.
+12. [UI Journey Harness — VitePress 2 + Vue 3](./12-ui-journey-harness-2026.md) — Component showcase and interaction patterns for hwLedger desktop UIs.
+
+---
+
+## Key Findings Summary
 
 1. **oMlx fork is the right choice**: HTTP sidecar over Python direct call avoids build complexity.
 2. **JSON-RPC is proven**: mistral.rs and MCP both use stdin-based JSON-RPC; fallback to protobuf if throughput saturates.
@@ -62,44 +57,49 @@ All research briefs are available in `docs/research/`:
 5. **FFI converges on standards**: UniFFI for Apple, csbindgen for Windows, cxx-qt for Linux.
 6. **Axum + mTLS > gRPC**: Simpler protocol stack; mTLS is sufficient at fleet-of-tens scale.
 7. **Event sourcing is critical**: Audit trail for cost reconciliation and fleet diagnostics.
+8. **KV-cache + MoE awareness is the differentiator**: No competitor handles MLA, hybrid attention, and active-expert math simultaneously.
 
-## Research Briefs
+---
 
-All full briefs are linked from `docs/research/*.md`. Start with:
+## Research Organization
 
-- `01-omlx-analysis.md` — Deep dive into oMlx architecture and fork strategy
-- `02-mlx-ipc-patterns.md` — IPC trade-offs and JSON-RPC design
-- `03-inference-engine-matrix.md` — Comparison of MLX, mistral.rs, llama.cpp, vLLM, TGI
-- `04-kv-cache-formulas.md` — Derivations per architecture
-- `05-config-ingestion.md` — HF/GGUF/safetensors loaders
-- `06-gpu-telemetry.md` — NVIDIA/AMD/Apple Silicon probes
-- `07-ffi-survey.md` — UniFFI, csbindgen, cxx-qt comparison
-- `08-fleet-wire-design.md` — Axum vs gRPC, mTLS, agentless SSH
-- `09-competitors-survey.md` — Analysis of existing VRAM calculators
-- `10-event-sourcing.md` — Audit log and cost tracking
-- `11-shared-crate-reuse.md` — Phenotype org module extraction
-- `12-ui-journey-harness.md` — VitePress 2 + Vue 3 components
+All research briefs include:
+
+- **Frontmatter**: Title, description, brief ID, date, status, sources.
+- **Executive Summary**: One-paragraph overview.
+- **Deep Dives**: Technical analysis, code examples, trade-off tables.
+- **Recommendations**: Clear guidance for implementation.
+- **Sources**: URLs and citations for validation.
+- **See Also**: Links to related ADRs and source files.
 
 ## Contributing Research
 
-To add a research brief:
+To add a new research brief:
 
-1. Create `docs/research/NN-description.md` with findings
-2. Include sources, code examples, and conclusions
-3. Reference in this index
-4. Submit a PR
+1. Create `docs/research/NN-slug.md` (where NN is the next brief number)
+2. Include YAML frontmatter with `title`, `description`, `brief_id`, `date`, `status`, and `sources`
+3. Write 300–600 words with markdown headings, tables, and code blocks
+4. Reference related ADRs in "See also" section
+5. Run `bun run sync:research` to publish to docsite
+6. Submit a PR
 
-See [CONTRIBUTING.md](https://github.com/KooshaPari/hwLedger/blob/main/CONTRIBUTING.md).
+See [CONTRIBUTING.md](https://github.com/KooshaPari/hwLedger/blob/main/CONTRIBUTING.md) for full guidelines.
 
-## References
+---
 
-All briefs include URLs and citations. Key external sources:
+## External References
+
+Key papers and resources cited across all briefs:
 
 - [Llama 2: Open Foundation and Fine-Tuned Chat Models](https://arxiv.org/abs/2307.09288)
 - [Mistral 7B](https://arxiv.org/abs/2310.06825)
 - [Mixtral of Experts](https://arxiv.org/abs/2401.04088)
 - [Mamba: Linear-Time Sequence Modeling with Selective State Spaces](https://arxiv.org/abs/2312.00752)
 - [Efficient Streaming Language Models with Attention Sinks](https://arxiv.org/abs/2309.17453)
+- [DeepSeek-V2: Multi-Head Latent Attention](https://arxiv.org/abs/2405.04434)
 - [oMlx GitHub](https://github.com/jundot/omlx)
 - [mistral.rs GitHub](https://github.com/mistralai/mistral.rs)
 - [vLLM GitHub](https://github.com/vllm-project/vllm)
+- [UniFFI Documentation](https://mozilla.github.io/uniffi-rs/)
+- [cxx-qt (KDAB)](https://kdab.github.io/cxx-qt/)
+- [Axum Web Framework](https://github.com/tokio-rs/axum)

@@ -44,11 +44,13 @@ impl Default for MlxSidecarConfig {
 }
 
 /// Pending request waiting for a response.
+#[derive(Debug)]
 struct PendingRequest {
     tx: oneshot::Sender<serde_json::Value>,
 }
 
 /// Manager for MLX sidecar subprocess.
+#[derive(Debug)]
 pub struct MlxSidecar {
     child: Arc<Mutex<Option<Child>>>,
     stdin_tx: mpsc::UnboundedSender<String>,

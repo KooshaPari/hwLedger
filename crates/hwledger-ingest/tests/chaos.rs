@@ -51,7 +51,7 @@ fn test_invalid_safetensors_length_prefix() {
 // Traces to: FR-INF-003, NFR-FAULT-001
 #[test]
 fn test_empty_file_parse_error() {
-    let file = NamedTempFile::new().expect("create temp file");
+    let mut file = NamedTempFile::new().expect("create temp file");
     file.flush().expect("flush");
 
     let path = file.path();
@@ -126,8 +126,8 @@ fn test_malformed_json_in_metadata() {
 // Traces to: FR-INF-003, NFR-FAULT-001
 #[test]
 fn test_classify_truncated_architecture_data() {
-    let minimal_header = vec![
-        0x47, 0x47, 0x55, 0x46, // "GGUF" magic
+    let minimal_header = [
+        0x47u8, 0x47, 0x55, 0x46, // "GGUF" magic
         0x03, 0x00, 0x00, 0x00, // version 3
         // Missing rest of header...
     ];
