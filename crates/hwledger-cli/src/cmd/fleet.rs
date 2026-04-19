@@ -153,18 +153,11 @@ fn register(args: RegisterArgs) -> Result<()> {
         return Err(anyhow!("--token is required"));
     }
 
-    tracing::info!(
-        "Registering agent '{}' with fleet server: {}",
-        args.hostname,
-        args.server
-    );
+    tracing::info!("Registering agent '{}' with fleet server: {}", args.hostname, args.server);
 
     // Stub: in production, POST /v1/agents/register with body {hostname, ...}
     // For now, just report success
-    println!(
-        "Successfully registered agent '{}' with server at {}",
-        args.hostname, args.server
-    );
+    println!("Successfully registered agent '{}' with server at {}", args.hostname, args.server);
 
     Ok(())
 }
@@ -174,17 +167,10 @@ fn audit(args: AuditArgs) -> Result<()> {
         return Err(anyhow!("server URL must start with http:// or https://"));
     }
 
-    tracing::info!(
-        "Retrieving audit log from {}, limit={}",
-        args.server,
-        args.limit
-    );
+    tracing::info!("Retrieving audit log from {}, limit={}", args.server, args.limit);
 
     // Stub: in production, call GET /v1/audit with ?limit=N and optional ?verify=true
-    let now = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_millis() as u64;
+    let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_millis() as u64;
 
     let entries = vec![
         AuditEntry {
@@ -213,11 +199,7 @@ fn audit(args: AuditArgs) -> Result<()> {
         let mut table = Table::new();
         table.set_header(vec!["Agent", "Event", "Details"]);
         for entry in entries {
-            table.add_row(vec![
-                entry.agent_id,
-                entry.event_type,
-                entry.details.clone(),
-            ]);
+            table.add_row(vec![entry.agent_id, entry.event_type, entry.details.clone()]);
         }
         println!("{}", table);
     }

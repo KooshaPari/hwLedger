@@ -38,7 +38,11 @@ fn assert_bpt_within(actual: f64, expected: f64, tolerance_pct: f64, context: &s
     assert!(
         max_diff_pct <= tolerance_pct,
         "{}: expected {:.1}, got {:.1} ({:.2}% diff, tolerance {:.1}%)",
-        context, expected, actual, max_diff_pct, tolerance_pct
+        context,
+        expected,
+        actual,
+        max_diff_pct,
+        tolerance_pct
     );
 }
 
@@ -457,11 +461,6 @@ fn test_fixtures_parse_without_network() {
     for name in fixtures {
         let cfg = load_fixture(name);
         let kind = hwledger_arch::classify(&cfg);
-        assert!(
-            kind.is_ok(),
-            "Failed to classify fixture {}: {:?}",
-            name,
-            kind
-        );
+        assert!(kind.is_ok(), "Failed to classify fixture {}: {:?}", name, kind);
     }
 }

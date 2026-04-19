@@ -84,14 +84,15 @@ mod tests {
             repo: "meta-llama/Llama-2-7b".to_string(),
             revision: "main".to_string(),
         };
-        assert_eq!(source_hf, Source::HuggingFace {
-            repo: "meta-llama/Llama-2-7b".to_string(),
-            revision: "main".to_string(),
-        });
+        assert_eq!(
+            source_hf,
+            Source::HuggingFace {
+                repo: "meta-llama/Llama-2-7b".to_string(),
+                revision: "main".to_string(),
+            }
+        );
 
-        let source_gguf = Source::Gguf {
-            path: "/models/llama-2-7b.gguf".to_string(),
-        };
+        let source_gguf = Source::Gguf { path: "/models/llama-2-7b.gguf".to_string() };
         assert!(matches!(source_gguf, Source::Gguf { .. }));
 
         let source_safetensors = Source::Safetensors {

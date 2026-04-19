@@ -77,11 +77,7 @@ pub fn run(args: IngestArgs) -> Result<()> {
 
     let result = IngestResult {
         schema: "hwledger.v1".to_string(),
-        source: SourceInfo {
-            kind: source_kind,
-            location,
-            revision,
-        },
+        source: SourceInfo { kind: source_kind, location, revision },
         model: ModelInfo {
             model_type: Some(model_type),
             parameter_count: param_count,

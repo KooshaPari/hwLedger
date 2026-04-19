@@ -32,14 +32,10 @@ fn test_plan_with_llama3_config() {
     let path = create_test_config(&dir, "llama3.json", config);
 
     let mut cmd = Command::cargo_bin("hwledger-cli").unwrap();
-    cmd.arg("plan")
-        .arg(path)
-        .arg("--seq")
-        .arg("2048")
-        .arg("--batch")
-        .arg("4");
+    cmd.arg("plan").arg(path).arg("--seq").arg("2048").arg("--batch").arg("4");
 
-    cmd.assert().success()
+    cmd.assert()
+        .success()
         .stdout(predicate::str::contains("Attention Kind"))
         .stdout(predicate::str::contains("Gqa"))
         .stdout(predicate::str::contains("Weights"))
@@ -60,11 +56,10 @@ fn test_plan_json_output() {
     let path = create_test_config(&dir, "deepseek.json", config);
 
     let mut cmd = Command::cargo_bin("hwledger-cli").unwrap();
-    cmd.arg("plan")
-        .arg(path)
-        .arg("--json");
+    cmd.arg("plan").arg(path).arg("--json");
 
-    cmd.assert().success()
+    cmd.assert()
+        .success()
         .stdout(predicate::str::contains("\"schema\": \"hwledger.v1\""))
         .stdout(predicate::str::contains("\"weights_bytes\""))
         .stdout(predicate::str::contains("\"kv_cache_bytes\""));
@@ -84,7 +79,8 @@ fn test_plan_with_missing_config_fields() {
     let mut cmd = Command::cargo_bin("hwledger-cli").unwrap();
     cmd.arg("plan").arg(path);
 
-    cmd.assert().failure()
+    cmd.assert()
+        .failure()
         .stderr(predicate::str::contains("classify").or(predicate::str::contains("error")));
 }
 
@@ -102,22 +98,13 @@ fn test_plan_with_quantization_modes() {
     }"#;
     let path = create_test_config(&dir, "llama.json", config);
 
-    for (weight_q, kv_q) in &[
-        ("fp16", "fp16"),
-        ("int8", "int8"),
-        ("int4", "int4"),
-        ("3bit", "3bit"),
-    ] {
+    for (weight_q, kv_q) in
+        &[("fp16", "fp16"), ("int8", "int8"), ("int4", "int4"), ("3bit", "3bit")]
+    {
         let mut cmd = Command::cargo_bin("hwledger-cli").unwrap();
-        cmd.arg("plan")
-            .arg(&path)
-            .arg("--weight-quant")
-            .arg(weight_q)
-            .arg("--kv-quant")
-            .arg(kv_q);
+        cmd.arg("plan").arg(&path).arg("--weight-quant").arg(weight_q).arg("--kv-quant").arg(kv_q);
 
-        cmd.assert().success()
-            .stdout(predicate::str::contains("Total"));
+        cmd.assert().success().stdout(predicate::str::contains("Total"));
     }
 }
 
@@ -136,13 +123,9 @@ fn test_plan_with_device_vram() {
     let path = create_test_config(&dir, "llama.json", config);
 
     let mut cmd = Command::cargo_bin("hwledger-cli").unwrap();
-    cmd.arg("plan")
-        .arg(path)
-        .arg("--device-total-vram")
-        .arg("80");
+    cmd.arg("plan").arg(path).arg("--device-total-vram").arg("80");
 
-    cmd.assert().success()
-        .stdout(predicate::str::contains("Utilization"));
+    cmd.assert().success().stdout(predicate::str::contains("Utilization"));
 }
 
 // --- Ingest Tests ---
@@ -154,7 +137,8 @@ fn test_ingest_hf_uri() {
     let mut cmd = Command::cargo_bin("hwledger-cli").unwrap();
     cmd.arg("ingest").arg("hf://meta-llama/Llama-2-7b");
 
-    cmd.assert().success()
+    cmd.assert()
+        .success()
         .stdout(predicate::str::contains("Source"))
         .stdout(predicate::str::contains("hf"))
         .stdout(predicate::str::contains("meta-llama/Llama-2-7b"));
@@ -167,8 +151,7 @@ fn test_ingest_hf_with_revision() {
     let mut cmd = Command::cargo_bin("hwledger-cli").unwrap();
     cmd.arg("ingest").arg("hf://meta-llama/Llama-2-7b@fp16");
 
-    cmd.assert().success()
-        .stdout(predicate::str::contains("fp16"));
+    cmd.assert().success().stdout(predicate::str::contains("fp16"));
 }
 
 /// Test ingest with GGUF source.
@@ -176,10 +159,10 @@ fn test_ingest_hf_with_revision() {
 #[test]
 fn test_ingest_gguf() {
     let mut cmd = Command::cargo_bin("hwledger-cli").unwrap();
-    cmd.arg("ingest")
-        .arg("gguf:///models/mistral-7b.gguf.q4_k_m");
+    cmd.arg("ingest").arg("gguf:///models/mistral-7b.gguf.q4_k_m");
 
-    cmd.assert().success()
+    cmd.assert()
+        .success()
         .stdout(predicate::str::contains("Source"))
         .stdout(predicate::str::contains("gguf"));
 }
@@ -189,11 +172,10 @@ fn test_ingest_gguf() {
 #[test]
 fn test_ingest_json_output() {
     let mut cmd = Command::cargo_bin("hwledger-cli").unwrap();
-    cmd.arg("ingest")
-        .arg("ollama://llama2:13b")
-        .arg("--json");
+    cmd.arg("ingest").arg("ollama://llama2:13b").arg("--json");
 
-    cmd.assert().success()
+    cmd.assert()
+        .success()
         .stdout(predicate::str::contains("\"schema\": \"hwledger.v1\""))
         .stdout(predicate::str::contains("\"model_type\""))
         .stdout(predicate::str::contains("\"attention_kind\""));
@@ -206,8 +188,7 @@ fn test_ingest_mlx() {
     let mut cmd = Command::cargo_bin("hwledger-cli").unwrap();
     cmd.arg("ingest").arg("mlx:///opt/mlx-models/llama2-7b");
 
-    cmd.assert().success()
-        .stdout(predicate::str::contains("mlx"));
+    cmd.assert().success().stdout(predicate::str::contains("mlx"));
 }
 
 /// Test ingest with invalid URI format.
@@ -217,7 +198,8 @@ fn test_ingest_invalid_uri() {
     let mut cmd = Command::cargo_bin("hwledger-cli").unwrap();
     cmd.arg("ingest").arg("invalid-uri-no-scheme");
 
-    cmd.assert().failure()
+    cmd.assert()
+        .failure()
         .stderr(predicate::str::contains("invalid").or(predicate::str::contains("URI")));
 }
 
@@ -241,7 +223,8 @@ fn test_probe_list_json() {
     let mut cmd = Command::cargo_bin("hwledger-cli").unwrap();
     cmd.arg("probe").arg("list").arg("--json");
 
-    cmd.assert().success()
+    cmd.assert()
+        .success()
         .stdout(predicate::str::contains("\"schema\": \"hwledger.v1\""))
         .stdout(predicate::str::contains("\"devices\""));
 }
@@ -260,7 +243,8 @@ fn test_fleet_status() {
         .arg("--token")
         .arg("test-token");
 
-    cmd.assert().success()
+    cmd.assert()
+        .success()
         .stdout(predicate::str::contains("Version"))
         .stdout(predicate::str::contains("Uptime"))
         .stdout(predicate::str::contains("Connected Agents"));
@@ -279,7 +263,8 @@ fn test_fleet_status_json() {
         .arg("test-token")
         .arg("--json");
 
-    cmd.assert().success()
+    cmd.assert()
+        .success()
         .stdout(predicate::str::contains("\"version\""))
         .stdout(predicate::str::contains("\"uptime_seconds\""));
 }
@@ -296,7 +281,8 @@ fn test_fleet_status_missing_token() {
         .arg("--token")
         .arg("");
 
-    cmd.assert().failure()
+    cmd.assert()
+        .failure()
         .stderr(predicate::str::contains("token").or(predicate::str::contains("required")));
 }
 
@@ -314,8 +300,7 @@ fn test_fleet_register() {
         .arg("--hostname")
         .arg("agent-001");
 
-    cmd.assert().success()
-        .stdout(predicate::str::contains("Successfully registered"));
+    cmd.assert().success().stdout(predicate::str::contains("Successfully registered"));
 }
 
 /// Test fleet audit.
@@ -330,7 +315,8 @@ fn test_fleet_audit() {
         .arg("--limit")
         .arg("10");
 
-    cmd.assert().success()
+    cmd.assert()
+        .success()
         .stdout(predicate::str::contains("Agent"))
         .stdout(predicate::str::contains("Event"));
 }
@@ -343,8 +329,7 @@ fn test_version_command() {
     let mut cmd = Command::cargo_bin("hwledger-cli").unwrap();
     cmd.arg("version");
 
-    cmd.assert().success()
-        .stdout(predicate::str::contains("hwledger-cli v"));
+    cmd.assert().success().stdout(predicate::str::contains("hwledger-cli v"));
 }
 
 /// Test help for all subcommands.
@@ -356,8 +341,7 @@ fn test_help_output() {
         let mut cmd = Command::cargo_bin("hwledger-cli").unwrap();
         cmd.arg(subcmd).arg("--help");
 
-        cmd.assert().success()
-            .stdout(predicate::str::contains("Usage"));
+        cmd.assert().success().stdout(predicate::str::contains("Usage"));
     }
 }
 
@@ -365,9 +349,7 @@ fn test_help_output() {
 #[test]
 fn test_log_level_flag() {
     let mut cmd = Command::cargo_bin("hwledger-cli").unwrap();
-    cmd.arg("--log-level")
-        .arg("debug")
-        .arg("version");
+    cmd.arg("--log-level").arg("debug").arg("version");
 
     cmd.assert().success();
 }
@@ -386,9 +368,7 @@ fn test_no_color_flag() {
     let path = create_test_config(&dir, "llama.json", config);
 
     let mut cmd = Command::cargo_bin("hwledger-cli").unwrap();
-    cmd.arg("--no-color")
-        .arg("plan")
-        .arg(path);
+    cmd.arg("--no-color").arg("plan").arg(path);
 
     cmd.assert().success();
 }

@@ -30,7 +30,8 @@ fn test_fr_plan_004_interactive_sliders() {
         assert!(
             kv_bytes >= kv_bytes_prev,
             "FR-PLAN-004: KV bytes must be monotonically non-decreasing (seq={}, kv={})",
-            seq, kv_bytes
+            seq,
+            kv_bytes
         );
         kv_bytes_prev = kv_bytes;
     }
@@ -45,23 +46,21 @@ fn test_fr_plan_005_stacked_bar_breakdown() {
     // FR-PLAN-005: Live stacked-bar breakdown (weights | KV | runtime | prefill | free).
     // This test validates the budget invariant: sum of segments ≤ total.
 
-    let weights_bytes = 40_000_000_000u64;      // 40 GB weights
-    let kv_bytes = 10_000_000_000u64;           // 10 GB KV
-    let prefill_activation_bytes = 5_000_000_000u64;  // 5 GB prefill
-    let runtime_overhead_bytes = 2_000_000_000u64;    // 2 GB runtime overhead
-    let total_bytes = 80_000_000_000u64;        // 80 GB total
+    let weights_bytes = 40_000_000_000u64; // 40 GB weights
+    let kv_bytes = 10_000_000_000u64; // 10 GB KV
+    let prefill_activation_bytes = 5_000_000_000u64; // 5 GB prefill
+    let runtime_overhead_bytes = 2_000_000_000u64; // 2 GB runtime overhead
+    let total_bytes = 80_000_000_000u64; // 80 GB total
 
     // Compute sum of allocated segments.
-    let allocated = weights_bytes
-        + kv_bytes
-        + prefill_activation_bytes
-        + runtime_overhead_bytes;
+    let allocated = weights_bytes + kv_bytes + prefill_activation_bytes + runtime_overhead_bytes;
 
     // Validate: allocated <= total (remainder is free or platform overhead).
     assert!(
         allocated <= total_bytes,
         "FR-PLAN-005: sum of segments ({}B) must not exceed total ({}B)",
-        allocated, total_bytes
+        allocated,
+        total_bytes
     );
 
     // Compute free space (if any).
@@ -152,7 +151,10 @@ fn test_fr_plan_007_export_flags() {
     // Test llama.cpp export.
     let llamacpp = export_llamacpp(32768, 40);
     assert!(llamacpp.contains("-c 32768"), "FR-PLAN-007: llama.cpp export contains seq_len");
-    assert!(llamacpp.contains("--n-gpu-layers 40"), "FR-PLAN-007: llama.cpp export contains GPU layers");
+    assert!(
+        llamacpp.contains("--n-gpu-layers 40"),
+        "FR-PLAN-007: llama.cpp export contains GPU layers"
+    );
 
     // Test MLX config export.
     let mlx = export_mlx_config(32768, 8);

@@ -4,20 +4,20 @@
 //! Traces to: FR-FLEET-001, FR-FLEET-002, FR-FLEET-008
 
 use crate::error::ServerError;
-use crate::{ssh, tailscale, rentals, AppState};
+use crate::{rentals, ssh, tailscale, AppState};
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::Json;
+use base64::engine::{general_purpose, Engine};
 use chrono::Utc;
 use hwledger_fleet_proto::{
     AgentRegistration, DispatchOrder, DispatchReport, Heartbeat, JobState, RegistrationAck,
 };
 use serde::Serialize;
 use serde_json::json;
+use std::collections::HashMap;
 use std::sync::Arc;
 use uuid::Uuid;
-use std::collections::HashMap;
-use base64::engine::{general_purpose, Engine};
 
 /// Health check response.
 #[derive(Debug, Serialize)]
@@ -46,17 +46,14 @@ pub async fn register_agent(
 ) -> Result<(StatusCode, Json<RegistrationAck>), ServerError> {
     // Validate bootstrap token
     if !state.config.bootstrap_tokens.contains(&req.bootstrap_token) {
-        return Err(ServerError::Auth {
-            reason: "invalid bootstrap token".to_string(),
-        });
+        return Err(ServerError::Auth { reason: "invalid bootstrap token".to_string() });
     }
 
     // Sign the CSR
-    let agent_cert_pem = state.ca.sign_csr(&req.cert_csr_pem, &req.hostname).map_err(|e| {
-        ServerError::Internal {
-            reason: format!("failed to sign CSR: {}", e),
-        }
-    })?;
+    let agent_cert_pem = state
+        .ca
+        .sign_csr(&req.cert_csr_pem, &req.hostname)
+        .map_err(|e| ServerError::Internal { reason: format!("failed to sign CSR: {}", e) })?;
 
     let now_ms = Utc::now().timestamp_millis();
 
@@ -72,9 +69,10 @@ pub async fn register_agent(
     )
     .bind(req.agent_id.to_string())
     .bind(&req.hostname)
-    .bind(serde_json::to_string(&req.platform).map_err(|e| ServerError::Internal {
-        reason: e.to_string(),
-    })?)
+    .bind(
+        serde_json::to_string(&req.platform)
+            .map_err(|e| ServerError::Internal { reason: e.to_string() })?,
+    )
     .bind(&agent_cert_pem)
     .bind(now_ms)
     .bind(now_ms)
@@ -100,9 +98,7 @@ pub async fn heartbeat(
 ) -> Result<StatusCode, ServerError> {
     // Verify agent_id matches
     if req.agent_id != agent_id {
-        return Err(ServerError::Validation {
-            reason: "agent_id mismatch".to_string(),
-        });
+        return Err(ServerError::Validation { reason: "agent_id mismatch".to_string() });
     }
 
     let now_ms = Utc::now().timestamp_millis();
@@ -163,7 +159,9 @@ pub async fn heartbeat(
 /// List all agents with their last telemetry snapshot.
 /// Admin-only: currently loose mTLS (any valid cert). TODO(fleet-auth-v2): add CN validation.
 /// Traces to: FR-FLEET-001
-pub async fn list_agents(State(state): State<Arc<AppState>>) -> Result<Json<Vec<Agent>>, ServerError> {
+pub async fn list_agents(
+    State(state): State<Arc<AppState>>,
+) -> Result<Json<Vec<Agent>>, ServerError> {
     let rows = sqlx::query_as::<_, (String, String, i64, Option<i64>)>(
         "SELECT id, hostname, registered_at_ms, last_seen_ms FROM agents",
     )
@@ -205,10 +203,7 @@ pub async fn create_job(
     .execute(&state.db)
     .await?;
 
-    Ok((
-        StatusCode::CREATED,
-        Json(json!({ "job_id": req.job_id.to_string() })),
-    ))
+    Ok((StatusCode::CREATED, Json(json!({ "job_id": req.job_id.to_string() }))))
 }
 
 /// Get pending jobs for an agent.
@@ -233,9 +228,7 @@ pub async fn report_job(
     Json(req): Json<DispatchReport>,
 ) -> Result<StatusCode, ServerError> {
     if req.job_id != job_id {
-        return Err(ServerError::Validation {
-            reason: "job_id mismatch".to_string(),
-        });
+        return Err(ServerError::Validation { reason: "job_id mismatch".to_string() });
     }
 
     let state_str = match req.state {
@@ -268,10 +261,8 @@ pub async fn report_job(
 /// Health check endpoint.
 /// Traces to: FR-FLEET-001
 pub async fn health(State(state): State<Arc<AppState>>) -> Json<HealthResponse> {
-    let agent_count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM agents")
-        .fetch_one(&state.db)
-        .await
-        .unwrap_or((0,));
+    let agent_count: (i64,) =
+        sqlx::query_as("SELECT COUNT(*) FROM agents").fetch_one(&state.db).await.unwrap_or((0,));
 
     Json(HealthResponse {
         status: "ok".to_string(),
@@ -287,30 +278,24 @@ pub async fn ssh_probe(
     State(_state): State<Arc<AppState>>,
     axum::extract::Query(params): axum::extract::Query<HashMap<String, String>>,
 ) -> Result<Json<Vec<hwledger_fleet_proto::DeviceReport>>, ServerError> {
-    let host_b64 = params
-        .get("host")
-        .ok_or_else(|| ServerError::Validation {
-            reason: "missing 'host' query parameter".to_string(),
-        })?;
+    let host_b64 = params.get("host").ok_or_else(|| ServerError::Validation {
+        reason: "missing 'host' query parameter".to_string(),
+    })?;
 
-    let host_bytes = general_purpose::STANDARD
-        .decode(host_b64)
-        .map_err(|e| ServerError::Validation {
-            reason: format!("invalid base64 host encoding: {}", e),
-        })?;
+    let host_bytes = general_purpose::STANDARD.decode(host_b64).map_err(|e| {
+        ServerError::Validation { reason: format!("invalid base64 host encoding: {}", e) }
+    })?;
 
     let host_json = String::from_utf8(host_bytes).map_err(|e| ServerError::Validation {
         reason: format!("host bytes are not valid UTF-8: {}", e),
     })?;
 
-    let _host: ssh::SshHost = serde_json::from_str(&host_json).map_err(|e| ServerError::Validation {
-        reason: format!("failed to parse SSH host JSON: {}", e),
+    let _host: ssh::SshHost = serde_json::from_str(&host_json).map_err(|e| {
+        ServerError::Validation { reason: format!("failed to parse SSH host JSON: {}", e) }
     })?;
 
     // TODO(fleet-ssh-exec-v1): implement actual SSH connection pool
-    Err(ServerError::Internal {
-        reason: "SSH probe not yet implemented in MVP".to_string(),
-    })
+    Err(ServerError::Internal { reason: "SSH probe not yet implemented in MVP".to_string() })
 }
 
 /// Discover Tailscale peers in the local network.
@@ -369,11 +354,9 @@ pub async fn placement_suggestions(
     State(_state): State<Arc<AppState>>,
     axum::extract::Query(params): axum::extract::Query<HashMap<String, String>>,
 ) -> Result<Json<Vec<PlacementSuggestion>>, ServerError> {
-    let _model_ref = params
-        .get("model_ref")
-        .ok_or_else(|| ServerError::Validation {
-            reason: "missing 'model_ref' query parameter".to_string(),
-        })?;
+    let _model_ref = params.get("model_ref").ok_or_else(|| ServerError::Validation {
+        reason: "missing 'model_ref' query parameter".to_string(),
+    })?;
 
     let _min_vram_gb: u32 = params
         .get("min_vram_gb")
@@ -411,4 +394,3 @@ mod tests {
         assert_eq!(state, state2);
     }
 }
-

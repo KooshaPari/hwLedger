@@ -87,12 +87,7 @@ impl PrdParser {
 
                 if !id.is_empty() {
                     let kind = FrKind::from_id(&id);
-                    frs.push(FrSpec {
-                        id,
-                        kind,
-                        description,
-                        section: current_section.clone(),
-                    });
+                    frs.push(FrSpec { id, kind, description, section: current_section.clone() });
                 }
             }
         }

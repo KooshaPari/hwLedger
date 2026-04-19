@@ -45,19 +45,14 @@ pub async fn discover() -> Result<TailscaleStatus, ServerError> {
         .stderr(Stdio::piped())
         .output()
         .await
-        .map_err(|e| {
-            ServerError::Validation {
-                reason: format!("failed to run 'tailscale status --json': {}", e),
-            }
+        .map_err(|e| ServerError::Validation {
+            reason: format!("failed to run 'tailscale status --json': {}", e),
         })?;
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
         return Err(ServerError::Validation {
-            reason: format!(
-                "tailscale CLI not found or not authenticated: {}",
-                stderr
-            ),
+            reason: format!("tailscale CLI not found or not authenticated: {}", stderr),
         });
     }
 
@@ -65,9 +60,7 @@ pub async fn discover() -> Result<TailscaleStatus, ServerError> {
 
     // Parse the JSON output
     let raw: serde_json::Value = serde_json::from_str(&stdout).map_err(|e| {
-        ServerError::Validation {
-            reason: format!("failed to parse tailscale JSON: {}", e),
-        }
+        ServerError::Validation { reason: format!("failed to parse tailscale JSON: {}", e) }
     })?;
 
     // Extract peers and self
@@ -109,10 +102,7 @@ fn parse_peer(json: &serde_json::Value) -> Result<TailscalePeer, String> {
         .get("HostName")
         .or_else(|| json.get("Hostnames"))
         .and_then(|v| v.as_str())
-        .or_else(|| {
-            json.get("Name")
-                .and_then(|v| v.as_str())
-        })
+        .or_else(|| json.get("Name").and_then(|v| v.as_str()))
         .unwrap_or("unknown")
         .to_string();
 
@@ -130,31 +120,13 @@ fn parse_peer(json: &serde_json::Value) -> Result<TailscalePeer, String> {
         .unwrap_or("0.0.0.0")
         .to_string();
 
-    let os = json
-        .get("OS")
-        .and_then(|v| v.as_str())
-        .unwrap_or("unknown")
-        .to_string();
+    let os = json.get("OS").and_then(|v| v.as_str()).unwrap_or("unknown").to_string();
 
-    let online = json
-        .get("Online")
-        .and_then(|v| v.as_bool())
-        .unwrap_or(false);
+    let online = json.get("Online").and_then(|v| v.as_bool()).unwrap_or(false);
 
-    let relay = json
-        .get("Relay")
-        .and_then(|v| v.as_str())
-        .unwrap_or("")
-        .to_string();
+    let relay = json.get("Relay").and_then(|v| v.as_str()).unwrap_or("").to_string();
 
-    Ok(TailscalePeer {
-        node_id,
-        hostname,
-        tailscale_ip,
-        os,
-        online,
-        relay,
-    })
+    Ok(TailscalePeer { node_id, hostname, tailscale_ip, os, online, relay })
 }
 
 #[cfg(test)]
@@ -209,10 +181,7 @@ mod tests {
             relay: "".to_string(),
         };
 
-        let status = TailscaleStatus {
-            peers: vec![peer.clone()],
-            self_node: peer,
-        };
+        let status = TailscaleStatus { peers: vec![peer.clone()], self_node: peer };
 
         let json = serde_json::to_string(&status).expect("serialize");
         let status2: TailscaleStatus = serde_json::from_str(&json).expect("deserialize");

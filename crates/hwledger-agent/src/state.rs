@@ -38,14 +38,11 @@ impl AgentState {
 
         // Generate new state
         tracing::info!("Generating new agent state");
-        let (_csr_pem, private_key_pem) = crate::keypair::generate_csr(&hostname::get()?.to_string_lossy())?;
+        let (_csr_pem, private_key_pem) =
+            crate::keypair::generate_csr(&hostname::get()?.to_string_lossy())?;
 
         let agent_id = Uuid::new_v4();
-        let state = AgentState {
-            agent_id,
-            private_key_pem,
-            assigned_cert_pem: None,
-        };
+        let state = AgentState { agent_id, private_key_pem, assigned_cert_pem: None };
 
         // Persist to disk
         let json = serde_json::to_string_pretty(&state)?;

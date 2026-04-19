@@ -181,7 +181,11 @@ fn nfr_003_event_payload_stays_under_ledger_budget() {
     });
     let bytes = serde_json::to_vec(&event).unwrap();
     // 10k events/day × 512 B/event ≈ 5 MB/day — well within SQLite's comfort zone.
-    assert!(bytes.len() <= 512, "event wire size {} B exceeds 512 B ledger page budget", bytes.len());
+    assert!(
+        bytes.len() <= 512,
+        "event wire size {} B exceeds 512 B ledger page budget",
+        bytes.len()
+    );
 }
 
 /// Traces to: NFR-004
@@ -212,12 +216,7 @@ fn nfr_005_license_rejects_gpl_only_deps() {
         // If we can't read it (e.g. running from packaged crate), skip rather than false-positive.
         return;
     };
-    let bad = [
-        "GPL-2.0-only",
-        "GPL-3.0-only",
-        "AGPL-3.0-only",
-        "AGPL-3.0-or-later",
-    ];
+    let bad = ["GPL-2.0-only", "GPL-3.0-only", "AGPL-3.0-only", "AGPL-3.0-or-later"];
     let mut hits = Vec::new();
     for line in lock.lines() {
         if line.trim_start().starts_with("license =") {
@@ -281,7 +280,11 @@ fn walkdir_lite(root: &std::path::Path) -> Vec<std::path::PathBuf> {
             let ep = e.path();
             if ep.is_dir() {
                 let name = ep.file_name().and_then(|n| n.to_str()).unwrap_or("");
-                if name == "target" || name == ".build" || name == "node_modules" || name.starts_with('.') {
+                if name == "target"
+                    || name == ".build"
+                    || name == "node_modules"
+                    || name.starts_with('.')
+                {
                     continue;
                 }
                 stack.push(ep);

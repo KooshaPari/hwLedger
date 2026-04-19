@@ -39,14 +39,12 @@ fn test_manifest_path() -> PathBuf {
     let manifest_path = temp_dir.join("test-manifest.json");
     let manifest = JourneyManifest {
         id: "test-journey".to_string(),
-        steps: vec![
-            ManifestStep {
-                index: 0,
-                intent: "A uniform colored image".to_string(),
-                screenshot_path: "step-000.png".to_string(),
-                slug: Some("step-0".to_string()),
-            },
-        ],
+        steps: vec![ManifestStep {
+            index: 0,
+            intent: "A uniform colored image".to_string(),
+            screenshot_path: "step-000.png".to_string(),
+            slug: Some("step-0".to_string()),
+        }],
         recording: Some(false),
         keyframe_count: None,
         passed: None,
@@ -86,10 +84,7 @@ fn test_verifier_builder_pattern() {
 // Traces to: FR-UX-VERIFY-001
 #[test]
 fn test_verifier_creation_without_api_key() {
-    let config = VerifierConfig {
-        api_key: String::new(),
-        ..Default::default()
-    };
+    let config = VerifierConfig { api_key: String::new(), ..Default::default() };
 
     let result = Verifier::new(config);
     assert!(result.is_err());
@@ -121,8 +116,9 @@ fn test_description_json_roundtrip() {
 fn test_judge_verdict_json_roundtrip() {
     let verdict = JudgeVerdict {
         score_1_to_5: 5,
-        rationale: "Perfect match: description accurately describes a uniform colored square as intended"
-            .to_string(),
+        rationale:
+            "Perfect match: description accurately describes a uniform colored square as intended"
+                .to_string(),
         tokens_used: 120,
     };
 
@@ -183,8 +179,8 @@ async fn test_api_call_with_mock_server_success_describe() {
         .mount(&mock_server)
         .await;
 
-    let config = VerifierConfig::with_api_key("test-key".to_string())
-        .with_base_url(mock_server.uri());
+    let config =
+        VerifierConfig::with_api_key("test-key".to_string()).with_base_url(mock_server.uri());
 
     let verifier = Verifier::new(config).unwrap();
     let result = verifier.describe(&test_png_bytes()).await;
@@ -220,15 +216,12 @@ async fn test_api_call_with_mock_server_success_judge() {
         .mount(&mock_server)
         .await;
 
-    let config = VerifierConfig::with_api_key("test-key".to_string())
-        .with_base_url(mock_server.uri());
+    let config =
+        VerifierConfig::with_api_key("test-key".to_string()).with_base_url(mock_server.uri());
 
     let verifier = Verifier::new(config).unwrap();
     let result = verifier
-        .judge(
-            "A uniform colored image",
-            "A uniform colored square with solid color fill",
-        )
+        .judge("A uniform colored image", "A uniform colored square with solid color fill")
         .await;
 
     assert!(result.is_ok());
@@ -269,8 +262,8 @@ async fn test_api_retry_on_429() {
         .mount(&mock_server)
         .await;
 
-    let config = VerifierConfig::with_api_key("test-key".to_string())
-        .with_base_url(mock_server.uri());
+    let config =
+        VerifierConfig::with_api_key("test-key".to_string()).with_base_url(mock_server.uri());
 
     let verifier = Verifier::new(config).unwrap();
     let result = verifier.describe(&test_png_bytes()).await;
@@ -289,8 +282,8 @@ async fn test_api_failure_on_auth_error() {
         .mount(&mock_server)
         .await;
 
-    let config = VerifierConfig::with_api_key("invalid-key".to_string())
-        .with_base_url(mock_server.uri());
+    let config =
+        VerifierConfig::with_api_key("invalid-key".to_string()).with_base_url(mock_server.uri());
 
     let verifier = Verifier::new(config).unwrap();
     let result = verifier.describe(&test_png_bytes()).await;
@@ -301,19 +294,15 @@ async fn test_api_failure_on_auth_error() {
 // Traces to: FR-UX-VERIFY-001
 #[tokio::test]
 async fn test_cache_hit_on_repeated_describe() {
-    let config = VerifierConfig::with_api_key("test-key".to_string())
-        .with_cache_disabled(); // Start without cache
+    let config = VerifierConfig::with_api_key("test-key".to_string()).with_cache_disabled(); // Start without cache
 
     let _verifier1 = Verifier::new(config.clone()).unwrap();
     let cache = hwledger_verify::Cache::new().unwrap();
     cache.clear().ok();
 
     let png = test_png_bytes();
-    let desc = Description {
-        text: "Test description".to_string(),
-        structured: None,
-        tokens_used: 100,
-    };
+    let desc =
+        Description { text: "Test description".to_string(), structured: None, tokens_used: 100 };
 
     let key = cache.key_for_screenshot(&png, "claude-opus-4-7");
     cache.set(&key, &desc).ok();
@@ -337,21 +326,12 @@ fn test_golden_file_judge_verdict() {
     });
 
     let score: u8 = verdict_json.get("score").unwrap().as_u64().unwrap() as u8;
-    let rationale: String = verdict_json
-        .get("rationale")
-        .unwrap()
-        .as_str()
-        .unwrap()
-        .to_string();
+    let rationale: String = verdict_json.get("rationale").unwrap().as_str().unwrap().to_string();
 
     assert_eq!(score, 4);
     assert!(rationale.contains("close match"));
 
-    let verdict = JudgeVerdict {
-        score_1_to_5: score,
-        rationale,
-        tokens_used: 85,
-    };
+    let verdict = JudgeVerdict { score_1_to_5: score, rationale, tokens_used: 85 };
 
     assert_eq!(verdict.score_1_to_5, 4);
     assert!(verdict.score_1_to_5 >= 1 && verdict.score_1_to_5 <= 5);
@@ -369,8 +349,7 @@ fn test_manifest_verification_structure() {
     };
 
     let json = serde_json::to_string(&verification).unwrap();
-    let parsed: hwledger_verify::ManifestVerification =
-        serde_json::from_str(&json).unwrap();
+    let parsed: hwledger_verify::ManifestVerification = serde_json::from_str(&json).unwrap();
 
     assert_eq!(parsed.journey_id, "test-journey");
     assert_eq!(parsed.overall_score, 4.2);

@@ -24,7 +24,8 @@ impl IntelProbe {
         let drm_path = "/sys/class/drm";
         if !Path::new(drm_path).exists() {
             return Err(ProbeError::Unsupported {
-                reason: "/sys/class/drm not found; Intel Arc probing only works on Linux".to_string(),
+                reason: "/sys/class/drm not found; Intel Arc probing only works on Linux"
+                    .to_string(),
             });
         }
 
@@ -85,21 +86,13 @@ impl IntelProbe {
     /// Reads total VRAM from sysfs mem_info_vram_total.
     fn read_vram_total(device_path: &Path) -> Option<u64> {
         let vram_path = device_path.join("mem_info_vram_total");
-        fs::read_to_string(vram_path)
-            .ok()?
-            .trim()
-            .parse::<u64>()
-            .ok()
+        fs::read_to_string(vram_path).ok()?.trim().parse::<u64>().ok()
     }
 
     /// Reads free VRAM from sysfs mem_info_vram_used, if available.
     fn read_vram_used(device_path: &Path) -> Option<u64> {
         let vram_path = device_path.join("mem_info_vram_used");
-        fs::read_to_string(vram_path)
-            .ok()?
-            .trim()
-            .parse::<u64>()
-            .ok()
+        fs::read_to_string(vram_path).ok()?.trim().parse::<u64>().ok()
     }
 }
 
@@ -121,8 +114,7 @@ impl GpuProbe for IntelProbe {
     }
 
     fn free_vram(&self, device_id: u32) -> Result<u64, ProbeError> {
-        let device_path = Path::new("/sys/class/drm")
-            .join(format!("card{}/device", device_id));
+        let device_path = Path::new("/sys/class/drm").join(format!("card{}/device", device_id));
 
         if let Some(used) = Self::read_vram_used(&device_path) {
             if let Some(total) = Self::read_vram_total(&device_path) {
@@ -130,45 +122,30 @@ impl GpuProbe for IntelProbe {
             }
         }
 
-        Err(ProbeError::NotImplemented {
-            backend: "intel",
-            op: "free_vram",
-        })
+        Err(ProbeError::NotImplemented { backend: "intel", op: "free_vram" })
     }
 
     fn utilization(&self, device_id: u32) -> Result<f32, ProbeError> {
         // Intel Arc doesn't expose utilization via standard sysfs on all SKUs.
         let _ = device_id;
-        Err(ProbeError::NotImplemented {
-            backend: "intel",
-            op: "utilization",
-        })
+        Err(ProbeError::NotImplemented { backend: "intel", op: "utilization" })
     }
 
     fn temperature(&self, device_id: u32) -> Result<f32, ProbeError> {
         // Intel Arc temperature is not standardly exposed via sysfs.
         let _ = device_id;
-        Err(ProbeError::NotImplemented {
-            backend: "intel",
-            op: "temperature",
-        })
+        Err(ProbeError::NotImplemented { backend: "intel", op: "temperature" })
     }
 
     fn power_draw(&self, device_id: u32) -> Result<f32, ProbeError> {
         // Intel Arc power draw is not standardly exposed via sysfs.
         let _ = device_id;
-        Err(ProbeError::NotImplemented {
-            backend: "intel",
-            op: "power_draw",
-        })
+        Err(ProbeError::NotImplemented { backend: "intel", op: "power_draw" })
     }
 
     fn process_vram(&self, device_id: u32, pid: u32) -> Result<u64, ProbeError> {
         let _ = (device_id, pid);
-        Err(ProbeError::NotImplemented {
-            backend: "intel",
-            op: "process_vram",
-        })
+        Err(ProbeError::NotImplemented { backend: "intel", op: "process_vram" })
     }
 }
 
@@ -207,15 +184,24 @@ mod tests {
 
                         // These operations are expected to be NotImplemented
                         assert!(
-                            matches!(probe.utilization(device_id), Err(ProbeError::NotImplemented { .. })),
+                            matches!(
+                                probe.utilization(device_id),
+                                Err(ProbeError::NotImplemented { .. })
+                            ),
                             "utilization should return NotImplemented"
                         );
                         assert!(
-                            matches!(probe.temperature(device_id), Err(ProbeError::NotImplemented { .. })),
+                            matches!(
+                                probe.temperature(device_id),
+                                Err(ProbeError::NotImplemented { .. })
+                            ),
                             "temperature should return NotImplemented"
                         );
                         assert!(
-                            matches!(probe.power_draw(device_id), Err(ProbeError::NotImplemented { .. })),
+                            matches!(
+                                probe.power_draw(device_id),
+                                Err(ProbeError::NotImplemented { .. })
+                            ),
                             "power_draw should return NotImplemented"
                         );
                     }

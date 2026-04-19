@@ -64,14 +64,9 @@ pub async fn list(base_url: &str) -> Result<Vec<OllamaModel>, IngestError> {
     let body = response.text().await?;
     let parsed: serde_json::Value = serde_json::from_str(&body)?;
 
-    let models = parsed
-        .get("models")
-        .and_then(|m| m.as_array())
-        .ok_or_else(|| {
-            IngestError::Parse(
-                "Expected 'models' array in Ollama /api/tags response".to_string(),
-            )
-        })?;
+    let models = parsed.get("models").and_then(|m| m.as_array()).ok_or_else(|| {
+        IngestError::Parse("Expected 'models' array in Ollama /api/tags response".to_string())
+    })?;
 
     let result: Result<Vec<OllamaModel>, serde_json::Error> =
         models.iter().map(|m| serde_json::from_value(m.clone())).collect();
@@ -219,10 +214,7 @@ mod tests {
         let details = show(&base_url, "llama2").await.expect("show failed");
 
         assert_eq!(details.format, Some("gguf".to_string()));
-        assert_eq!(
-            details.details.unwrap().family,
-            Some("llama".to_string())
-        );
+        assert_eq!(details.details.unwrap().family, Some("llama".to_string()));
     }
 
     // Traces to: FR-PLAN-001

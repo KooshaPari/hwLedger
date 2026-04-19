@@ -51,9 +51,7 @@ pub struct AuditLog {
 impl AuditLog {
     /// Create a new audit log backed by an in-memory store.
     pub fn new_in_memory() -> Self {
-        Self {
-            store: Arc::new(InMemoryEventStore::new()),
-        }
+        Self { store: Arc::new(InMemoryEventStore::new()) }
     }
 
     /// Append an event to the audit log.
@@ -69,10 +67,7 @@ impl AuditLog {
 
         let appended_at_ms = chrono::Utc::now().timestamp_millis() as u64;
 
-        debug!(
-            "Appended event to ledger at seq={}, hash will be computed by store",
-            seq
-        );
+        debug!("Appended event to ledger at seq={}, hash will be computed by store", seq);
 
         let entries = self
             .store
@@ -126,10 +121,7 @@ impl AuditLog {
     /// Returns `Ok(true)` if the chain is valid, `Ok(false)` if it has been tampered with.
     /// Detects: out-of-order entries, hash mismatches, broken linkage.
     pub async fn verify_chain(&self) -> Result<bool> {
-        self.store
-            .verify_chain("audit_log", "ledger")
-            .map(|_| true)
-            .map_err(LedgerError::from)
+        self.store.verify_chain("audit_log", "ledger").map(|_| true).map_err(LedgerError::from)
     }
 }
 

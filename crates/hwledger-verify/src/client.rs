@@ -65,20 +65,12 @@ No prose outside the JSON."#;
             ]
         });
 
-        let response = self
-            .call_with_retry(&body, self.config.max_tokens_describe)
-            .await?;
+        let response = self.call_with_retry(&body, self.config.max_tokens_describe).await?;
 
         // Parse the response
         let text = response
             .get("content")
-            .and_then(|c| {
-                if let serde_json::Value::Array(arr) = c {
-                    arr.first()
-                } else {
-                    None
-                }
-            })
+            .and_then(|c| if let serde_json::Value::Array(arr) = c { arr.first() } else { None })
             .and_then(|c| c.get("text"))
             .and_then(|t| t.as_str())
             .ok_or_else(|| VerifyError::InvalidResponse("Missing text in content".to_string()))?;
@@ -95,17 +87,9 @@ No prose outside the JSON."#;
         // Try to parse structured JSON from the response
         let structured = serde_json::from_str::<serde_json::Value>(text).ok();
 
-        debug!(
-            "describe response: {} tokens, structured={}",
-            tokens_used,
-            structured.is_some()
-        );
+        debug!("describe response: {} tokens, structured={}", tokens_used, structured.is_some());
 
-        Ok(Description {
-            text: text.to_string(),
-            structured,
-            tokens_used,
-        })
+        Ok(Description { text: text.to_string(), structured, tokens_used })
     }
 
     /// Call the Messages API to judge equivalence between intent and description.
@@ -120,10 +104,7 @@ Respond with a JSON object: {"score": 1-5, "rationale": str}.
 Score 5 = description fully satisfies the intent; 1 = description contradicts or misses the intent entirely.
 Be strict."#;
 
-        let user_message = format!(
-            "Intent: {}\n\nObserver description: {}",
-            intent, description
-        );
+        let user_message = format!("Intent: {}\n\nObserver description: {}", intent, description);
 
         let body = json!({
             "model": model,
@@ -137,20 +118,12 @@ Be strict."#;
             ]
         });
 
-        let response = self
-            .call_with_retry(&body, self.config.max_tokens_judge)
-            .await?;
+        let response = self.call_with_retry(&body, self.config.max_tokens_judge).await?;
 
         // Parse the response
         let text = response
             .get("content")
-            .and_then(|c| {
-                if let serde_json::Value::Array(arr) = c {
-                    arr.first()
-                } else {
-                    None
-                }
-            })
+            .and_then(|c| if let serde_json::Value::Array(arr) = c { arr.first() } else { None })
             .and_then(|c| c.get("text"))
             .and_then(|t| t.as_str())
             .ok_or_else(|| VerifyError::InvalidResponse("Missing text in content".to_string()))?;
@@ -158,18 +131,13 @@ Be strict."#;
         let parsed: serde_json::Value = serde_json::from_str(text)
             .map_err(|_| VerifyError::Parse(format!("Invalid JSON: {}", text)))?;
 
-        let score = parsed
-            .get("score")
-            .and_then(|s| s.as_u64())
-            .ok_or_else(|| {
+        let score =
+            parsed.get("score").and_then(|s| s.as_u64()).ok_or_else(|| {
                 VerifyError::Parse(format!("Missing or invalid score in: {}", text))
             })? as u8;
 
         if score == 0 || score > 5 {
-            return Err(VerifyError::Parse(format!(
-                "Score out of range [1-5]: {}",
-                score
-            )));
+            return Err(VerifyError::Parse(format!("Score out of range [1-5]: {}", score)));
         }
 
         let rationale = parsed
@@ -189,11 +157,7 @@ Be strict."#;
 
         debug!("judge response: {} tokens, score={}", tokens_used, score);
 
-        Ok(JudgeVerdict {
-            score_1_to_5: score,
-            rationale,
-            tokens_used,
-        })
+        Ok(JudgeVerdict { score_1_to_5: score, rationale, tokens_used })
     }
 
     /// Call the Anthropic Messages API with exponential backoff retry on 429/5xx.
@@ -227,10 +191,8 @@ Be strict."#;
             let status = response.status();
 
             if status.is_success() {
-                let json = response
-                    .json::<serde_json::Value>()
-                    .await
-                    .map_err(|e| VerifyError::Api {
+                let json =
+                    response.json::<serde_json::Value>().await.map_err(|e| VerifyError::Api {
                         status: 500,
                         body: format!("Failed to parse JSON response: {}", e),
                     })?;
@@ -239,10 +201,7 @@ Be strict."#;
 
             if status.as_u16() == 429 || status.is_server_error() {
                 let delay_ms = BASE_RETRY_DELAY_MS * (2_u64.pow(attempt as u32));
-                warn!(
-                    "Rate limit or server error ({}), retrying in {}ms",
-                    status, delay_ms
-                );
+                warn!("Rate limit or server error ({}), retrying in {}ms", status, delay_ms);
 
                 if attempt < MAX_RETRIES - 1 {
                     tokio::time::sleep(Duration::from_millis(delay_ms)).await;
@@ -250,20 +209,13 @@ Be strict."#;
                 }
             }
 
-            let body_text = response
-                .text()
-                .await
-                .unwrap_or_else(|_| "(unable to read body)".to_string());
+            let body_text =
+                response.text().await.unwrap_or_else(|_| "(unable to read body)".to_string());
 
-            return Err(VerifyError::Api {
-                status: status.as_u16(),
-                body: body_text,
-            });
+            return Err(VerifyError::Api { status: status.as_u16(), body: body_text });
         }
 
-        Err(VerifyError::RetryExhausted(
-            "Max retries exceeded".to_string(),
-        ))
+        Err(VerifyError::RetryExhausted("Max retries exceeded".to_string()))
     }
 }
 
@@ -274,10 +226,7 @@ mod tests {
     // Traces to: FR-UX-VERIFY-001
     #[test]
     fn test_client_creation() {
-        let config = VerifierConfig {
-            api_key: "test-key".to_string(),
-            ..Default::default()
-        };
+        let config = VerifierConfig { api_key: "test-key".to_string(), ..Default::default() };
         let client = AnthropicClient::new(config);
         // Just verify it creates without panicking
         assert!(!client.config.api_key.is_empty());

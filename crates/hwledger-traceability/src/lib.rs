@@ -11,4 +11,4 @@ pub mod scan;
 
 pub use prd::{FrKind, FrSpec, PrdParser};
 pub use report::{CoverageLevel, CoverageReport, FrCoverage, Stats};
-pub use scan::{ScanResult, TestTrace, TestScanner};
+pub use scan::{ScanResult, TestScanner, TestTrace};

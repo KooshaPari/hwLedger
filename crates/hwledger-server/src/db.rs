@@ -17,10 +17,7 @@ pub async fn init(db_path: &Path) -> Result<SqlitePool> {
     }
 
     let database_url = format!("sqlite://{}", db_path.display());
-    let pool = SqlitePoolOptions::new()
-        .max_connections(10)
-        .connect(&database_url)
-        .await?;
+    let pool = SqlitePoolOptions::new().max_connections(10).connect(&database_url).await?;
 
     // Run inline migrations
     sqlx::query(

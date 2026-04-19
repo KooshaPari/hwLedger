@@ -8,10 +8,10 @@ pub mod ca;
 pub mod config;
 pub mod db;
 pub mod error;
+pub mod rentals;
 pub mod routes;
 pub mod ssh;
 pub mod tailscale;
-pub mod rentals;
 
 pub use config::ServerConfig;
 pub use error::ServerError;
@@ -40,16 +40,12 @@ pub async fn run(config: ServerConfig) -> Result<()> {
     info!("Database initialized at {}", config.db_path.display());
 
     // Initialize certificate authority
-    let ca = ca::CertificateAuthority::load_or_create(&config.ca_cert_path, &config.ca_key_path).await?;
+    let ca =
+        ca::CertificateAuthority::load_or_create(&config.ca_cert_path, &config.ca_key_path).await?;
     info!("Certificate authority initialized");
 
     // Create app state
-    let state = Arc::new(AppState {
-        db,
-        ca,
-        config,
-        rentals_catalog: RwLock::new(None),
-    });
+    let state = Arc::new(AppState { db, ca, config, rentals_catalog: RwLock::new(None) });
 
     // Bind listener before moving state
     let bind_addr = state.config.bind;
@@ -83,10 +79,7 @@ pub async fn run(config: ServerConfig) -> Result<()> {
         .with_state(state)
         .into_make_service_with_connect_info::<std::net::SocketAddr>();
 
-    info!(
-        "Server listening on {} (plain HTTP for MVP)",
-        bind_addr
-    );
+    info!("Server listening on {} (plain HTTP for MVP)", bind_addr);
 
     // TODO(fleet-auth-v2): wire up rustls mTLS listener
 

@@ -22,12 +22,7 @@ pub struct GenParams {
 
 impl Default for GenParams {
     fn default() -> Self {
-        GenParams {
-            max_tokens: 100,
-            temperature: 0.7,
-            top_p: None,
-            top_k: None,
-        }
+        GenParams { max_tokens: 100, temperature: 0.7, top_p: None, top_k: None }
     }
 }
 
@@ -54,7 +49,10 @@ pub trait InferenceBackend: Send + Sync {
         &mut self,
         prompt: String,
         params: GenParams,
-    ) -> Result<Pin<Box<dyn futures::stream::Stream<Item = Result<String, InferenceError>> + Send>>, InferenceError>;
+    ) -> Result<
+        Pin<Box<dyn futures::stream::Stream<Item = Result<String, InferenceError>> + Send>>,
+        InferenceError,
+    >;
 
     /// Cancel an ongoing generation.
     async fn cancel(&mut self, request_id: Uuid) -> Result<(), InferenceError>;

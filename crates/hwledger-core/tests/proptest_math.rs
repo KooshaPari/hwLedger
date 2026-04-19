@@ -3,7 +3,7 @@
 //! Uses proptest to generate random valid AttentionKind instances and verify
 //! invariants that must hold across all architectures.
 
-use hwledger_core::math::{AttentionKind, LayerKind, KvFormula};
+use hwledger_core::math::{AttentionKind, KvFormula, LayerKind};
 use proptest::prelude::*;
 
 const FP16: f64 = 2.0;
@@ -13,12 +13,10 @@ const FP16: f64 = 2.0;
 // ============================================================================
 
 fn arb_mha() -> impl Strategy<Value = AttentionKind> {
-    (1u32..200, 1u32..256, 1u32..512).prop_map(|(layers, heads, head_dim)| {
-        AttentionKind::Mha {
-            num_layers: layers,
-            num_attention_heads: heads,
-            head_dim,
-        }
+    (1u32..200, 1u32..256, 1u32..512).prop_map(|(layers, heads, head_dim)| AttentionKind::Mha {
+        num_layers: layers,
+        num_attention_heads: heads,
+        head_dim,
     })
 }
 
@@ -26,79 +24,54 @@ fn arb_gqa() -> impl Strategy<Value = AttentionKind> {
     (1u32..200, 1u32..256, 1u32..256, 1u32..512).prop_map(
         |(layers, kv_heads, q_heads, head_dim)| {
             // Ensure kv_heads < q_heads for valid GQA
-            let kv = if kv_heads < q_heads {
-                kv_heads
-            } else {
-                q_heads % (kv_heads + 1) + 1
-            };
-            AttentionKind::Gqa {
-                num_layers: layers,
-                num_kv_heads: kv,
-                head_dim,
-            }
+            let kv = if kv_heads < q_heads { kv_heads } else { q_heads % (kv_heads + 1) + 1 };
+            AttentionKind::Gqa { num_layers: layers, num_kv_heads: kv, head_dim }
         },
     )
 }
 
 fn arb_mqa() -> impl Strategy<Value = AttentionKind> {
-    (1u32..200, 1u32..512).prop_map(|(layers, head_dim)| {
-        AttentionKind::Mqa { num_layers: layers, head_dim }
-    })
+    (1u32..200, 1u32..512)
+        .prop_map(|(layers, head_dim)| AttentionKind::Mqa { num_layers: layers, head_dim })
 }
 
 fn arb_mla() -> impl Strategy<Value = AttentionKind> {
-    (1u32..2048, 1u32..512).prop_map(|(kv_lora, qk_rope)| {
-        AttentionKind::Mla {
-            kv_lora_rank: kv_lora,
-            qk_rope_head_dim: qk_rope,
-        }
+    (1u32..2048, 1u32..512).prop_map(|(kv_lora, qk_rope)| AttentionKind::Mla {
+        kv_lora_rank: kv_lora,
+        qk_rope_head_dim: qk_rope,
     })
 }
 
 fn arb_ssm() -> impl Strategy<Value = AttentionKind> {
-    (1u32..200, 1u32..256).prop_map(|(layers, state_size)| {
-        AttentionKind::Ssm { num_layers: layers, state_size }
-    })
+    (1u32..200, 1u32..256)
+        .prop_map(|(layers, state_size)| AttentionKind::Ssm { num_layers: layers, state_size })
 }
 
 fn arb_sliding_window() -> impl Strategy<Value = AttentionKind> {
     (1u32..200, 1u32..256, 1u32..512, 256u32..8192).prop_map(
-        |(layers, kv_heads, head_dim, window)| {
-            AttentionKind::SlidingWindow {
-                num_layers: layers,
-                num_kv_heads: kv_heads,
-                head_dim,
-                window,
-            }
+        |(layers, kv_heads, head_dim, window)| AttentionKind::SlidingWindow {
+            num_layers: layers,
+            num_kv_heads: kv_heads,
+            head_dim,
+            window,
         },
     )
 }
 
 fn arb_layer_kind() -> impl Strategy<Value = LayerKind> {
     prop_oneof![
-        (1u32..256, 1u32..512).prop_map(|(kv, hd)| {
-            LayerKind::FullAttention {
-                num_kv_heads: kv,
-                head_dim: hd,
-            }
-        }),
+        (1u32..256, 1u32..512)
+            .prop_map(|(kv, hd)| { LayerKind::FullAttention { num_kv_heads: kv, head_dim: hd } }),
         Just(LayerKind::LinearAttention),
         (1u32..256, 1u32..512, 256u32..4096).prop_map(|(kv, hd, w)| {
-            LayerKind::SlidingAttention {
-                num_kv_heads: kv,
-                head_dim: hd,
-                window: w,
-            }
+            LayerKind::SlidingAttention { num_kv_heads: kv, head_dim: hd, window: w }
         }),
-        (1u32..256).prop_map(|ss| {
-            LayerKind::SsmState { state_size: ss }
-        }),
+        (1u32..256).prop_map(|ss| { LayerKind::SsmState { state_size: ss } }),
     ]
 }
 
 fn arb_hybrid() -> impl Strategy<Value = AttentionKind> {
-    prop::collection::vec(arb_layer_kind(), 1..64)
-        .prop_map(AttentionKind::Hybrid)
+    prop::collection::vec(arb_layer_kind(), 1..64).prop_map(AttentionKind::Hybrid)
 }
 
 fn arb_attention_kind() -> impl Strategy<Value = AttentionKind> {

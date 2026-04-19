@@ -50,37 +50,24 @@ impl IntoResponse for ServerError {
                     Some(format!("{}", e)),
                 )
             }
-            ServerError::Auth { reason } => (
-                StatusCode::UNAUTHORIZED,
-                "authentication failed".to_string(),
-                Some(reason),
-            ),
-            ServerError::Validation { reason } => (
-                StatusCode::BAD_REQUEST,
-                "validation error".to_string(),
-                Some(reason),
-            ),
-            ServerError::NotFound { what } => (
-                StatusCode::NOT_FOUND,
-                "not found".to_string(),
-                Some(what),
-            ),
-            ServerError::Internal { reason } => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "internal error".to_string(),
-                Some(reason),
-            ),
-            ServerError::Protocol(e) => (
-                StatusCode::BAD_REQUEST,
-                "protocol error".to_string(),
-                Some(format!("{}", e)),
-            ),
+            ServerError::Auth { reason } => {
+                (StatusCode::UNAUTHORIZED, "authentication failed".to_string(), Some(reason))
+            }
+            ServerError::Validation { reason } => {
+                (StatusCode::BAD_REQUEST, "validation error".to_string(), Some(reason))
+            }
+            ServerError::NotFound { what } => {
+                (StatusCode::NOT_FOUND, "not found".to_string(), Some(what))
+            }
+            ServerError::Internal { reason } => {
+                (StatusCode::INTERNAL_SERVER_ERROR, "internal error".to_string(), Some(reason))
+            }
+            ServerError::Protocol(e) => {
+                (StatusCode::BAD_REQUEST, "protocol error".to_string(), Some(format!("{}", e)))
+            }
         };
 
-        let body = Json(ErrorResponse {
-            error: error_msg,
-            reason,
-        });
+        let body = Json(ErrorResponse { error: error_msg, reason });
 
         (status, body).into_response()
     }

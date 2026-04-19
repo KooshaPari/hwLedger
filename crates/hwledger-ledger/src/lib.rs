@@ -253,11 +253,7 @@ mod tests {
                 util_percent: 45.5,
                 at_ms: chrono::Utc::now().timestamp_millis() as u64,
             },
-            HwLedgerEvent::JobDispatched {
-                job_id,
-                agent_id,
-                model_ref: "mistral-7b".to_string(),
-            },
+            HwLedgerEvent::JobDispatched { job_id, agent_id, model_ref: "mistral-7b".to_string() },
             HwLedgerEvent::JobStateChanged {
                 job_id,
                 new_state: hwledger_fleet_proto::JobState::Running,

@@ -27,15 +27,12 @@ impl MetalProbe {
         let mut cmd = Command::new("macmon");
         cmd.arg("--version");
 
-        let output = cmd.output()
-            .map_err(|e| ProbeError::InitFailed {
-                reason: format!("macmon not found on PATH; install with 'brew install macmon': {}", e),
-            })?;
+        let output = cmd.output().map_err(|e| ProbeError::InitFailed {
+            reason: format!("macmon not found on PATH; install with 'brew install macmon': {}", e),
+        })?;
 
         if !output.status.success() {
-            return Err(ProbeError::InitFailed {
-                reason: "macmon --version failed".to_string(),
-            });
+            return Err(ProbeError::InitFailed { reason: "macmon --version failed".to_string() });
         }
 
         // Query total unified memory via sysctl
@@ -65,9 +62,7 @@ impl MetalProbe {
         if ret == 0 {
             Ok(size)
         } else {
-            Err(ProbeError::Io(std::io::Error::other(
-                "sysctl hw.memsize failed",
-            )))
+            Err(ProbeError::Io(std::io::Error::other("sysctl hw.memsize failed")))
         }
     }
 
@@ -78,19 +73,16 @@ impl MetalProbe {
 
         let output = cmd.output()?;
         if !output.status.success() {
-            return Err(ProbeError::Io(std::io::Error::other(
-                format!(
-                    "macmon failed: {}",
-                    String::from_utf8_lossy(&output.stderr)
-                ),
-            )));
+            return Err(ProbeError::Io(std::io::Error::other(format!(
+                "macmon failed: {}",
+                String::from_utf8_lossy(&output.stderr)
+            ))));
         }
 
         let stdout = String::from_utf8_lossy(&output.stdout);
-        let json: Value = serde_json::from_str(&stdout)
-            .map_err(|e| ProbeError::Io(std::io::Error::other(
-                format!("failed to parse macmon JSON: {}", e),
-            )))?;
+        let json: Value = serde_json::from_str(&stdout).map_err(|e| {
+            ProbeError::Io(std::io::Error::other(format!("failed to parse macmon JSON: {}", e)))
+        })?;
 
         Ok(json)
     }
@@ -102,9 +94,10 @@ impl MetalProbe {
             .and_then(|gpu| gpu.get(key))
             .and_then(|v| v.as_f64())
             .map(|f| f as f32)
-            .ok_or(ProbeError::Io(std::io::Error::other(
-                format!("macmon JSON missing expected field: {}", key),
-            )))
+            .ok_or(ProbeError::Io(std::io::Error::other(format!(
+                "macmon JSON missing expected field: {}",
+                key
+            ))))
     }
 }
 
@@ -198,9 +191,7 @@ impl GpuProbe for MetalProbe {
             .and_then(|gpu| gpu.get("gpu_power"))
             .and_then(|v| v.as_f64())
             .map(|f| f as f32)
-            .ok_or(ProbeError::Io(std::io::Error::other(
-                "macmon JSON missing gpu_power field",
-            )))
+            .ok_or(ProbeError::Io(std::io::Error::other("macmon JSON missing gpu_power field")))
     }
 
     fn process_vram(&self, device_id: u32, pid: u32) -> Result<u64, ProbeError> {
@@ -210,10 +201,7 @@ impl GpuProbe for MetalProbe {
 
         // macOS does not expose per-process GPU VRAM on Apple Silicon.
         let _ = pid;
-        Err(ProbeError::NotImplemented {
-            backend: "metal",
-            op: "process_vram",
-        })
+        Err(ProbeError::NotImplemented { backend: "metal", op: "process_vram" })
     }
 }
 
@@ -227,10 +215,7 @@ mod tests {
     fn test_metal_probe_init_missing_binary() {
         if std::env::var("HWLEDGER_METAL_LIVE").is_ok() {
             let probe = MetalProbe::new();
-            assert!(
-                probe.is_ok(),
-                "MetalProbe::new should succeed when macmon is available"
-            );
+            assert!(probe.is_ok(), "MetalProbe::new should succeed when macmon is available");
         } else {
             // If macmon is not installed (e.g., CI on non-macOS), this should fail gracefully.
             // On non-macOS platforms, the entire module is gated by #[cfg(target_os = "macos")],
@@ -261,7 +246,11 @@ mod tests {
         if std::env::var("HWLEDGER_METAL_LIVE").is_ok() {
             if let Ok(probe) = MetalProbe::new() {
                 if let Ok(devices) = probe.enumerate() {
-                    assert_eq!(devices.len(), 1, "Apple Silicon should enumerate exactly one device");
+                    assert_eq!(
+                        devices.len(),
+                        1,
+                        "Apple Silicon should enumerate exactly one device"
+                    );
                     assert_eq!(devices[0].backend, "metal");
                     assert_eq!(devices[0].id, 0);
                 }

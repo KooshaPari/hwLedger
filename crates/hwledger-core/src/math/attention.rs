@@ -18,11 +18,7 @@ pub enum LayerKind {
     /// Linear / recurrent attention; no quadratic KV. Contributes zero to KV.
     LinearAttention,
     /// Sliding-window attention capped at `window`.
-    SlidingAttention {
-        num_kv_heads: u32,
-        head_dim: u32,
-        window: u32,
-    },
+    SlidingAttention { num_kv_heads: u32, head_dim: u32, window: u32 },
     /// SSM / Mamba state: fixed per layer, independent of seq_len.
     SsmState { state_size: u32 },
 }
@@ -33,51 +29,23 @@ pub enum LayerKind {
 #[non_exhaustive]
 pub enum AttentionKind {
     /// Standard multi-head attention (Llama 2, early Mistral).
-    Mha {
-        num_layers: u32,
-        num_attention_heads: u32,
-        head_dim: u32,
-    },
+    Mha { num_layers: u32, num_attention_heads: u32, head_dim: u32 },
     /// Grouped-query attention (Llama 3, Mistral, Gemma 2).
-    Gqa {
-        num_layers: u32,
-        num_kv_heads: u32,
-        head_dim: u32,
-    },
+    Gqa { num_layers: u32, num_kv_heads: u32, head_dim: u32 },
     /// Multi-query attention (PaLM, Falcon 7B).
-    Mqa {
-        num_layers: u32,
-        head_dim: u32,
-    },
+    Mqa { num_layers: u32, head_dim: u32 },
     /// Multi-head latent attention (DeepSeek-V2, DeepSeek-V3).
     ///
     /// Layer-invariant in absorb mode: bytes/token = `(kv_lora_rank + qk_rope_head_dim) · b`.
-    Mla {
-        kv_lora_rank: u32,
-        qk_rope_head_dim: u32,
-    },
+    Mla { kv_lora_rank: u32, qk_rope_head_dim: u32 },
     /// Sliding-window attention (Mistral 7B, Gemma 2).
-    SlidingWindow {
-        num_layers: u32,
-        num_kv_heads: u32,
-        head_dim: u32,
-        window: u32,
-    },
+    SlidingWindow { num_layers: u32, num_kv_heads: u32, head_dim: u32, window: u32 },
     /// State-space / SSM (Mamba, Mamba-2). Fixed per-layer state.
-    Ssm {
-        num_layers: u32,
-        state_size: u32,
-    },
+    Ssm { num_layers: u32, state_size: u32 },
     /// Hybrid stack (Qwen3.6-A3B, Jamba, Gemma 3). Layers heterogeneous.
     Hybrid(Vec<LayerKind>),
     /// StreamingLLM-style attention sinks.
-    AttentionSink {
-        num_layers: u32,
-        num_kv_heads: u32,
-        head_dim: u32,
-        sinks: u32,
-        window: u32,
-    },
+    AttentionSink { num_layers: u32, num_kv_heads: u32, head_dim: u32, sinks: u32, window: u32 },
 }
 
 /// Persistent per-token state formula. Returns bytes/token given the sequence
@@ -96,10 +64,7 @@ impl KvFormula for AttentionKind {
                     * b
             }
             AttentionKind::Gqa { num_layers, num_kv_heads, head_dim } => {
-                2.0 * f64::from(*num_layers)
-                    * f64::from(*num_kv_heads)
-                    * f64::from(*head_dim)
-                    * b
+                2.0 * f64::from(*num_layers) * f64::from(*num_kv_heads) * f64::from(*head_dim) * b
             }
             AttentionKind::Mqa { num_layers, head_dim } => {
                 2.0 * f64::from(*num_layers) * f64::from(*head_dim) * b
@@ -126,13 +91,7 @@ impl KvFormula for AttentionKind {
             AttentionKind::Hybrid(layers) => {
                 layers.iter().map(|l| layer_bytes_per_token(l, seq_len, b)).sum()
             }
-            AttentionKind::AttentionSink {
-                num_layers,
-                num_kv_heads,
-                head_dim,
-                sinks,
-                window,
-            } => {
+            AttentionKind::AttentionSink { num_layers, num_kv_heads, head_dim, sinks, window } => {
                 let cap = f64::from(*sinks) + f64::from(*window);
                 let effective = (seq_len as f64).min(cap);
                 2.0 * f64::from(*num_layers)
@@ -157,9 +116,7 @@ fn layer_bytes_per_token(layer: &LayerKind, seq_len: u64, b: BytesPerElement) ->
             2.0 * f64::from(*num_kv_heads) * f64::from(*head_dim) * effective * b
                 / (seq_len.max(1) as f64)
         }
-        LayerKind::SsmState { state_size } => {
-            f64::from(*state_size) * b / (seq_len.max(1) as f64)
-        }
+        LayerKind::SsmState { state_size } => f64::from(*state_size) * b / (seq_len.max(1) as f64),
     }
 }
 

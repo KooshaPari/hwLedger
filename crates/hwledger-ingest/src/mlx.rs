@@ -28,9 +28,10 @@ pub fn inspect(dir: &Path) -> Result<(Config, bool, bool), IngestError> {
     let config_path = dir.join("config.json");
 
     if !config_path.exists() {
-        return Err(IngestError::Parse(
-            format!("config.json not found in directory: {}", dir.display()),
-        ));
+        return Err(IngestError::Parse(format!(
+            "config.json not found in directory: {}",
+            dir.display()
+        )));
     }
 
     let config_json = std::fs::read_to_string(&config_path)?;
@@ -41,15 +42,9 @@ pub fn inspect(dir: &Path) -> Result<(Config, bool, bool), IngestError> {
     let has_safetensors = std::fs::read_dir(dir)
         .ok()
         .map(|entries| {
-            entries
-                .filter_map(|e: std::io::Result<_>| e.ok())
-                .any(|entry| {
-                    entry
-                        .path()
-                        .extension()
-                        .map(|ext| ext == "safetensors")
-                        .unwrap_or(false)
-                })
+            entries.filter_map(|e: std::io::Result<_>| e.ok()).any(|entry| {
+                entry.path().extension().map(|ext| ext == "safetensors").unwrap_or(false)
+            })
         })
         .unwrap_or(false);
 
@@ -77,8 +72,7 @@ mod tests {
         fs::write(temp_dir.path().join("config.json"), config_json)
             .expect("write config.json failed");
 
-        let (config, has_npz, has_safetensors) =
-            inspect(temp_dir.path()).expect("inspect failed");
+        let (config, has_npz, has_safetensors) = inspect(temp_dir.path()).expect("inspect failed");
 
         assert_eq!(config.model_type, Some("llama".to_string()));
         assert_eq!(config.num_hidden_layers, Some(32));
@@ -98,11 +92,9 @@ mod tests {
 
         fs::write(temp_dir.path().join("config.json"), config_json)
             .expect("write config.json failed");
-        fs::write(temp_dir.path().join("weights.npz"), b"dummy")
-            .expect("write weights.npz failed");
+        fs::write(temp_dir.path().join("weights.npz"), b"dummy").expect("write weights.npz failed");
 
-        let (config, has_npz, has_safetensors) =
-            inspect(temp_dir.path()).expect("inspect failed");
+        let (config, has_npz, has_safetensors) = inspect(temp_dir.path()).expect("inspect failed");
 
         assert_eq!(config.model_type, Some("mistral".to_string()));
         assert!(has_npz);
@@ -124,8 +116,7 @@ mod tests {
         fs::write(temp_dir.path().join("model.safetensors"), b"dummy")
             .expect("write safetensors failed");
 
-        let (config, has_npz, has_safetensors) =
-            inspect(temp_dir.path()).expect("inspect failed");
+        let (config, has_npz, has_safetensors) = inspect(temp_dir.path()).expect("inspect failed");
 
         assert_eq!(config.model_type, Some("qwen".to_string()));
         assert!(!has_npz);
@@ -178,8 +169,7 @@ mod tests {
         fs::write(temp_dir.path().join("config.json"), config_json)
             .expect("write config.json failed");
 
-        let (config, has_npz, has_safetensors) =
-            inspect(temp_dir.path()).expect("inspect failed");
+        let (config, has_npz, has_safetensors) = inspect(temp_dir.path()).expect("inspect failed");
 
         assert_eq!(config.model_type, Some("gemma".to_string()));
         assert_eq!(config.sliding_window, Some(4096));

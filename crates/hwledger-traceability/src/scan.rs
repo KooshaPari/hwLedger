@@ -46,24 +46,25 @@ impl TestScanner {
     pub fn scan(repo_path: &str) -> Result<Vec<TestTrace>, ScanError> {
         let mut traces = Vec::new();
         let skip_dirs = [
-            "target", ".build", "node_modules", ".git", "omlx-fork",
-            "sidecars", "apps", // Skip non-Rust test dirs
+            "target",
+            ".build",
+            "node_modules",
+            ".git",
+            "omlx-fork",
+            "sidecars",
+            "apps", // Skip non-Rust test dirs
         ];
 
-        for entry in WalkDir::new(repo_path)
-            .into_iter()
-            .filter_map(|e| e.ok())
-            .filter(|e| {
-                let path = e.path();
-                // Skip blacklisted directories
-                for skip in &skip_dirs {
-                    if path.to_string_lossy().contains(skip) {
-                        return false;
-                    }
+        for entry in WalkDir::new(repo_path).into_iter().filter_map(|e| e.ok()).filter(|e| {
+            let path = e.path();
+            // Skip blacklisted directories
+            for skip in &skip_dirs {
+                if path.to_string_lossy().contains(skip) {
+                    return false;
                 }
-                true
-            })
-        {
+            }
+            true
+        }) {
             let path = entry.path();
             if path.extension().and_then(|s| s.to_str()) == Some("rs") {
                 if let Ok(file_traces) = Self::scan_file(path.to_string_lossy().as_ref()) {
@@ -85,7 +86,8 @@ impl TestScanner {
         let mut traces = Vec::new();
 
         // Patterns for detecting tests and traces
-        let test_pattern = Regex::new(r#"(?m)^\s*(?:#\[(?:tokio::|ignore\b)[^\]]*\])*\s*#\[test\]"#)?;
+        let test_pattern =
+            Regex::new(r#"(?m)^\s*(?:#\[(?:tokio::|ignore\b)[^\]]*\])*\s*#\[test\]"#)?;
         let ignore_pattern = Regex::new(r#"#\[ignore\]"#)?;
         let traces_pattern = Regex::new(
             r#"(?://\s*|///\s*)?Traces\s+to:\s*([A-Z]+(?:-[A-Z]+)*-\d+(?:\s*,\s*[A-Z]+(?:-[A-Z]+)*-\d+)*)"#,

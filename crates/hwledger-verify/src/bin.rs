@@ -70,16 +70,12 @@ async fn main() -> anyhow::Result<()> {
 
     // Setup logging
     let env_filter = if args.debug {
-        EnvFilter::from_default_env()
-            .add_directive("hwledger_verify=debug".parse().unwrap())
+        EnvFilter::from_default_env().add_directive("hwledger_verify=debug".parse().unwrap())
     } else {
-        EnvFilter::from_default_env()
-            .add_directive("hwledger_verify=info".parse().unwrap())
+        EnvFilter::from_default_env().add_directive("hwledger_verify=info".parse().unwrap())
     };
 
-    tracing_subscriber::fmt()
-        .with_env_filter(env_filter)
-        .init();
+    tracing_subscriber::fmt().with_env_filter(env_filter).init();
 
     match args.command {
         Command::Describe { screenshot, model } => {
@@ -105,11 +101,7 @@ async fn main() -> anyhow::Result<()> {
             println!("\n{}", format!("Tokens used: {}", description.tokens_used).dimmed());
         }
 
-        Command::Judge {
-            intent,
-            description,
-            model,
-        } => {
+        Command::Judge { intent, description, model } => {
             let config = match model {
                 Some(m) => VerifierConfig::default().with_judge_model(m),
                 None => VerifierConfig::default(),
@@ -132,11 +124,7 @@ async fn main() -> anyhow::Result<()> {
             println!("\n{}", format!("Tokens used: {}", verdict.tokens_used).dimmed());
         }
 
-        Command::Manifest {
-            manifest,
-            no_cache,
-            out,
-        } => {
+        Command::Manifest { manifest, no_cache, out } => {
             let config = if no_cache {
                 VerifierConfig::default().with_cache_disabled()
             } else {
@@ -171,17 +159,14 @@ async fn main() -> anyhow::Result<()> {
             let output_path = match out {
                 Some(p) => p,
                 None => {
-                    let manifest_dir = manifest.parent().unwrap_or_else(|| std::path::Path::new("."));
+                    let manifest_dir =
+                        manifest.parent().unwrap_or_else(|| std::path::Path::new("."));
                     manifest_dir.join("manifest.verified.json")
                 }
             };
 
             std::fs::write(&output_path, &output_json)?;
-            println!(
-                "\n{} {}",
-                "Verification written to".green(),
-                output_path.display()
-            );
+            println!("\n{} {}", "Verification written to".green(), output_path.display());
         }
     }
 

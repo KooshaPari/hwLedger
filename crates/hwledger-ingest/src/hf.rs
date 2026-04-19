@@ -34,10 +34,7 @@ pub async fn fetch(
     let revision = revision.unwrap_or("main");
 
     // Fetch config.json from HF Hub via raw content URL
-    let config_url = format!(
-        "https://huggingface.co/{}/raw/{}/config.json",
-        repo, revision
-    );
+    let config_url = format!("https://huggingface.co/{}/raw/{}/config.json", repo, revision);
 
     let client = reqwest::Client::new();
     let mut headers = reqwest::header::HeaderMap::new();
@@ -66,10 +63,8 @@ pub async fn fetch(
     let mut parameter_count = None;
     let mut quantisation = None;
 
-    let index_url = format!(
-        "https://huggingface.co/{}/raw/{}/model.safetensors.index.json",
-        repo, revision
-    );
+    let index_url =
+        format!("https://huggingface.co/{}/raw/{}/model.safetensors.index.json", repo, revision);
 
     if let Ok(response) = client.get(&index_url).headers(headers).send().await {
         if response.status().is_success() {
@@ -77,12 +72,13 @@ pub async fn fetch(
                 if let Ok(index_val) = serde_json::from_str::<serde_json::Value>(&index_text) {
                     // Extract total_size from metadata
                     if let Some(metadata) = index_val.get("metadata").and_then(|m| m.as_object()) {
-                        if let Some(total_size_str) = metadata.get("total_size").and_then(|v| v.as_str()) {
+                        if let Some(total_size_str) =
+                            metadata.get("total_size").and_then(|v| v.as_str())
+                        {
                             if let Ok(total_size) = total_size_str.parse::<u64>() {
                                 // Infer bytes-per-param from torch_dtype in config or default to 2 (fp16)
                                 let bytes_per_param = infer_bytes_per_param(&config);
-                                parameter_count =
-                                    Some(total_size / bytes_per_param as u64);
+                                parameter_count = Some(total_size / bytes_per_param as u64);
                                 quantisation = detect_quantisation(&index_val);
                             }
                         }
@@ -98,10 +94,7 @@ pub async fn fetch(
     }
 
     Ok(IngestResult {
-        source: Source::HuggingFace {
-            repo: repo.to_string(),
-            revision: revision.to_string(),
-        },
+        source: Source::HuggingFace { repo: repo.to_string(), revision: revision.to_string() },
         config,
         parameter_count,
         quantisation,
@@ -162,10 +155,7 @@ mod tests {
         let config = Config {
             extras: {
                 let mut m = std::collections::HashMap::new();
-                m.insert(
-                    "torch_dtype".to_string(),
-                    json!("float32"),
-                );
+                m.insert("torch_dtype".to_string(), json!("float32"));
                 m
             },
             ..Default::default()
@@ -179,10 +169,7 @@ mod tests {
         let config = Config {
             extras: {
                 let mut m = std::collections::HashMap::new();
-                m.insert(
-                    "torch_dtype".to_string(),
-                    json!("float16"),
-                );
+                m.insert("torch_dtype".to_string(), json!("float16"));
                 m
             },
             ..Default::default()
@@ -219,17 +206,11 @@ mod tests {
                     "quant_method": "gptq",
                     "bits": 4
                 });
-                m.insert(
-                    "quantization_config".to_string(),
-                    quant_config,
-                );
+                m.insert("quantization_config".to_string(), quant_config);
                 m
             },
             ..Default::default()
         };
-        assert_eq!(
-            detect_quantisation_from_config(&config),
-            Some("gptq-int4".to_string())
-        );
+        assert_eq!(detect_quantisation_from_config(&config), Some("gptq-int4".to_string()));
     }
 }

@@ -13,7 +13,6 @@ use std::path::Path;
 use thiserror::Error;
 use tracing::{debug, info, warn};
 
-
 pub mod cache;
 pub mod client;
 
@@ -60,10 +59,7 @@ impl Default for VerifierConfig {
 impl VerifierConfig {
     /// Create a new configuration with the given API key.
     pub fn with_api_key(api_key: String) -> Self {
-        Self {
-            api_key,
-            ..Default::default()
-        }
+        Self { api_key, ..Default::default() }
     }
 
     /// Set the describe model.
@@ -220,17 +216,9 @@ impl Verifier {
 
         let client = AnthropicClient::new(config.clone());
 
-        let cache = if config.cache_enabled {
-            Cache::new().ok()
-        } else {
-            None
-        };
+        let cache = if config.cache_enabled { Cache::new().ok() } else { None };
 
-        Ok(Self {
-            config,
-            client,
-            cache,
-        })
+        Ok(Self { config, client, cache })
     }
 
     /// Describe a screenshot using Claude Opus 4.7 vision.
@@ -246,15 +234,9 @@ impl Verifier {
             }
         }
 
-        info!(
-            "Calling {} for vision description",
-            self.config.describe_model
-        );
+        info!("Calling {} for vision description", self.config.describe_model);
 
-        let description = self
-            .client
-            .describe(screenshot_png, &self.config.describe_model)
-            .await?;
+        let description = self.client.describe(screenshot_png, &self.config.describe_model).await?;
 
         // Store in cache
         if let Some(ref cache) = self.cache {
@@ -284,10 +266,7 @@ impl Verifier {
 
         info!("Calling {} for equivalence judgment", self.config.judge_model);
 
-        let verdict = self
-            .client
-            .judge(intent, description, &self.config.judge_model)
-            .await?;
+        let verdict = self.client.judge(intent, description, &self.config.judge_model).await?;
 
         // Store in cache
         if let Some(ref cache) = self.cache {
@@ -307,11 +286,7 @@ impl Verifier {
         let description = self.describe(screenshot_png).await?;
         let verdict = self.judge(intent, &description.text).await?;
 
-        Ok(StepVerification {
-            intent: intent.to_string(),
-            description,
-            verdict,
-        })
+        Ok(StepVerification { intent: intent.to_string(), description, verdict })
     }
 
     /// Verify all steps in a journey manifest.
@@ -321,12 +296,12 @@ impl Verifier {
         &self,
         manifest_path: &Path,
     ) -> Result<ManifestVerification, VerifyError> {
-        let manifest_text = fs::read_to_string(manifest_path)
-            .map_err(VerifyError::Io)?;
-        let manifest: JourneyManifest = serde_json::from_str(&manifest_text)
-            .map_err(VerifyError::Json)?;
+        let manifest_text = fs::read_to_string(manifest_path).map_err(VerifyError::Io)?;
+        let manifest: JourneyManifest =
+            serde_json::from_str(&manifest_text).map_err(VerifyError::Json)?;
 
-        let manifest_dir = manifest_path.parent()
+        let manifest_dir = manifest_path
+            .parent()
             .ok_or_else(|| VerifyError::ManifestError("No parent directory".to_string()))?;
 
         let mut steps_verified = Vec::new();
@@ -337,32 +312,23 @@ impl Verifier {
             let screenshot_path = manifest_dir.join(&step.screenshot_path);
 
             if !screenshot_path.exists() {
-                warn!(
-                    "Screenshot missing for step {}: {}",
-                    step.index, step.screenshot_path
-                );
-                return Err(VerifyError::MissingScreenshot {
-                    path: step.screenshot_path.clone(),
-                });
+                warn!("Screenshot missing for step {}: {}", step.index, step.screenshot_path);
+                return Err(VerifyError::MissingScreenshot { path: step.screenshot_path.clone() });
             }
 
-            let png_bytes = fs::read(&screenshot_path)
-                .map_err(VerifyError::Io)?;
+            let png_bytes = fs::read(&screenshot_path).map_err(VerifyError::Io)?;
 
             let step_verification = self.verify_step(&step.intent, &png_bytes).await?;
 
-            total_tokens += step_verification.description.tokens_used
-                + step_verification.verdict.tokens_used;
+            total_tokens +=
+                step_verification.description.tokens_used + step_verification.verdict.tokens_used;
             scores.push(step_verification.verdict.score_1_to_5 as f32);
 
             steps_verified.push(step_verification);
         }
 
-        let overall_score = if scores.is_empty() {
-            0.0
-        } else {
-            scores.iter().sum::<f32>() / scores.len() as f32
-        };
+        let overall_score =
+            if scores.is_empty() { 0.0 } else { scores.iter().sum::<f32>() / scores.len() as f32 };
 
         let verification = ManifestVerification {
             journey_id: manifest.id.clone(),
@@ -412,10 +378,7 @@ mod tests {
     // Traces to: FR-UX-VERIFY-001
     #[test]
     fn test_missing_api_key() {
-        let config = VerifierConfig {
-            api_key: String::new(),
-            ..Default::default()
-        };
+        let config = VerifierConfig { api_key: String::new(), ..Default::default() };
 
         let result = Verifier::new(config);
         assert!(matches!(result, Err(VerifyError::MissingApiKey)));

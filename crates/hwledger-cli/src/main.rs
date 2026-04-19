@@ -65,10 +65,7 @@ fn main() -> Result<()> {
     let env_filter =
         EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(&cli.log_level));
 
-    tracing_subscriber::fmt()
-        .with_env_filter(env_filter)
-        .with_writer(std::io::stderr)
-        .init();
+    tracing_subscriber::fmt().with_env_filter(env_filter).with_writer(std::io::stderr).init();
 
     // Determine color output (respect --no-color and NO_COLOR env var).
     let use_color = !cli.no_color && atty::is(atty::Stream::Stdout);

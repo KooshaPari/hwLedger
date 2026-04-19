@@ -72,10 +72,7 @@ impl CoverageReport {
                 all_cited_frs.insert(fr.clone());
                 if fr_map.contains_key(fr) {
                     found_any = true;
-                    coverage_map
-                        .entry(fr.clone())
-                        .or_default()
-                        .push(trace.clone());
+                    coverage_map.entry(fr.clone()).or_default().push(trace.clone());
                 } else {
                     nonexistent_cites.push((trace.test_name.clone(), fr.clone()));
                 }
@@ -122,16 +119,10 @@ impl CoverageReport {
         }
 
         let total_frs = frs.len();
-        let total_tests = coverage_map
-            .values()
-            .flat_map(|v| v.iter())
-            .filter(|t| !t.is_ignored)
-            .count();
-        let coverage_percent = if total_frs > 0 {
-            (covered_count as f32 / total_frs as f32) * 100.0
-        } else {
-            0.0
-        };
+        let total_tests =
+            coverage_map.values().flat_map(|v| v.iter()).filter(|t| !t.is_ignored).count();
+        let coverage_percent =
+            if total_frs > 0 { (covered_count as f32 / total_frs as f32) * 100.0 } else { 0.0 };
 
         let stats = Stats {
             total_frs,
@@ -145,11 +136,7 @@ impl CoverageReport {
             nonexistent_cites,
         };
 
-        CoverageReport {
-            frs: coverage_list,
-            stats,
-            orphans,
-        }
+        CoverageReport { frs: coverage_list, stats, orphans }
     }
 
     /// Returns the top N best-covered FRs (by test count).
@@ -189,22 +176,13 @@ impl CoverageReport {
         md.push_str("> ```\n\n");
 
         md.push_str("## Summary\n\n");
-        md.push_str(&format!(
-            "- **Total FRs/NFRs:** {}\n",
-            self.stats.total_frs
-        ));
+        md.push_str(&format!("- **Total FRs/NFRs:** {}\n", self.stats.total_frs));
         md.push_str(&format!(
             "- **Covered:** {} ({:.1}%)\n",
             self.stats.covered_count, self.stats.coverage_percent
         ));
-        md.push_str(&format!(
-            "- **Zero Coverage:** {}\n",
-            self.stats.zero_coverage_count
-        ));
-        md.push_str(&format!(
-            "- **Orphaned (ignored only):** {}\n",
-            self.stats.orphaned_count
-        ));
+        md.push_str(&format!("- **Zero Coverage:** {}\n", self.stats.zero_coverage_count));
+        md.push_str(&format!("- **Orphaned (ignored only):** {}\n", self.stats.orphaned_count));
         md.push_str(&format!("- **Total Tests:** {}\n\n", self.stats.total_tests));
 
         if !self.stats.zero_coverage_frs.is_empty() {
@@ -255,14 +233,12 @@ impl CoverageReport {
         md.push_str("## Coverage by Section\n\n");
         let mut sections: HashMap<String, Vec<&FrCoverage>> = HashMap::new();
         for cov in &self.frs {
-            sections
-                .entry(cov.section.clone())
-                .or_default()
-                .push(cov);
+            sections.entry(cov.section.clone()).or_default().push(cov);
         }
 
         for (section, covs) in sections {
-            let covered_in_section = covs.iter().filter(|c| c.coverage == CoverageLevel::Covered).count();
+            let covered_in_section =
+                covs.iter().filter(|c| c.coverage == CoverageLevel::Covered).count();
             md.push_str(&format!("### {} ({}/{})\n\n", section, covered_in_section, covs.len()));
             for cov in covs {
                 let icon = match cov.coverage {
@@ -270,10 +246,7 @@ impl CoverageReport {
                     CoverageLevel::Zero => "✗",
                     CoverageLevel::Orphaned => "~",
                 };
-                md.push_str(&format!(
-                    "- {} **{}** ({} tests)\n",
-                    icon, cov.fr, cov.test_count
-                ));
+                md.push_str(&format!("- {} **{}** ({} tests)\n", icon, cov.fr, cov.test_count));
             }
             md.push('\n');
         }

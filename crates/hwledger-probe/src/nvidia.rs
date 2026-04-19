@@ -25,15 +25,11 @@ impl NvidiaProbe {
     /// Lazily initializes NVML and returns a reference to the wrapped instance.
     /// Called on first probe query. Logs initialization errors.
     fn init_nvml() -> Result<Arc<Nvml>, ProbeError> {
-        match NVML.get_or_try_init(|| {
-            match Nvml::init() {
-                Ok(nvml) => Ok(Arc::new(nvml)),
-                Err(e) => {
-                    tracing::warn!("NVML init failed: {}", e);
-                    Err(ProbeError::InitFailed {
-                        reason: format!("NVML initialization failed: {}", e),
-                    })
-                }
+        match NVML.get_or_try_init(|| match Nvml::init() {
+            Ok(nvml) => Ok(Arc::new(nvml)),
+            Err(e) => {
+                tracing::warn!("NVML init failed: {}", e);
+                Err(ProbeError::InitFailed { reason: format!("NVML initialization failed: {}", e) })
             }
         }) {
             Ok(nvml) => Ok(Arc::clone(nvml)),
@@ -49,11 +45,9 @@ impl GpuProbe for NvidiaProbe {
 
     fn enumerate(&self) -> Result<Vec<Device>, ProbeError> {
         let nvml = Self::init_nvml()?;
-        let device_count = nvml
-            .device_count()
-            .map_err(|e| ProbeError::InitFailed {
-                reason: format!("failed to query device count: {}", e),
-            })?;
+        let device_count = nvml.device_count().map_err(|e| ProbeError::InitFailed {
+            reason: format!("failed to query device count: {}", e),
+        })?;
 
         let mut devices = Vec::new();
         for i in 0..device_count {
@@ -64,15 +58,9 @@ impl GpuProbe for NvidiaProbe {
                         .unwrap_or_else(|_| format!("NVIDIA Device {}", i))
                         .to_string();
 
-                    let uuid = device
-                        .uuid()
-                        .ok()
-                        .map(|u| u.to_string());
+                    let uuid = device.uuid().ok().map(|u| u.to_string());
 
-                    let total_memory = device
-                        .memory_info()
-                        .map(|info| info.total)
-                        .unwrap_or(0);
+                    let total_memory = device.memory_info().map(|info| info.total).unwrap_or(0);
 
                     devices.push(Device {
                         id: i,
@@ -93,79 +81,58 @@ impl GpuProbe for NvidiaProbe {
 
     fn total_vram(&self, device_id: u32) -> Result<u64, ProbeError> {
         let nvml = Self::init_nvml()?;
-        let device = nvml
-            .device_by_index(device_id)
-            .map_err(|_| ProbeError::DeviceNotFound(device_id))?;
+        let device =
+            nvml.device_by_index(device_id).map_err(|_| ProbeError::DeviceNotFound(device_id))?;
 
-        device
-            .memory_info()
-            .map(|info| info.total)
-            .map_err(|e| ProbeError::Io(std::io::Error::other(
-                format!("failed to query total VRAM: {}", e),
-            )))
+        device.memory_info().map(|info| info.total).map_err(|e| {
+            ProbeError::Io(std::io::Error::other(format!("failed to query total VRAM: {}", e)))
+        })
     }
 
     fn free_vram(&self, device_id: u32) -> Result<u64, ProbeError> {
         let nvml = Self::init_nvml()?;
-        let device = nvml
-            .device_by_index(device_id)
-            .map_err(|_| ProbeError::DeviceNotFound(device_id))?;
+        let device =
+            nvml.device_by_index(device_id).map_err(|_| ProbeError::DeviceNotFound(device_id))?;
 
-        device
-            .memory_info()
-            .map(|info| info.free)
-            .map_err(|e| ProbeError::Io(std::io::Error::other(
-                format!("failed to query free VRAM: {}", e),
-            )))
+        device.memory_info().map(|info| info.free).map_err(|e| {
+            ProbeError::Io(std::io::Error::other(format!("failed to query free VRAM: {}", e)))
+        })
     }
 
     fn utilization(&self, device_id: u32) -> Result<f32, ProbeError> {
         let nvml = Self::init_nvml()?;
-        let device = nvml
-            .device_by_index(device_id)
-            .map_err(|_| ProbeError::DeviceNotFound(device_id))?;
+        let device =
+            nvml.device_by_index(device_id).map_err(|_| ProbeError::DeviceNotFound(device_id))?;
 
-        device
-            .utilization_rates()
-            .map(|rates| rates.gpu as f32)
-            .map_err(|e| ProbeError::Io(std::io::Error::other(
-                format!("failed to query utilization: {}", e),
-            )))
+        device.utilization_rates().map(|rates| rates.gpu as f32).map_err(|e| {
+            ProbeError::Io(std::io::Error::other(format!("failed to query utilization: {}", e)))
+        })
     }
 
     fn temperature(&self, device_id: u32) -> Result<f32, ProbeError> {
         let nvml = Self::init_nvml()?;
-        let device = nvml
-            .device_by_index(device_id)
-            .map_err(|_| ProbeError::DeviceNotFound(device_id))?;
+        let device =
+            nvml.device_by_index(device_id).map_err(|_| ProbeError::DeviceNotFound(device_id))?;
 
-        device
-            .temperature(TemperatureSensor::Gpu)
-            .map(|t| t as f32)
-            .map_err(|e| ProbeError::Io(std::io::Error::other(
-                format!("failed to query temperature: {}", e),
-            )))
+        device.temperature(TemperatureSensor::Gpu).map(|t| t as f32).map_err(|e| {
+            ProbeError::Io(std::io::Error::other(format!("failed to query temperature: {}", e)))
+        })
     }
 
     fn power_draw(&self, device_id: u32) -> Result<f32, ProbeError> {
         let nvml = Self::init_nvml()?;
-        let device = nvml
-            .device_by_index(device_id)
-            .map_err(|_| ProbeError::DeviceNotFound(device_id))?;
+        let device =
+            nvml.device_by_index(device_id).map_err(|_| ProbeError::DeviceNotFound(device_id))?;
 
-        device
-            .power_usage()
-            .map(|pw| pw as f32 / 1000.0)
-            .map_err(|e| ProbeError::Io(std::io::Error::other(
-                format!("failed to query power draw: {}", e),
-            )))
+        device.power_usage().map(|pw| pw as f32 / 1000.0).map_err(|e| {
+            ProbeError::Io(std::io::Error::other(format!("failed to query power draw: {}", e)))
+        })
     }
 
     fn process_vram(&self, device_id: u32, _pid: u32) -> Result<u64, ProbeError> {
         let _nvml = Self::init_nvml()?;
-        let _device = _nvml
-            .device_by_index(device_id)
-            .map_err(|_| ProbeError::DeviceNotFound(device_id))?;
+        let _device =
+            _nvml.device_by_index(device_id).map_err(|_| ProbeError::DeviceNotFound(device_id))?;
 
         // Note: nvml-wrapper does not expose direct per-pid memory queries.
         // For WP12, we return 0 (not found). This will be enhanced in WP13
@@ -183,9 +150,7 @@ mod tests {
     /// Traces to: FR-TEL-004
     #[test]
     fn test_error_display_init_failed() {
-        let err = ProbeError::InitFailed {
-            reason: "NVML not available".to_string(),
-        };
+        let err = ProbeError::InitFailed { reason: "NVML not available".to_string() };
         let msg = err.to_string();
         assert!(msg.contains("initialization failed"));
         assert!(msg.contains("NVML not available"));

@@ -15,18 +15,10 @@ use uuid::Uuid;
 #[serde(tag = "kind", content = "data")]
 pub enum HwLedgerEvent {
     /// Agent registered with the ledger server.
-    AgentRegistered {
-        agent_id: Uuid,
-        hostname: String,
-        platform: Platform,
-    },
+    AgentRegistered { agent_id: Uuid, hostname: String, platform: Platform },
 
     /// Periodic heartbeat from an agent (includes device count snapshot).
-    AgentHeartbeat {
-        agent_id: Uuid,
-        device_count: u32,
-        at_ms: u64,
-    },
+    AgentHeartbeat { agent_id: Uuid, device_count: u32, at_ms: u64 },
 
     /// A GPU or accelerator device was discovered and reported.
     DeviceReported {
@@ -47,33 +39,16 @@ pub enum HwLedgerEvent {
     },
 
     /// Job was dispatched to an agent.
-    JobDispatched {
-        job_id: Uuid,
-        agent_id: Uuid,
-        model_ref: String,
-    },
+    JobDispatched { job_id: Uuid, agent_id: Uuid, model_ref: String },
 
     /// Job state changed (running, completed, failed, etc.).
-    JobStateChanged {
-        job_id: Uuid,
-        new_state: JobState,
-        at_ms: u64,
-    },
+    JobStateChanged { job_id: Uuid, new_state: JobState, at_ms: u64 },
 
     /// Configuration setting changed (actor-driven).
-    ConfigChanged {
-        actor: String,
-        key: String,
-        old_value: Option<String>,
-        new_value: String,
-    },
+    ConfigChanged { actor: String, key: String, old_value: Option<String>, new_value: String },
 
     /// Security event (auth failures, cert rotations, etc.).
-    SecurityEvent {
-        kind: String,
-        actor: Option<String>,
-        detail: String,
-    },
+    SecurityEvent { kind: String, actor: Option<String>, detail: String },
 }
 
 impl HwLedgerEvent {
@@ -112,8 +87,7 @@ mod tests {
         };
 
         let json = serde_json::to_string(&event).expect("serialization failed");
-        let roundtrip: HwLedgerEvent =
-            serde_json::from_str(&json).expect("deserialization failed");
+        let roundtrip: HwLedgerEvent = serde_json::from_str(&json).expect("deserialization failed");
 
         assert_eq!(event, roundtrip);
     }

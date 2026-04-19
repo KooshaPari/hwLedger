@@ -163,12 +163,10 @@ pub fn run(args: PlanArgs) -> Result<()> {
     let config_json = fs::read_to_string(&args.config_path)
         .with_context(|| format!("failed to read config: {}", args.config_path.display()))?;
 
-    let arch_cfg = ArchConfig::from_json(&config_json)
-        .context("failed to parse config.json")?;
+    let arch_cfg = ArchConfig::from_json(&config_json).context("failed to parse config.json")?;
 
     // Classify architecture
-    let attention_kind = classify(&arch_cfg)
-        .context("failed to classify architecture")?;
+    let attention_kind = classify(&arch_cfg).context("failed to classify architecture")?;
 
     let attention_label = format!("{:?}", attention_kind);
 
@@ -196,9 +194,7 @@ pub fn run(args: PlanArgs) -> Result<()> {
     let result = PlanResult {
         schema: "hwledger.v1".to_string(),
         attention_kind: attention_label,
-        parameters: ParameterEstimate {
-            approx_count: param_count as u64,
-        },
+        parameters: ParameterEstimate { approx_count: param_count as u64 },
         memory: MemoryBreakdown {
             weights_bytes: weights_bytes as u64,
             kv_cache_bytes: kv_total_bytes as u64,
@@ -207,9 +203,9 @@ pub fn run(args: PlanArgs) -> Result<()> {
             total_bytes: total_bytes as u64,
         },
         device_vram_gb: args.device_total_vram,
-        utilization_percent: args.device_total_vram.map(|vram| {
-            ((total_bytes / (vram as f64 * 1e9)) * 100.0) as f32
-        }),
+        utilization_percent: args
+            .device_total_vram
+            .map(|vram| ((total_bytes / (vram as f64 * 1e9)) * 100.0) as f32),
     };
 
     if args.json {

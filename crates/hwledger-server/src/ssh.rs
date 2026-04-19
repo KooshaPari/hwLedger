@@ -125,14 +125,16 @@ fn parse_nvidia_smi(output: &str) -> Vec<DeviceReport> {
                 return None;
             }
 
-            let total_vram_bytes = parts.get(3)
-                .and_then(|s| s.parse::<u64>().ok())
-                .unwrap_or(0) * 1024 * 1024; // assume MB
+            let total_vram_bytes =
+                parts.get(3).and_then(|s| s.parse::<u64>().ok()).unwrap_or(0) * 1024 * 1024; // assume MB
 
             Some(DeviceReport {
                 backend: "nvidia".to_string(),
                 id: idx as u32,
-                name: parts.get(2).map(|s| s.to_string()).unwrap_or_else(|| "Unknown GPU".to_string()),
+                name: parts
+                    .get(2)
+                    .map(|s| s.to_string())
+                    .unwrap_or_else(|| "Unknown GPU".to_string()),
                 uuid: parts.get(1).map(|s| s.to_string()),
                 total_vram_bytes,
                 snapshot: None, // Would be populated from device.snapshot if available
@@ -164,7 +166,9 @@ fn parse_rocm_smi_json(output: &str) -> Vec<DeviceReport> {
                             .or_else(|| device.get("total_memory"))
                             .and_then(|v| v.as_str())
                             .and_then(|s| s.parse::<u64>().ok())
-                            .unwrap_or(0) * 1024 * 1024;
+                            .unwrap_or(0)
+                            * 1024
+                            * 1024;
 
                         DeviceReport {
                             backend: "amd".to_string(),
@@ -192,10 +196,7 @@ fn parse_system_profiler_json(output: &str) -> Vec<DeviceReport> {
     // Traces to: FR-FLEET-003
     match serde_json::from_str::<serde_json::Value>(output) {
         Ok(json) => {
-            if let Some(gpu_array) = json
-                .get("SPGPUDataType")
-                .and_then(|v| v.as_array())
-            {
+            if let Some(gpu_array) = json.get("SPGPUDataType").and_then(|v| v.as_array()) {
                 gpu_array
                     .iter()
                     .enumerate()
@@ -207,10 +208,8 @@ fn parse_system_profiler_json(output: &str) -> Vec<DeviceReport> {
                             .unwrap_or("Apple GPU")
                             .to_string();
 
-                        let vram_str = gpu
-                            .get("sppci_vram")
-                            .and_then(|v| v.as_str())
-                            .unwrap_or("0 MB");
+                        let vram_str =
+                            gpu.get("sppci_vram").and_then(|v| v.as_str()).unwrap_or("0 MB");
                         let vram_bytes = parse_vram_string(vram_str);
 
                         DeviceReport {
@@ -268,7 +267,8 @@ mod tests {
     // Traces to: FR-FLEET-003
     #[test]
     fn test_parse_nvidia_smi_multiple_gpus() {
-        let output = "0,GPU-abc,RTX 4090,24576,20480,30,60,120\n1,GPU-def,RTX 3090,24576,18432,50,75,200\n";
+        let output =
+            "0,GPU-abc,RTX 4090,24576,20480,30,60,120\n1,GPU-def,RTX 3090,24576,18432,50,75,200\n";
         let reports = parse_nvidia_smi(output);
         assert_eq!(reports.len(), 2);
         assert_eq!(reports[0].name, "RTX 4090");

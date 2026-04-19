@@ -82,7 +82,6 @@ pub struct Config {
     pub extras: HashMap<String, serde_json::Value>,
 }
 
-
 impl Config {
     /// Parse a `config.json` string into a Config struct.
     pub fn from_json(json: &str) -> Result<Self, serde_json::Error> {
@@ -122,12 +121,8 @@ pub fn classify(cfg: &Config) -> Result<AttentionKind, ClassifyError> {
     // Priority 1: MLA (DeepSeek-V2, V3)
     if cfg.kv_lora_rank.is_some() {
         let kv_lora_rank = cfg.kv_lora_rank.ok_or(ClassifyError::MlaMissingFields)?;
-        let qk_rope_head_dim =
-            cfg.qk_rope_head_dim.ok_or(ClassifyError::MlaMissingFields)?;
-        return Ok(AttentionKind::Mla {
-            kv_lora_rank,
-            qk_rope_head_dim,
-        });
+        let qk_rope_head_dim = cfg.qk_rope_head_dim.ok_or(ClassifyError::MlaMissingFields)?;
+        return Ok(AttentionKind::Mla { kv_lora_rank, qk_rope_head_dim });
     }
 
     // Priority 2: Hybrid (Qwen3.6, Jamba, Gemma 3)
@@ -137,13 +132,10 @@ pub fn classify(cfg: &Config) -> Result<AttentionKind, ClassifyError> {
         }
         let num_kv_heads =
             cfg.num_key_value_heads.ok_or(ClassifyError::HybridMissingAttentionFields)?;
-        let head_dim = cfg.infer_head_dim()
-            .ok_or(ClassifyError::HybridMissingAttentionFields)?;
+        let head_dim = cfg.infer_head_dim().ok_or(ClassifyError::HybridMissingAttentionFields)?;
 
-        let layers: Result<Vec<_>, _> = layer_types
-            .iter()
-            .map(|t| classify_layer_type(t, num_kv_heads, head_dim))
-            .collect();
+        let layers: Result<Vec<_>, _> =
+            layer_types.iter().map(|t| classify_layer_type(t, num_kv_heads, head_dim)).collect();
         return Ok(AttentionKind::Hybrid(layers?));
     }
 
@@ -151,39 +143,26 @@ pub fn classify(cfg: &Config) -> Result<AttentionKind, ClassifyError> {
     let has_state = cfg.state_size.is_some() || cfg.d_state.is_some();
     if has_state {
         let num_layers = cfg.infer_num_layers().ok_or(ClassifyError::SsmMissingFields)?;
-        let state_size = cfg.state_size.or(cfg.d_state)
-            .ok_or(ClassifyError::SsmMissingFields)?;
-        return Ok(AttentionKind::Ssm {
-            num_layers,
-            state_size,
-        });
+        let state_size = cfg.state_size.or(cfg.d_state).ok_or(ClassifyError::SsmMissingFields)?;
+        return Ok(AttentionKind::Ssm { num_layers, state_size });
     }
 
     // Priority 4: SlidingWindow (Mistral 7B, Gemma 2)
     if cfg.sliding_window.is_some() && cfg.num_key_value_heads.is_some() {
-        let num_layers = cfg.infer_num_layers()
-            .ok_or(ClassifyError::SlidingWindowMissingFields)?;
-        let num_kv_heads = cfg.num_key_value_heads
-            .ok_or(ClassifyError::SlidingWindowMissingFields)?;
-        let head_dim = cfg.infer_head_dim()
-            .ok_or(ClassifyError::SlidingWindowMissingFields)?;
+        let num_layers = cfg.infer_num_layers().ok_or(ClassifyError::SlidingWindowMissingFields)?;
+        let num_kv_heads =
+            cfg.num_key_value_heads.ok_or(ClassifyError::SlidingWindowMissingFields)?;
+        let head_dim = cfg.infer_head_dim().ok_or(ClassifyError::SlidingWindowMissingFields)?;
         let window = cfg.sliding_window.ok_or(ClassifyError::SlidingWindowMissingFields)?;
-        return Ok(AttentionKind::SlidingWindow {
-            num_layers,
-            num_kv_heads,
-            head_dim,
-            window,
-        });
+        return Ok(AttentionKind::SlidingWindow { num_layers, num_kv_heads, head_dim, window });
     }
 
     // Priority 5: AttentionSink (StreamingLLM)
     if cfg.attention_sinks.is_some() {
-        let num_layers = cfg.infer_num_layers()
-            .ok_or(ClassifyError::AttentionSinkMissingFields)?;
-        let num_kv_heads = cfg.num_key_value_heads
-            .ok_or(ClassifyError::AttentionSinkMissingFields)?;
-        let head_dim = cfg.infer_head_dim()
-            .ok_or(ClassifyError::AttentionSinkMissingFields)?;
+        let num_layers = cfg.infer_num_layers().ok_or(ClassifyError::AttentionSinkMissingFields)?;
+        let num_kv_heads =
+            cfg.num_key_value_heads.ok_or(ClassifyError::AttentionSinkMissingFields)?;
+        let head_dim = cfg.infer_head_dim().ok_or(ClassifyError::AttentionSinkMissingFields)?;
         let sinks = cfg.attention_sinks.ok_or(ClassifyError::AttentionSinkMissingFields)?;
         let window = cfg.sliding_window.unwrap_or(2048);
         return Ok(AttentionKind::AttentionSink {
@@ -203,11 +182,7 @@ pub fn classify(cfg: &Config) -> Result<AttentionKind, ClassifyError> {
     match cfg.num_key_value_heads {
         None => {
             // MHA: all heads are key-value heads
-            Ok(AttentionKind::Mha {
-                num_layers,
-                num_attention_heads,
-                head_dim,
-            })
+            Ok(AttentionKind::Mha { num_layers, num_attention_heads, head_dim })
         }
         Some(1) => {
             // MQA: single shared KV head
@@ -215,20 +190,12 @@ pub fn classify(cfg: &Config) -> Result<AttentionKind, ClassifyError> {
         }
         Some(num_kv_heads) if num_kv_heads < num_attention_heads => {
             // GQA: grouped query attention
-            Ok(AttentionKind::Gqa {
-                num_layers,
-                num_kv_heads,
-                head_dim,
-            })
+            Ok(AttentionKind::Gqa { num_layers, num_kv_heads, head_dim })
         }
         Some(_) => {
             // Degenerate case: num_kv_heads >= num_attention_heads but num_kv_heads is set.
             // Treat as MHA.
-            Ok(AttentionKind::Mha {
-                num_layers,
-                num_attention_heads,
-                head_dim,
-            })
+            Ok(AttentionKind::Mha { num_layers, num_attention_heads, head_dim })
         }
     }
 }
@@ -240,16 +207,11 @@ fn classify_layer_type(
     head_dim: u32,
 ) -> Result<LayerKind, ClassifyError> {
     match layer_type.to_lowercase().as_str() {
-        "full_attention" | "attention" => Ok(LayerKind::FullAttention {
-            num_kv_heads,
-            head_dim,
-        }),
+        "full_attention" | "attention" => Ok(LayerKind::FullAttention { num_kv_heads, head_dim }),
         "linear_attention" => Ok(LayerKind::LinearAttention),
-        "sliding_attention" => Ok(LayerKind::SlidingAttention {
-            num_kv_heads,
-            head_dim,
-            window: 2048,
-        }),
+        "sliding_attention" => {
+            Ok(LayerKind::SlidingAttention { num_kv_heads, head_dim, window: 2048 })
+        }
         "mamba" | "ssm" => Ok(LayerKind::SsmState { state_size: 16 }),
         _ => Err(ClassifyError::UnknownLayerType(layer_type.to_string())),
     }
@@ -298,10 +260,7 @@ mod tests {
         let cfg = Config::from_json(json).expect("parse");
         let kind = classify(&cfg).expect("classify");
         match kind {
-            AttentionKind::Mla {
-                kv_lora_rank,
-                qk_rope_head_dim,
-            } => {
+            AttentionKind::Mla { kv_lora_rank, qk_rope_head_dim } => {
                 assert_eq!(kv_lora_rank, 512);
                 assert_eq!(qk_rope_head_dim, 64);
             }
@@ -323,12 +282,7 @@ mod tests {
         let cfg = Config::from_json(json).expect("parse");
         let kind = classify(&cfg).expect("classify");
         match kind {
-            AttentionKind::SlidingWindow {
-                num_layers,
-                num_kv_heads,
-                head_dim,
-                window,
-            } => {
+            AttentionKind::SlidingWindow { num_layers, num_kv_heads, head_dim, window } => {
                 assert_eq!(num_layers, 32);
                 assert_eq!(num_kv_heads, 8);
                 assert_eq!(head_dim, 128);
@@ -366,10 +320,8 @@ mod tests {
         match kind {
             AttentionKind::Hybrid(ref layers) => {
                 assert_eq!(layers.len(), 40);
-                let full_count = layers
-                    .iter()
-                    .filter(|l| matches!(l, LayerKind::FullAttention { .. }))
-                    .count();
+                let full_count =
+                    layers.iter().filter(|l| matches!(l, LayerKind::FullAttention { .. })).count();
                 assert_eq!(full_count, 10);
             }
             _ => panic!("Expected Hybrid, got {:?}", kind),
@@ -387,10 +339,7 @@ mod tests {
         let cfg = Config::from_json(json).expect("parse");
         let kind = classify(&cfg).expect("classify");
         match kind {
-            AttentionKind::Ssm {
-                num_layers,
-                state_size,
-            } => {
+            AttentionKind::Ssm { num_layers, state_size } => {
                 assert_eq!(num_layers, 48);
                 assert_eq!(state_size, 16);
             }
@@ -433,13 +382,7 @@ mod tests {
         let cfg = Config::from_json(json).expect("parse");
         let kind = classify(&cfg).expect("classify");
         match kind {
-            AttentionKind::AttentionSink {
-                num_layers,
-                num_kv_heads,
-                head_dim,
-                sinks,
-                window,
-            } => {
+            AttentionKind::AttentionSink { num_layers, num_kv_heads, head_dim, sinks, window } => {
                 assert_eq!(num_layers, 80);
                 assert_eq!(num_kv_heads, 8);
                 assert_eq!(head_dim, 128);
@@ -521,10 +464,7 @@ mod tests {
         let cfg = Config::from_json(json).expect("parse");
         let kind = classify(&cfg).expect("classify");
         match kind {
-            AttentionKind::Ssm {
-                num_layers,
-                state_size,
-            } => {
+            AttentionKind::Ssm { num_layers, state_size } => {
                 assert_eq!(num_layers, 48);
                 assert_eq!(state_size, 32);
             }

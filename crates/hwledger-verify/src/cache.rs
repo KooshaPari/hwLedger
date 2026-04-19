@@ -15,9 +15,8 @@ impl Cache {
     /// Create a new cache at `./target/hwledger-verify-cache/`.
     pub fn new() -> Result<Self, VerifyError> {
         let cache_dir = PathBuf::from("target/hwledger-verify-cache");
-        fs::create_dir_all(&cache_dir).map_err(|e| {
-            VerifyError::CacheError(format!("Failed to create cache dir: {}", e))
-        })?;
+        fs::create_dir_all(&cache_dir)
+            .map_err(|e| VerifyError::CacheError(format!("Failed to create cache dir: {}", e)))?;
 
         Ok(Self { cache_dir })
     }
@@ -55,9 +54,8 @@ impl Cache {
         let content = fs::read_to_string(&path)
             .map_err(|e| VerifyError::CacheError(format!("Failed to read cache: {}", e)))?;
 
-        serde_json::from_str(&content).map_err(|e| {
-            VerifyError::CacheError(format!("Failed to deserialize cache: {}", e))
-        })
+        serde_json::from_str(&content)
+            .map_err(|e| VerifyError::CacheError(format!("Failed to deserialize cache: {}", e)))
     }
 
     /// Store a value in the cache.
@@ -75,13 +73,11 @@ impl Cache {
     /// Clear the entire cache.
     pub fn clear(&self) -> Result<(), VerifyError> {
         if self.cache_dir.exists() {
-            fs::remove_dir_all(&self.cache_dir).map_err(|e| {
-                VerifyError::CacheError(format!("Failed to clear cache: {}", e))
-            })?;
+            fs::remove_dir_all(&self.cache_dir)
+                .map_err(|e| VerifyError::CacheError(format!("Failed to clear cache: {}", e)))?;
         }
-        fs::create_dir_all(&self.cache_dir).map_err(|e| {
-            VerifyError::CacheError(format!("Failed to recreate cache dir: {}", e))
-        })?;
+        fs::create_dir_all(&self.cache_dir)
+            .map_err(|e| VerifyError::CacheError(format!("Failed to recreate cache dir: {}", e)))?;
         Ok(())
     }
 }
@@ -122,11 +118,7 @@ mod tests {
         let cache = Cache::new().unwrap();
         cache.clear().ok(); // Start fresh
 
-        let desc = Description {
-            text: "test".to_string(),
-            structured: None,
-            tokens_used: 10,
-        };
+        let desc = Description { text: "test".to_string(), structured: None, tokens_used: 10 };
 
         let key = "test-key";
         cache.set(key, &desc).unwrap();

@@ -121,10 +121,7 @@ impl RentalCatalog {
             .map(|d| d.as_millis() as u64)
             .unwrap_or(0);
 
-        Ok(RentalCatalog {
-            entries,
-            refreshed_at_ms,
-        })
+        Ok(RentalCatalog { entries, refreshed_at_ms })
     }
 }
 
@@ -132,10 +129,7 @@ impl RentalCatalog {
 /// Uses the undocumented query JSON in the URL parameter.
 async fn fetch_vast_ai(api_key: &str) -> Result<Vec<RentalOffering>, ServerError> {
     let query = r#"{"gpu_name":"any","verified":{"eq":true}}"#;
-    let url = format!(
-        "https://console.vast.ai/api/v0/bundles?q={}",
-        urlencoding::encode(query)
-    );
+    let url = format!("https://console.vast.ai/api/v0/bundles?q={}", urlencoding::encode(query));
 
     let client = reqwest::Client::new();
     let response = client
@@ -143,9 +137,7 @@ async fn fetch_vast_ai(api_key: &str) -> Result<Vec<RentalOffering>, ServerError
         .header("Authorization", format!("Bearer {}", api_key))
         .send()
         .await
-        .map_err(|e| ServerError::Internal {
-            reason: format!("HTTP error: {}", e),
-        })?;
+        .map_err(|e| ServerError::Internal { reason: format!("HTTP error: {}", e) })?;
 
     if !response.status().is_success() {
         return Err(ServerError::Internal {
@@ -153,11 +145,10 @@ async fn fetch_vast_ai(api_key: &str) -> Result<Vec<RentalOffering>, ServerError
         });
     }
 
-    let body: serde_json::Value = response.json().await.map_err(|e| {
-        ServerError::Internal {
-            reason: format!("JSON parse error: {}", e),
-        }
-    })?;
+    let body: serde_json::Value = response
+        .json()
+        .await
+        .map_err(|e| ServerError::Internal { reason: format!("JSON parse error: {}", e) })?;
 
     let mut offerings = Vec::new();
 
@@ -186,15 +177,9 @@ fn parse_vast_bundle(bundle: &serde_json::Value) -> Result<RentalOffering, Strin
         .and_then(|v| v.as_f64())
         .ok_or_else(|| "missing gpu_memory_gb".to_string())? as u32;
 
-    let cpu_cores = bundle
-        .get("cpu_count")
-        .and_then(|v| v.as_u64())
-        .unwrap_or(4) as u32;
+    let cpu_cores = bundle.get("cpu_count").and_then(|v| v.as_u64()).unwrap_or(4) as u32;
 
-    let ram_gb = bundle
-        .get("ram_gb")
-        .and_then(|v| v.as_f64())
-        .unwrap_or(8.0) as u32;
+    let ram_gb = bundle.get("ram_gb").and_then(|v| v.as_f64()).unwrap_or(8.0) as u32;
 
     let hourly_usd = bundle
         .get("price")
@@ -202,11 +187,8 @@ fn parse_vast_bundle(bundle: &serde_json::Value) -> Result<RentalOffering, Strin
         .and_then(|v| v.as_f64())
         .ok_or_else(|| "missing price".to_string())?;
 
-    let region = bundle
-        .get("geolocation")
-        .and_then(|v| v.as_str())
-        .unwrap_or("unknown")
-        .to_string();
+    let region =
+        bundle.get("geolocation").and_then(|v| v.as_str()).unwrap_or("unknown").to_string();
 
     Ok(RentalOffering {
         provider: Provider::VastAi,
@@ -250,9 +232,7 @@ async fn fetch_runpod(api_key: &str) -> Result<Vec<RentalOffering>, ServerError>
         .json(&payload)
         .send()
         .await
-        .map_err(|e| ServerError::Internal {
-            reason: format!("HTTP error: {}", e),
-        })?;
+        .map_err(|e| ServerError::Internal { reason: format!("HTTP error: {}", e) })?;
 
     if !response.status().is_success() {
         return Err(ServerError::Internal {
@@ -260,11 +240,10 @@ async fn fetch_runpod(api_key: &str) -> Result<Vec<RentalOffering>, ServerError>
         });
     }
 
-    let body: serde_json::Value = response.json().await.map_err(|e| {
-        ServerError::Internal {
-            reason: format!("JSON parse error: {}", e),
-        }
-    })?;
+    let body: serde_json::Value = response
+        .json()
+        .await
+        .map_err(|e| ServerError::Internal { reason: format!("JSON parse error: {}", e) })?;
 
     let mut offerings = Vec::new();
 
@@ -295,10 +274,7 @@ fn parse_runpod_node(node: &serde_json::Value) -> Result<RentalOffering, String>
         .ok_or_else(|| "missing gpuDisplayName".to_string())?
         .to_string();
 
-    let gpu_count = node
-        .get("gpuCount")
-        .and_then(|v| v.as_u64())
-        .unwrap_or(1) as u32;
+    let gpu_count = node.get("gpuCount").and_then(|v| v.as_u64()).unwrap_or(1) as u32;
 
     let hourly_usd = node
         .get("minimumBidPrice")
@@ -328,9 +304,7 @@ async fn fetch_lambda(api_key: &str) -> Result<Vec<RentalOffering>, ServerError>
         .bearer_auth(api_key)
         .send()
         .await
-        .map_err(|e| ServerError::Internal {
-            reason: format!("HTTP error: {}", e),
-        })?;
+        .map_err(|e| ServerError::Internal { reason: format!("HTTP error: {}", e) })?;
 
     if !response.status().is_success() {
         return Err(ServerError::Internal {
@@ -338,11 +312,10 @@ async fn fetch_lambda(api_key: &str) -> Result<Vec<RentalOffering>, ServerError>
         });
     }
 
-    let body: serde_json::Value = response.json().await.map_err(|e| {
-        ServerError::Internal {
-            reason: format!("JSON parse error: {}", e),
-        }
-    })?;
+    let body: serde_json::Value = response
+        .json()
+        .await
+        .map_err(|e| ServerError::Internal { reason: format!("JSON parse error: {}", e) })?;
 
     let mut offerings = Vec::new();
 
@@ -375,10 +348,9 @@ fn parse_lambda_instance(info: &serde_json::Value) -> Result<RentalOffering, Str
 
     // Lambda lists specs in nested structure; approximate
     let gpu_specs = info.get("specs");
-    let vram_gb = gpu_specs
-        .and_then(|s| s.get("gpu_memory_gb"))
-        .and_then(|v| v.as_u64())
-        .unwrap_or(24) as u32;
+    let vram_gb =
+        gpu_specs.and_then(|s| s.get("gpu_memory_gb")).and_then(|v| v.as_u64()).unwrap_or(24)
+            as u32;
 
     Ok(RentalOffering {
         provider: Provider::Lambda,

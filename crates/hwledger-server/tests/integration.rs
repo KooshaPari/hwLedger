@@ -56,7 +56,8 @@ async fn test_registration_request_round_trip() {
     let ar = AgentRegistration {
         agent_id,
         hostname: "gpu-box-1".to_string(),
-        cert_csr_pem: "-----BEGIN CERTIFICATE REQUEST-----\n...\n-----END CERTIFICATE REQUEST-----".to_string(),
+        cert_csr_pem: "-----BEGIN CERTIFICATE REQUEST-----\n...\n-----END CERTIFICATE REQUEST-----"
+            .to_string(),
         platform: Platform {
             os: "linux".to_string(),
             arch: "x86_64".to_string(),
@@ -78,7 +79,8 @@ async fn test_registration_ack_round_trip() {
     let agent_id = Uuid::new_v4();
     let ack = RegistrationAck {
         agent_id,
-        assigned_cert_pem: "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----".to_string(),
+        assigned_cert_pem: "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"
+            .to_string(),
         ca_cert_pem: "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----".to_string(),
         server_time_ms: 1713456000000,
     };

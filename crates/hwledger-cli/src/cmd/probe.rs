@@ -175,7 +175,10 @@ async fn watch(args: WatchArgs) -> Result<()> {
     Ok(())
 }
 
-fn snapshot_device(probe: &dyn GpuProbe, device: &hwledger_probe::Device) -> Result<DeviceSnapshot> {
+fn snapshot_device(
+    probe: &dyn GpuProbe,
+    device: &hwledger_probe::Device,
+) -> Result<DeviceSnapshot> {
     let free_vram = probe.free_vram(device.id).unwrap_or(0);
     let utilization = probe.utilization(device.id).unwrap_or(0.0);
     let temperature = probe.temperature(device.id).unwrap_or(0.0);
@@ -242,10 +245,7 @@ fn parse_duration(s: &str) -> Result<Duration> {
         let s_val: f64 = s.trim_end_matches('s').parse()?;
         Ok(Duration::from_secs_f64(s_val))
     } else {
-        Err(anyhow::anyhow!(
-            "invalid duration: {}; use '1s', '500ms', '2.5s', etc.",
-            s
-        ))
+        Err(anyhow::anyhow!("invalid duration: {}; use '1s', '500ms', '2.5s', etc.", s))
     }
 }
 

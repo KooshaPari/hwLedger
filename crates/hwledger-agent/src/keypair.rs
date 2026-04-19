@@ -13,7 +13,8 @@ pub fn generate_keypair() -> Result<(String, String), AgentError> {
 
     let private_pem = key_pair.serialize_pem();
     // Public key extraction is handled internally; we just return the private key for now
-    let public_pem = "-----BEGIN PUBLIC KEY-----\nPLACEHOLDER\n-----END PUBLIC KEY-----".to_string();
+    let public_pem =
+        "-----BEGIN PUBLIC KEY-----\nPLACEHOLDER\n-----END PUBLIC KEY-----".to_string();
 
     Ok((private_pem, public_pem))
 }
@@ -34,9 +35,9 @@ pub fn generate_csr(hostname: &str) -> Result<(String, String), AgentError> {
     };
 
     // Build self-signed cert using self_signed() API
-    let cert = params.self_signed(&key_pair).map_err(|e| AgentError::CsrGeneration(
-        format!("Failed to create certificate: {}", e)
-    ))?;
+    let cert = params
+        .self_signed(&key_pair)
+        .map_err(|e| AgentError::CsrGeneration(format!("Failed to create certificate: {}", e)))?;
 
     // Serialize the private key
     let private_pem = key_pair.serialize_pem();

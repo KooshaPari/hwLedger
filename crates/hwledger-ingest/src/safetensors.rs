@@ -162,10 +162,7 @@ mod tests {
         let config = Config {
             extras: {
                 let mut m = std::collections::HashMap::new();
-                m.insert(
-                    "torch_dtype".to_string(),
-                    serde_json::json!("float32"),
-                );
+                m.insert("torch_dtype".to_string(), serde_json::json!("float32"));
                 m
             },
             ..Default::default()
@@ -179,10 +176,7 @@ mod tests {
         let config = Config {
             extras: {
                 let mut m = std::collections::HashMap::new();
-                m.insert(
-                    "torch_dtype".to_string(),
-                    serde_json::json!("bfloat16"),
-                );
+                m.insert("torch_dtype".to_string(), serde_json::json!("bfloat16"));
                 m
             },
             ..Default::default()
@@ -200,18 +194,12 @@ mod tests {
                     "quant_method": "gptq",
                     "bits": 4
                 });
-                m.insert(
-                    "quantization_config".to_string(),
-                    quant_config,
-                );
+                m.insert("quantization_config".to_string(), quant_config);
                 m
             },
             ..Default::default()
         };
-        assert_eq!(
-            detect_quantisation_from_config(&config),
-            Some("gptq-int4".to_string())
-        );
+        assert_eq!(detect_quantisation_from_config(&config), Some("gptq-int4".to_string()));
     }
 
     // Traces to: FR-PLAN-001

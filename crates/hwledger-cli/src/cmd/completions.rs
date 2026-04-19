@@ -49,9 +49,7 @@ mod tests {
     #[test]
     fn test_valid_shell_args() {
         for shell in &["bash", "zsh", "fish", "powershell"] {
-            let args = CompletionsArgs {
-                shell: shell.to_string(),
-            };
+            let args = CompletionsArgs { shell: shell.to_string() };
             assert_eq!(args.shell, *shell);
         }
     }

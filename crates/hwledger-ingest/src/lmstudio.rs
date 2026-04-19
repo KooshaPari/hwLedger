@@ -52,14 +52,9 @@ pub async fn list(base_url: &str) -> Result<Vec<LmStudioModel>, IngestError> {
     let body = response.text().await?;
     let parsed: serde_json::Value = serde_json::from_str(&body)?;
 
-    let data = parsed
-        .get("data")
-        .and_then(|d| d.as_array())
-        .ok_or_else(|| {
-            IngestError::Parse(
-                "Expected 'data' array in LM Studio /v1/models response".to_string(),
-            )
-        })?;
+    let data = parsed.get("data").and_then(|d| d.as_array()).ok_or_else(|| {
+        IngestError::Parse("Expected 'data' array in LM Studio /v1/models response".to_string())
+    })?;
 
     let result: Result<Vec<LmStudioModel>, serde_json::Error> =
         data.iter().map(|m| serde_json::from_value(m.clone())).collect();

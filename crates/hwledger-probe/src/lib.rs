@@ -166,15 +166,10 @@ mod tests {
     /// Traces to: FR-TEL-001
     #[test]
     fn test_unsupported_error_display() {
-        let err = ProbeError::Unsupported {
-            reason: "no NVIDIA driver installed".to_string(),
-        };
+        let err = ProbeError::Unsupported { reason: "no NVIDIA driver installed".to_string() };
         let msg = err.to_string();
         assert!(msg.contains("unsupported"), "Error message should mention 'unsupported'");
-        assert!(
-            msg.contains("NVIDIA driver"),
-            "Error message should include the reason"
-        );
+        assert!(msg.contains("NVIDIA driver"), "Error message should include the reason");
     }
 
     /// Test that ProbeError::DeviceNotFound displays correctly.
@@ -191,9 +186,7 @@ mod tests {
     /// Traces to: FR-TEL-001
     #[test]
     fn test_init_failed_error_display() {
-        let err = ProbeError::InitFailed {
-            reason: "NVML init returned error code 3".to_string(),
-        };
+        let err = ProbeError::InitFailed { reason: "NVML init returned error code 3".to_string() };
         let msg = err.to_string();
         assert!(msg.contains("initialization failed"), "Error should mention initialization");
         assert!(msg.contains("NVML"), "Error should include reason");
@@ -203,10 +196,7 @@ mod tests {
     /// Traces to: FR-TEL-001
     #[test]
     fn test_not_implemented_error_display() {
-        let err = ProbeError::NotImplemented {
-            backend: "intel",
-            op: "power_draw",
-        };
+        let err = ProbeError::NotImplemented { backend: "intel", op: "power_draw" };
         let msg = err.to_string();
         assert!(msg.contains("intel"), "Error should mention backend");
         assert!(msg.contains("power_draw"), "Error should mention operation");

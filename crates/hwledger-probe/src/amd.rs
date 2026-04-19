@@ -25,7 +25,8 @@ impl AmdProbe {
         match Self::run_with_timeout(&mut cmd, Duration::from_secs(2)) {
             Ok(output) if !output.status.success() => {
                 return Err(ProbeError::InitFailed {
-                    reason: "rocm-smi --version failed; ROCm drivers may not be installed".to_string(),
+                    reason: "rocm-smi --version failed; ROCm drivers may not be installed"
+                        .to_string(),
                 });
             }
             Err(e) => return Err(ProbeError::InitFailed { reason: e.to_string() }),
@@ -37,16 +38,16 @@ impl AmdProbe {
 
     /// Runs a command with a timeout and returns the output.
     /// Kills the child process if timeout is exceeded.
-    fn run_with_timeout(cmd: &mut Command, timeout: Duration) -> Result<std::process::Output, ProbeError> {
+    fn run_with_timeout(
+        cmd: &mut Command,
+        timeout: Duration,
+    ) -> Result<std::process::Output, ProbeError> {
         let mut child = cmd.spawn()?;
 
         match child.wait_timeout(timeout)? {
             Some(status) => {
-                let output = std::process::Output {
-                    status,
-                    stdout: Vec::new(),
-                    stderr: Vec::new(),
-                };
+                let output =
+                    std::process::Output { status, stdout: Vec::new(), stderr: Vec::new() };
                 Ok(output)
             }
             None => {
@@ -68,19 +69,16 @@ impl AmdProbe {
 
         let output = cmd.output()?;
         if !output.status.success() {
-            return Err(ProbeError::Io(std::io::Error::other(
-                format!(
-                    "rocm-smi failed: {}",
-                    String::from_utf8_lossy(&output.stderr)
-                ),
-            )));
+            return Err(ProbeError::Io(std::io::Error::other(format!(
+                "rocm-smi failed: {}",
+                String::from_utf8_lossy(&output.stderr)
+            ))));
         }
 
         let stdout = String::from_utf8_lossy(&output.stdout);
-        let json: Value = serde_json::from_str(&stdout)
-            .map_err(|e| ProbeError::Io(std::io::Error::other(
-                format!("failed to parse rocm-smi JSON: {}", e),
-            )))?;
+        let json: Value = serde_json::from_str(&stdout).map_err(|e| {
+            ProbeError::Io(std::io::Error::other(format!("failed to parse rocm-smi JSON: {}", e)))
+        })?;
 
         Ok(json)
     }
@@ -110,15 +108,10 @@ impl GpuProbe for AmdProbe {
                     .and_then(|v| v.as_str())
                     .and_then(|s| s.trim_end_matches(" MB").parse::<u64>().ok())
                     .unwrap_or(0)
-                    * 1024 * 1024; // Convert MB to bytes
+                    * 1024
+                    * 1024; // Convert MB to bytes
 
-                devices.push(Device {
-                    id: i as u32,
-                    backend: "amd",
-                    name,
-                    uuid: None,
-                    total_vram,
-                });
+                devices.push(Device { id: i as u32, backend: "amd", name, uuid: None, total_vram });
             }
         }
 
@@ -193,10 +186,7 @@ impl GpuProbe for AmdProbe {
         // rocm-smi does not expose per-PID VRAM in a structured way.
         // Return NotImplemented per the task spec.
         let _ = (device_id, pid);
-        Err(ProbeError::NotImplemented {
-            backend: "amd",
-            op: "process_vram",
-        })
+        Err(ProbeError::NotImplemented { backend: "amd", op: "process_vram" })
     }
 }
 
@@ -213,17 +203,16 @@ mod tests {
         // Gated by HWLEDGER_AMD_LIVE to run when rocm-smi is present.
         if std::env::var("HWLEDGER_AMD_LIVE").is_ok() {
             let probe = AmdProbe::new();
-            assert!(
-                probe.is_ok(),
-                "AmdProbe::new should succeed when rocm-smi is available"
-            );
+            assert!(probe.is_ok(), "AmdProbe::new should succeed when rocm-smi is available");
         } else {
             // In environments without ROCm, rocm-smi won't be on PATH.
             if let Err(err) = AmdProbe::new() {
                 // Expected: InitFailed or I/O error from missing binary
                 let msg = err.to_string();
                 assert!(
-                    msg.contains("rocm-smi") || msg.contains("ROCm") || msg.contains("initialization"),
+                    msg.contains("rocm-smi")
+                        || msg.contains("ROCm")
+                        || msg.contains("initialization"),
                     "Error message should indicate rocm-smi issue, got: {}",
                     msg
                 );

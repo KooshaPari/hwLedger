@@ -229,7 +229,8 @@ pub unsafe extern "C" fn hwledger_plan(input: *const PlannerInput) -> *mut Plann
 
     let kv_bytes_per_element = kv_quant.bytes_per_element();
     let kv_bytes_per_token = attention_kind.bytes_per_token(input.seq_len, kv_bytes_per_element);
-    let kv_bytes = (kv_bytes_per_token * input.seq_len as f64 * input.concurrent_users as f64).ceil() as u64;
+    let kv_bytes =
+        (kv_bytes_per_token * input.seq_len as f64 * input.concurrent_users as f64).ceil() as u64;
 
     let weight_bytes_per_element = weight_quant.bytes_per_element();
     let param_count = estimate_param_count(&cfg);
@@ -549,19 +550,8 @@ pub unsafe extern "C" fn hwledger_mlx_poll_token(
     static mut STUB_CALL_COUNT: usize = 0;
     STUB_CALL_COUNT = STUB_CALL_COUNT.wrapping_add(1);
 
-    let tokens = [
-        "Hello",
-        ", ",
-        "world",
-        ". ",
-        "This ",
-        "is ",
-        "a ",
-        "stub ",
-        "token ",
-        "stream",
-        ".",
-    ];
+    let tokens =
+        ["Hello", ", ", "world", ". ", "This ", "is ", "a ", "stub ", "token ", "stream", "."];
 
     let idx = STUB_CALL_COUNT % (tokens.len() + 2);
 
@@ -639,9 +629,8 @@ mod tests {
         assert!(!result.is_null(), "plan should not return null");
         unsafe {
             assert!((*result).total_bytes > 0, "total_bytes should be > 0");
-            let label = CStr::from_ptr((*result).attention_kind_label)
-                .to_string_lossy()
-                .to_string();
+            let label =
+                CStr::from_ptr((*result).attention_kind_label).to_string_lossy().to_string();
             assert_eq!(label, "Mla", "should detect MLA");
             assert_eq!((*result).effective_batch, 1, "effective_batch = min(1, 2) = 1");
             hwledger_plan_free(result as *mut _);
@@ -656,7 +645,9 @@ mod tests {
         let devices = unsafe { hwledger_probe_detect(&mut count) };
         assert!(count == 0 || !devices.is_null(), "should return valid pointer or zero count");
         if !devices.is_null() {
-            unsafe { hwledger_probe_detect_free(devices, count); }
+            unsafe {
+                hwledger_probe_detect_free(devices, count);
+            }
         }
     }
 

@@ -208,7 +208,8 @@ mod tests {
     fn cache_hits_within_ttl_dedupe_inner_calls() {
         let free_calls = Arc::new(AtomicU32::new(0));
         let util_calls = Arc::new(AtomicU32::new(0));
-        let inner = CountingProbe { free_calls: free_calls.clone(), util_calls: util_calls.clone() };
+        let inner =
+            CountingProbe { free_calls: free_calls.clone(), util_calls: util_calls.clone() };
         let cached = CachedProbe::with_ttl(inner, Duration::from_secs(60));
 
         for _ in 0..5 {
@@ -228,7 +229,8 @@ mod tests {
     fn cache_miss_after_ttl_resamples() {
         let free_calls = Arc::new(AtomicU32::new(0));
         let util_calls = Arc::new(AtomicU32::new(0));
-        let inner = CountingProbe { free_calls: free_calls.clone(), util_calls: util_calls.clone() };
+        let inner =
+            CountingProbe { free_calls: free_calls.clone(), util_calls: util_calls.clone() };
         let cached = CachedProbe::with_ttl(inner, Duration::from_millis(10));
 
         let _ = cached.free_vram(0).unwrap();

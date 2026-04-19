@@ -24,10 +24,7 @@ pub struct ColoredString {
 impl ColoredString {
     #[expect(dead_code, reason = "surface wired for future flows — see WP32 follow-up")]
     pub fn new(text: impl Into<String>) -> Self {
-        Self {
-            text: text.into(),
-            color: None,
-        }
+        Self { text: text.into(), color: None }
     }
 
     #[expect(dead_code, reason = "surface wired for future flows — see WP32 follow-up")]

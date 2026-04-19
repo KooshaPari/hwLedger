@@ -2,11 +2,11 @@
 // Traces to: FR-INF-001, FR-INF-002, FR-INF-003, FR-INF-004, FR-INF-005
 
 use crate::error::InferenceError;
-use crate::traits::{InferenceBackend, GenParams, LoadResult, MemoryReport};
+use crate::traits::{GenParams, InferenceBackend, LoadResult, MemoryReport};
 use futures::stream::Stream;
 use hwledger_mlx_sidecar::{MlxSidecar, MlxSidecarConfig};
-use std::pin::Pin;
 use std::path::PathBuf;
+use std::pin::Pin;
 use uuid::Uuid;
 
 /// MLX backend for Apple Silicon inference.
@@ -32,10 +32,7 @@ impl MlxBackend {
 
     /// Create an MLX backend with a custom venv path.
     pub async fn with_venv(venv: PathBuf) -> Result<Self, InferenceError> {
-        let config = MlxSidecarConfig {
-            venv: Some(venv),
-            ..Default::default()
-        };
+        let config = MlxSidecarConfig { venv: Some(venv), ..Default::default() };
         Self::new(config).await
     }
 }
@@ -52,10 +49,7 @@ impl InferenceBackend for MlxBackend {
         self.sidecar
             .load_model(model.clone(), max_kv)
             .await
-            .map(|r| LoadResult {
-                model: r.model,
-                context_length: r.context_length,
-            })
+            .map(|r| LoadResult { model: r.model, context_length: r.context_length })
             .map_err(|e| InferenceError::LoadFailed(e.to_string()))
     }
 
@@ -63,7 +57,8 @@ impl InferenceBackend for MlxBackend {
         &mut self,
         prompt: String,
         params: GenParams,
-    ) -> Result<Pin<Box<dyn Stream<Item = Result<String, InferenceError>> + Send>>, InferenceError> {
+    ) -> Result<Pin<Box<dyn Stream<Item = Result<String, InferenceError>> + Send>>, InferenceError>
+    {
         // Traces to: FR-INF-002 (JSON-RPC token streaming), FR-INF-005 (Run screen tokens)
         let mut stream = self
             .sidecar
@@ -103,10 +98,7 @@ impl InferenceBackend for MlxBackend {
     async fn shutdown(self: Box<Self>) -> Result<(), InferenceError> {
         // Traces to: FR-INF-004 (graceful SIGTERM)
         let MlxBackend { sidecar } = *self;
-        sidecar
-            .shutdown()
-            .await
-            .map_err(|e| InferenceError::SidecarError(e.to_string()))
+        sidecar.shutdown().await.map_err(|e| InferenceError::SidecarError(e.to_string()))
     }
 }
 

@@ -45,8 +45,8 @@ fn test_fr_inf_002_json_rpc_stdio() {
 
     // Round-trip: serialize → string → deserialize
     let serialized = serde_json::to_string(&request).expect("FR-INF-002: JSON serialize");
-    let deserialized: serde_json::Value = serde_json::from_str(&serialized)
-        .expect("FR-INF-002: JSON deserialize");
+    let deserialized: serde_json::Value =
+        serde_json::from_str(&serialized).expect("FR-INF-002: JSON deserialize");
 
     // Validate structure
     assert_eq!(deserialized["jsonrpc"], "2.0");
@@ -75,8 +75,8 @@ fn test_fr_inf_003_ssd_kv_cache() {
 
     // KV formula: layers * kv_heads * head_dim * bytes_per_elem * seq_len
     // 80 * 8 * 128 * 2.0 * 32_000 = 5,242,880,000
-    let kv_bytes_per_token = (layers as f64) * (kv_heads as f64)
-        * (head_dim as f64) * bytes_per_elem;
+    let kv_bytes_per_token =
+        (layers as f64) * (kv_heads as f64) * (head_dim as f64) * bytes_per_elem;
     let total_kv_bytes = (kv_bytes_per_token * seq_len as f64).round() as u64;
 
     assert!(total_kv_bytes > 0, "FR-INF-003: KV cache bytes must be positive for SSD plumbing");
@@ -95,9 +95,7 @@ fn test_fr_inf_004_graceful_supervisor() {
     use std::process::Command;
 
     // Spawn a child that exits immediately (simulates sidecar ready state).
-    let mut child = Command::new("true")
-        .spawn()
-        .expect("FR-INF-004: spawn child process");
+    let mut child = Command::new("true").spawn().expect("FR-INF-004: spawn child process");
 
     let pid = child.id();
     assert!(pid > 0, "FR-INF-004: child PID must be valid");
@@ -119,11 +117,17 @@ fn test_fr_inf_005_run_screen_vram() {
     // This test validates the telemetry delta computation.
 
     // Simulate telemetry samples before and after inference.
-    let free_before = 48_000_000_000u64;  // 48 GB free
-    let free_after = 40_000_000_000u64;   // 40 GB free (8 GB used)
+    let free_before = 48_000_000_000u64; // 48 GB free
+    let free_after = 40_000_000_000u64; // 40 GB free (8 GB used)
 
     // Compute VRAM delta: amount consumed by the inference run.
     let vram_used: i64 = (free_before as i64) - (free_after as i64);
-    assert!(vram_used > 0, "FR-INF-005: VRAM delta must be positive (memory consumed during inference)");
-    assert_eq!(vram_used, 8_000_000_000i64, "FR-INF-005: delta matches expected consumption (8 GB)");
+    assert!(
+        vram_used > 0,
+        "FR-INF-005: VRAM delta must be positive (memory consumed during inference)"
+    );
+    assert_eq!(
+        vram_used, 8_000_000_000i64,
+        "FR-INF-005: delta matches expected consumption (8 GB)"
+    );
 }

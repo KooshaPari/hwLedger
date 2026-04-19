@@ -295,22 +295,20 @@ mod tests {
         let hb = Heartbeat {
             agent_id,
             uptime_s: 3600,
-            devices: vec![
-                DeviceReport {
-                    backend: "nvidia".to_string(),
-                    id: 0,
-                    name: "RTX 4090".to_string(),
-                    uuid: Some("gpu-0".to_string()),
-                    total_vram_bytes: 24 * 1024 * 1024 * 1024,
-                    snapshot: Some(TelemetrySnapshot {
-                        free_vram_bytes: 20 * 1024 * 1024 * 1024,
-                        util_percent: 25.0,
-                        temperature_c: 55.0,
-                        power_watts: 80.0,
-                        captured_at_ms: 1713456000000,
-                    }),
-                },
-            ],
+            devices: vec![DeviceReport {
+                backend: "nvidia".to_string(),
+                id: 0,
+                name: "RTX 4090".to_string(),
+                uuid: Some("gpu-0".to_string()),
+                total_vram_bytes: 24 * 1024 * 1024 * 1024,
+                snapshot: Some(TelemetrySnapshot {
+                    free_vram_bytes: 20 * 1024 * 1024 * 1024,
+                    util_percent: 25.0,
+                    temperature_c: 55.0,
+                    power_watts: 80.0,
+                    captured_at_ms: 1713456000000,
+                }),
+            }],
         };
         let json = serde_json::to_string(&hb).expect("serialize");
         let hb2: Heartbeat = serde_json::from_str(&json).expect("deserialize");
@@ -331,7 +329,11 @@ mod tests {
             agent_id,
             model_ref: "mistral-7b-inst-v0.3.gguf".to_string(),
             backend_hint: Some("cuda".to_string()),
-            command: vec!["llama.cpp".to_string(), "--model".to_string(), "/models/model.gguf".to_string()],
+            command: vec![
+                "llama.cpp".to_string(),
+                "--model".to_string(),
+                "/models/model.gguf".to_string(),
+            ],
             env,
             deadline_ms: Some(1713456000000 + 300000),
         };

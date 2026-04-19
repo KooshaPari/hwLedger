@@ -67,10 +67,7 @@ impl GgufValue {
 /// [`IngestResult`] with parsed model metadata and parameter count.
 pub fn inspect(path: &Path) -> Result<IngestResult, IngestError> {
     let file = File::open(path).map_err(|e| {
-        IngestError::Io(std::io::Error::new(
-            e.kind(),
-            format!("Failed to open GGUF file: {}", e),
-        ))
+        IngestError::Io(std::io::Error::new(e.kind(), format!("Failed to open GGUF file: {}", e)))
     })?;
 
     let mmap = unsafe {
@@ -90,9 +87,7 @@ pub fn inspect(path: &Path) -> Result<IngestResult, IngestError> {
         .read_exact(&mut magic)
         .map_err(|_| IngestError::Parse("Failed to read GGUF magic".to_string()))?;
     if &magic != GGUF_MAGIC {
-        return Err(IngestError::Parse(
-            "Invalid GGUF magic number".to_string(),
-        ));
+        return Err(IngestError::Parse("Invalid GGUF magic number".to_string()));
     }
 
     // Read version (u32)
@@ -129,9 +124,7 @@ pub fn inspect(path: &Path) -> Result<IngestResult, IngestError> {
     let quantisation = extract_quantisation(&kvs);
 
     Ok(IngestResult {
-        source: Source::Gguf {
-            path: path.to_string_lossy().to_string(),
-        },
+        source: Source::Gguf { path: path.to_string_lossy().to_string() },
         config,
         parameter_count,
         quantisation,
@@ -139,9 +132,7 @@ pub fn inspect(path: &Path) -> Result<IngestResult, IngestError> {
 }
 
 /// Parse a single GGUF key-value pair.
-fn parse_kv_pair(
-    cursor: &mut std::io::Cursor<&[u8]>,
-) -> Result<(String, GgufValue), IngestError> {
+fn parse_kv_pair(cursor: &mut std::io::Cursor<&[u8]>) -> Result<(String, GgufValue), IngestError> {
     // Read key length
     let key_len = cursor
         .read_u64::<LittleEndian>()
@@ -245,16 +236,14 @@ fn parse_gguf_value(
                 .map_err(|_| IngestError::Parse("Failed to read string length".to_string()))?
                 as usize;
             let mut str_bytes = vec![0u8; str_len];
-            cursor.read_exact(&mut str_bytes)
+            cursor
+                .read_exact(&mut str_bytes)
                 .map_err(|_| IngestError::Parse("Failed to read string data".to_string()))?;
             let s = String::from_utf8(str_bytes)
                 .map_err(|_| IngestError::Parse("Invalid UTF-8 in string".to_string()))?;
             Ok(GgufValue::String(s))
         }
-        _ => Err(IngestError::Parse(format!(
-            "Unknown GGUF value type: {}",
-            type_id
-        ))),
+        _ => Err(IngestError::Parse(format!("Unknown GGUF value type: {}", type_id))),
     }
 }
 
@@ -305,10 +294,8 @@ fn extract_parameter_count(kvs: &HashMap<String, GgufValue>) -> Option<u64> {
     // from layer count, hidden size, and intermediate size.
     let layers = kvs.get("llama.layer_count").and_then(|v| v.as_u32())?;
     let hidden = kvs.get("llama.embedding_length").and_then(|v| v.as_u32())?;
-    let ff_mult = kvs
-        .get("llama.feed_forward_length")
-        .and_then(|v| v.as_u32())
-        .unwrap_or(hidden * 8 / 3);
+    let ff_mult =
+        kvs.get("llama.feed_forward_length").and_then(|v| v.as_u32()).unwrap_or(hidden * 8 / 3);
 
     // Approximate: (3 * hidden + ff) * hidden * layers + embedding overhead
     let approx = (3u64 * hidden as u64 + ff_mult as u64) * hidden as u64 * layers as u64;
@@ -364,16 +351,10 @@ mod tests {
     #[test]
     fn build_config_from_gguf_minimal() {
         let mut kvs = HashMap::new();
-        kvs.insert(
-            "general.architecture".to_string(),
-            GgufValue::String("llama".to_string()),
-        );
+        kvs.insert("general.architecture".to_string(), GgufValue::String("llama".to_string()));
         kvs.insert("llama.layer_count".to_string(), GgufValue::Uint32(32));
         kvs.insert("llama.embedding_length".to_string(), GgufValue::Uint32(4096));
-        kvs.insert(
-            "llama.attention.head_count".to_string(),
-            GgufValue::Uint32(32),
-        );
+        kvs.insert("llama.attention.head_count".to_string(), GgufValue::Uint32(32));
 
         let config = build_config_from_gguf(&kvs).expect("build");
         assert_eq!(config.model_type, Some("llama".to_string()));

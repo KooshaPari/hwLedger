@@ -29,10 +29,16 @@ fn test_fr_tel_003_reconciliation_panel() {
 
     // Reconciliation: difference between predicted and actual.
     let reconciliation_delta: i64 = (predicted_bytes as i64) - (actual_used_bytes as i64);
-    assert_eq!(reconciliation_delta, -5_000_000_000i64, "FR-TEL-003: predicted 50GB, actual 55GB, delta -5GB");
+    assert_eq!(
+        reconciliation_delta, -5_000_000_000i64,
+        "FR-TEL-003: predicted 50GB, actual 55GB, delta -5GB"
+    );
 
     // Per Planner screen UI: if |delta| > 200 MB, flag for user awareness (drift warning).
     const DRIFT_WARNING_BYTES: i64 = 200_000_000;
     let should_warn = reconciliation_delta.abs() > DRIFT_WARNING_BYTES;
-    assert!(should_warn, "FR-TEL-003: 5 GB drift exceeds warning threshold, reconciliation panel should surface");
+    assert!(
+        should_warn,
+        "FR-TEL-003: 5 GB drift exceeds warning threshold, reconciliation panel should surface"
+    );
 }

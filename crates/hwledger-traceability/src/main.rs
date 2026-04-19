@@ -4,7 +4,7 @@
 
 use anyhow::{Context, Result};
 use clap::Parser;
-use hwledger_traceability::{PrdParser, TestScanner, CoverageReport};
+use hwledger_traceability::{CoverageReport, PrdParser, TestScanner};
 use std::path::PathBuf;
 
 /// FR ↔ Test Traceability Checker
@@ -46,8 +46,7 @@ fn main() -> Result<()> {
     if args.verbose {
         eprintln!("Parsing PRD from: {}", prd_path);
     }
-    let frs = PrdParser::parse(&prd_path)
-        .context("Failed to parse PRD.md")?;
+    let frs = PrdParser::parse(&prd_path).context("Failed to parse PRD.md")?;
 
     if args.verbose {
         eprintln!("Found {} FR/NFR specifications", frs.len());
@@ -58,8 +57,7 @@ fn main() -> Result<()> {
     if args.verbose {
         eprintln!("Scanning tests in: {}", crates_path);
     }
-    let traces = TestScanner::scan(&crates_path)
-        .context("Failed to scan test files")?;
+    let traces = TestScanner::scan(&crates_path).context("Failed to scan test files")?;
 
     if args.verbose {
         eprintln!("Found {} test traces", traces.len());
@@ -70,8 +68,8 @@ fn main() -> Result<()> {
 
     // Output handling
     if args.json {
-        let json = serde_json::to_string_pretty(&report)
-            .context("Failed to serialize report to JSON")?;
+        let json =
+            serde_json::to_string_pretty(&report).context("Failed to serialize report to JSON")?;
         println!("{}", json);
     } else if let Some(out_path) = args.markdown_out {
         let md = report.to_markdown();
@@ -142,12 +140,16 @@ fn print_report(report: &CoverageReport) {
     if !worst.is_empty() {
         println!("Bottom 5 Worst-Covered:");
         for cov in worst {
-            println!("  {} ({} tests) [{}]", cov.fr, cov.test_count,
+            println!(
+                "  {} ({} tests) [{}]",
+                cov.fr,
+                cov.test_count,
                 match cov.coverage {
                     hwledger_traceability::CoverageLevel::Zero => "ZERO",
                     hwledger_traceability::CoverageLevel::Orphaned => "ORPHANED",
                     hwledger_traceability::CoverageLevel::Covered => "OK",
-                });
+                }
+            );
         }
         println!();
     }

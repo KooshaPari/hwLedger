@@ -36,10 +36,7 @@ impl From<phenotype_event_sourcing::EventSourcingError> for LedgerError {
                     phenotype_event_sourcing::HashError::HashMismatch { sequence } => *sequence,
                     _ => 0,
                 };
-                LedgerError::Integrity {
-                    seq: seq as u64,
-                    reason: he.to_string(),
-                }
+                LedgerError::Integrity { seq: seq as u64, reason: he.to_string() }
             }
             _ => LedgerError::EventSourcing(e.to_string()),
         }

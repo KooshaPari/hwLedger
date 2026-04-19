@@ -93,32 +93,24 @@ impl MlxSidecar {
             cmd.env(k, v);
         }
 
-        cmd.stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped());
+        cmd.stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped());
 
         let mut child = cmd.spawn().map_err(MlxError::spawn_io)?;
 
         let stdin = child
             .stdin
             .take()
-            .ok_or_else(|| MlxError::Protocol {
-                reason: "Failed to capture stdin".to_string(),
-            })?;
+            .ok_or_else(|| MlxError::Protocol { reason: "Failed to capture stdin".to_string() })?;
 
         let stdout = child
             .stdout
             .take()
-            .ok_or_else(|| MlxError::Protocol {
-                reason: "Failed to capture stdout".to_string(),
-            })?;
+            .ok_or_else(|| MlxError::Protocol { reason: "Failed to capture stdout".to_string() })?;
 
         let stderr = child
             .stderr
             .take()
-            .ok_or_else(|| MlxError::Protocol {
-                reason: "Failed to capture stderr".to_string(),
-            })?;
+            .ok_or_else(|| MlxError::Protocol { reason: "Failed to capture stderr".to_string() })?;
 
         // Shared state
         let pending_requests = Arc::new(RwLock::new(HashMap::new()));
@@ -152,7 +144,10 @@ impl MlxSidecar {
             let mut lines = reader.lines();
 
             while let Ok(Some(line)) = lines.next_line().await {
-                if let Err(e) = Self::dispatch_message(&line, &pending_requests_read, &token_listeners_read).await {
+                if let Err(e) =
+                    Self::dispatch_message(&line, &pending_requests_read, &token_listeners_read)
+                        .await
+                {
                     warn!("Error dispatching message: {}", e);
                 }
             }
@@ -182,27 +177,21 @@ impl MlxSidecar {
         pending_requests: &Arc<RwLock<HashMap<u64, PendingRequest>>>,
         token_listeners: &Arc<RwLock<HashMap<String, mpsc::UnboundedSender<TokenEvent>>>>,
     ) -> Result<(), MlxError> {
-        let msg: serde_json::Value =
-            serde_json::from_str(line).map_err(MlxError::json_error)?;
+        let msg: serde_json::Value = serde_json::from_str(line).map_err(MlxError::json_error)?;
 
         if let Some(method) = msg.get("method").and_then(|m| m.as_str()) {
             // Handle notifications (streaming tokens)
             if method == "token" {
-                let params = msg
-                    .get("params")
-                    .ok_or_else(|| MlxError::Protocol {
-                        reason: "Missing params in token notification".to_string(),
+                let params = msg.get("params").ok_or_else(|| MlxError::Protocol {
+                    reason: "Missing params in token notification".to_string(),
+                })?;
+                let request_id =
+                    params.get("request_id").and_then(|r| r.as_str()).ok_or_else(|| {
+                        MlxError::Protocol {
+                            reason: "Missing request_id in token notification".to_string(),
+                        }
                     })?;
-                let request_id = params
-                    .get("request_id")
-                    .and_then(|r| r.as_str())
-                    .ok_or_else(|| MlxError::Protocol {
-                        reason: "Missing request_id in token notification".to_string(),
-                    })?;
-                let text = params
-                    .get("text")
-                    .and_then(|t| t.as_str())
-                    .unwrap_or("");
+                let text = params.get("text").and_then(|t| t.as_str()).unwrap_or("");
 
                 let listeners = token_listeners.read().await;
                 if let Some(tx) = listeners.get(request_id) {
@@ -232,7 +221,11 @@ impl MlxSidecar {
     }
 
     /// Send a JSON-RPC request and await a response.
-    async fn send_request(&self, method: &str, params: serde_json::Value) -> Result<serde_json::Value, MlxError> {
+    async fn send_request(
+        &self,
+        method: &str,
+        params: serde_json::Value,
+    ) -> Result<serde_json::Value, MlxError> {
         let id = {
             let mut next_id = self.next_id.lock().await;
             let id = *next_id;
@@ -264,10 +257,7 @@ impl MlxSidecar {
 
         // Check for error response
         if let Some(error) = response.get("error") {
-            let code = error
-                .get("code")
-                .and_then(|c| c.as_i64())
-                .unwrap_or(-32000) as i32;
+            let code = error.get("code").and_then(|c| c.as_i64()).unwrap_or(-32000) as i32;
             let message = error
                 .get("message")
                 .and_then(|m| m.as_str())
@@ -279,9 +269,7 @@ impl MlxSidecar {
         response
             .get("result")
             .cloned()
-            .ok_or_else(|| MlxError::Protocol {
-                reason: "Missing result in response".to_string(),
-            })
+            .ok_or_else(|| MlxError::Protocol { reason: "Missing result in response".to_string() })
     }
 
     /// Generate tokens from a prompt.
@@ -335,7 +323,11 @@ impl MlxSidecar {
     }
 
     /// Load a model into the sidecar.
-    pub async fn load_model(&self, model: String, max_kv_size: u64) -> Result<LoadResult, MlxError> {
+    pub async fn load_model(
+        &self,
+        model: String,
+        max_kv_size: u64,
+    ) -> Result<LoadResult, MlxError> {
         let params = json!({
             "model": model,
             "max_kv_size": max_kv_size,
@@ -390,12 +382,7 @@ impl TokenStream {
             return None;
         }
 
-        match tokio::time::timeout(
-            std::time::Duration::from_secs(60),
-            self.token_rx.recv(),
-        )
-        .await
-        {
+        match tokio::time::timeout(std::time::Duration::from_secs(60), self.token_rx.recv()).await {
             Ok(Some(event)) => Some(Ok(event.text)),
             Ok(None) => None,
             Err(_) => Some(Err(MlxError::Timeout)),
