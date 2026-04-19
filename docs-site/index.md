@@ -11,7 +11,7 @@ hero:
   actions:
     - theme: brand
       text: Download v0.1.0-alpha
-      link: https://github.com/KooshaPari/hwLedger/releases/latest
+      link: /releases/v0.1.0-alpha
     - theme: alt
       text: Get Started
       link: /getting-started/install
@@ -71,6 +71,8 @@ cargo build --release
 ```bash
 cargo run --bin hwledger-cli -- plan --model llama-2-70b
 ```
+
+<RecordingEmbed tape="first-plan" caption="Live memory planning with colored VRAM breakdown" />
 
 ## Project Status
 

@@ -11,6 +11,8 @@ Get hwLedger running on your system.
 
 ## Build from Source
 
+<RecordingEmbed tape="install-from-source" caption="Clone, build, and verify installation" />
+
 ### 1. Clone the repository
 
 ```bash

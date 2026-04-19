@@ -9,6 +9,8 @@ Two families of journeys:
 
 ## CLI journeys (live)
 
+### Core Workflows
+
 | Journey | What it demonstrates |
 |---|---|
 | [plan — DeepSeek-V3](./cli-plan-deepseek.md) | Memory planner with MLA classification |
@@ -16,6 +18,34 @@ Two families of journeys:
 | [probe list](./cli-probe-list.md) | GPU device enumeration, JSON output |
 | [probe watch (Ctrl+C)](./cli-probe-watch.md) | Streaming telemetry + clean shutdown |
 | [ingest error UX](./cli-ingest-error.md) | Fail-loudly error path (NFR-007) |
+
+### Installation & Setup
+
+| Journey | What it demonstrates |
+|---|---|
+| Install from Source | Clone, build, and verify hwLedger installation |
+| First Plan | Live memory planning with colored VRAM breakdown |
+
+### Fleet Management
+
+| Journey | What it demonstrates |
+|---|---|
+| Fleet Register | Register a device to the fleet network |
+| Fleet Audit | Audit fleet health and device status |
+
+### Model Ingestion
+
+| Journey | What it demonstrates |
+|---|---|
+| Ingest (Hugging Face) | Fetch model metadata from Hugging Face hub |
+| Ingest (Ollama) | Query local Ollama server for model info |
+
+### Releases & Quality
+
+| Journey | What it demonstrates |
+|---|---|
+| Release (Signed DMG) | Create signed macOS releases with notarization |
+| Traceability Report | Generate spec -> test -> code traceability report |
 
 Recorded and verified via `apps/cli-journeys/scripts/record-all.sh` + `verify-manifests.sh`. Without an `ANTHROPIC_API_KEY`, verification runs against a local mock server so the pipeline exercises end-to-end offline.
 

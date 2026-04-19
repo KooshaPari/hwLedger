@@ -32,6 +32,14 @@ graph TD
     Server -->|reqwest| Cloud["Cloud provider APIs<br/>(Vast/RunPod/Lambda)"]
 ```
 
+## Live Traceability
+
+Every feature is traceable from spec through test to code:
+
+<RecordingEmbed tape="traceability-report" caption="Generate full spec -> test -> code traceability report" />
+
+See [Traceability Report](/quality/traceability) for methodology and verification gates.
+
 ## Architecture Decisions
 
 See [Architecture Decision Records](/architecture/adrs) for detailed rationale on:

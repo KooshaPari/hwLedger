@@ -6,6 +6,7 @@ import JourneyViewer from './components/JourneyViewer.vue'
 import KeyframeGallery from './components/KeyframeGallery.vue'
 import JourneyStep from './components/JourneyStep.vue'
 import JudgeScore from './components/JudgeScore.vue'
+import RecordingEmbed from './components/RecordingEmbed.vue'
 
 export default {
   extends: DefaultTheme,
@@ -19,5 +20,6 @@ export default {
     app.component('KeyframeGallery', KeyframeGallery)
     app.component('JourneyStep', JourneyStep)
     app.component('JudgeScore', JudgeScore)
+    app.component('RecordingEmbed', RecordingEmbed)
   }
 } satisfies Theme

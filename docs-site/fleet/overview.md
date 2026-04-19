@@ -48,6 +48,10 @@ Devices are registered with:
 - **Location**: LAN, tailnet, cloud provider
 - **Transport**: Agent (mTLS), Agentless (SSH), API
 
+<RecordingEmbed tape="fleet-register" caption="Register a device to the fleet" />
+
+<RecordingEmbed tape="fleet-audit" caption="Audit fleet health and device status" />
+
 ### Event Log
 
 Every operation is logged as an immutable event:

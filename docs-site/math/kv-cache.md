@@ -17,6 +17,8 @@ KV cache size depends on the **attention mechanism** (`AttentionKind`):
 
 Incorrect calculation costs hours of debugging and wasted VRAM. hwLedger derives formulas per architecture directly from the config.json fields.
 
+<RecordingEmbed tape="first-plan" caption="Live MLA classification and per-layer VRAM breakdown" />
+
 ## KV Cache Formula Derivation
 
 ### 1. Multi-Head Attention (MHA)
