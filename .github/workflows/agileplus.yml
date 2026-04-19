@@ -31,13 +31,22 @@ jobs:
         with:
           workspaces: 'AgilePlus'
 
-      - name: Install AgilePlus from sibling workspace
+      - name: Install AgilePlus from sibling workspace (if present)
+        id: install-agileplus
+        continue-on-error: true
         run: |
-          cd ../AgilePlus
-          cargo install --path . --locked
-          agileplus --version
+          if [ -d ../AgilePlus ]; then
+            cd ../AgilePlus
+            cargo install --path . --locked
+            agileplus --version
+          else
+            echo "AgilePlus sibling workspace not available in CI; skipping state tracking."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
 
       - name: Initialize AgilePlus database (if needed)
+        if: steps.install-agileplus.outputs.skip != 'true'
         run: |
           if [ ! -f .agileplus/agileplus.db ]; then
             mkdir -p .agileplus
@@ -46,6 +55,7 @@ jobs:
 
       - name: List feature state
         id: feature-state
+        if: steps.install-agileplus.outputs.skip != 'true'
         run: |
           STATE=$(agileplus list --db .agileplus/agileplus.db -v 2>&1 | grep hwledger-v1-macos-mvp | awk '{print $3}')
           echo "feature_state=${STATE}" >> $GITHUB_OUTPUT
