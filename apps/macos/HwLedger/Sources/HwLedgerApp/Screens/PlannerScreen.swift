@@ -28,6 +28,13 @@ struct PlannerScreen: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
+                    HStack {
+                        Text("Custom Config (JSON)")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                    }
+                    .accessibilityIdentifier("custom-json-label")
+
                     sliderSection(label: "Sequence Length", value: $seqLen, range: 512...8192)
                     sliderSection(label: "Concurrent Users", value: $concurrentUsers, range: 1...16)
                     sliderSection(label: "Batch Size", value: $batchSize, range: 1...8)

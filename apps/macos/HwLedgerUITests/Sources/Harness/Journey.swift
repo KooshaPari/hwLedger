@@ -40,19 +40,13 @@ public class Journey {
 
     /// Capture a screenshot with an intent label.
     func screenshot(intent: String = "") async throws {
-        let screenshot = try await appDriver.screenshot()
         let index = screenshots.count
-        let filename = String(format: "step-%03d-%@.png", index, formatSlug(intent))
+        let filename = String(format: "%02d-%@.png", index + 1, formatSlug(intent))
         let filepath = journeyDirectory.appendingPathComponent(filename)
 
-        if let tiffData = screenshot.tiffRepresentation,
-           let bitmapRep = NSBitmapImageRep(data: tiffData),
-           let pngData = bitmapRep.representation(using: .png, properties: [:]) {
-            try pngData.write(to: filepath)
-            screenshots.append(filename)
-        } else {
-            throw JourneyError.screenshotCaptureFailed
-        }
+        let pngData = try appDriver.screenshot()
+        try pngData.write(to: filepath)
+        screenshots.append(filename)
     }
 
     /// Add an assertion to the journey. Throws if assertion fails.

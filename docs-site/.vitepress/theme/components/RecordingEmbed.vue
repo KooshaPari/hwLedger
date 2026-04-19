@@ -25,11 +25,11 @@
       </figcaption>
     </figure>
 
-    <details class="keyframes-section" open>
+    <details class="keyframes-section" :open="keyframesData.length > 0">
       <summary class="keyframes-title">
-        Keyframes (VLM-friendly)
+        Keyframes ({{ keyframesData.length }} — VLM-friendly)
       </summary>
-      <div class="keyframes-grid">
+      <div v-if="keyframesData.length > 0" class="keyframes-grid">
         <div
           v-for="(frame, idx) in keyframesData"
           :key="idx"
@@ -40,21 +40,30 @@
             :alt="`${tape} keyframe ${idx + 1}: ${frame.alt}`"
             loading="lazy"
           />
-          <p class="keyframe-caption">{{ frame.alt }}</p>
+          <p class="keyframe-caption">{{ idx + 1 }}. {{ frame.alt }}</p>
         </div>
       </div>
+      <p v-else-if="manifestMissing" class="keyframes-empty">
+        No verified manifest yet — this journey ran but hasn't been
+        blackbox-verified. The raw keyframes are in
+        <a :href="keyframesRepoUrl" target="_blank" rel="noopener">the repo</a>.
+      </p>
+      <p v-else class="keyframes-empty">Loading manifest…</p>
     </details>
 
     <div class="recording-links">
       <a :href="mp4Path" download class="recording-link">Download MP4</a>
       <a :href="gifPath" download class="recording-link">Download GIF</a>
-      <a :href="keyframesZipPath" download class="recording-link">Keyframes ZIP</a>
+      <a :href="keyframesRepoUrl" target="_blank" rel="noopener" class="recording-link">
+        Keyframes (repo)
+      </a>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { withBase, useData } from 'vitepress'
 
 interface KeyframeData {
   path: string
@@ -66,36 +75,82 @@ const props = withDefaults(
     tape: string
     caption?: string
     autoplay?: boolean
+    // Max keyframes to render in the gallery. Default 12 keeps the VLM
+    // context budget under ~30k tokens per journey.
+    maxKeyframes?: number
   }>(),
   {
-    autoplay: false
+    autoplay: false,
+    maxKeyframes: 12
   }
 )
 
+const { site } = useData()
 const keyframesData = ref<KeyframeData[]>([])
+const manifestMissing = ref(false)
 
-const gifPath = computed(() => `/cli-journeys/recordings/${props.tape}.gif`)
-const mp4Path = computed(() => `/cli-journeys/recordings/${props.tape}.mp4`)
-const keyframesZipPath = computed(() => `/cli-journeys/keyframes/${props.tape}.zip`)
+// base-aware URL helpers. VitePress's withBase() handles the leading
+// `/hwLedger/` prefix in production so assets resolve correctly.
+const gifPath = computed(() => withBase(`/cli-journeys/recordings/${props.tape}.gif`))
+const mp4Path = computed(() => withBase(`/cli-journeys/recordings/${props.tape}.mp4`))
+// No pre-built ZIPs exist — link to the keyframes directory listing instead.
+// Users who want the raw keyframes can curl individual frames or pull from
+// apps/cli-journeys/keyframes/<tape>/ in the repo.
+const keyframesRepoUrl = computed(
+  () => `https://github.com/KooshaPari/hwLedger/tree/main/apps/cli-journeys/keyframes/${props.tape}`
+)
 
 const useMP4 = computed(() => {
   return typeof window !== 'undefined' && 'videoWidth' in document.createElement('video')
 })
 
+function normaliseFramePath(raw: string | undefined, index: number): string {
+  if (!raw) {
+    return withBase(
+      `/cli-journeys/keyframes/${props.tape}/frame-${String(index + 1).padStart(3, '0')}.png`
+    )
+  }
+  // Manifests sometimes store paths like "step-000-…png" (WP25 UI harness
+  // format) or "frame-001.png" (WP26 CLI format); both are under the tape
+  // directory. If the path is absolute (starts with /) or already fully
+  // qualified, pass through withBase unchanged.
+  if (raw.startsWith('http')) {
+    return raw
+  }
+  if (raw.startsWith('/')) {
+    return withBase(raw)
+  }
+  return withBase(`/cli-journeys/keyframes/${props.tape}/${raw}`)
+}
+
 onMounted(async () => {
   try {
-    const manifestPath = `/cli-journeys/manifests/${props.tape}/manifest.verified.json`
-    const response = await fetch(manifestPath)
+    const manifestPath = withBase(
+      `/cli-journeys/manifests/${props.tape}/manifest.verified.json`
+    )
+    let response = await fetch(manifestPath)
+    if (!response.ok) {
+      // Fall back to unverified manifest for tapes without a verify pass yet.
+      response = await fetch(
+        withBase(`/cli-journeys/manifests/${props.tape}/manifest.json`)
+      )
+    }
     if (response.ok) {
       const manifest = await response.json()
       if (manifest.steps && Array.isArray(manifest.steps)) {
-        keyframesData.value = manifest.steps.map((step: any) => ({
-          path: step.screenshot_path || `/cli-journeys/keyframes/${props.tape}/frame-${String(step.index + 1).padStart(3, '0')}.png`,
-          alt: step.intent || `Step ${step.index + 1}`
-        }))
+        keyframesData.value = manifest.steps
+          .slice(0, props.maxKeyframes)
+          .map((step: any, index: number) => ({
+            path: normaliseFramePath(step.screenshot_path, step.index ?? index),
+            alt: step.intent || step.slug || `Step ${step.index ?? index + 1}`
+          }))
       }
+    } else {
+      manifestMissing.value = true
     }
   } catch (error) {
+    manifestMissing.value = true
+    // eslint-disable-next-line no-console
     console.warn(`Could not load manifest for ${props.tape}:`, error)
   }
 })

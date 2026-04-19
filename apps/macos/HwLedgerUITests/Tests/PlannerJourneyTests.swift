@@ -4,80 +4,58 @@ import Testing
 @testable import HwLedgerUITestHarness
 
 /// UI journey tests for the Planner screen.
-/// These tests exercise the Planner per PRD Acceptance A5:
+/// Tests exercise the Planner per PRD Acceptance A5:
 /// "slider recalc under 50ms with visual feedback"
+///
+/// Prerequisites:
+/// 1. Grant Terminal Accessibility permission (System Settings > Privacy & Security > Accessibility)
+/// 2. Run scripts/bundle-app.sh to create HwLedger.app at ../../build/HwLedger.app
+/// 3. Restart test runner after granting Accessibility permission
 struct PlannerJourneyTests {
 
-    /// Journey: planner-qwen2-7b-32k
-    /// - Launch app
-    /// - Assert Planner is visible
-    /// - Select qwen2-7b model
-    /// - Drag seq-len slider to 32k
-    /// - Assert attention-kind-label is "Gqa"
-    /// - Assert stacked-bar is visible
-    /// - Capture screenshot with intent label
+    /// Journey: planner-gui-launch
+    /// - Launch app and verify Planner screen is visible
+    /// - Drag seq-len slider from default (4096) to 6000 tokens
+    /// - Verify stacked-bar is visible and attention-kind-label shows the attention pattern
+    /// - Capture screenshots at launch and after slider adjustment
     @Test
-    func testPlannerQwen27B32K() async throws {
-        // Note: This test requires the app bundle at ../../build/HwLedger.app
-        // and accessibility IDs to be present in PlannerScreen.swift
-
+    func testPlannerGUILaunch() async throws {
         let appPath = "../../build/HwLedger.app"
         let appDriver = try AppDriver(appPath: appPath)
+        let journey = try Journey(id: "planner-gui-launch", appDriver: appDriver)
 
-        let journey = try Journey(id: "planner-qwen2-7b-32k", appDriver: appDriver)
-
-        // Step 1: Launch app (already done in AppDriver init)
-        journey.step("launch-app", intent: "App launches and shows Planner as default screen") {
-            // AppDriver.init already launches the app
+        // Step 1: Verify Planner is visible at launch
+        journey.step("launch-app", intent: "App launches and shows Planner screen") {
+            // Verify the attention-kind-label is present (indicates Planner is rendered)
+            _ = try appDriver.waitForElement(id: "attention-kind-label", timeout: 5.0)
         }
 
-        // Step 2: Assert Planner is visible
-        journey.step("verify-planner-visible", intent: "Planner screen is the default visible tab") {
-            // In a full implementation, we would verify via accessibility API
-            // For now, this is a placeholder—see Known Limitations in README
+        // Step 2: Screenshot at launch
+        try await journey.screenshot(intent: "Planner screen at launch with default config")
+
+        // Step 3: Drag the seq-len slider to increase tokens
+        journey.step("adjust-seq-len", intent: "User drags seq-len slider from 4096 to 6000 tokens") {
+            // Normalize: slider range is 512...8192, so 6000 is approximately (6000-512)/(8192-512) = 0.73
+            try appDriver.dragSlider(identifier: "seq-len-slider", to: 0.73)
         }
 
-        // Step 3: Select qwen2-7b model from picker
-        journey.step("select-model", intent: "User opens model picker and selects Qwen2-7B") {
-            // This step simulates:
-            // 1. Finding the model picker by accessibility ID
-            // 2. Clicking it to open the dropdown
-            // 3. Selecting qwen2-7b from the list
+        // Step 4: Screenshot after slider adjustment
+        try await journey.screenshot(intent: "Planner after adjusting seq-len slider to 6000 tokens")
 
-            // Placeholder: in production, would use:
-            // try appDriver.tapButton(identifier: "model-picker")
-            // try appDriver.tapButton(identifier: "qwen2-7b")
+        // Step 5: Verify stacked bar is visible
+        journey.step("verify-stacked-bar", intent: "Memory breakdown stacked bar is rendered") {
+            _ = try appDriver.element(byId: "stacked-bar")
         }
 
-        // Step 4: Drag sequence length slider to 32k
-        journey.step("set-seq-len-32k", intent: "User drags seq-len slider to 32768 tokens") {
-            // Placeholder: in production, would use:
-            // try appDriver.dragSlider(identifier: "seq-len-slider", to: 0.95)
-            // The slider range is 512-8192; 32k is out of range in current MVP
-            // This documents the test intent for WP19 expansion
+        // Step 6: Verify attention kind label displays a value
+        journey.step("verify-attention-label", intent: "Attention kind label shows the attention pattern type") {
+            let attentionValue = try appDriver.getValue(identifier: "attention-kind-label")
+            guard !attentionValue.isEmpty else {
+                throw AppDriverError.actionFailed("Attention kind label is empty")
+            }
         }
 
-        // Step 5: Screenshot after slider change
-        try await journey.screenshot(intent: "Planner with Qwen2-7B at 32k shows GQA classification")
-
-        // Step 6: Assert attention kind is GQA
-        journey.step("verify-attention-gqa", intent: "Attention kind label displays GQA") {
-            // Placeholder: would verify via:
-            // let attentionLabel = try appDriver.findElement(byIdentifier: "attention-kind-label")
-            // assert(attentionLabel.value == "Gqa")
-        }
-
-        // Step 7: Assert stacked bar is visible
-        journey.step("verify-stacked-bar", intent: "Stacked bar memory breakdown is rendered") {
-            // Placeholder: would verify visibility and >0 width segments
-            // let stackedBar = try appDriver.findElement(byIdentifier: "stacked-bar")
-            // assert(stackedBar.isVisible)
-        }
-
-        // Final screenshot
-        try await journey.screenshot(intent: "Final state: all controls responsive, memory layout valid")
-
-        // Execute and save manifest
+        // Execute journey and write manifest
         try await journey.run()
         try journey.writeManifest()
     }
