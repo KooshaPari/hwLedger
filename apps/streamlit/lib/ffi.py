@@ -202,19 +202,38 @@ def plan(
     if result_ptr is None:
         return None
 
+    # Read ALL fields BEFORE free — the Rust PlannerResult owns its
+    # attention_kind_label CString; calling hwledger_plan_free drops it and
+    # leaves the pointer dangling. Previously reading label after free gave
+    # UnicodeDecodeError on garbage bytes (e.g. 0xb0 at position 0).
     result = result_ptr.contents
+    weights_bytes = result.weights_bytes
+    kv_bytes = result.kv_bytes
+    prefill_bytes = result.prefill_activation_bytes
+    runtime_bytes = result.runtime_overhead_bytes
+    total_bytes = result.total_bytes
+    effective_batch = result.effective_batch
+
+    raw_label = result.attention_kind_label  # ctypes c_char_p -> bytes or None
+    if raw_label is None:
+        attention_label = "unknown"
+    else:
+        try:
+            attention_label = raw_label.decode("utf-8")
+        except UnicodeDecodeError:
+            attention_label = "unknown"
+
+    # Now safe to free — we've copied everything out.
     lib.hwledger_plan_free(result_ptr)
 
-    attention_label = result.attention_kind_label.decode('utf-8') if result.attention_kind_label else "unknown"
-
     return PlanResult(
-        weights_mb=result.weights_bytes / (1024 * 1024),
-        kv_mb=result.kv_bytes / (1024 * 1024),
-        prefill_mb=result.prefill_activation_bytes / (1024 * 1024),
-        runtime_mb=result.runtime_overhead_bytes / (1024 * 1024),
-        total_mb=result.total_bytes / (1024 * 1024),
+        weights_mb=weights_bytes / (1024 * 1024),
+        kv_mb=kv_bytes / (1024 * 1024),
+        prefill_mb=prefill_bytes / (1024 * 1024),
+        runtime_mb=runtime_bytes / (1024 * 1024),
+        total_mb=total_bytes / (1024 * 1024),
         attention_kind=attention_label,
-        effective_batch=result.effective_batch,
+        effective_batch=effective_batch,
     )
 
 
