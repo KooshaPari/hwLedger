@@ -183,6 +183,11 @@ struct PlannerScreen: View {
     }
 }
 
-#Preview {
+#Preview("Empty State") {
     PlannerScreen()
+}
+
+#Preview("With Result") {
+    let screen = PlannerScreen()
+    return screen
 }

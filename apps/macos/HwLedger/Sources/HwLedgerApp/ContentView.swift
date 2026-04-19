@@ -4,16 +4,21 @@ struct ContentView: View {
     @Environment(AppState.self) var appState
 
     var body: some View {
+        // Bindable wrapper lets us use $appState.selectedScreen — the
+        // previous .constant(...) sidebar selection silently swallowed
+        // every click, leaving the user stuck on the Planner screen.
+        @Bindable var state = appState
+
         NavigationSplitView {
-            List(Screen.allCases, selection: .constant(appState.selectedScreen)) { screen in
-                NavigationLink(value: screen) {
-                    Label(screen.rawValue, systemImage: iconForScreen(screen))
-                }
+            List(Screen.allCases, selection: $state.selectedScreen) { screen in
+                Label(screen.rawValue, systemImage: iconForScreen(screen))
+                    .tag(screen)
             }
             .navigationTitle("hwLedger")
+            .listStyle(.sidebar)
         } detail: {
-            detailView(for: appState.selectedScreen)
-                .navigationTitle(appState.selectedScreen.rawValue)
+            detailView(for: state.selectedScreen)
+                .navigationTitle(state.selectedScreen.rawValue)
         }
     }
 

@@ -1,8 +1,16 @@
-Set FontSize 14
-Set Width 1200
-Set Height 600
-Set TypingSpeed 40ms
-Set Padding 10
+# hwLedger — Fleet Audit
+# Intent: Audit the fleet with a 3-agent limit to see agent metadata and status.
+#
+# Styling — keep identical across all tapes for visual consistency.
+
+Set Shell "bash"
+Set Theme "Catppuccin Mocha"
+Set FontFamily "JetBrains Mono"
+Set FontSize 20
+Set Width 1280
+Set Height 720
+Set Padding 40
+Set TypingSpeed 75ms
 Set LoopOffset 100%
 
 Output "apps/cli-journeys/recordings/fleet-audit.gif"
@@ -19,18 +27,19 @@ Enter
 Sleep 1s
 Show
 
+Sleep 1500ms
 Type "hwledger fleet audit \\"
-Sleep 300ms
+Sleep 600ms
 Enter
-Sleep 200ms
+Sleep 600ms
 Type "  --server http://localhost:8080 \\"
-Sleep 300ms
+Sleep 600ms
 Enter
-Sleep 200ms
+Sleep 600ms
 Type "  --limit 3"
-Sleep 500ms
+Sleep 600ms
 Enter
-Sleep 2s
+Sleep 2500ms
 
 Hide
 Type "kill %1; rm -f /tmp/hwl-audit.db"

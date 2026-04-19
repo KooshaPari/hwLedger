@@ -181,7 +181,13 @@ struct FleetScreen: View {
     }
 }
 
-#Preview {
+#Preview("No Agents") {
     FleetScreen()
         .environment(AppState())
+}
+
+#Preview("With Telemetry") {
+    let state = AppState()
+    return FleetScreen()
+        .environment(state)
 }

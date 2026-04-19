@@ -1,14 +1,28 @@
-Set FontSize 16
-Set Width 1200
-Set Height 700
-Set TypingSpeed 40ms
-Set Padding 10
+# hwLedger — Probe List
+# Intent: List all available probes in both table and JSON formats.
+#
+# Styling — keep identical across all tapes for visual consistency.
+
+Set Shell "bash"
+Set Theme "Catppuccin Mocha"
+Set FontFamily "JetBrains Mono"
+Set FontSize 20
+Set Width 1280
+Set Height 720
+Set Padding 40
+Set TypingSpeed 75ms
 Set LoopOffset 100%
 
 Output "apps/cli-journeys/recordings/probe-list.gif"
 Output "apps/cli-journeys/recordings/probe-list.mp4"
 
-Type "hwledger probe list --json"
-Sleep 500ms
+Sleep 1500ms
+Type "hwledger probe list"
+Sleep 600ms
 Enter
-Sleep 1s
+Sleep 2000ms
+
+Type "hwledger probe list --json"
+Sleep 600ms
+Enter
+Sleep 2500ms

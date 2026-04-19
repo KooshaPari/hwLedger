@@ -130,6 +130,22 @@ mkdir -p "${BUNDLE_DIR}/Contents/Resources"
 cp "${EXEC_PATH}" "${BUNDLE_DIR}/Contents/MacOS/HwLedger"
 chmod +x "${BUNDLE_DIR}/Contents/MacOS/HwLedger"
 
+# Embed Sparkle.framework (required for runtime @rpath/Sparkle load).
+# Without this the app crashes at launch with "Library not loaded: @rpath/
+# Sparkle.framework/Versions/B/Sparkle".
+SPARKLE_SRC="${HWLEDGER_SRC}/.build/${CONFIG}/Sparkle.framework"
+if [ -d "${SPARKLE_SRC}" ]; then
+    mkdir -p "${BUNDLE_DIR}/Contents/Frameworks"
+    rm -rf "${BUNDLE_DIR}/Contents/Frameworks/Sparkle.framework"
+    cp -R "${SPARKLE_SRC}" "${BUNDLE_DIR}/Contents/Frameworks/Sparkle.framework"
+    # Point the binary at Contents/Frameworks for @rpath resolution.
+    install_name_tool -add_rpath @executable_path/../Frameworks \
+        "${BUNDLE_DIR}/Contents/MacOS/HwLedger" 2>/dev/null || true
+    echo "  Embedded Sparkle.framework"
+else
+    echo "  Warning: Sparkle.framework not found at ${SPARKLE_SRC} — app may crash at launch"
+fi
+
 # Build Info.plist content dynamically
 echo "Generating Info.plist..."
 

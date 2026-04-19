@@ -1,8 +1,16 @@
-Set FontSize 14
-Set Width 1200
-Set Height 600
-Set TypingSpeed 40ms
-Set Padding 10
+# hwLedger — Fleet Register
+# Intent: Register a new agent with the fleet, then verify it appears in fleet status.
+#
+# Styling — keep identical across all tapes for visual consistency.
+
+Set Shell "bash"
+Set Theme "Catppuccin Mocha"
+Set FontFamily "JetBrains Mono"
+Set FontSize 20
+Set Width 1280
+Set Height 720
+Set Padding 40
+Set TypingSpeed 75ms
 Set LoopOffset 100%
 
 Output "apps/cli-journeys/recordings/fleet-register.gif"
@@ -19,22 +27,28 @@ Enter
 Sleep 1s
 Show
 
+Sleep 1500ms
 Type "hwledger fleet register \\"
-Sleep 300ms
+Sleep 600ms
 Enter
-Sleep 200ms
+Sleep 600ms
 Type "  --server http://localhost:8080 \\"
-Sleep 300ms
+Sleep 600ms
 Enter
-Sleep 200ms
+Sleep 600ms
 Type "  --token dev-bootstrap-token \\"
-Sleep 300ms
+Sleep 600ms
 Enter
-Sleep 200ms
+Sleep 600ms
 Type "  --hostname demo-laptop"
-Sleep 500ms
+Sleep 600ms
 Enter
-Sleep 2s
+Sleep 2500ms
+
+Type "hwledger fleet status --server http://localhost:8080"
+Sleep 600ms
+Enter
+Sleep 2500ms
 
 Hide
 Type "kill %1; rm -f /tmp/hwl-fleet.db"
