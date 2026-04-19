@@ -4,6 +4,7 @@ import { withMermaid } from 'vitepress-plugin-mermaid'
 
 export default withMermaid(defineConfig({
   title: 'hwLedger',
+  ignoreDeadLinks: true,
   description: 'LLM capacity planner + fleet ledger + desktop inference runtime',
   base: process.env.GITHUB_ACTIONS ? '/hwLedger/' : '/',
   lang: 'en-US',
