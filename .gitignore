@@ -58,3 +58,4 @@ apps/**/.build/
 apps/**/.swiftpm/
 apps/**/*.xcodeproj/
 vendor/**/target
+.claude/worktrees/
