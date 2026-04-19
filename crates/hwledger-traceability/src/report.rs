@@ -144,7 +144,7 @@ impl CoverageReport {
     /// Traces to: NFR-006
     pub fn top_covered(&self, n: usize) -> Vec<&FrCoverage> {
         let mut sorted = self.frs.iter().collect::<Vec<_>>();
-        sorted.sort_by(|a, b| b.test_count.cmp(&a.test_count));
+        sorted.sort_by_key(|c| std::cmp::Reverse(c.test_count));
         sorted.into_iter().take(n).collect()
     }
 
