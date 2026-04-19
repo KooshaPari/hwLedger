@@ -10,9 +10,6 @@
 
 #[cfg(target_os = "macos")]
 mod screen_recording {
-    use std::path::PathBuf;
-    use std::thread;
-    use std::time::Duration;
 
     /// Test recording against Finder (always available).
     /// If permission is not granted, test is skipped.
