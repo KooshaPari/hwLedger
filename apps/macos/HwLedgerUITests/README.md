@@ -18,6 +18,7 @@ This harness enables agents to verify real user-facing behavior in the HwLedger 
 - **macOS 14+** (Sonoma or later)
 - **Xcode 16+** with Swift 5.10+ toolchain
 - **ffmpeg** (for keyframe extraction)
+- **Accessibility permission** (for Accessibility API-based app driving)
 
 ### Optional
 - **jq** (for JSON processing in summary scripts)
@@ -27,6 +28,35 @@ This harness enables agents to verify real user-facing behavior in the HwLedger 
 ```bash
 brew install ffmpeg
 ```
+
+### Grant Accessibility Permission (Required for App Automation)
+
+The AppDriver uses the macOS Accessibility Framework (AXUIElement) to navigate and interact with the app. This requires explicit permission:
+
+**Steps to grant Accessibility permission:**
+
+1. Open **System Settings**
+2. Navigate to **Privacy & Security** > **Accessibility**
+3. Click the **+** button
+4. Select **Terminal** (or **Xcode** if running tests via Xcode)
+5. Click **Open** to add it to the allowed apps
+6. **Restart the terminal session or Xcode** for the permission to take effect
+
+**To verify permission is granted:**
+
+```bash
+# Test if Terminal has accessibility access (returns 1 if granted, 0 if denied)
+tccutil status AppleEvent
+```
+
+**If you see an error like `elementNotFound("attention-kind-label")` when running tests:**
+
+The test tried to find an accessibility element but failed. This usually means:
+1. Accessibility permission was not granted (most common)
+2. The app crashed during launch
+3. The app took longer than expected to render the Planner screen
+
+Solution: Follow the steps above, restart Terminal, and re-run the test.
 
 ## Architecture
 
@@ -68,11 +98,19 @@ journeys/
 
 ## Quick Start
 
+### 0. Grant Accessibility Permission (One-Time Setup)
+
+Before running tests, grant Terminal Accessibility permission:
+
+1. Open **System Settings > Privacy & Security > Accessibility**
+2. Click **+** and select **Terminal**
+3. **Restart Terminal** (close and reopen)
+
 ### 1. Bundle the App
 
 ```bash
 cd apps/macos/HwLedgerUITests
-./scripts/bundle-app.sh release
+./scripts/bundle-app.sh --no-codesign debug
 ```
 
 Output: `../../build/HwLedger.app`
@@ -218,16 +256,27 @@ Text(inference.status)
 - Pre-authorize screen recording in TCC database (platform-specific)
 - Or disable video recording in CI and rely on screenshots alone
 
-### 2. AppDriver Element Location via Accessibility API
+### 2. AppDriver Element Location via Accessibility Framework
 
-**Issue**: Accessibility API search is single-threaded and slow for large view hierarchies. In real XCUITest, this is optimized in C.
+**Implementation**: AppDriver uses the real macOS Accessibility Framework (AXUIElement + CGEvent), not XCUITest.
 
 **Status in this WP**:
-- `AppDriver.findElement()` uses depth-first search (O(n) walk)
-- **Timeout: None yet** — long waits on complex screens
-- **No XPath-like selectors** — only direct identifier matching
+- **Complete and working** — uses public AXUIElement APIs since macOS 10.2
+- `AppDriver.element(byId:)` performs depth-first traversal up to 20 levels
+- Direct AXIdentifier matching (SwiftUI's `.accessibilityIdentifier()` maps to AXIdentifier)
+- Timeout: 5 seconds per element wait
+- **Requires Accessibility permission** — see Prerequisites section
 
-**WP27 Consideration**: If element location times out, document in journey manifest as `element_not_found`, don't fail.
+**Advantages over XCUITest**:
+- No Xcode project (.xcodeproj) required
+- Swift Package Manager compatible
+- Works with SwiftUI's native accessibility model
+- No private SPI headers needed
+
+**Limitations**:
+- Slower than C-based XCUITest for large hierarchies (but acceptable for <100 elements)
+- Requires depth limit (20) to prevent infinite loops
+- Depends on `.accessibilityIdentifier()` being set on target elements
 
 ### 3. VLM Temporal Coherence (Novel)
 

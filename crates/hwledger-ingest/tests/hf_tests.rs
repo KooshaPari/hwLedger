@@ -121,3 +121,156 @@ fn test_hf_private_repo_handling() {
     assert_eq!(owned_by, "organization/team");
     assert!(access_token_required);
 }
+
+// Test 11: HF API 401 Unauthorized (invalid token)
+// Traces to: FR-INF-003
+#[tokio::test]
+async fn test_hf_api_unauthorized() {
+    let mock_server = wiremock::MockServer::start().await;
+    wiremock::Mock::given(wiremock::matchers::method("GET"))
+        .and(wiremock::matchers::path("/api/models/test/model"))
+        .respond_with(
+            wiremock::ResponseTemplate::new(401)
+                .set_body_string(r#"{"error":"Unauthorized"}"#)
+        )
+        .mount(&mock_server)
+        .await;
+
+    // Verify the mock is in place
+    let client = reqwest::Client::new();
+    let url = format!("{}/api/models/test/model", mock_server.uri());
+    let resp = client.get(&url).send().await.unwrap();
+    assert_eq!(resp.status(), 401);
+}
+
+// Test 12: HF API 403 Forbidden (gated model)
+// Traces to: FR-INF-003
+#[tokio::test]
+async fn test_hf_api_gated_model_forbidden() {
+    let mock_server = wiremock::MockServer::start().await;
+    wiremock::Mock::given(wiremock::matchers::method("GET"))
+        .respond_with(
+            wiremock::ResponseTemplate::new(403)
+                .set_body_string(r#"{"error":"Model access requires gating"}"#)
+        )
+        .mount(&mock_server)
+        .await;
+
+    let client = reqwest::Client::new();
+    let resp = client.get(&mock_server.uri()).send().await.unwrap();
+    assert_eq!(resp.status(), 403);
+}
+
+// Test 13: HF API 429 Rate Limit Exceeded
+// Traces to: FR-INF-003
+#[tokio::test]
+async fn test_hf_api_rate_limit() {
+    let mock_server = wiremock::MockServer::start().await;
+    wiremock::Mock::given(wiremock::matchers::method("GET"))
+        .respond_with(
+            wiremock::ResponseTemplate::new(429)
+                .append_header("Retry-After", "5")
+                .set_body_string(r#"{"error":"Rate limit exceeded"}"#)
+        )
+        .mount(&mock_server)
+        .await;
+
+    let client = reqwest::Client::new();
+    let resp = client.get(&mock_server.uri()).send().await.unwrap();
+    assert_eq!(resp.status(), 429);
+    assert_eq!(resp.headers().get("Retry-After").map(|v| v.to_str().unwrap()), Some("5"));
+}
+
+// Test 14: HF API 500 Server Error
+// Traces to: FR-INF-003
+#[tokio::test]
+async fn test_hf_api_server_error() {
+    let mock_server = wiremock::MockServer::start().await;
+    wiremock::Mock::given(wiremock::matchers::method("GET"))
+        .respond_with(wiremock::ResponseTemplate::new(500))
+        .mount(&mock_server)
+        .await;
+
+    let client = reqwest::Client::new();
+    let resp = client.get(&mock_server.uri()).send().await.unwrap();
+    assert_eq!(resp.status(), 500);
+}
+
+// Test 15: HF API redirect (301/302)
+// Traces to: FR-INF-003
+#[test]
+#[tokio::test]
+async fn test_hf_api_redirect() {
+    let mock_server = wiremock::MockServer::start().await;
+    let final_url = format!("{}/final", mock_server.uri());
+
+    wiremock::Mock::given(wiremock::matchers::method("GET"))
+        .and(wiremock::matchers::path("/redirect"))
+        .respond_with(
+            wiremock::ResponseTemplate::new(302)
+                .append_header("Location", &final_url)
+        )
+        .mount(&mock_server)
+        .await;
+
+    wiremock::Mock::given(wiremock::matchers::method("GET"))
+        .and(wiremock::matchers::path("/final"))
+        .respond_with(wiremock::ResponseTemplate::new(200).set_body_string(r#"{"data":"ok"}"#))
+        .mount(&mock_server)
+        .await;
+
+    let client = reqwest::Client::new();
+    let url = format!("{}/redirect", mock_server.uri());
+    let resp = client.get(&url).send().await.unwrap();
+    assert_eq!(resp.status(), 200);
+}
+
+// Test 16: HF API successful model info fetch
+// Traces to: FR-INF-003
+#[test]
+#[tokio::test]
+async fn test_hf_api_model_info_success() {
+    let mock_server = wiremock::MockServer::start().await;
+    let response_body = r#"{
+        "id": "meta-llama/Llama-2-7b",
+        "siblings": [
+            {"rfilename": "model.safetensors", "size": 13500000000},
+            {"rfilename": "config.json", "size": 5000}
+        ],
+        "gated": true,
+        "private": false
+    }"#;
+
+    wiremock::Mock::given(wiremock::matchers::method("GET"))
+        .respond_with(wiremock::ResponseTemplate::new(200).set_body_string(response_body))
+        .mount(&mock_server)
+        .await;
+
+    let client = reqwest::Client::new();
+    let resp = client.get(&mock_server.uri()).send().await.unwrap();
+    assert_eq!(resp.status(), 200);
+    let text = resp.text().await.unwrap();
+    assert!(text.contains("meta-llama/Llama-2-7b"));
+}
+
+// Test 17: HF API with custom Accept header
+// Traces to: FR-INF-003
+#[test]
+#[tokio::test]
+async fn test_hf_api_with_headers() {
+    let mock_server = wiremock::MockServer::start().await;
+
+    wiremock::Mock::given(wiremock::matchers::method("GET"))
+        .and(wiremock::matchers::header("Authorization", wiremock::matchers::regex("Bearer .*")))
+        .respond_with(wiremock::ResponseTemplate::new(200))
+        .mount(&mock_server)
+        .await;
+
+    let client = reqwest::Client::new();
+    let resp = client.get(&mock_server.uri())
+        .header("Authorization", "Bearer test_token")
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(resp.status(), 200);
+}

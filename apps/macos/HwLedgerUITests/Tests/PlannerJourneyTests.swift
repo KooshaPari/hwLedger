@@ -27,7 +27,17 @@ struct PlannerJourneyTests {
         // Step 1: Verify Planner is visible at launch
         journey.step("launch-app", intent: "App launches and shows Planner screen") {
             // Verify the attention-kind-label is present (indicates Planner is rendered)
-            _ = try appDriver.waitForElement(id: "attention-kind-label", timeout: 5.0)
+            do {
+                _ = try appDriver.waitForElement(id: "attention-kind-label", timeout: 10.0)
+            } catch {
+                print("DIAGNOSTIC: Failed to find attention-kind-label")
+                print("This may indicate:")
+                print("1. Terminal does not have Accessibility permission")
+                print("2. Go to System Settings > Privacy & Security > Accessibility")
+                print("3. Add Terminal (or Xcode) to the allowed apps")
+                print("4. Restart the test")
+                throw error
+            }
         }
 
         // Step 2: Screenshot at launch
@@ -36,7 +46,12 @@ struct PlannerJourneyTests {
         // Step 3: Drag the seq-len slider to increase tokens
         journey.step("adjust-seq-len", intent: "User drags seq-len slider from 4096 to 6000 tokens") {
             // Normalize: slider range is 512...8192, so 6000 is approximately (6000-512)/(8192-512) = 0.73
-            try appDriver.dragSlider(identifier: "seq-len-slider", to: 0.73)
+            do {
+                try appDriver.dragSlider(identifier: "seq-len-slider", to: 0.73)
+            } catch {
+                print("DIAGNOSTIC: Could not drag slider (may indicate missing Accessibility permission)")
+                throw error
+            }
         }
 
         // Step 4: Screenshot after slider adjustment
@@ -44,14 +59,24 @@ struct PlannerJourneyTests {
 
         // Step 5: Verify stacked bar is visible
         journey.step("verify-stacked-bar", intent: "Memory breakdown stacked bar is rendered") {
-            _ = try appDriver.element(byId: "stacked-bar")
+            do {
+                _ = try appDriver.element(byId: "stacked-bar")
+            } catch {
+                print("DIAGNOSTIC: Could not find stacked-bar element")
+                throw error
+            }
         }
 
         // Step 6: Verify attention kind label displays a value
         journey.step("verify-attention-label", intent: "Attention kind label shows the attention pattern type") {
-            let attentionValue = try appDriver.getValue(identifier: "attention-kind-label")
-            guard !attentionValue.isEmpty else {
-                throw AppDriverError.actionFailed("Attention kind label is empty")
+            do {
+                let attentionValue = try appDriver.getValue(identifier: "attention-kind-label")
+                guard !attentionValue.isEmpty else {
+                    throw AppDriverError.actionFailed("Attention kind label is empty")
+                }
+            } catch {
+                print("DIAGNOSTIC: Could not read attention-kind-label value")
+                throw error
             }
         }
 

@@ -103,7 +103,7 @@ fn test_gguf_unsupported_version() {
 fn test_gguf_truncated_version() {
     let mut buf = Cursor::new(Vec::new());
     buf.write_all(b"GGUF").unwrap();
-    buf.write_all(&[0x03, 0x00]); // Only 2 bytes of 4-byte version
+    let _ = buf.write_all(&[0x03, 0x00]); // Only 2 bytes of 4-byte version
 
     let mut file = NamedTempFile::new().unwrap();
     file.write_all(&buf.get_ref()).unwrap();
@@ -120,7 +120,7 @@ fn test_gguf_truncated_tensor_size() {
     let mut buf = Cursor::new(Vec::new());
     buf.write_all(b"GGUF").unwrap();
     buf.write_all(&3u32.to_le_bytes()).unwrap();
-    buf.write_all(&[0x00, 0x00]); // Only 2 bytes of 8-byte tensor_size
+    let _ = buf.write_all(&[0x00, 0x00]); // Only 2 bytes of 8-byte tensor_size
 
     let mut file = NamedTempFile::new().unwrap();
     file.write_all(&buf.get_ref()).unwrap();
@@ -162,7 +162,7 @@ fn test_gguf_truncated_key_length() {
     let mut buf = Cursor::new(Vec::new());
     write_gguf_header(&mut buf, 3, 0, 1);
 
-    buf.write_all(&[0x00, 0x00]); // Only 2 bytes of 8-byte key_len
+    let _ = buf.write_all(&[0x00, 0x00]); // Only 2 bytes of 8-byte key_len
 
     let mut file = NamedTempFile::new().unwrap();
     file.write_all(&buf.get_ref()).unwrap();
@@ -225,7 +225,7 @@ fn test_gguf_truncated_value_type() {
     let key = "test";
     buf.write_all(&(key.len() as u64).to_le_bytes()).unwrap();
     buf.write_all(key.as_bytes()).unwrap();
-    buf.write_all(&[0x00, 0x00]); // Only 2 bytes of 4-byte type
+    let _ = buf.write_all(&[0x00, 0x00]); // Only 2 bytes of 4-byte type
 
     let mut file = NamedTempFile::new().unwrap();
     file.write_all(&buf.get_ref()).unwrap();
@@ -374,7 +374,7 @@ fn test_gguf_truncated_string_length() {
     buf.write_all(&(key.len() as u64).to_le_bytes()).unwrap();
     buf.write_all(key.as_bytes()).unwrap();
     buf.write_all(&11u32.to_le_bytes()).unwrap(); // type 11 = string
-    buf.write_all(&[0x00, 0x00]); // Only 2 bytes of 8-byte string_len
+    let _ = buf.write_all(&[0x00, 0x00]); // Only 2 bytes of 8-byte string_len
 
     let mut file = NamedTempFile::new().unwrap();
     file.write_all(&buf.get_ref()).unwrap();

@@ -29,14 +29,14 @@ public final class AppDriver {
         let workspace = NSWorkspace.shared
         let url = URL(fileURLWithPath: appPath)
 
-        let config = NSWorkspaceOpenConfiguration()
+        let config = NSWorkspace.OpenConfiguration()
         config.createsNewApplicationInstance = true
 
         var launchedApp: NSRunningApplication?
         let semaphore = DispatchSemaphore(value: 0)
         var launchError: Error?
 
-        workspace.openURL(url, configuration: config) { app, error in
+        workspace.open(url, configuration: config) { app, error in
             launchedApp = app
             launchError = error
             semaphore.signal()
@@ -316,14 +316,14 @@ public final class AppDriver {
         )
 
         // Simulate click: down, then up
-        guard let downEvent = CGEvent(mouseEventSource: nil, mouseType: .leftMouseDown, mouseCursorPosition: clickPoint, timestamp: 0),
-              let upEvent = CGEvent(mouseEventSource: nil, mouseType: .leftMouseUp, mouseCursorPosition: clickPoint, timestamp: 0) else {
+        guard let downEvent = CGEvent(mouseEventSource: nil, mouseType: .leftMouseDown, mouseCursorPosition: clickPoint, mouseButton: .left),
+              let upEvent = CGEvent(mouseEventSource: nil, mouseType: .leftMouseUp, mouseCursorPosition: clickPoint, mouseButton: .left) else {
             throw AppDriverError.actionFailed("tapButton: could not create CGEvent")
         }
 
-        downEvent.post(tap: .cghidEventTap)
+        downEvent.post(tap: CGEventTapLocation.cghidEventTap)
         Thread.sleep(forTimeInterval: 0.05)
-        upEvent.post(tap: .cghidEventTap)
+        upEvent.post(tap: CGEventTapLocation.cghidEventTap)
     }
 
     /// Focus an element (make it the focused UI element).
@@ -338,25 +338,24 @@ public final class AppDriver {
         modifiers: CGEventFlags = [],
         down: Bool
     ) throws {
-        let keyDown = down ? CGEventType.keyDown : CGEventType.keyUp
         guard let event = CGEvent(keyboardEventSource: nil, virtualKey: keyCode, keyDown: down) else {
             throw AppDriverError.actionFailed("sendKeyboardEvent: failed to create event")
         }
 
         event.flags = modifiers
-        event.post(tap: .cghidEventTap)
+        event.post(tap: CGEventTapLocation.cghidEventTap)
     }
 
     /// Get the main window ID of the app.
     private func getMainWindowID() throws -> CGWindowID? {
-        var windows: CFArray?
+        var windowsRef: AnyObject?
         let err = AXUIElementCopyAttributeValue(
             axApp,
             kAXWindowsAttribute as CFString,
-            &windows
+            &windowsRef
         )
 
-        guard err == .success, let windows = windows as? [AXUIElement], !windows.isEmpty else {
+        guard err == .success, let windows = windowsRef as? [AXUIElement], !windows.isEmpty else {
             return nil
         }
 
