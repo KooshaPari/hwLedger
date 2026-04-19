@@ -19,7 +19,8 @@ async fn test_auth_token_mismatch_rejected() {
     let registration = AgentRegistration {
         agent_id: Uuid::new_v4(),
         hostname: "test-host".to_string(),
-        cert_csr_pem: "-----BEGIN CERTIFICATE REQUEST-----\n...\n-----END CERTIFICATE REQUEST-----".to_string(),
+        cert_csr_pem: "-----BEGIN CERTIFICATE REQUEST-----\n...\n-----END CERTIFICATE REQUEST-----"
+            .to_string(),
         platform: Platform {
             os: "linux".to_string(),
             arch: "x86_64".to_string(),
@@ -58,11 +59,7 @@ async fn test_oversized_heartbeat_rejected_cleanly() {
         });
     }
 
-    let heartbeat = Heartbeat {
-        agent_id: Uuid::new_v4(),
-        uptime_s: 3600,
-        devices,
-    };
+    let heartbeat = Heartbeat { agent_id: Uuid::new_v4(), uptime_s: 3600, devices };
 
     let json = serde_json::to_string(&heartbeat).expect("serialize");
     assert!(json.len() > 1_000_000, "payload should be > 1MB");
@@ -72,11 +69,10 @@ async fn test_oversized_heartbeat_rejected_cleanly() {
 // Traces to: FR-FLEET-002, NFR-FAULT-001
 #[tokio::test]
 async fn test_clock_skew_future_timestamp_accepted() {
-    let future_ms = (std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .unwrap()
-        .as_millis() as u64)
-        + (24 * 60 * 60 * 1000);
+    let future_ms =
+        (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis()
+            as u64)
+            + (24 * 60 * 60 * 1000);
 
     let heartbeat = Heartbeat {
         agent_id: Uuid::new_v4(),
@@ -106,11 +102,10 @@ async fn test_clock_skew_future_timestamp_accepted() {
 // Traces to: FR-FLEET-002, NFR-FAULT-001
 #[tokio::test]
 async fn test_clock_skew_past_timestamp_accepted() {
-    let past_ms = (std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .unwrap()
-        .as_millis() as u64)
-        - (24 * 60 * 60 * 1000);
+    let past_ms =
+        (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis()
+            as u64)
+            - (24 * 60 * 60 * 1000);
 
     let heartbeat = Heartbeat {
         agent_id: Uuid::new_v4(),
@@ -155,11 +150,7 @@ async fn test_audit_log_tamper_detection() {
         },
     };
 
-    let event2 = HwLedgerEvent::AgentHeartbeat {
-        agent_id,
-        device_count: 1,
-        at_ms: 1713456000000,
-    };
+    let event2 = HwLedgerEvent::AgentHeartbeat { agent_id, device_count: 1, at_ms: 1713456000000 };
 
     let _r1 = audit.append(event1.clone()).await.expect("append 1");
     let _r2 = audit.append(event2.clone()).await.expect("append 2");
@@ -274,11 +265,7 @@ async fn test_invalid_registration_fields() {
 // Traces to: FR-FLEET-002, NFR-FAULT-001
 #[tokio::test]
 async fn test_heartbeat_with_empty_devices() {
-    let heartbeat = Heartbeat {
-        agent_id: Uuid::new_v4(),
-        uptime_s: 3600,
-        devices: vec![],
-    };
+    let heartbeat = Heartbeat { agent_id: Uuid::new_v4(), uptime_s: 3600, devices: vec![] };
 
     let json = serde_json::to_string(&heartbeat).expect("serialize");
     let hb2: Heartbeat = serde_json::from_str(&json).expect("deserialize");
@@ -309,11 +296,7 @@ async fn test_device_report_with_null_snapshot() {
 async fn test_agent_id_preserved_through_serialization() {
     let original_id = Uuid::new_v4();
 
-    let heartbeat = Heartbeat {
-        agent_id: original_id,
-        uptime_s: 3600,
-        devices: vec![],
-    };
+    let heartbeat = Heartbeat { agent_id: original_id, uptime_s: 3600, devices: vec![] };
 
     let json = serde_json::to_string(&heartbeat).expect("serialize");
     let hb2: Heartbeat = serde_json::from_str(&json).expect("deserialize");
@@ -325,11 +308,7 @@ async fn test_agent_id_preserved_through_serialization() {
 // Traces to: FR-FLEET-002, NFR-FAULT-001
 #[tokio::test]
 async fn test_large_uptime_value() {
-    let heartbeat = Heartbeat {
-        agent_id: Uuid::new_v4(),
-        uptime_s: u64::MAX / 2,
-        devices: vec![],
-    };
+    let heartbeat = Heartbeat { agent_id: Uuid::new_v4(), uptime_s: u64::MAX / 2, devices: vec![] };
 
     let json = serde_json::to_string(&heartbeat).expect("serialize");
     let hb2: Heartbeat = serde_json::from_str(&json).expect("deserialize");

@@ -3,8 +3,8 @@
 
 use serde_json::json;
 use std::collections::HashMap;
-use tempfile::NamedTempFile;
 use std::io::Write;
+use tempfile::NamedTempFile;
 
 // Test 1: Config file parsing from TOML
 // Traces to: FR-AGENT-001

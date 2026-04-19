@@ -9,7 +9,7 @@ use criterion::{black_box, criterion_group, criterion_main, Criterion};
 fn bench_heartbeat_route_processing(c: &mut Criterion) {
     // Simplified benchmark: measure JSON serialization + basic routing overhead.
     // In production, this would use an actual axum router with real middleware.
-    
+
     c.bench_function("heartbeat_route_process_basic", |b| {
         b.iter(|| {
             let heartbeat_json = serde_json::json!({

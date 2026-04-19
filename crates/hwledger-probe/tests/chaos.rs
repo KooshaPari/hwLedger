@@ -80,10 +80,7 @@ fn test_unsupported_with_helpful_hint() {
 
 #[test]
 fn test_not_implemented_operation() {
-    let err = ProbeError::NotImplemented {
-        backend: "mock",
-        op: "temperature_max",
-    };
+    let err = ProbeError::NotImplemented { backend: "mock", op: "temperature_max" };
     let msg = err.to_string();
     assert!(msg.contains("mock"));
     assert!(msg.contains("temperature_max"));

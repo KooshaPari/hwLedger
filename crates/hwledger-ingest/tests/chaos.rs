@@ -116,10 +116,7 @@ fn test_malformed_json_in_metadata() {
     let malformed = r#"{ "invalid": json: here }"#;
 
     let result: Result<serde_json::Value, _> = serde_json::from_str(malformed);
-    assert!(
-        result.is_err(),
-        "malformed JSON should parse fail gracefully"
-    );
+    assert!(result.is_err(), "malformed JSON should parse fail gracefully");
 }
 
 // Test 8: Architecture classification on truncated data
@@ -129,7 +126,7 @@ fn test_classify_truncated_architecture_data() {
     let minimal_header = [
         0x47u8, 0x47, 0x55, 0x46, // "GGUF" magic
         0x03, 0x00, 0x00, 0x00, // version 3
-        // Missing rest of header...
+              // Missing rest of header...
     ];
 
     // In real code, we'd pass this to hwledger_arch::classify()

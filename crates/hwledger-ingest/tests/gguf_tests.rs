@@ -2,6 +2,7 @@
 //! Traces to: FR-INF-003
 
 use hwledger_ingest::{IngestError, Source};
+use serde_json::json;
 
 // Test 1: GGUF magic bytes validation
 // Traces to: FR-INF-003

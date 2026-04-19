@@ -12,16 +12,12 @@ fn bench_directory_scan_workspace(c: &mut Criterion) {
         b.iter(|| {
             let root = black_box("/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger");
             let mut count = 0;
-            for entry in WalkDir::new(root)
-                .into_iter()
-                .filter_map(|e| e.ok())
-                .filter(|e| {
-                    let path = e.path();
-                    !path.to_string_lossy().contains("vendor")
-                        && !path.to_string_lossy().contains("target")
-                        && !path.to_string_lossy().contains(".git")
-                })
-            {
+            for entry in WalkDir::new(root).into_iter().filter_map(|e| e.ok()).filter(|e| {
+                let path = e.path();
+                !path.to_string_lossy().contains("vendor")
+                    && !path.to_string_lossy().contains("target")
+                    && !path.to_string_lossy().contains(".git")
+            }) {
                 if entry.file_type().is_file() {
                     count += 1;
                 }

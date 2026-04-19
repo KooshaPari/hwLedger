@@ -277,11 +277,7 @@ async fn test_spawn_with_invalid_cwd() {
 #[tokio::test]
 async fn test_error_messages_are_descriptive() {
     let err1 = MlxError::Spawn("cannot execute python3".to_string());
-    assert!(
-        err1.to_string().contains("spawn"),
-        "error message should mention spawn: {}",
-        err1
-    );
+    assert!(err1.to_string().contains("spawn"), "error message should mention spawn: {}", err1);
 
     let err2 = MlxError::Protocol { reason: "invalid JSON-RPC frame".to_string() };
     assert!(
@@ -290,10 +286,8 @@ async fn test_error_messages_are_descriptive() {
         err2
     );
 
-    let err3 = MlxError::SidecarDied { stderr_tail: "ModuleNotFoundError: no module named omlx".to_string() };
-    assert!(
-        err3.to_string().contains("died"),
-        "error message should mention death: {}",
-        err3
-    );
+    let err3 = MlxError::SidecarDied {
+        stderr_tail: "ModuleNotFoundError: no module named omlx".to_string(),
+    };
+    assert!(err3.to_string().contains("died"), "error message should mention death: {}", err3);
 }

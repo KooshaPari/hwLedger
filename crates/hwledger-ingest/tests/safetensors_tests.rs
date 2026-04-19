@@ -51,9 +51,9 @@ fn test_safetensors_supported_dtypes() {
 #[test]
 fn test_safetensors_shape_dimensions() {
     let shapes: &[&[u32]] = &[
-        &[32000, 4096],     // embedding
-        &[32, 4096, 4096],  // layer weight
-        &[4096],            // bias
+        &[32000, 4096],    // embedding
+        &[32, 4096, 4096], // layer weight
+        &[4096],           // bias
     ];
 
     for shape in shapes {
@@ -67,9 +67,9 @@ fn test_safetensors_shape_dimensions() {
 #[test]
 fn test_safetensors_offset_ordering() {
     let offsets = [
-        (0u64, 536870912u64),           // 0 to 512MB
-        (536870912, 604110848),        // next tensor
-        (604110848, 1000000000),       // another
+        (0u64, 536870912u64),    // 0 to 512MB
+        (536870912, 604110848),  // next tensor
+        (604110848, 1000000000), // another
     ];
 
     for (start, end) in offsets {
@@ -116,11 +116,11 @@ fn test_safetensors_minimal_file_structure() {
 // Traces to: FR-INF-003
 #[test]
 fn test_safetensors_large_offsets() {
-    #[allow(overflowing_literals)]
-    let large_offsets = vec![
-        1024u64 * 1024 * 1024 * 1,     // 1GB
-        1024 * 1024 * 1024 * 10,       // 10GB
-        1024 * 1024 * 1024 * 100,      // 100GB
+    #[allow(clippy::identity_op)]
+    let large_offsets = [
+        1024u64 * 1024 * 1024 * 1, // 1GB
+        1024 * 1024 * 1024 * 10,   // 10GB
+        1024 * 1024 * 1024 * 100,  // 100GB
     ];
 
     for offset in large_offsets {

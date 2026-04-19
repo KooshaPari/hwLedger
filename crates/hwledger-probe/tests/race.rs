@@ -17,9 +17,7 @@ struct CountingProbe {
 
 impl CountingProbe {
     fn new() -> Self {
-        CountingProbe {
-            call_count: Arc::new(AtomicU32::new(0)),
-        }
+        CountingProbe { call_count: Arc::new(AtomicU32::new(0)) }
     }
     fn get_call_count(&self) -> u32 {
         self.call_count.load(Ordering::SeqCst)
@@ -27,7 +25,9 @@ impl CountingProbe {
 }
 
 impl GpuProbe for CountingProbe {
-    fn backend_name(&self) -> &'static str { "counting" }
+    fn backend_name(&self) -> &'static str {
+        "counting"
+    }
     fn enumerate(&self) -> Result<Vec<hwledger_probe::Device>, ProbeError> {
         self.call_count.fetch_add(1, Ordering::SeqCst);
         Ok(vec![hwledger_probe::Device {
@@ -77,10 +77,7 @@ fn test_cache_not_expired_sequential() {
 #[test]
 fn test_cache_returns_consistent_snapshots() {
     let probe = CountingProbe::new();
-    let cached = hwledger_probe::CachedProbe::with_ttl(
-        probe.clone(),
-        Duration::from_secs(60),
-    );
+    let cached = hwledger_probe::CachedProbe::with_ttl(probe.clone(), Duration::from_secs(60));
     let snap1 = cached.snapshot(0).expect("snapshot 1");
     let snap2 = cached.snapshot(0).expect("snapshot 2");
     // Both snapshots should have identical data (served from cache)
@@ -119,7 +116,9 @@ fn test_errors_propagate() {
     #[derive(Clone)]
     struct ErrorProbe;
     impl GpuProbe for ErrorProbe {
-        fn backend_name(&self) -> &'static str { "error" }
+        fn backend_name(&self) -> &'static str {
+            "error"
+        }
         fn enumerate(&self) -> Result<Vec<hwledger_probe::Device>, ProbeError> {
             Err(ProbeError::InitFailed { reason: "error".to_string() })
         }

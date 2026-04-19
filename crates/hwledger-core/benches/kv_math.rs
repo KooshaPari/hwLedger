@@ -24,21 +24,14 @@ fn bench_mha_llama3_70b(c: &mut Criterion) {
 
 fn bench_gqa_llama3_70b(c: &mut Criterion) {
     c.bench_function("gqa_bytes_per_token_llama3_70b", |b| {
-        let kind = black_box(AttentionKind::Gqa {
-            num_layers: 80,
-            num_kv_heads: 8,
-            head_dim: 128,
-        });
+        let kind = black_box(AttentionKind::Gqa { num_layers: 80, num_kv_heads: 8, head_dim: 128 });
         b.iter(|| kind.bytes_per_token(black_box(SEQ_LEN_32K), black_box(FP16)));
     });
 }
 
 fn bench_mla_deepseek_v3(c: &mut Criterion) {
     c.bench_function("mla_bytes_per_token_deepseek_v3", |b| {
-        let kind = black_box(AttentionKind::Mla {
-            kv_lora_rank: 512,
-            qk_rope_head_dim: 64,
-        });
+        let kind = black_box(AttentionKind::Mla { kv_lora_rank: 512, qk_rope_head_dim: 64 });
         b.iter(|| kind.bytes_per_token(black_box(SEQ_LEN_32K), black_box(FP16)));
     });
 }
@@ -62,10 +55,7 @@ fn bench_hybrid_qwen36_40layer(c: &mut Criterion) {
 
 fn bench_ssm_mamba2_128k(c: &mut Criterion) {
     c.bench_function("ssm_bytes_per_token_mamba2_128k", |b| {
-        let kind = black_box(AttentionKind::Ssm {
-            num_layers: 48,
-            state_size: 64,
-        });
+        let kind = black_box(AttentionKind::Ssm { num_layers: 48, state_size: 64 });
         b.iter(|| kind.bytes_per_token(black_box(SEQ_LEN_128K), black_box(FP16)));
     });
 }
