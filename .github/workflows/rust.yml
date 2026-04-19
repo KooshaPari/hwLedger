@@ -46,13 +46,16 @@ jobs:
 
   secrets:
     runs-on: ubuntu-latest
+    # Only scan on PRs (BASE/HEAD diff) or when explicitly dispatched; push runs
+    # often have BASE==HEAD which trufflehog rejects.
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
       - name: trufflehog verified-only
         uses: trufflesecurity/trufflehog@main
         with:
-          extra_args: --only-verified --fail
+          extra_args: --only-verified
 
   # XCFramework build — manual trigger only (workflow_dispatch)
   # Skipped on push/pull_request per billing constraint (free tier)

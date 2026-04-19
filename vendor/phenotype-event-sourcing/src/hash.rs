@@ -114,9 +114,7 @@ mod tests {
     #[test]
     fn compute_hash_deterministic() {
         let id = uuid::Uuid::nil();
-        let ts = DateTime::parse_from_rfc3339("2026-03-02T00:00:00Z")
-            .unwrap()
-            .with_timezone(&Utc);
+        let ts = DateTime::parse_from_rfc3339("2026-03-02T00:00:00Z").unwrap().with_timezone(&Utc);
         let payload = serde_json::json!({"n": "t"});
         let zero_hash = "0".repeat(64);
 
@@ -130,29 +128,13 @@ mod tests {
     #[test]
     fn compute_hash_changes_with_payload() {
         let id = uuid::Uuid::nil();
-        let ts = DateTime::parse_from_rfc3339("2026-03-02T00:00:00Z")
-            .unwrap()
-            .with_timezone(&Utc);
+        let ts = DateTime::parse_from_rfc3339("2026-03-02T00:00:00Z").unwrap().with_timezone(&Utc);
         let zero_hash = "0".repeat(64);
 
-        let h1 = compute_hash(
-            &id,
-            ts,
-            "created",
-            &serde_json::json!({"n": "t"}),
-            "u1",
-            &zero_hash,
-        )
-        .unwrap();
-        let h2 = compute_hash(
-            &id,
-            ts,
-            "created",
-            &serde_json::json!({"n": "x"}),
-            "u1",
-            &zero_hash,
-        )
-        .unwrap();
+        let h1 = compute_hash(&id, ts, "created", &serde_json::json!({"n": "t"}), "u1", &zero_hash)
+            .unwrap();
+        let h2 = compute_hash(&id, ts, "created", &serde_json::json!({"n": "x"}), "u1", &zero_hash)
+            .unwrap();
 
         assert_ne!(h1, h2);
     }

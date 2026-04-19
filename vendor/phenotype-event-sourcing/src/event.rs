@@ -83,10 +83,7 @@ mod tests {
             count: u32,
         }
 
-        let payload = TestPayload {
-            name: "test".to_string(),
-            count: 100,
-        };
+        let payload = TestPayload { name: "test".to_string(), count: 100 };
         let event = EventEnvelope::new(payload, "actor");
 
         let json = serde_json::to_string(&event).unwrap();
