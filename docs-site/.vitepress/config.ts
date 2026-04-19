@@ -75,7 +75,18 @@ export default withMermaid(defineConfig({
       ],
 
       '/journeys/': [
-        { text: 'UI Journeys', link: '/journeys/' }
+        { text: 'Overview', link: '/journeys/' },
+        {
+          text: 'CLI journeys',
+          collapsed: false,
+          items: [
+            { text: 'plan — DeepSeek-V3', link: '/journeys/cli-plan-deepseek' },
+            { text: 'plan --help', link: '/journeys/cli-plan-help' },
+            { text: 'probe list', link: '/journeys/cli-probe-list' },
+            { text: 'probe watch', link: '/journeys/cli-probe-watch' },
+            { text: 'ingest error UX', link: '/journeys/cli-ingest-error' }
+          ]
+        }
       ]
     },
 

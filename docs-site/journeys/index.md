@@ -1,33 +1,42 @@
-# UI Journeys
+# User Journeys
 
-Interactive recordings of user workflows in the hwLedger GUI. Each journey captures intent, keyframes, and verification scores.
+Interactive recordings of hwLedger workflows, end-to-end. Each journey captures an intent label per step, a keyframe gallery, and a Claude-verified blackbox description with a per-step judge score.
 
-## How to Record Journeys
+Two families of journeys:
 
-Run the journey recorder on macOS:
+1. **CLI** — recorded via [VHS](https://github.com/charmbracelet/vhs); run in any terminal.
+2. **GUI** — recorded via XCUITest + ScreenCaptureKit on macOS.
+
+## CLI journeys (live)
+
+| Journey | What it demonstrates |
+|---|---|
+| [plan — DeepSeek-V3](./cli-plan-deepseek.md) | Memory planner with MLA classification |
+| [plan --help](./cli-plan-help.md) | Help output for the planner subcommand |
+| [probe list](./cli-probe-list.md) | GPU device enumeration, JSON output |
+| [probe watch (Ctrl+C)](./cli-probe-watch.md) | Streaming telemetry + clean shutdown |
+| [ingest error UX](./cli-ingest-error.md) | Fail-loudly error path (NFR-007) |
+
+Recorded and verified via `apps/cli-journeys/scripts/record-all.sh` + `verify-manifests.sh`. Without an `ANTHROPIC_API_KEY`, verification runs against a local mock server so the pipeline exercises end-to-end offline.
+
+## GUI journeys (macOS)
+
+Requires a built `.app` bundle (`apps/macos/HwLedgerUITests/scripts/bundle-app.sh`) and optional ScreenCaptureKit permission.
 
 ```bash
 ./apps/macos/HwLedgerUITests/scripts/run-journeys.sh
 ```
 
-Outputs are saved to `apps/macos/build/journeys/` and synced to this site at build time.
-
-## Available Journeys
-
 ### Planner with Qwen2-7B (32K context)
-
-The first journey demonstrates the planner UI with a small, fast model.
 
 <JourneyViewer manifest="/journeys/planner-qwen2-7b-32k/manifest.json" />
 
-### More Journeys Coming
-
-Additional journeys will be recorded as the GUI is developed:
+### More journeys to come
 
 - Planner with Mixtral-8x7B (cost/speed tradeoff)
 - Fleet dispatch workflow
 - Device registration and provisioning
-- Event log viewer and drill-down
+- Ledger viewer with hash-chain verification
 
 ## Journey Format
 
