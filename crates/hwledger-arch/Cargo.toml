@@ -10,3 +10,9 @@ description = "Architecture and design patterns for hwLedger system components"
 
 [dependencies]
 thiserror.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+hwledger-core = { path = "../hwledger-core" }
+
+[dev-dependencies]
+proptest = "1"

@@ -69,10 +69,14 @@ chrono = { version = "0.4", features = ["serde"] }
 regex = "1"
 once_cell = "1"
 
-# phenotype-shared reuse (paths resolved via workspace [patch] at root parent)
-# TODO: wire in phenotype-event-sourcing, phenotype-error-core,
-#       phenotype-config-core, phenotype-cache-adapter, phenotype-health
-#       via path = "../crates/..." or git submodule once Phase 0 is through.
+# phenotype-shared reuse (ADR-0005). Path-resolved to the workspace-level
+# crates/ directory in repos/. Semver contracts live in the target crates'
+# READMEs; we consume the workspace tip and pin via git snapshot on release.
+phenotype-event-sourcing = { path = "../crates/phenotype-event-sourcing" }
+phenotype-error-core     = { path = "../crates/phenotype-error-core" }
+phenotype-config         = { path = "../crates/phenotype-config" }
+phenotype-cache-adapter  = { path = "../crates/phenotype-cache-adapter" }
+phenotype-health         = { path = "../crates/phenotype-health" }
 
 [profile.release]
 lto = "fat"

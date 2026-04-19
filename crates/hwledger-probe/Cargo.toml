@@ -10,3 +10,7 @@ description = "Hardware probing and discovery for hwLedger endpoints"
 
 [dependencies]
 thiserror.workspace = true
+tracing.workspace = true
+nvml-wrapper.workspace = true
+once_cell.workspace = true
+serde.workspace = true
