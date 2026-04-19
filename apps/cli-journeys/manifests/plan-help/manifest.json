@@ -1,0 +1,23 @@
+{
+  "id": "cli-plan-help",
+  "title": "hwledger plan-help",
+  "intent": "CLI help text for the plan subcommand",
+  "steps": [
+    {
+      "index": 0,
+      "slug": "launch",
+      "intent": "Frame 1 of 2",
+      "screenshot_path": "keyframes/plan-help/frame-001.png"
+    },
+    {
+      "index": 1,
+      "slug": "final",
+      "intent": "Frame 2 of 2",
+      "screenshot_path": "keyframes/plan-help/frame-002.png"
+    }
+  ],
+  "recording": "recordings/plan-help.mp4",
+  "recording_gif": "recordings/plan-help.gif",
+  "keyframe_count": 2,
+  "passed": true
+}

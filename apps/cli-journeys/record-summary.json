@@ -1,0 +1,55 @@
+{
+  "timestamp": "2026-04-19T07:26:08Z\",
+  "vhs_version": "0.11.0\",
+  "cli_binary": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/target/release/hwledger\",
+  "tapes": [
+    {
+      "name": "ingest-error",
+      "status": "passed",
+      "exit_code": 0,
+      "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/ingest-error.gif",
+      "gif_size_bytes": 78502,
+      "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/ingest-error.mp4",
+      "mp4_size_bytes": 65394
+    },
+    {
+      "name": "plan-deepseek",
+      "status": "passed",
+      "exit_code": 0,
+      "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/plan-deepseek.gif",
+      "gif_size_bytes": 73191,
+      "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/plan-deepseek.mp4",
+      "mp4_size_bytes": 62811
+    },
+    {
+      "name": "plan-help",
+      "status": "passed",
+      "exit_code": 0,
+      "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/plan-help.gif",
+      "gif_size_bytes": 121280,
+      "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/plan-help.mp4",
+      "mp4_size_bytes": 75254
+    },
+    {
+      "name": "probe-list",
+      "status": "passed",
+      "exit_code": 0,
+      "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/probe-list.gif",
+      "gif_size_bytes": 144927,
+      "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/probe-list.mp4",
+      "mp4_size_bytes": 95359
+    },
+    {
+      "name": "probe-watch",
+      "status": "passed",
+      "exit_code": 0,
+      "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/probe-watch.gif",
+      "gif_size_bytes": 709363,
+      "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/probe-watch.mp4",
+      "mp4_size_bytes": 367819
+    }
+  ],
+  "total_tapes": 5,
+  "passed": 5,
+  "failed": 0
+}

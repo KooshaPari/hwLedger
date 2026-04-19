@@ -14,6 +14,7 @@ members = [
     "crates/hwledger-cli",
     "crates/hwledger-ffi",
     "crates/hwledger-verify",
+    "crates/hwledger-traceability",
 ]
 
 [workspace.package]
