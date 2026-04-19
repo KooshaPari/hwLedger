@@ -1,0 +1,64 @@
+# Lefthook — local git hooks for hwLedger.
+#
+# Installed via `lefthook install` (run once after clone).
+# Push of a v* tag triggers the full macOS release pipeline LOCALLY via
+# scripts/release.sh — no billed CI runners.
+#
+# Fast by default: pre-commit runs only on staged files. Full workspace
+# checks run on pre-push.
+
+pre-commit:
+  parallel: true
+  commands:
+    fmt:
+      glob: "crates/**/*.rs"
+      run: |
+        for f in {staged_files}; do
+          manifest=$(echo "$f" | sed -E 's|(crates/[^/]+)/.*|\1/Cargo.toml|')
+          [ -f "$manifest" ] && rustfmt --edition 2021 --check "$f" || true
+        done
+      stage_fixed: false
+
+    secrets-files:
+      run: |
+        if git diff --cached --name-only | grep -E '\.(p8|p12|pem|key)$' | grep -v '^vendor/' | grep -v '^tests/fixtures/'; then
+          echo "Refusing to commit a .p8 / .p12 / .pem / .key file. Move it out of the index."
+          exit 1
+        fi
+
+    trufflehog:
+      run: |
+        if command -v trufflehog >/dev/null 2>&1; then
+          trufflehog git file://. --since-commit HEAD --only-verified --fail
+        else
+          echo "trufflehog not installed; skipping. brew install trufflesecurity/trufflehog/trufflehog"
+        fi
+
+pre-push:
+  parallel: false
+  commands:
+    workspace-verify:
+      run: |
+        set -euo pipefail
+        for m in crates/*/Cargo.toml; do
+          cargo fmt --manifest-path "$m" -- --check
+        done
+        cargo clippy --workspace --all-targets -- -D warnings
+        cargo test --workspace --no-fail-fast
+
+    swift-main:
+      root: "apps/macos/HwLedger"
+      run: |
+        if [ -d "../xcframework/HwLedgerCore.xcframework" ]; then
+          swift build
+        else
+          echo "XCFramework missing — skip Swift build (run scripts/build-xcframework.sh first)"
+        fi
+
+    release-tag:
+      run: |
+        TAG=$(git push --dry-run --tags 2>&1 | grep -oE 'v[0-9][^ ]*' | head -1)
+        if [ -n "$TAG" ]; then
+          echo "Release tag $TAG detected — running local release pipeline"
+          ./scripts/release.sh "$TAG"
+        fi
