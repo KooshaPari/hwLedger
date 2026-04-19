@@ -12,4 +12,17 @@ description = "FFI bindings for hwLedger C/C++/Swift integration"
 crate-type = ["cdylib", "staticlib", "rlib"]
 
 [dependencies]
+uniffi = { version = "0.28", features = ["tokio"] }
 thiserror.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+hwledger-core = { path = "../hwledger-core" }
+hwledger-arch = { path = "../hwledger-arch" }
+hwledger-ingest = { path = "../hwledger-ingest" }
+hwledger-probe = { path = "../hwledger-probe" }
+
+[build-dependencies]
+uniffi = { version = "0.28", features = ["build"] }

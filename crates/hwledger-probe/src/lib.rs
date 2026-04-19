@@ -13,6 +13,9 @@ pub use nvidia::NvidiaProbe;
 pub mod amd;
 pub use amd::AmdProbe;
 
+pub mod cache;
+pub use cache::{default_ttl, CachedProbe, Snapshot};
+
 #[cfg(target_os = "macos")]
 pub mod metal;
 #[cfg(target_os = "macos")]
@@ -106,55 +109,46 @@ pub trait GpuProbe: Send + Sync {
 
 /// Factory for detecting available GPU probes on the current platform.
 ///
-/// Attempts to initialize NVIDIA, AMD, Metal (macOS), and Intel (Linux) probes.
+/// Attempts to initialize NVIDIA, AMD, Metal (macOS), and Intel (Linux) probes,
+/// wraps each successful probe in a [`CachedProbe`] with the backend's default
+/// TTL (see [`cache::default_ttl`]), and returns them as a Vec.
+///
 /// Logs warnings for backends that fail to initialize; includes only successful ones.
 pub fn detect() -> Vec<Box<dyn GpuProbe>> {
     let mut probes: Vec<Box<dyn GpuProbe>> = Vec::new();
 
-    // NVIDIA
     match NvidiaProbe::new() {
         Ok(nvidia) => {
             tracing::info!("NVIDIA probe initialized");
-            probes.push(Box::new(nvidia));
+            probes.push(Box::new(CachedProbe::new(nvidia)));
         }
-        Err(e) => {
-            tracing::warn!("Failed to initialize NVIDIA probe: {}", e);
-        }
+        Err(e) => tracing::warn!("Failed to initialize NVIDIA probe: {}", e),
     }
 
-    // AMD
     match AmdProbe::new() {
         Ok(amd) => {
             tracing::info!("AMD probe initialized");
-            probes.push(Box::new(amd));
+            probes.push(Box::new(CachedProbe::new(amd)));
         }
-        Err(e) => {
-            tracing::warn!("Failed to initialize AMD probe: {}", e);
-        }
+        Err(e) => tracing::warn!("Failed to initialize AMD probe: {}", e),
     }
 
-    // Metal (macOS only)
     #[cfg(target_os = "macos")]
     match MetalProbe::new() {
         Ok(metal) => {
             tracing::info!("Metal probe initialized");
-            probes.push(Box::new(metal));
+            probes.push(Box::new(CachedProbe::new(metal)));
         }
-        Err(e) => {
-            tracing::warn!("Failed to initialize Metal probe: {}", e);
-        }
+        Err(e) => tracing::warn!("Failed to initialize Metal probe: {}", e),
     }
 
-    // Intel (Linux only)
     #[cfg(target_os = "linux")]
     match IntelProbe::new() {
         Ok(intel) => {
             tracing::info!("Intel probe initialized");
-            probes.push(Box::new(intel));
+            probes.push(Box::new(CachedProbe::new(intel)));
         }
-        Err(e) => {
-            tracing::warn!("Failed to initialize Intel probe: {}", e);
-        }
+        Err(e) => tracing::warn!("Failed to initialize Intel probe: {}", e),
     }
 
     probes
