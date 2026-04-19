@@ -292,25 +292,28 @@ async fn test_api_failure_on_auth_error() {
 }
 
 // Traces to: FR-UX-VERIFY-001
+//
+// Uses a unique PNG (with test-specific bytes) so parallel tests calling
+// Cache::new() don't collide on the shared `target/hwledger-verify-cache`
+// directory. Avoids calling `clear()` which would race with siblings.
 #[tokio::test]
 async fn test_cache_hit_on_repeated_describe() {
-    let config = VerifierConfig::with_api_key("test-key".to_string()).with_cache_disabled(); // Start without cache
-
-    let _verifier1 = Verifier::new(config.clone()).unwrap();
+    let _verifier1 = Verifier::new(VerifierConfig::with_api_key("test-key".to_string())).unwrap();
     let cache = hwledger_verify::Cache::new().unwrap();
-    cache.clear().ok();
 
-    let png = test_png_bytes();
-    let desc =
-        Description { text: "Test description".to_string(), structured: None, tokens_used: 100 };
+    // Per-test unique bytes → unique cache key → no collisions with parallel tests.
+    let png: Vec<u8> = b"TEST_cache_hit_on_repeated_describe-unique-png-bytes".to_vec();
+    let desc = Description {
+        text: "Test description".to_string(),
+        structured: None,
+        tokens_used: 100,
+    };
 
     let key = cache.key_for_screenshot(&png, "claude-opus-4-7");
-    cache.set(&key, &desc).ok();
+    cache.set(&key, &desc).expect("cache set");
 
-    // Verify we can retrieve it
-    let retrieved: Result<Description, _> = cache.get(&key);
-    assert!(retrieved.is_ok());
-    assert_eq!(retrieved.unwrap().text, "Test description");
+    let retrieved: Description = cache.get(&key).expect("cache get");
+    assert_eq!(retrieved.text, "Test description");
 }
 
 // Traces to: FR-UX-VERIFY-003
