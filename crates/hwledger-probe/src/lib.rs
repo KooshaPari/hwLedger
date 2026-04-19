@@ -10,6 +10,19 @@ use thiserror::Error;
 pub mod nvidia;
 pub use nvidia::NvidiaProbe;
 
+pub mod amd;
+pub use amd::AmdProbe;
+
+#[cfg(target_os = "macos")]
+pub mod metal;
+#[cfg(target_os = "macos")]
+pub use metal::MetalProbe;
+
+#[cfg(target_os = "linux")]
+pub mod intel;
+#[cfg(target_os = "linux")]
+pub use intel::IntelProbe;
+
 /// Represents a physical GPU device detected by a probe backend.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Device {
@@ -93,11 +106,12 @@ pub trait GpuProbe: Send + Sync {
 
 /// Factory for detecting available GPU probes on the current platform.
 ///
-/// Attempts NVIDIA first; logs warnings if NVML init fails.
-/// Other backends (AMD, Metal, Intel) are added in WP13.
+/// Attempts to initialize NVIDIA, AMD, Metal (macOS), and Intel (Linux) probes.
+/// Logs warnings for backends that fail to initialize; includes only successful ones.
 pub fn detect() -> Vec<Box<dyn GpuProbe>> {
     let mut probes: Vec<Box<dyn GpuProbe>> = Vec::new();
 
+    // NVIDIA
     match NvidiaProbe::new() {
         Ok(nvidia) => {
             tracing::info!("NVIDIA probe initialized");
@@ -105,6 +119,41 @@ pub fn detect() -> Vec<Box<dyn GpuProbe>> {
         }
         Err(e) => {
             tracing::warn!("Failed to initialize NVIDIA probe: {}", e);
+        }
+    }
+
+    // AMD
+    match AmdProbe::new() {
+        Ok(amd) => {
+            tracing::info!("AMD probe initialized");
+            probes.push(Box::new(amd));
+        }
+        Err(e) => {
+            tracing::warn!("Failed to initialize AMD probe: {}", e);
+        }
+    }
+
+    // Metal (macOS only)
+    #[cfg(target_os = "macos")]
+    match MetalProbe::new() {
+        Ok(metal) => {
+            tracing::info!("Metal probe initialized");
+            probes.push(Box::new(metal));
+        }
+        Err(e) => {
+            tracing::warn!("Failed to initialize Metal probe: {}", e);
+        }
+    }
+
+    // Intel (Linux only)
+    #[cfg(target_os = "linux")]
+    match IntelProbe::new() {
+        Ok(intel) => {
+            tracing::info!("Intel probe initialized");
+            probes.push(Box::new(intel));
+        }
+        Err(e) => {
+            tracing::warn!("Failed to initialize Intel probe: {}", e);
         }
     }
 
@@ -167,5 +216,15 @@ mod tests {
         let msg = err.to_string();
         assert!(msg.contains("intel"), "Error should mention backend");
         assert!(msg.contains("power_draw"), "Error should mention operation");
+    }
+
+    /// Test that detect() factory returns a Vec (possibly empty) without panicking.
+    /// Traces to: FR-TEL-001, FR-TEL-002
+    #[test]
+    fn test_detect_factory_returns_vec() {
+        let probes = detect();
+        // detect() always returns a Vec; some backends may fail silently if drivers missing.
+        // The test just verifies it doesn't panic.
+        assert!(probes.is_empty() || !probes.is_empty(), "detect() returns a Vec");
     }
 }

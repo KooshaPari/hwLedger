@@ -10,3 +10,6 @@ description = "Core data types and traits for hwLedger hardware telemetry infras
 
 [dependencies]
 thiserror.workspace = true
+
+[dev-dependencies]
+proptest = "1"
