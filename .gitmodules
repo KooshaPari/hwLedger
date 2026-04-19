@@ -1,0 +1,3 @@
+[submodule "sidecars/omlx-fork"]
+	path = sidecars/omlx-fork
+	url = https://github.com/KooshaPari/phenotype-omlx.git
