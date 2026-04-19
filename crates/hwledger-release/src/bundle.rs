@@ -11,13 +11,9 @@ pub fn bundle_app(
     bundle_id: &str,
     codesign: bool,
 ) -> ReleaseResult<String> {
-    info!(
-        "bundling app: {} (bundle_id={}, codesign={})",
-        app_name, bundle_id, codesign
-    );
+    info!("bundling app: {} (bundle_id={}, codesign={})", app_name, bundle_id, codesign);
 
-    let script_path = repo_root
-        .join("apps/macos/HwLedgerUITests/scripts/bundle-app.sh");
+    let script_path = repo_root.join("apps/macos/HwLedgerUITests/scripts/bundle-app.sh");
 
     let mut cmd = ReleaseCommand::new(script_path.to_str().unwrap());
     cmd = cmd.arg("--app-name").arg(app_name);

@@ -2,9 +2,9 @@
 
 use crate::error::{ReleaseError, ReleaseResult};
 use std::process::Command;
+use std::time::Duration;
 use tracing::{debug, info};
 use wait_timeout::ChildExt;
-use std::time::Duration;
 
 /// Execute a command with timeout and logging.
 pub fn run(cmd: &str, args: &[&str], timeout_secs: u64) -> ReleaseResult<String> {
@@ -27,15 +27,13 @@ pub fn run(cmd: &str, args: &[&str], timeout_secs: u64) -> ReleaseResult<String>
         } else {
             Err(ReleaseError::CommandFailed(format!(
                 "{} exited with code {:?}",
-                cmd, status.code()
+                cmd,
+                status.code()
             )))
         }
     } else {
         let _ = child.kill();
-        Err(ReleaseError::CommandTimeout(
-            timeout_secs,
-            cmd.to_string(),
-        ))
+        Err(ReleaseError::CommandTimeout(timeout_secs, cmd.to_string()))
     }
 }
 
@@ -49,12 +47,7 @@ pub struct ReleaseCommand {
 
 impl ReleaseCommand {
     pub fn new(cmd: &str) -> Self {
-        Self {
-            cmd: cmd.to_string(),
-            args: vec![],
-            timeout_secs: 300,
-            dry_run: false,
-        }
+        Self { cmd: cmd.to_string(), args: vec![], timeout_secs: 300, dry_run: false }
     }
 
     pub fn arg(mut self, arg: &str) -> Self {
@@ -94,9 +87,7 @@ mod tests {
 
     #[test]
     fn test_dry_run() {
-        let result = ReleaseCommand::new("false")
-            .dry_run(true)
-            .run();
+        let result = ReleaseCommand::new("false").dry_run(true).run();
         assert!(result.is_ok());
     }
 }

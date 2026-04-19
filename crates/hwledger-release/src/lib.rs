@@ -12,14 +12,14 @@
 //! All subprocess execution goes through the unified `subprocess` module with
 //! logging and timeout support.
 
-pub mod error;
-pub mod subprocess;
 pub mod appcast;
-pub mod xcframework;
 pub mod bundle;
 pub mod dmg;
-pub mod notarize;
+pub mod error;
 pub mod keyframes;
+pub mod notarize;
 pub mod record;
+pub mod subprocess;
+pub mod xcframework;
 
 pub use error::{ReleaseError, ReleaseResult};

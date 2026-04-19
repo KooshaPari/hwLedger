@@ -5,7 +5,7 @@
 use crate::error::{ReleaseError, ReleaseResult};
 use crate::subprocess::ReleaseCommand;
 use std::path::Path;
-use tracing::{info, debug};
+use tracing::{debug, info};
 
 /// Probe whether a keychain profile exists for notarytool.
 pub fn has_keychain_profile(profile: &str) -> ReleaseResult<bool> {
@@ -32,11 +32,7 @@ pub fn notarize(
     key_id: Option<&str>,
     issuer_id: Option<&str>,
 ) -> ReleaseResult<()> {
-    info!(
-        "notarizing: {} (profile={:?})",
-        dmg_path.display(),
-        profile
-    );
+    info!("notarizing: {} (profile={:?})", dmg_path.display(), profile);
 
     let profile_name = profile.unwrap_or("hwledger");
 
@@ -44,11 +40,7 @@ pub fn notarize(
     let use_profile = has_keychain_profile(profile_name)?;
 
     let mut cmd = ReleaseCommand::new("xcrun");
-    cmd = cmd
-        .arg("notarytool")
-        .arg("submit")
-        .arg(dmg_path.to_str().unwrap())
-        .arg("--wait");
+    cmd = cmd.arg("notarytool").arg("submit").arg(dmg_path.to_str().unwrap()).arg("--wait");
 
     if use_profile {
         debug!("using keychain profile: {}", profile_name);
@@ -66,11 +58,7 @@ pub fn notarize(
         })?;
 
         debug!("using explicit credentials (key_id={})", key_id);
-        cmd = cmd
-            .arg("--key-id")
-            .arg(key_id)
-            .arg("--issuer-id")
-            .arg(issuer_id);
+        cmd = cmd.arg("--key-id").arg(key_id).arg("--issuer-id").arg(issuer_id);
     }
 
     cmd.timeout(1200).run()?;

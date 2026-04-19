@@ -5,15 +5,8 @@ use crate::subprocess::ReleaseCommand;
 use std::path::Path;
 use tracing::info;
 
-pub fn extract_keyframes(
-    tape_path: &Path,
-    output_dir: &Path,
-) -> ReleaseResult<()> {
-    info!(
-        "extracting keyframes from: {} -> {}",
-        tape_path.display(),
-        output_dir.display()
-    );
+pub fn extract_keyframes(tape_path: &Path, output_dir: &Path) -> ReleaseResult<()> {
+    info!("extracting keyframes from: {} -> {}", tape_path.display(), output_dir.display());
 
     std::fs::create_dir_all(output_dir)?;
 
@@ -38,11 +31,7 @@ pub fn generate_manifest(
     keyframes_dir: &Path,
     output_manifest: &Path,
 ) -> ReleaseResult<()> {
-    info!(
-        "generating manifest for tape: {} -> {}",
-        tape_id,
-        output_manifest.display()
-    );
+    info!("generating manifest for tape: {} -> {}", tape_id, output_manifest.display());
 
     let manifest = format!(
         r#"{{

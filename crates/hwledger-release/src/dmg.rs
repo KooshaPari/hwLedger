@@ -16,11 +16,7 @@ pub fn build_dmg(
     output_path: &Path,
     codesign_identity: Option<&str>,
 ) -> ReleaseResult<()> {
-    info!(
-        "building DMG: {} -> {}",
-        app_path.display(),
-        output_path.display()
-    );
+    info!("building DMG: {} -> {}", app_path.display(), output_path.display());
 
     let script_path = repo_root.join("scripts/build-dmg.sh");
 

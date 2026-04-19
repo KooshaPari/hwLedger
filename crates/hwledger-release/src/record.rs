@@ -6,22 +6,15 @@
 use crate::error::ReleaseResult;
 use crate::subprocess::ReleaseCommand;
 use std::path::Path;
-use tokio::sync::Semaphore;
 use std::sync::Arc;
+use tokio::sync::Semaphore;
 use tracing::info;
 
 /// Record VHS tapes with bounded parallelism (default: 3 concurrent recordings).
 ///
 /// Scans for `.tape` files in the base directory and spawns `vhs <tape>` for each.
-pub async fn record_all_tapes(
-    base_dir: &Path,
-    concurrency: usize,
-) -> ReleaseResult<()> {
-    info!(
-        "recording all tapes in: {} (concurrency={})",
-        base_dir.display(),
-        concurrency
-    );
+pub async fn record_all_tapes(base_dir: &Path, concurrency: usize) -> ReleaseResult<()> {
+    info!("recording all tapes in: {} (concurrency={})", base_dir.display(), concurrency);
 
     let semaphore = Arc::new(Semaphore::new(concurrency));
 
@@ -58,10 +51,7 @@ pub async fn record_all_tapes(
 pub fn record_tape(tape_path: &Path) -> ReleaseResult<()> {
     info!("recording tape: {}", tape_path.display());
 
-    ReleaseCommand::new("vhs")
-        .arg(tape_path.to_str().unwrap())
-        .timeout(600)
-        .run()?;
+    ReleaseCommand::new("vhs").arg(tape_path.to_str().unwrap()).timeout(600).run()?;
 
     info!("tape recorded: {}", tape_path.display());
     Ok(())

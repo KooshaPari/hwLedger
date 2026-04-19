@@ -147,16 +147,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Initialize logging
     tracing_subscriber::fmt()
-        .with_env_filter(EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-            EnvFilter::new(&cli.log_level)
-        }))
+        .with_env_filter(
+            EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(&cli.log_level)),
+        )
         .init();
 
     let repo_root = std::env::current_dir()?;
 
     match cli.command {
         Commands::Xcframework { mode, universal } => {
-            use hwledger_release::xcframework::{BuildMode, build_xcframework};
+            use hwledger_release::xcframework::{build_xcframework, BuildMode};
             let build_mode = match mode.as_str() {
                 "release" => BuildMode::Release,
                 "debug" => BuildMode::Debug,
@@ -168,20 +168,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             build_xcframework(&repo_root, build_mode, universal)?;
         }
 
-        Commands::Bundle {
-            app_name,
-            bundle_id,
-            codesign,
-        } => {
+        Commands::Bundle { app_name, bundle_id, codesign } => {
             use hwledger_release::bundle::bundle_app;
             bundle_app(&repo_root, &app_name, &bundle_id, codesign)?;
         }
 
-        Commands::Dmg {
-            app,
-            out,
-            codesign_identity,
-        } => {
+        Commands::Dmg { app, out, codesign_identity } => {
             use hwledger_release::dmg::build_dmg;
             build_dmg(&repo_root, &app, &out, codesign_identity.as_deref())?;
         }
@@ -193,13 +185,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             notarize(&dmg_path, Some(&profile), key_id.as_deref(), issuer_id.as_deref())?;
         }
 
-        Commands::Appcast {
-            dmg,
-            version,
-            out,
-            key_path,
-            download_base,
-        } => {
+        Commands::Appcast { dmg, version, out, key_path, download_base } => {
             use hwledger_release::appcast::generate_appcast;
             let key_file = key_path.unwrap_or_else(|| {
                 dirs::home_dir()
@@ -218,18 +204,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             generate_manifest(&tape_id, &keyframes_dir, &manifest_path)?;
         }
 
-        Commands::Record {
-            all,
-            only,
-            concurrency,
-        } => {
+        Commands::Record { all, only, concurrency } => {
             use hwledger_release::record::record_tape;
             if all {
                 let base_dir = PathBuf::from("apps/cli-journeys");
                 use hwledger_release::record::record_all_tapes;
                 record_all_tapes(&base_dir, concurrency).await?;
             } else if let Some(tape_name) = only {
-                let tape_path = PathBuf::from("apps/cli-journeys").join(format!("{}.tape", tape_name));
+                let tape_path =
+                    PathBuf::from("apps/cli-journeys").join(format!("{}.tape", tape_name));
                 record_tape(&tape_path)?;
             } else {
                 eprintln!("provide either --all or --only <tape>");
@@ -250,11 +233,11 @@ async fn run_release(
     tag: &str,
     _dry_run: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    use hwledger_release::xcframework::{BuildMode, build_xcframework};
+    use hwledger_release::appcast::generate_appcast;
     use hwledger_release::bundle::bundle_app;
     use hwledger_release::dmg::build_dmg;
     use hwledger_release::notarize::notarize;
-    use hwledger_release::appcast::generate_appcast;
+    use hwledger_release::xcframework::{build_xcframework, BuildMode};
 
     // Validate tag format
     if !tag.starts_with('v') {
@@ -272,12 +255,7 @@ async fn run_release(
 
     // 2. Bundle + codesign
     println!("[2/6] Bundling + codesigning .app");
-    bundle_app(
-        repo_root,
-        "HwLedger",
-        "com.kooshapari.hwLedger",
-        true,
-    )?;
+    bundle_app(repo_root, "HwLedger", "com.kooshapari.hwLedger", true)?;
 
     // 3. Build DMG
     println!("[3/6] Building + signing DMG");
@@ -310,7 +288,11 @@ async fn run_release(
     println!("  git add docs-site/public/appcast.xml");
     println!("  git commit -m 'chore(release): appcast for {}'", tag);
     println!("  git push && git push --tags");
-    println!("  gh release create {} {} --notes-from-tag --repo KooshaPari/hwLedger", tag, dmg_path.display());
+    println!(
+        "  gh release create {} {} --notes-from-tag --repo KooshaPari/hwLedger",
+        tag,
+        dmg_path.display()
+    );
 
     Ok(())
 }

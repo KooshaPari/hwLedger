@@ -2,19 +2,16 @@
 
 use crate::error::{ReleaseError, ReleaseResult};
 use base64::{engine::general_purpose::STANDARD, Engine};
-use ed25519_dalek::SigningKey;
 use ed25519_dalek::Signer;
-use sha2::{Sha256, Digest};
+use ed25519_dalek::SigningKey;
+use sha2::{Digest, Sha256};
 use std::fs;
 use std::path::Path;
-use tracing::{info, debug};
+use tracing::{debug, info};
 
 /// Load Ed25519 private key from base64-encoded file (raw 32-byte format).
 fn load_private_key(key_path: &Path) -> ReleaseResult<SigningKey> {
-    let key_b64 = fs::read_to_string(key_path)
-        .map_err(|e| ReleaseError::Io(e))?
-        .trim()
-        .to_string();
+    let key_b64 = fs::read_to_string(key_path).map_err(|e| ReleaseError::Io(e))?.trim().to_string();
 
     let key_bytes = STANDARD
         .decode(&key_b64)
@@ -49,8 +46,8 @@ pub fn generate_appcast(
     info!("generating appcast for version: {}", version);
 
     let sk = load_private_key(key_path)?;
-    let dmg_bytes = fs::read(dmg_path)
-        .map_err(|_| ReleaseError::FileNotFound(dmg_path.to_path_buf()))?;
+    let dmg_bytes =
+        fs::read(dmg_path).map_err(|_| ReleaseError::FileNotFound(dmg_path.to_path_buf()))?;
 
     let signature = sk.sign(&dmg_bytes);
     let sig_b64 = STANDARD.encode(signature.to_bytes());
@@ -60,17 +57,15 @@ pub fn generate_appcast(
     hasher.update(&dmg_bytes);
     let sha256 = format!("{:x}", hasher.finalize());
 
-    let dmg_name = dmg_path
-        .file_name()
-        .and_then(|n| n.to_str())
-        .unwrap_or("hwLedger.dmg");
+    let dmg_name = dmg_path.file_name().and_then(|n| n.to_str()).unwrap_or("hwLedger.dmg");
 
-    let dl_base = download_base
-        .unwrap_or("https://github.com/KooshaPari/hwLedger/releases/download");
+    let dl_base =
+        download_base.unwrap_or("https://github.com/KooshaPari/hwLedger/releases/download");
     let download_url = format!("{}/v{}/{}", dl_base, version, dmg_name);
     let pub_date = rfc2822_date();
 
-    let escaped_version = version.replace("&", "&amp;")
+    let escaped_version = version
+        .replace("&", "&amp;")
         .replace("<", "&lt;")
         .replace(">", "&gt;")
         .replace("\"", "&quot;")
@@ -102,7 +97,9 @@ pub fn generate_appcast(
         </item>
     </channel>
 </rss>"#,
-        escaped_version, escaped_version, escaped_version,
+        escaped_version,
+        escaped_version,
+        escaped_version,
         pub_date,
         escaped_version,
         download_url,
