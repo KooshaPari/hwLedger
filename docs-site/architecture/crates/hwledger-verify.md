@@ -1,6 +1,6 @@
 ---
 title: hwledger-verify
-description: Cryptographic verification: validates inference results, ledger hash chains, and...
+description: "Cryptographic verification: validates inference results, ledger hash chains, and..."
 ---
 
 # hwledger-verify

@@ -1,6 +1,6 @@
 ---
 title: hwledger-fleet-proto
-description: Fleet communication protocol: defines JSON/protobuf message types for agent regi...
+description: "Fleet communication protocol: defines JSON/protobuf message types for agent regi..."
 ---
 
 # hwledger-fleet-proto

@@ -1,6 +1,6 @@
 ---
 title: hwledger-gui-recorder
-description: Journey recorder: captures GUI interactions (FFmpeg video + event manifest JSON)...
+description: "Journey recorder: captures GUI interactions (FFmpeg video + event manifest JSON)..."
 ---
 
 # hwledger-gui-recorder

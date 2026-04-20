@@ -1,6 +1,6 @@
 ---
 title: hwledger-mlx-sidecar
-description: oMlx fat-fork integration: Python sidecar manager communicating via JSON-RPC std...
+description: "oMlx fat-fork integration: Python sidecar manager communicating via JSON-RPC std..."
 ---
 
 # hwledger-mlx-sidecar

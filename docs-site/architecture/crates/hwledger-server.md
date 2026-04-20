@@ -1,6 +1,6 @@
 ---
 title: hwledger-server
-description: Axum-based fleet orchestration daemon: mTLS endpoint for agent registration, tel...
+description: "Axum-based fleet orchestration daemon: mTLS endpoint for agent registration, tel..."
 ---
 
 # hwledger-server

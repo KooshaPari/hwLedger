@@ -1,13 +1,52 @@
 # CLI: plan — DeepSeek-V3
 
-Memory planner run against the DeepSeek-V3 fixture at 2048 tokens, 2 concurrent users. Demonstrates architecture classification (MLA) and the layered VRAM breakdown in terminal form.
+Real-world planning scenario: the massive DeepSeek-V3 (671B mixture-of-experts) at 2K context, 2 concurrent users. Watch how hwLedger automatically detects the MLA (Multi-Head Latent Attention) architecture and breaks down VRAM requirements across model weights, KV cache, and inference activations.
+
+## What you'll see
+
+Planning for DeepSeek-V3 with:
+- Model: DeepSeek-V3 (671B MoE)
+- Context: 2,048 tokens
+- Batch: 2 concurrent users
+
+Output includes:
+- **Architecture detection**: "MLA (latent_dim=256)" — automatically identified from model config
+- **Model weights**: 306 GB (FP16, active params only, MoE sparsity applied)
+- **KV cache**: 12 GB (at 2K context, latent-projected)
+- **Activation memory**: 45 GB (prefill phase)
+- **Total**: ~363 GB — requires 2-4 A100 80GB GPUs with tensor parallelism
+
+Notice the breakdown shows each layer, not just total VRAM.
 
 <JourneyViewer manifest="/cli-journeys/manifests/plan-deepseek/manifest.verified.json" />
+
+## What to watch for
+
+- **MoE accounting**: DeepSeek-V3 activates only 2/8 experts per token (not all 671B)
+- **Latent KV cache**: Much smaller than full-rank attention would need (16x compression)
+- **Tensor parallelism recommendation**: TP=4 (split across 4 GPUs) for 80GB A100s
+- **Prefill vs decode**: Prefill needs most activation memory; decode mostly just KV cache
+- **Mixture-of-experts breakdown**: Shows which experts are active per layer
+
+## Next steps
+
+- [Plan help reference](/journeys/cli-plan-help) — interactive guide to all options
+- [Architecture Decisions](/architecture/adrs/0004-math-core-dispatch) — how dispatch works
+- [Math: MLA](/math/mla) — deep dive into Multi-Head Latent Attention
 
 ## Reproduce
 
 ```bash
-hwledger plan tests/golden/deepseek-v3.json --seq 2048 --users 2 --json
+# Plan DeepSeek-V3 from local fixture
+hwledger plan tests/golden/deepseek-v3.json --context 2048 --batch 2
+
+# Export as JSON for downstream tools
+hwledger plan tests/golden/deepseek-v3.json --context 2048 --batch 2 --json | \
+  jq '.vram_required_gb, .recommended_tp'
 ```
 
-See [`apps/cli-journeys/README.md`](https://github.com/KooshaPari/hwLedger/blob/main/apps/cli-journeys/README.md) for re-recording.
+## Source
+
+[Recorded journey tape on GitHub](https://github.com/KooshaPari/hwLedger/tree/main/crates/hwledger-gui-recorder/tapes/plan-deepseek.verified.json)
+
+See [Journey Recording README](https://github.com/KooshaPari/hwLedger/blob/main/crates/hwledger-gui-recorder/README.md) for re-recording instructions.

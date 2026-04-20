@@ -1,6 +1,6 @@
 ---
 title: hwledger-arch
-description: Architecture classifier: detects hardware accelerator type (NVIDIA, AMD, Intel, ...
+description: "Architecture classifier: detects hardware accelerator type (NVIDIA, AMD, Intel, ..."
 ---
 
 # hwledger-arch

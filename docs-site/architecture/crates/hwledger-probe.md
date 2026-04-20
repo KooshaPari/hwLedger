@@ -1,6 +1,6 @@
 ---
 title: hwledger-probe
-description: GPU telemetry: abstracts NVIDIA (NVML), AMD (rocm-smi), Apple (metal-rs), Intel,...
+description: "GPU telemetry: abstracts NVIDIA (NVML), AMD (rocm-smi), Apple (metal-rs), Intel,..."
 ---
 
 # hwledger-probe

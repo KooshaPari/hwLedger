@@ -1,6 +1,6 @@
 ---
 title: hwledger-ledger
-description: Event-sourced append-only ledger for audit trail: records every decision, infere...
+description: "Event-sourced append-only ledger for audit trail: records every decision, infere..."
 ---
 
 # hwledger-ledger

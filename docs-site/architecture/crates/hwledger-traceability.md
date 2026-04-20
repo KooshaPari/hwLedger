@@ -1,6 +1,6 @@
 ---
 title: hwledger-traceability
-description: Spec -> test -> code traceability scanner: generates reports linking functional ...
+description: "Spec -> test -> code traceability scanner: generates reports linking functional ..."
 ---
 
 # hwledger-traceability

@@ -1,6 +1,6 @@
 ---
 title: hwledger-ingest
-description: Model ingestion pipeline: downloads GGUF/Safetensors from HuggingFace, validates...
+description: "Model ingestion pipeline: downloads GGUF/Safetensors from HuggingFace, validates..."
 ---
 
 # hwledger-ingest

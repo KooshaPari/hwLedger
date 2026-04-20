@@ -1,6 +1,6 @@
 ---
 title: hwledger-ffi
-description: Foreign Function Interface (C ABI): wraps core Rust types for Swift/C# bindings,...
+description: "Foreign Function Interface (C ABI): wraps core Rust types for Swift/C# bindings,..."
 ---
 
 # hwledger-ffi

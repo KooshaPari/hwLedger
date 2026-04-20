@@ -1,6 +1,6 @@
 ---
 title: hwledger-agent
-description: Agent binary: lightweight daemon deployed on remote boxes that registers with fl...
+description: "Agent binary: lightweight daemon deployed on remote boxes that registers with fl..."
 ---
 
 # hwledger-agent

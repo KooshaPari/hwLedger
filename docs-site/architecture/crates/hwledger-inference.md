@@ -1,6 +1,6 @@
 ---
 title: hwledger-inference
-description: Inference backend dispatcher: dispatches to mistral.rs, ONNX, or MLX sidecar bas...
+description: "Inference backend dispatcher: dispatches to mistral.rs, ONNX, or MLX sidecar bas..."
 ---
 
 # hwledger-inference

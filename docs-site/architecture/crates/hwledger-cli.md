@@ -1,6 +1,6 @@
 ---
 title: hwledger-cli
-description: Command-line interface: plan, probe, ingest, run, fleet, and audit subcommands o...
+description: "Command-line interface: plan, probe, ingest, run, fleet, and audit subcommands o..."
 ---
 
 # hwledger-cli

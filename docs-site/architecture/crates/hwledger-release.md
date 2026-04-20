@@ -1,6 +1,6 @@
 ---
 title: hwledger-release
-description: macOS release toolchain: Sparkle appcast generation, DMG bundling, codesigning, ...
+description: "macOS release toolchain: Sparkle appcast generation, DMG bundling, codesigning, ..."
 ---
 
 # hwledger-release
