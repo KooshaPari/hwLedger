@@ -19,6 +19,12 @@ $$\text{head}_{i} = \text{Attention}(Q_iW_i^Q, KW^K, VW^V)$$
 
 Ratio reduction: standard MHA has h KV heads; GQA has g, achieving **h/g compression**.
 
+## Why this variant
+
+GQA exists because MHA's KV cache grew linearly with every query head — unaffordable past 7B model scale at 32K context — while MQA's single shared K/V head degraded quality noticeably on reasoning benchmarks. GQA interpolates between the two and lands on the empirically correct ratio (typically 4–8 KV heads per 32 query heads). It was formalized in [Ainslie et al., 2023](https://arxiv.org/abs/2305.13245), shipped in production in [Llama 2](https://arxiv.org/abs/2307.09288) and [Mistral 7B](https://arxiv.org/abs/2310.06825), and refined in [Llama 3](https://arxiv.org/abs/2407.21783) (2024) and Llama 4 (2025–2026).
+
+**hwLedger accounting gotcha.** `num_key_value_heads` lives at the top level of `config.json` for HuggingFace-style configs but inside `llama.attention.head_count_kv` for GGUF metadata. `hwledger-arch` reads both; if you are writing a new classifier path, do not assume the HF name.
+
 ## Memory footprint (32K context, 7B model)
 
 Mistral 7B → Mistral-7B-Instruct-v0.2 with GQA (8 KV heads instead of 32):
@@ -45,6 +51,14 @@ Model: Mistral-7B-Instruct-v0.2
 - KV cache per layer: 32K tokens × (256 + 256) × 2 bytes × 8 = **131 MB/layer**
 - Full cache (32 layers): **4.2 GB**
 - Speedup vs MHA: ~15-20% decode (reduced KV computation)
+
+### GQA vs MHA baseline (32K context, FP16)
+
+| Model | kv_heads | q_heads | KV/layer | Full cache (layers) | vs MHA |
+|-------|----------|---------|----------|---------------------|--------|
+| Llama-3-8B (GQA) | 8 | 32 | 64 MiB | 2.0 GiB (32L) | 4× smaller |
+| Llama-3-70B (GQA) | 8 | 64 | 64 MiB | 5.0 GiB (80L) | 8× smaller |
+| Llama-2-7B MHA baseline | 32 | 32 | 256 MiB | 8.0 GiB (32L) | 1× |
 
 ## 2026 citations
 

@@ -17,6 +17,12 @@ $$\text{head}_i = \text{Attention}(Q_iW_i^Q, KW^K, VW^V)$$
 
 Compression ratio: **h to 1** (h query heads, 1 KV head).
 
+## Why this variant
+
+MQA addresses MHA's decoder-side bottleneck: during autoregressive generation each new token reads the entire KV cache, and MHA's per-head K,V make that bandwidth-bound on most GPUs. MQA reduces K,V reads to 1/h. It was introduced in [Shazeer, 2019](https://arxiv.org/abs/1911.02150) and deployed in [PaLM (Chowdhery et al., 2022)](https://arxiv.org/abs/2204.02311). It has since been superseded by GQA in most production 2024–2026 models because a single shared K,V is demonstrably lower quality on long-context reasoning; MQA is retained for extreme memory-constrained deployments and some Falcon variants.
+
+**hwLedger accounting gotcha.** `AttentionKind::MQA` is a stable variant but hwLedger will not auto-classify a model as MQA purely from `num_key_value_heads == 1`; the classifier requires an explicit `attention_type` hint or a known model family, because some MLA-projected configs also show `num_key_value_heads == 1` post-projection. See `hwledger-arch` fixtures for the disambiguation tests.
+
 ## Memory footprint (32K context, 7B model)
 
 LLaMA 2-Chat → hypothetical MQA variant:
@@ -43,6 +49,14 @@ Hypothetical 7B model with MQA:
 - KV cache: 32K × 512 × 2 × 1 = **32.8 MB/layer**
 - Full 32 layers: **1.05 GB total**
 - Trade-off: slightly lower quality attention (all heads attend same K, V)
+
+### MQA vs MHA baseline (32K context, FP16)
+
+| Model | kv_heads | q_heads | KV/layer | Full cache (32L) | vs MHA |
+|-------|----------|---------|----------|-------------------|--------|
+| Falcon-40B-like MQA | 1 | 64 | 32 MiB | 1.0 GiB | 64× smaller |
+| Hypothetical 7B MQA | 1 | 32 | 32 MiB | 1.0 GiB | 32× smaller |
+| Llama-2-7B MHA baseline | 32 | 32 | 256 MiB | 8.0 GiB | 1× |
 
 ## 2026 citations
 

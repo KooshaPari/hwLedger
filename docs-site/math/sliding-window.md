@@ -15,6 +15,12 @@ $$\text{Attention}(Q_i, K, V) = \text{softmax}\left(\frac{Q_i K_{[i-w:i]}^\top}{
 
 Global information: repeated layers allow exponential reach. Layer l has receptive field ~2^l.
 
+## Why this variant
+
+Sliding window attention addresses MHA's O(n²) per-layer attention matrix, which is the dominant cost for long-context prefill. By capping each token's attention span to a fixed window (e.g., 4K), prefill becomes linear in sequence length while layer stacking preserves long-range dependency reach exponentially. Introduced in [Beltagy et al., 2020, Longformer](https://arxiv.org/abs/2004.05150) and [BigBird (Zaheer et al., 2020)](https://arxiv.org/abs/2007.14062); productionized in [Mistral 7B (Chia et al., 2023)](https://arxiv.org/abs/2310.06825) and refined in [Mistral-NeMo (2024)](https://arxiv.org/abs/2410.10989) and [Gemma 2/3 (Google, 2024–2025)](https://arxiv.org/abs/2408.00118).
+
+**hwLedger accounting gotcha.** A sliding-window model's KV cache does not grow beyond `window_size` tokens — but prefill memory still peaks at `min(context, window) × num_layers`. hwLedger's planner reports both decode-steady-state and prefill-peak; reviewers who look only at the steady-state number miss the 4× spike during initial prompt processing.
+
 ## Memory footprint (32K context, 7B model)
 
 Mistral 7B (4K window, 32 layers):
@@ -42,6 +48,14 @@ Mistral 7B with 4K sliding window:
 - KV cache: only last 4K tokens stored = **31 MB/layer**
 - Batch 16: 16 × 32 layers × 32 MB = **16 GB**
 - Trade-off: excellent for long documents, worse for cross-document reasoning
+
+### Sliding-window vs MHA baseline (FP16)
+
+| Model | window | kv_heads | effective KV/layer | Full cache (32L) |
+|-------|--------|----------|--------------------|------------------|
+| Mistral 7B SWA | 4096 | 8 | 8 MiB | 256 MiB |
+| Mistral-NeMo 12B SWA | 4096 | 8 | 16 MiB | 640 MiB |
+| Llama-2-7B MHA baseline (32K) | — | 32 | 256 MiB | 8.0 GiB |
 
 ## 2026 citations
 

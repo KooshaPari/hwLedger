@@ -20,6 +20,12 @@ $$\text{MLA}(Q, K, V) = \text{Concat}(\text{head}_1, \ldots, \text{head}_h) W^O$
 
 Benefit: KV cache is d_latent-sized instead of d_model-sized.
 
+## Why this variant
+
+MLA was the DeepSeek team's answer to the specific problem that even GQA's 8× compression left long-context (>100K) inference infeasible on commodity hardware for models in the 200B+ parameter class. By projecting into a latent space *before* splitting into heads, MLA stores a single `kv_lora_rank`-sized tensor per token instead of per-head K and V tensors — a 10–16× reduction over GQA at equivalent quality. It was introduced in [DeepSeek-V2 (2024)](https://arxiv.org/abs/2405.04434) and productionized in [DeepSeek-V3 (2024–2025)](https://arxiv.org/abs/2412.19437) and DeepSeek-R1 (2025). The technique is also the basis for Qwen's latent variants.
+
+**hwLedger accounting gotcha.** MLA's KV footprint is `2 * kv_lora_rank * bytes` per token per layer — NOT `2 * num_kv_heads * head_dim * bytes`. A naive reuse of the GQA formula overstates memory by ~10× for DeepSeek-V3. `AttentionKind::MLA { latent_dim }` carries the latent dim explicitly; the planner will refuse to produce a result if `latent_dim` is missing rather than silently fall back to GQA math.
+
 ## Memory footprint (32K context, 7B model)
 
 DeepSeek-V2 with MLA (d_latent = 256 vs d_model = 4096):
@@ -44,6 +50,14 @@ DeepSeek-V2 (176B mixture-of-experts, d_latent=256):
 - KV cache all layers: 32K × 256 × 2 × 60 (layers) = **983 MB**
 - Decode batch size: 64 tokens simultaneously
 - Total memory with model weights: ~50 GB (vs 100+ for standard attention)
+
+### MLA vs MHA baseline (DeepSeek-V3, 32K context, FP16)
+
+| Model | kv_lora_rank | layers | KV/layer | Full cache | vs MHA baseline |
+|-------|--------------|--------|----------|------------|-----------------|
+| DeepSeek-V2 MLA | 256 | 60 | 16 MiB | 960 MiB | ~16× smaller |
+| DeepSeek-V3 MLA | 512 | 61 | 32 MiB | ~1.9 GiB | ~8× smaller |
+| DeepSeek-V3 as-if-MHA (hypothetical) | — | 61 | ~256 MiB | ~15 GiB | 1× |
 
 ## 2026 citations
 

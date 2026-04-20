@@ -21,6 +21,12 @@ $$y_t = Ch_t$$
 
 where A is diagonal (no interaction between state dims), B is per-token input projection.
 
+## Why this variant
+
+SSMs address the fundamental O(n²) attention bottleneck: Transformers re-read the entire KV cache per decode step, making 1M-token inference infeasible at any head compression. State space models replace attention with a linear recurrence whose state is *fixed size regardless of sequence length* — giving O(n) compute and O(1) state memory. The foundational paper is [Gu & Dao, 2023, Mamba](https://arxiv.org/abs/2312.00752); productionized in [Jamba (Lieber et al., 2024)](https://arxiv.org/abs/2403.19887) and expanded in [Mamba-2 (Dao & Gu, 2024)](https://arxiv.org/abs/2405.21060). 2025–2026 releases from AI21, Nvidia, and others layer SSM blocks into otherwise-Transformer stacks ("hybrid" — see the [hybrid page](./hybrid)).
+
+**hwLedger accounting gotcha.** `AttentionKind::SSM` carries no KV cache at all; the planner reports constant state bytes. If you compare an SSM-layer memory estimate against a Transformer-layer estimate without noting that SSM memory does not grow with context, users will conclude hwLedger has a bug. The CLI's `--detail` flag prints both the constant-state component and the zero-KV component to make the shape explicit.
+
 ## Memory footprint (32K context, 7B model)
 
 Mamba-7B:
@@ -48,6 +54,14 @@ Mamba-7B inference:
 - Memory: 7B params + state (~30 MB) = **7 GB**
 - Batch 16 tokens: still ~7 GB (state per batch, not per token)
 - Max context: limited by positional encoding, not memory
+
+### SSM vs MHA baseline (32K context, FP16)
+
+| Model | per-layer state | KV growth w/ context | Full "cache" (layers) |
+|-------|-----------------|----------------------|-----------------------|
+| Mamba-7B | 32 B × N | none | ~32 MiB × 32L = 1 MiB |
+| Jamba-21B (SSM layers) | 32 B × N | none | ~14 MiB across 14 SSM layers |
+| Llama-2-7B MHA baseline | — | linear | 8.0 GiB |
 
 ## 2026 citations
 

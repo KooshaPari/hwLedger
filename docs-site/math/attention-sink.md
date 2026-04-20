@@ -7,6 +7,12 @@ description: Stabilizing long-context inference
 
 As context length increases beyond training data, attention weights "sink" (collapse) to early tokens (BOS, padding, first few tokens). Destabilizes long-context inference.
 
+## Why this variant
+
+"Attention sink" is not a new attention mechanism — it is the recognition that every variant above inherits a failure mode when extrapolated beyond its training context length. The weakness it addresses is RoPE extrapolation: positional encodings trained at 4K emit anomalously high logits for tokens at positions 0-100 when you ask the model to attend over 32K tokens, collapsing the softmax. The [StreamingLLM (Xiao et al., 2023)](https://arxiv.org/abs/2309.17453) paper formalized the phenomenon and proposed sink-token preservation; [NTK-aware RoPE scaling (Peng et al., 2023, YaRN)](https://arxiv.org/abs/2309.00071) and [LongRoPE (Ding et al., 2024)](https://arxiv.org/abs/2402.13753) addressed the encoding side; [DeepSeek-V2's ALiBi hybrid (2024)](https://arxiv.org/abs/2405.04434) sidesteps it entirely.
+
+**hwLedger accounting gotcha.** hwLedger's planner refuses to report confidence above 0.8 when requested `context_length > trained_context`. This is the only place in the stack where the planner intentionally returns an under-confident result instead of a hard error — long-context inference with RoPE interpolation is empirically quality-degraded but not catastrophic, so a refusal would be wrong. The confidence number is meant to prompt the user to rerun the probe with a smaller context.
+
 ## Root cause
 
 **Extrapolation**: Positional embeddings (RoPE, Alibi, T5-style) assume maximum context is ~4K. Beyond training, embeddings don't generalize.
@@ -58,6 +64,15 @@ Mistral 7B (trained 4K, inferred 32K):
 - Without mitigation: effective context ~2K (sinking)
 - With RoPE interpolation: effective context ~24K
 - Quality: 90% of 4K-trained performance
+
+### Sink mitigation vs baseline (quality retention at 4× training context)
+
+| Model / technique | training ctx | inference ctx | effective ctx | quality vs trained |
+|-------------------|--------------|---------------|---------------|---------------------|
+| Mistral 7B baseline | 4K | 32K | ~2K (sinking) | ~50% |
+| Mistral 7B + NTK RoPE | 4K | 32K | ~24K | ~90% |
+| Llama-3 (trained at 8K, extended to 128K) | 8K | 128K | ~96K | ~88% |
+| DeepSeek-V2 (ALiBi + MLA, native 128K) | 128K | 128K | 128K | baseline |
 
 ## 2026 citations
 
