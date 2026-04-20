@@ -75,6 +75,16 @@ Requires a built `.app` bundle (`apps/macos/HwLedgerUITests/scripts/bundle-app.s
 
 <JourneyViewer manifest="/journeys/planner-qwen2-7b-32k/manifest.json" />
 
+### Core GUI journeys
+
+| Journey | What it demonstrates |
+|---|---|
+| [Planner launch & slider](./gui-planner-launch.md) | App launch, Accessibility nav, seq-len slider drag |
+| [Probe live telemetry watch](./gui-probe-watch.md) | Telemetry subscription, rolling sparkline, expand-to-detail |
+| [Fleet Map agent discovery](./gui-fleet-map.md) | Fleet Map canvas, agent node spawn, host detail side panel |
+| [Settings mTLS admin cert](./gui-settings-mtls.md) | Generate admin client cert, Copy PEM, "Copied" toast |
+| [Planner export to vLLM flags](./gui-export-vllm.md) | Load fixture, Export > vLLM flags, copy generated flag string |
+
 ### More journeys to come
 
 - Planner with Mixtral-8x7B (cost/speed tradeoff)

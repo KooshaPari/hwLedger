@@ -165,6 +165,18 @@ export default withMermaid(defineConfig({
             { text: 'Fleet — offline fail-loudly', link: '/journeys/streamlit-fleet' },
             { text: 'Exports — vLLM / llama.cpp / MLX', link: '/journeys/streamlit-exports' }
           ]
+        },
+        {
+          text: 'GUI (macOS) journeys',
+          collapsed: false,
+          items: [
+            { text: 'Planner launch & slider', link: '/journeys/gui-planner-launch' },
+            { text: 'Probe live telemetry watch', link: '/journeys/gui-probe-watch' },
+            { text: 'Fleet Map agent discovery', link: '/journeys/gui-fleet-map' },
+            { text: 'Settings mTLS admin cert', link: '/journeys/gui-settings-mtls' },
+            { text: 'Planner export to vLLM flags', link: '/journeys/gui-export-vllm' },
+            { text: 'Status & setup', link: '/journeys/gui-journeys-status' }
+          ]
         }
       ]
     },

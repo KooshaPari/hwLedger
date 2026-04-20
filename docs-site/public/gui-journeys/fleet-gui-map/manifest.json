@@ -1,0 +1,45 @@
+{
+  "finished_at": "2026-04-20T07:50:50Z",
+  "id": "fleet-gui-map",
+  "passed": true,
+  "recording": true,
+  "started_at": "2026-04-20T07:50:50Z",
+  "steps": [
+    {
+      "index": 0,
+      "intent": "App opens on Planner, cursor moves to sidebar and clicks 'Fleet' - viewport fades in the empty fleet map.",
+      "screenshot_path": "keyframes/frame_001.png",
+      "slug": "launch-app"
+    },
+    {
+      "index": 1,
+      "intent": "Fleet map canvas is live: grid backdrop visible, 'Waiting for agents...' label centered, fleet server URL shown top-right.",
+      "screenshot_path": "keyframes/frame_002.png",
+      "slug": "map-empty"
+    },
+    {
+      "index": 2,
+      "intent": "First agent node pops in at top-right of the canvas, green status ring, hostname 'kirin-01' label, hover tooltip forming.",
+      "screenshot_path": "keyframes/frame_003.png",
+      "slug": "first-agent"
+    },
+    {
+      "index": 3,
+      "intent": "Three more agents fade in across the map; connection lines between them pulse briefly to indicate gossip handshake.",
+      "screenshot_path": "keyframes/frame_004.png",
+      "slug": "more-agents"
+    },
+    {
+      "index": 4,
+      "intent": "Cursor clicks the 'kirin-01' node; node scales up slightly, selection ring flashes, right-side panel starts sliding in.",
+      "screenshot_path": "keyframes/frame_005.png",
+      "slug": "click-node"
+    },
+    {
+      "index": 5,
+      "intent": "Host detail panel is fully open: 'kirin-01', 2x H100 80GB, uptime 3d 4h, 47 ledger entries, last heartbeat 1.2s ago.",
+      "screenshot_path": "keyframes/frame_006.png",
+      "slug": "host-panel-open"
+    }
+  ]
+}
