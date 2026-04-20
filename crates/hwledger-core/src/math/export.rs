@@ -19,7 +19,7 @@ pub enum KvQuant {
 }
 
 impl KvQuant {
-    pub fn to_string(&self) -> &'static str {
+    pub fn as_str(self) -> &'static str {
         match self {
             KvQuant::Fp16 => "fp16",
             KvQuant::Fp8 => "fp8",
@@ -41,7 +41,7 @@ pub enum WeightQuant {
 }
 
 impl WeightQuant {
-    pub fn to_string(&self) -> &'static str {
+    pub fn as_str(self) -> &'static str {
         match self {
             WeightQuant::Fp16 => "fp16",
             WeightQuant::Bf16 => "bf16",
@@ -154,8 +154,8 @@ impl PlannerSnapshot {
             "max_kv_size": self.seq_len,
             "batch_size": self.batch_size,
             "max_concurrent": self.concurrent_users,
-            "kv_quant": self.kv_quant.to_string(),
-            "weight_quant": self.weight_quant.to_string(),
+            "kv_quant": self.kv_quant.as_str(),
+            "weight_quant": self.weight_quant.as_str(),
         })
     }
 }

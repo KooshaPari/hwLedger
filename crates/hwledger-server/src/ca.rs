@@ -94,6 +94,31 @@ impl CertificateAuthority {
 
         Ok(agent_cert_pem)
     }
+
+    /// Generate an admin certificate with CN "admin" for out-of-band mTLS access.
+    /// Returns the certificate in self-signed form (for MVP).
+    /// Traces to: ADR-0009
+    pub fn mint_admin_cert() -> Result<(String, String)> {
+        let key_pair = rcgen::KeyPair::generate()?;
+
+        let mut params = CertificateParams::default();
+        params.distinguished_name = {
+            let mut dn = DistinguishedName::new();
+            dn.push(DnType::CommonName, "admin");
+            dn.push(DnType::OrganizationName, "hwLedger Fleet");
+            dn
+        };
+
+        params.not_before = time::OffsetDateTime::now_utc();
+        // 90-day validity for admin certs
+        params.not_after = time::OffsetDateTime::now_utc() + Duration::days(90);
+
+        let cert = params.self_signed(&key_pair)?;
+        let cert_pem = cert.pem();
+        let key_pem = key_pair.serialize_pem();
+
+        Ok((cert_pem, key_pem))
+    }
 }
 
 #[cfg(test)]
@@ -105,5 +130,18 @@ mod tests {
     async fn test_ca_generation() {
         let (pem, _key) = CertificateAuthority::generate_root_ca().expect("generate CA");
         assert!(pem.contains("BEGIN CERTIFICATE"));
+    }
+
+    // Traces to: ADR-0009
+    #[test]
+    fn test_mint_admin_cert() {
+        let (cert_pem, key_pem) = CertificateAuthority::mint_admin_cert().expect("mint admin cert");
+        assert!(cert_pem.contains("BEGIN CERTIFICATE"));
+        assert!(key_pem.contains("BEGIN RSA PRIVATE KEY") || key_pem.contains("BEGIN PRIVATE KEY"));
+
+        // Verify CN is "admin" by extraction
+        use crate::cert_extract::extract_cn_from_pem;
+        let cn = extract_cn_from_pem(&cert_pem);
+        assert_eq!(cn, Some("admin".to_string()));
     }
 }

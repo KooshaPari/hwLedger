@@ -120,6 +120,8 @@ impl SshPool {
         .map_err(|_| anyhow::anyhow!("SSH TCP connect timeout"))?
         .map_err(|e| anyhow::anyhow!("SSH TCP connect failed: {}", e))?;
 
+        let _ = tcp; // Ensure TCP connection is held for the duration
+
         debug!("SSH: TCP connected to {}", addr);
 
         // SSH session setup via russh client
@@ -129,27 +131,24 @@ impl SshPool {
 
         debug!("SSH: executing command '{}' on {}", cmd, self.host.hostname);
 
+        // Build ssh command with explicit port and user
+        let mut ssh_cmd = std::process::Command::new("ssh");
+        ssh_cmd.arg("-p").arg(self.host.port.to_string());
+
         // Prepare ssh command arguments based on identity
-        let identity_args = match &self.host.identity {
+        match &self.host.identity {
             SshIdentity::Agent => {
                 // ssh -A uses SSH agent
-                vec!["-A"]
+                ssh_cmd.arg("-A");
             }
             SshIdentity::KeyPath(path) => {
-                vec!["-i", &path.to_string_lossy()]
+                ssh_cmd.arg("-i").arg(path);
             }
             SshIdentity::KeyData { pem: _pem, passphrase: _ } => {
                 // For embedded PEM, we'd need to write a temp file; defer to v2
                 warn!("SSH KeyData variant not yet supported in MVP; use Agent or KeyPath");
                 return Err(anyhow::anyhow!("SSH KeyData not yet implemented; use Agent or KeyPath"));
             }
-        };
-
-        // Build ssh command with explicit port and user
-        let mut ssh_cmd = std::process::Command::new("ssh");
-        ssh_cmd.arg("-p").arg(self.host.port.to_string());
-        for arg in identity_args {
-            ssh_cmd.arg(arg);
         }
         ssh_cmd.arg("-o").arg("ConnectTimeout=10");
         ssh_cmd.arg("-o").arg("StrictHostKeyChecking=accept-new");

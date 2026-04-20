@@ -7,6 +7,7 @@
 //! and telemetry history.
 
 pub mod ca;
+pub mod cert_extract;
 pub mod config;
 pub mod db;
 pub mod error;
