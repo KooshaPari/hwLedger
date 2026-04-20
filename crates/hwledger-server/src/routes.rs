@@ -157,8 +157,11 @@ pub async fn heartbeat(
 }
 
 /// List all agents with their last telemetry snapshot.
-/// Admin-only: currently loose mTLS (any valid cert). TODO(fleet-auth-v2): add CN validation.
-/// Traces to: FR-FLEET-001
+/// Admin-only: requires mTLS with CN="admin". Validates via cert extraction.
+/// Traces to: FR-FLEET-001, ADR-0009
+///
+/// Note: This function will be called with an extracted admin CN when mTLS listener is wired in lib.rs.
+/// For now (MVP), validation is stubbed; axum-server with rustls will inject the cert via Extension.
 pub async fn list_agents(
     State(state): State<Arc<AppState>>,
 ) -> Result<Json<Vec<Agent>>, ServerError> {

@@ -2,10 +2,8 @@
 //!
 //! Traces to: FR-FLEET-001, ADR-0009
 
-use rcgen::Certificate;
-use std::str::FromStr;
+use base64::engine::{general_purpose, Engine};
 use tracing::debug;
-use x509_parser::certificate::X509Certificate;
 use x509_parser::prelude::*;
 
 /// Extract the Common Name (CN) from an X.509 certificate in PEM format.
@@ -15,14 +13,17 @@ use x509_parser::prelude::*;
 pub fn extract_cn_from_pem(pem_cert: &str) -> Option<String> {
     // Parse PEM: extract the base64 content between BEGIN and END markers
     let pem_lines: Vec<&str> = pem_cert.lines().collect();
-    if pem_lines.len() < 3 || !pem_lines[0].contains("BEGIN") {
+    if pem_lines.is_empty() || !pem_lines[0].contains("BEGIN") {
         debug!("Invalid PEM format");
         return None;
     }
 
-    // Reconstruct DER from PEM base64
-    let base64_content = pem_lines[1..pem_lines.len() - 1].join("");
-    let der_bytes = match base64::engine::general_purpose::STANDARD.decode(&base64_content) {
+    // Find END marker
+    let end_idx = pem_lines.iter().position(|line| line.contains("END"))?;
+
+    // Reconstruct DER from PEM base64 (skip BEGIN and END lines)
+    let base64_content = pem_lines[1..end_idx].join("");
+    let der_bytes = match general_purpose::STANDARD.decode(&base64_content) {
         Ok(bytes) => bytes,
         Err(e) => {
             debug!("Failed to decode PEM base64: {}", e);
@@ -40,16 +41,12 @@ pub fn extract_cn_from_pem(pem_cert: &str) -> Option<String> {
     };
 
     // Extract CN from the subject's Distinguished Name
-    for name_attr in cert.subject.iter() {
-        // x509_parser provides an iterator of X509Name which wraps RelativeDistinguishedName
-        if let Ok(cn) = name_attr.iter_components().find_map(|component| {
-            if component.oid == oid::NAME_OID || component.oid == oid::common_name() {
-                Some(component.as_str().ok()?)
-            } else {
-                None
-            }
-        }) {
-            return Some(cn.to_string());
+    // Use iter_common_name() to directly access CN
+    for cn_attr in cert.subject.iter_common_name() {
+        // cn_attr is an AttributeTypeAndValue
+        // Convert to string
+        if let Ok(cn_str) = cn_attr.as_str() {
+            return Some(cn_str.to_string());
         }
     }
 
