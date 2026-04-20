@@ -2,13 +2,26 @@ journey: fleet-audit
 steps:
   - index: 0
     intent: "Terminal prompt (audit-backed server running in background)"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 1
     intent: "Command typed: `hwledger fleet audit --server http://localhost:8080 --limit 3`"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 2
     intent: "Audit log header printed with column titles"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 3
     intent: "First audit entry: timestamp, actor, action, subject"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 4
     intent: "Remaining two entries up to --limit 3 ceiling"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 5
     intent: "Prompt returned; background server torn down silently"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
+      expected_exit: 0

@@ -2,9 +2,18 @@ journey: ingest-local-gguf
 steps:
   - index: 0
     intent: "Terminal prompt"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 1
     intent: "Command typed: `hwledger ingest gguf://tests/golden/fixtures/tiny.gguf --json`"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 2
     intent: "JSON document opens: schema, source.kind=gguf, source.location"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 3
     intent: "Metadata fields: architecture, parameters, quantization inferred from GGUF"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
+      expected_exit: 0

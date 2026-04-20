@@ -46,6 +46,23 @@ echo '  "tapes": [' >> "${SUMMARY_FILE}"
 # Prepend CLI binary to PATH
 export PATH="${REPO_ROOT}/target/release:${PATH}"
 
+# Warn about tapes missing the canonical `__EXIT_$?__` sentinel. The
+# phenotype-journey assert layer uses this sentinel to gate the last keyframe
+# against the expected exit code when the intents YAML declares
+# `expected_exit`. See phenotype-journeys/README.md for the canonical pattern.
+MISSING_SENTINEL=()
+for tape_file in "${TAPES_DIR}"/*.tape; do
+    [ -f "${tape_file}" ] || continue
+    if ! grep -q "__EXIT_" "${tape_file}"; then
+        MISSING_SENTINEL+=("$(basename "${tape_file}")")
+    fi
+done
+if [ ${#MISSING_SENTINEL[@]} -gt 0 ]; then
+    echo "warn: these tapes do not emit an __EXIT_\$?__ sentinel — expected_exit assertions will not gate them:"
+    for n in "${MISSING_SENTINEL[@]}"; do echo "  - ${n}"; done
+    echo "Add a trailing line like: Type \"<cmd>; echo __EXIT_\\\$?__\" ; Enter"
+fi
+
 # Process each tape
 TAPE_COUNT=0
 PASSED_COUNT=0

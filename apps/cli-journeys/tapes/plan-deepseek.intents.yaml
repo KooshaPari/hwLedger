@@ -2,11 +2,26 @@ journey: plan-deepseek
 steps:
   - index: 0
     intent: "Terminal at prompt, ready to run planner"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 1
     intent: "Command typed: `hwledger plan tests/golden/deepseek-v3.json --seq 2048 --users 2`"
+    assertions:
+      must_contain: ["hwledger plan", "deepseek-v3"]
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 2
     intent: "Architecture detection line: MLA with kv_lora_rank=512"
+    assertions:
+      must_contain: ["MLA", "kv_lora_rank"]
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 3
     intent: "VRAM breakdown: weights, KV cache, activations at 2K sequence"
+    assertions:
+      must_contain: ["VRAM"]
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 4
     intent: "Second invocation at --seq 32768 showing KV growth under longer context"
+    assertions:
+      must_contain: ["32768"]
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
+      expected_exit: 0

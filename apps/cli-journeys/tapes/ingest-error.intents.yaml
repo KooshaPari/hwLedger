@@ -1,10 +1,25 @@
+# ingest-error journey intentionally exercises an error path. The assertions
+# encode the SPECIFIC expected error ("not found") so a regression where the
+# CLI panics or emits a different error is still caught.
 journey: ingest-error
 steps:
   - index: 0
     intent: "Terminal prompt ready to invoke ingest"
+    assertions:
+      must_not_contain: ["panic", "command not found"]
   - index: 1
     intent: "Command typed: `hwledger ingest gguf:///tmp/nonexistent.gguf`"
+    assertions:
+      must_contain: ["hwledger ingest"]
+      must_not_contain: ["panic", "command not found"]
   - index: 2
     intent: "Graceful error: GGUF file not found; message names the missing path"
+    assertions:
+      must_contain: ["not found"]
+      must_not_contain: ["panic", "thread 'main' panicked"]
   - index: 3
     intent: "Non-zero exit code, prompt returned without a stack trace"
+    assertions:
+      must_not_contain: ["panic", "thread 'main' panicked", "RUST_BACKTRACE"]
+      # Non-zero exit is expected; we leave expected_exit unset because the
+      # exact exit code varies with the CLI's error mapping.

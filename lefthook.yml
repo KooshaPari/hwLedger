@@ -46,6 +46,36 @@ pre-push:
         cargo clippy --workspace --all-targets -- -D warnings
         cargo test --workspace --no-fail-fast
 
+    tape-assertions:
+      # Ground-truth assertion gate: every verified manifest must pass
+      # `phenotype-journey assert --strict`. Violations block the push.
+      run: |
+        set -euo pipefail
+        MANIFESTS_DIR="apps/cli-journeys/manifests"
+        if [ ! -d "$MANIFESTS_DIR" ]; then
+          echo "no cli-journeys manifests dir; skipping"
+          exit 0
+        fi
+        PHENOTYPE_JOURNEYS_ROOT="${PHENOTYPE_JOURNEYS_ROOT:-/Users/kooshapari/CodeProjects/Phenotype/repos/phenotype-journeys}"
+        if command -v phenotype-journey >/dev/null 2>&1; then
+          BIN="phenotype-journey"
+        elif [ -f "${PHENOTYPE_JOURNEYS_ROOT}/Cargo.toml" ]; then
+          BIN="cargo run --quiet --manifest-path ${PHENOTYPE_JOURNEYS_ROOT}/Cargo.toml --bin phenotype-journey --"
+        else
+          echo "phenotype-journey not available — install phenotype-journeys or set PHENOTYPE_JOURNEYS_ROOT"
+          exit 1
+        fi
+        fail=0
+        for m in "$MANIFESTS_DIR"/*/manifest.verified.json; do
+          [ -f "$m" ] || continue
+          journey=$(basename "$(dirname "$m")")
+          if ! ${BIN} assert "$m" --artefacts apps/cli-journeys --strict; then
+            echo "assertion failure in journey: ${journey}"
+            fail=1
+          fi
+        done
+        exit $fail
+
     traceability-journeys:
       # Enforce FR-TRACE-003: every FR tagged [journey_kind: ...] must have a
       # verified journey manifest tracing back to it, no orphans, no low scores.

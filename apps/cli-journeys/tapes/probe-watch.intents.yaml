@@ -2,13 +2,25 @@ journey: probe-watch
 steps:
   - index: 0
     intent: "Terminal prompt"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 1
     intent: "Command typed: `hwledger probe watch --interval 1s --json`"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 2
     intent: "First NDJSON sample printed with timestamp and GPU utilization"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 3
     intent: "Second sample one second later showing delta in memory / util"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 4
     intent: "Third sample confirming the streaming cadence"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 5
     intent: "Ctrl+C received; watcher exits cleanly and returns prompt"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
