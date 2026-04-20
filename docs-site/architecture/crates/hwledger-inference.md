@@ -1,52 +1,56 @@
 ---
 title: hwledger-inference
-description: "Inference backend dispatcher: dispatches to mistral.rs, ONNX, or MLX sidecar bas..."
+description: Backend dispatcher that routes inference jobs to mistral.rs, ONNX, or the MLX sidecar.
 ---
 
 # hwledger-inference
 
-**Role.** Inference backend dispatcher: dispatches to mistral.rs, ONNX, or MLX sidecar based on hardware and model format.
+**Role.** Dispatches inference to the correct backend (`mistral.rs`, ONNX Runtime, or the MLX sidecar) based on hardware class and model format.
+
+## Why this crate
+
+hwLedger has to call into at least three inference engines: `mistral.rs` for GPU-native Rust paths, ONNX Runtime for cross-platform CPU/GPU fallback, and an out-of-process Python MLX sidecar for Apple Silicon. Each has a different `async` contract, a different token-stream shape, and different lifecycle semantics. A single `InferenceBackend` trait here lets the rest of the stack be backend-agnostic — the CLI, agent, and future server-side execution paths all talk to one shape.
+
+Rejected: making `hwledger-cli` directly depend on each backend crate. Rejected because (a) `mistral.rs` pulls in heavy GPU toolkits that should not be required when a user only wants to run MLX, and (b) the fleet agent needs runtime selection based on probed hardware.
+
+**Belongs here:** the `InferenceBackend` trait, a narrow dispatcher, token-stream abstraction.
+**Does not belong here:** the MLX process supervision (that's `hwledger-mlx-sidecar`), CLI argument parsing, prompt templating.
 
 ## Public API surface
 
-| Type | Name | Stability |
-|------|------|-----------|
-| mod | `backend` | stable |
-| mod | `error` | stable |
-| mod | `traits` | stable |
-| fn | `version` | stable |
+| Module / item | Stability | Notes |
+|---------------|-----------|-------|
+| `backend` module | stable | `BackendKind` enum + dispatcher |
+| `traits` module | stable | `InferenceBackend` async trait |
+| `error` module | stable | `InferenceError` |
+| `version()` | stable | Crate version |
 
-## Dependencies
+All public items re-exported at crate root. The crate is intentionally small (239 LOC) because it is a contract, not an implementation.
 
-Top workspace and external dependencies:
+## When to reach for it
 
-| Dependency | Purpose | Workspace |
-|------------|---------|-----------|
-| `hwledger-mlx-sidecar` | Core logic | No |
+1. **Adding a new inference engine** (e.g., TensorRT-LLM): implement `InferenceBackend`, add a `BackendKind` variant, wire into `dispatch()`.
+2. **Writing a mock backend for tests** — implement the trait with a canned token stream.
+3. **Agent job execution** — `hwledger-agent` holds a `Box<dyn InferenceBackend>` chosen at startup based on probed hardware.
 
-## Consumers
+## Evolution
 
-- - `hwledger-core`
-- `hwledger-server`
+| SHA | Note |
+|-----|------|
+| `db67d58` | Bootstrap — trait-only scaffold |
+| `9726f40` | `feat(WP20): MLX sidecar integration with JSON-RPC protocol` — first concrete backend wired in |
+| `97fcc68` | `feat(p3,p5,test,docs): Wave 9` |
+| `ec1f8bf` | `feat(release): ship v0.1.0-alpha + coverage uplift` |
+
+**Size.** 239 LOC, 6 tests. The smallest runtime crate by design.
 
 ## Design notes
 
-- Standalone crate: minimal inter-crate dependencies, composable with other inference backends
-- Error handling via `thiserror` with custom error types
-- Full async/await support via `tokio` where applicable
-- All public types implement `Debug` and `Clone`
-- Serialization via `serde` for config and wire protocol
-
-## Example usage
-
-```rust
-use hwledger_inference::*;
-
-// Initialize and call main API
-```
+- `InferenceBackend` is an `async` trait object, dyn-compatible via `async-trait`.
+- Errors converge on `InferenceError` with `#[from]` into `hwledger-mlx-sidecar::MlxError` etc.
+- No tokio runtime is spawned inside the crate; it is always the caller's runtime.
 
 ## Related
 
 - [Source on GitHub](https://github.com/KooshaPari/hwLedger/tree/main/crates/hwledger-inference)
-- [ADR-0001: Rust Core Architecture](/architecture/adrs/0001-rust-core-three-native-guis)
-- [ADR-0005: Shared Crate Reuse](/architecture/adrs/0005-shared-crate-reuse)
+- [ADR-0002: oMlx fat-fork](/architecture/adrs/0002-oMlx-fat-fork)
