@@ -1,5 +1,6 @@
 {
   "id": "cli-probe-watch",
+  "traces_to": ["FR-TEL-002"],
   "title": "hwledger probe-watch",
   "intent": "CLI probe watch command monitoring GPU resources with clean shutdown",
   "steps": [

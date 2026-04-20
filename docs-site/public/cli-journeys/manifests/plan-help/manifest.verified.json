@@ -1,5 +1,6 @@
 {
   "id": "cli-plan-help",
+  "traces_to": ["FR-PLAN-003"],
   "title": "hwledger plan-help",
   "intent": "CLI help text for the plan subcommand",
   "steps": [

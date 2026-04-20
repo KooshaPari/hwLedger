@@ -1,6 +1,6 @@
 # hwLedger — Product Requirements Document (v0.1 draft)
 
-Documents: FR-PLAN-001, FR-PLAN-002, FR-PLAN-003, FR-PLAN-004, FR-PLAN-005, FR-PLAN-006, FR-PLAN-007, FR-TEL-001, FR-TEL-002, FR-TEL-003, FR-TEL-004, FR-INF-001, FR-INF-002, FR-INF-003, FR-INF-004, FR-INF-005, FR-FLEET-001, FR-FLEET-002, FR-FLEET-003, FR-FLEET-004, FR-FLEET-005, FR-FLEET-006, FR-FLEET-007, FR-FLEET-008, FR-UI-001, FR-UI-002, FR-UI-003, FR-UI-004, FR-UX-VERIFY-001, FR-UX-VERIFY-002, FR-UX-VERIFY-003, NFR-001, NFR-002, NFR-003, NFR-004, NFR-005, NFR-006, NFR-007, NFR-VERIFY-001
+Documents: FR-PLAN-001, FR-PLAN-002, FR-PLAN-003, FR-PLAN-004, FR-PLAN-005, FR-PLAN-006, FR-PLAN-007, FR-TEL-001, FR-TEL-002, FR-TEL-003, FR-TEL-004, FR-INF-001, FR-INF-002, FR-INF-003, FR-INF-004, FR-INF-005, FR-FLEET-001, FR-FLEET-002, FR-FLEET-003, FR-FLEET-004, FR-FLEET-005, FR-FLEET-006, FR-FLEET-007, FR-FLEET-008, FR-UI-001, FR-UI-002, FR-UI-003, FR-UI-004, FR-UX-VERIFY-001, FR-UX-VERIFY-002, FR-UX-VERIFY-003, FR-TRACE-001, FR-TRACE-002, FR-TRACE-003, FR-TRACE-004, NFR-001, NFR-002, NFR-003, NFR-004, NFR-005, NFR-006, NFR-007, NFR-VERIFY-001
 
 > Planner document. All acceptance criteria will translate into AgilePlus work packages before implementation. No code in this doc.
 
@@ -13,9 +13,9 @@ Documents: FR-PLAN-001, FR-PLAN-002, FR-PLAN-003, FR-PLAN-004, FR-PLAN-005, FR-P
 
 ### 2.1 Capacity planner
 
-- **FR-PLAN-001**: Ingest model metadata from HF Hub, local GGUF, local safetensors, local MLX (.npz + config), Ollama, LM Studio catalog.
+- **FR-PLAN-001** [journey_kind: cli]: Ingest model metadata from HF Hub, local GGUF, local safetensors, local MLX (.npz + config), Ollama, LM Studio catalog.
 - **FR-PLAN-002**: Classify architecture into an `AttentionKind` variant: `Mha`, `Gqa`, `Mqa`, `Mla`, `SlidingWindow`, `Ssm`, `Hybrid(Vec<Kind>)`, `AttentionSink`.
-- **FR-PLAN-003**: Compute `VRAM ≈ W + O + KV(seq, users) + Prefill(batch, seq)` per §5 of PLAN.md. Formulas per architecture.
+- **FR-PLAN-003** [journey_kind: cli]: Compute `VRAM ≈ W + O + KV(seq, users) + Prefill(batch, seq)` per §5 of PLAN.md. Formulas per architecture.
 - **FR-PLAN-004**: Interactive sliders for Sequence Length, Concurrent Users, Batch Size, Weight Quant, KV Quant. Log scale on appropriate axes.
 - **FR-PLAN-005**: Live stacked-bar breakdown (weights | KV | runtime | prefill | free). Per-layer heatmap showing which layers carry KV load.
 - **FR-PLAN-006**: Green/yellow/red fit gauge per selected target device (from probe or fleet).
@@ -23,8 +23,8 @@ Documents: FR-PLAN-001, FR-PLAN-002, FR-PLAN-003, FR-PLAN-004, FR-PLAN-005, FR-P
 
 ### 2.2 Live telemetry
 
-- **FR-TEL-001**: `GpuProbe` trait with four backends: NVIDIA (nvml-wrapper), AMD (rocm-smi shell), Apple Silicon (macmon shell), Intel (best-effort sysfs).
-- **FR-TEL-002**: Device enumeration, total/free VRAM, utilisation %, temperature, power, process-level VRAM.
+- **FR-TEL-001** [journey_kind: cli]: `GpuProbe` trait with four backends: NVIDIA (nvml-wrapper), AMD (rocm-smi shell), Apple Silicon (macmon shell), Intel (best-effort sysfs).
+- **FR-TEL-002** [journey_kind: cli]: Device enumeration, total/free VRAM, utilisation %, temperature, power, process-level VRAM.
 - **FR-TEL-003**: Predicted-vs-actual reconciliation panel on the Planner screen.
 - **FR-TEL-004**: Explicit "unsupported" states with failure reason — never silent 0 s.
 
@@ -49,7 +49,7 @@ Documents: FR-PLAN-001, FR-PLAN-002, FR-PLAN-003, FR-PLAN-004, FR-PLAN-005, FR-P
 
 ### 2.5 Desktop GUI (macOS MVP)
 
-- **FR-UI-001**: SwiftUI app consuming `hwledger-ffi` via UniFFI-generated Swift bindings + XCFramework.
+- **FR-UI-001** [journey_kind: gui]: SwiftUI app consuming `hwledger-ffi` via UniFFI-generated Swift bindings + XCFramework.
 - **FR-UI-002**: Six screens — Library, Planner, Fleet, Run, Ledger, Settings — see PLAN.md §6.
 - **FR-UI-003**: Codesigned, notarised, distributed as DMG with Sparkle-based auto-update.
 - **FR-UI-004**: Offline-first. No mandatory network except for HF metadata fetches and rental API calls.
@@ -59,6 +59,13 @@ Documents: FR-PLAN-001, FR-PLAN-002, FR-PLAN-003, FR-PLAN-004, FR-PLAN-005, FR-P
 - **FR-UX-VERIFY-001**: Every user-journey screenshot step must emit a blackbox description produced by Claude Opus 4.7 vision without prior context.
 - **FR-UX-VERIFY-002**: Each description is compared against its intent label by Claude Sonnet 4.6 (judge). Score <= 2 surfaces as a failing journey.
 - **FR-UX-VERIFY-003**: Verification results serialize to `manifest.verified.json` alongside journey manifest for VitePress rendering (WP28).
+
+### 2.7 Traceability extensions (journey coverage)
+
+- **FR-TRACE-001**: PRD parser must accept inline `[journey_kind: cli|gui|web]` tags (comma-separated) on FR header lines and expose the parsed kinds on the FR record.
+- **FR-TRACE-002**: Journey manifest scanner must walk `docs-site/public/{cli,gui,streamlit}-journeys/**/manifest.verified.json`, skipping missing directories with a warning rather than panicking.
+- **FR-TRACE-003**: Traceability gate must FAIL (non-zero exit) when an FR tagged with a `journey_kind` has no verified journey whose `traces_to` cites it, or when a journey cites a non-existent FR (orphan), or when a journey's `verification.passed == false` / `overall_score < 0.7`.
+- **FR-TRACE-004**: Traceability markdown report must emit a `## Journey coverage` section with a table `FR | kind | journey id | score | passed`.
 
 ## 3. Non-functional requirements
 

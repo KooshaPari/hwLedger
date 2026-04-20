@@ -37,20 +37,17 @@ fn test_coverage_report_generation() {
             id: "FR-TEST-001".to_string(),
             kind: FrKind::Fr,
             description: "First requirement".to_string(),
-            section: "Section A".to_string(),
-        },
+            section: "Section A".to_string(), journey_kinds: vec![] },
         FrSpec {
             id: "FR-TEST-002".to_string(),
             kind: FrKind::Fr,
             description: "Second requirement".to_string(),
-            section: "Section A".to_string(),
-        },
+            section: "Section A".to_string(), journey_kinds: vec![] },
         FrSpec {
             id: "NFR-TEST-001".to_string(),
             kind: FrKind::Nfr,
             description: "Non-functional requirement".to_string(),
-            section: "Section B".to_string(),
-        },
+            section: "Section B".to_string(), journey_kinds: vec![] },
     ];
 
     let traces = vec![];
@@ -70,8 +67,7 @@ fn test_coverage_detection_with_tests() {
         id: "FR-PLAN-001".to_string(),
         kind: FrKind::Fr,
         description: "Requirement".to_string(),
-        section: "Section".to_string(),
-    }];
+        section: "Section".to_string(), journey_kinds: vec![] }];
 
     let traces = vec![TestTrace {
         file: "test.rs".to_string(),
@@ -95,8 +91,7 @@ fn test_unknown_citation_detection() {
         id: "FR-PLAN-001".to_string(),
         kind: FrKind::Fr,
         description: "Requirement".to_string(),
-        section: "Section".to_string(),
-    }];
+        section: "Section".to_string(), journey_kinds: vec![] }];
 
     let traces = vec![TestTrace {
         file: "test.rs".to_string(),
@@ -121,8 +116,7 @@ fn test_orphaned_detection() {
         id: "FR-PLAN-001".to_string(),
         kind: FrKind::Fr,
         description: "Requirement".to_string(),
-        section: "Section".to_string(),
-    }];
+        section: "Section".to_string(), journey_kinds: vec![] }];
 
     let traces = vec![TestTrace {
         file: "test.rs".to_string(),
@@ -149,14 +143,12 @@ fn test_multi_fr_citation() {
             id: "FR-PLAN-001".to_string(),
             kind: FrKind::Fr,
             description: "First".to_string(),
-            section: "Section".to_string(),
-        },
+            section: "Section".to_string(), journey_kinds: vec![] },
         FrSpec {
             id: "FR-PLAN-002".to_string(),
             kind: FrKind::Fr,
             description: "Second".to_string(),
-            section: "Section".to_string(),
-        },
+            section: "Section".to_string(), journey_kinds: vec![] },
     ];
 
     let traces = vec![TestTrace {
@@ -182,14 +174,12 @@ fn test_top_covered() {
             id: "FR-PLAN-001".to_string(),
             kind: FrKind::Fr,
             description: "".to_string(),
-            section: "".to_string(),
-        },
+            section: "".to_string(), journey_kinds: vec![] },
         FrSpec {
             id: "FR-PLAN-002".to_string(),
             kind: FrKind::Fr,
             description: "".to_string(),
-            section: "".to_string(),
-        },
+            section: "".to_string(), journey_kinds: vec![] },
     ];
 
     let traces = vec![
@@ -229,8 +219,7 @@ fn test_markdown_generation() {
         id: "FR-PLAN-001".to_string(),
         kind: FrKind::Fr,
         description: "Test requirement".to_string(),
-        section: "Test Section".to_string(),
-    }];
+        section: "Test Section".to_string(), journey_kinds: vec![] }];
 
     let report = CoverageReport::generate(frs, vec![]);
     let md = report.to_markdown();

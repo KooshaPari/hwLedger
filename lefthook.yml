@@ -46,6 +46,13 @@ pre-push:
         cargo clippy --workspace --all-targets -- -D warnings
         cargo test --workspace --no-fail-fast
 
+    traceability-journeys:
+      # Enforce FR-TRACE-003: every FR tagged [journey_kind: ...] must have a
+      # verified journey manifest tracing back to it, no orphans, no low scores.
+      run: |
+        set -euo pipefail
+        cargo run --quiet -p hwledger-traceability -- --repo . --strict-journeys
+
     swift-main:
       root: "apps/macos/HwLedger"
       run: |

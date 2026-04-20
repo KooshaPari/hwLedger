@@ -1,5 +1,6 @@
 {
   "id": "cli-probe-list",
+  "traces_to": ["FR-TEL-001", "FR-TEL-002"],
   "title": "hwledger probe-list",
   "intent": "CLI probe list command showing GPU device enumeration",
   "steps": [

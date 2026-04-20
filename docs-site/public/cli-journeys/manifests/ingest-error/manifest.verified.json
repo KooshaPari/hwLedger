@@ -1,5 +1,6 @@
 {
   "id": "cli-ingest-error",
+  "traces_to": ["FR-PLAN-001"],
   "title": "hwledger ingest-error",
   "intent": "CLI ingest command attempting to load a non-existent GGUF file",
   "steps": [

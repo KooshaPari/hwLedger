@@ -4,7 +4,10 @@
 
 use anyhow::{Context, Result};
 use clap::Parser;
-use hwledger_traceability::{AnnotationScanner, CoverageLevel, CoverageReport, PrdParser};
+use hwledger_traceability::{
+    evaluate_journeys, render_journey_markdown, scan_verified, AnnotationScanner, CoverageLevel,
+    CoverageReport, JourneyStatus, PrdParser,
+};
 use std::path::PathBuf;
 
 /// FR ↔ Test Traceability Checker
@@ -30,6 +33,12 @@ struct Args {
     /// Strict mode: fail if any FR has zero coverage or unknown cites exist
     #[arg(long)]
     strict: bool,
+
+    /// Strict-journeys mode: fail only on journey-coverage violations (FR-TRACE-003).
+    /// Useful as a narrow pre-push gate while the classic strict gate is still
+    /// being stabilised.
+    #[arg(long)]
+    strict_journeys: bool,
 
     /// Verbose output
     #[arg(short, long)]
@@ -65,28 +74,80 @@ fn main() -> Result<()> {
         );
     }
 
-    // Generate report
+    // Scan verified journey manifests (FR-TRACE-002).
+    let journey_scan =
+        scan_verified(&args.repo).context("Failed to scan verified journey manifests")?;
+    if args.verbose {
+        eprintln!(
+            "Discovered {} verified journey manifests ({} warnings)",
+            journey_scan.manifests.len(),
+            journey_scan.warnings.len()
+        );
+        for w in &journey_scan.warnings {
+            eprintln!("  warning: {}", w);
+        }
+    }
+
+    // Generate cross-dim report and journey coverage report separately.
+    let journey_report = evaluate_journeys(&frs, &journey_scan);
     let report = CoverageReport::generate_from_annotations(frs, annotations);
 
     // Output handling
     if args.json {
+        // Merge the two reports under a single JSON envelope.
+        let envelope = serde_json::json!({
+            "coverage": &report,
+            "journey_coverage": &journey_report,
+        });
         let json =
-            serde_json::to_string_pretty(&report).context("Failed to serialize report to JSON")?;
+            serde_json::to_string_pretty(&envelope).context("Failed to serialize report to JSON")?;
         println!("{}", json);
     } else if let Some(out_path) = args.markdown_out {
-        let md = report.to_markdown();
+        let mut md = report.to_markdown();
+        md.push_str(&render_journey_markdown(&journey_report));
         std::fs::write(&out_path, md)
             .context(format!("Failed to write markdown to {}", out_path.display()))?;
         eprintln!("Wrote markdown report to: {}", out_path.display());
     } else {
         // Pretty print
         print_report(&report);
+        println!("\n{}", render_journey_markdown(&journey_report));
     }
 
     // Strict mode checks
-    if args.strict {
-        let not_fully_traced: Vec<_> =
-            report.frs.iter().filter(|f| f.coverage != CoverageLevel::FullyTraced).collect();
+    if args.strict || args.strict_journeys {
+        let mut fail = false;
+
+        // Journey gate (FR-TRACE-003) — evaluated first so it reports even if
+        // classic coverage is already green.
+        if journey_report.has_failures() {
+            eprintln!("\nFAIL: Journey coverage gate (--strict):");
+            for row in &journey_report.rows {
+                let reason = match row.status {
+                    JourneyStatus::Ok => continue,
+                    JourneyStatus::Missing => "missing journey for tagged FR".to_string(),
+                    JourneyStatus::LowScore => {
+                        format!("score {:.2} < {:.2}", row.score.unwrap_or(0.0), hwledger_traceability::MIN_JOURNEY_SCORE)
+                    }
+                    JourneyStatus::NotPassed => "journey not passed".to_string(),
+                };
+                eprintln!("  - {} [{}] ({})", row.fr, row.kind, reason);
+            }
+            for orph in &journey_report.orphan_journeys {
+                eprintln!(
+                    "  - orphan journey {} cites unknown FR(s): {}",
+                    orph.journey_id,
+                    orph.unknown_frs.join(", ")
+                );
+            }
+            fail = true;
+        }
+
+        let not_fully_traced: Vec<_> = if args.strict {
+            report.frs.iter().filter(|f| f.coverage != CoverageLevel::FullyTraced).collect()
+        } else {
+            Vec::new()
+        };
 
         if !not_fully_traced.is_empty() {
             eprintln!("\nFAIL: Not all FRs are FullyTraced (--strict):");
@@ -106,6 +167,10 @@ fn main() -> Result<()> {
                 };
                 eprintln!("  - {} ({})", cov.fr, reason);
             }
+            fail = true;
+        }
+
+        if fail {
             std::process::exit(1);
         }
     }

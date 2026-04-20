@@ -1,5 +1,6 @@
 {
   "id": "cli-plan-deepseek",
+  "traces_to": ["FR-PLAN-003"],
   "title": "hwledger plan-deepseek",
   "intent": "CLI plan command memory allocation for DeepSeek-V3 with 2048 seq, 2 users",
   "steps": [
