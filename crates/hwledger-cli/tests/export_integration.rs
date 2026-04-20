@@ -46,10 +46,7 @@ fn test_export_llama_cpp_llama_70b() {
         .arg("llama-cpp")
         .assert()
         .success()
-        .stdout(
-            predicate::str::contains("-c")
-                .and(predicate::str::contains("-n")),
-        );
+        .stdout(predicate::str::contains("-c").and(predicate::str::contains("-n")));
 }
 
 #[test]
@@ -65,7 +62,6 @@ fn test_export_mlx_qwen() {
         .assert()
         .success()
         .stdout(
-            predicate::str::contains("\"model\"")
-                .and(predicate::str::contains("\"kv_quant\"")),
+            predicate::str::contains("\"model\"").and(predicate::str::contains("\"kv_quant\"")),
         );
 }

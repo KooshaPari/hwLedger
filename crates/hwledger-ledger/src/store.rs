@@ -139,11 +139,7 @@ impl AuditLog {
             .map_err(|e| LedgerError::EventSourcing(e.to_string()))?;
 
         if entries.is_empty() {
-            return Ok(PruneReport {
-                removed_count: 0,
-                new_tail_seq: 1,
-                checkpoint_seq: None,
-            });
+            return Ok(PruneReport { removed_count: 0, new_tail_seq: 1, checkpoint_seq: None });
         }
 
         let now_ms = chrono::Utc::now().timestamp_millis() as u64;
@@ -195,7 +191,10 @@ impl AuditLog {
 
             checkpoint_seq = Some(cp_seq as u64);
 
-            info!("Prune: created checkpoint at seq {} for removed range {}-{}", cp_seq, first_removed_seq, last_removed_seq);
+            info!(
+                "Prune: created checkpoint at seq {} for removed range {}-{}",
+                cp_seq, first_removed_seq, last_removed_seq
+            );
         }
 
         // Now remove the old entries from the store
@@ -211,7 +210,10 @@ impl AuditLog {
             entries[0].sequence as u64
         };
 
-        info!("Prune: removed {} events, new tail seq={}, checkpoint_seq={:?}", removed_count, new_tail_seq, checkpoint_seq);
+        info!(
+            "Prune: removed {} events, new tail seq={}, checkpoint_seq={:?}",
+            removed_count, new_tail_seq, checkpoint_seq
+        );
 
         Ok(PruneReport { removed_count, new_tail_seq, checkpoint_seq })
     }
@@ -457,8 +459,7 @@ mod tests {
 
         // Checkpoint should be in the history now
         let history = audit.history(100).await.expect("history failed");
-        let has_checkpoint =
-            history.iter().any(|e| e.event.kind() == "checkpoint");
+        let has_checkpoint = history.iter().any(|e| e.event.kind() == "checkpoint");
         assert!(has_checkpoint);
     }
 }

@@ -73,11 +73,8 @@ mod tests {
     // Traces to: FR-FLEET-006
     #[test]
     fn test_retention_policy_with_max_events() {
-        let policy = RetentionPolicy {
-            max_events: Some(1000),
-            max_age_days: None,
-            snapshot_every_n: None,
-        };
+        let policy =
+            RetentionPolicy { max_events: Some(1000), max_age_days: None, snapshot_every_n: None };
         assert_eq!(policy.max_events, Some(1000));
     }
 
@@ -97,11 +94,8 @@ mod tests {
     // Traces to: FR-FLEET-006
     #[test]
     fn test_prune_report_construction() {
-        let report = PruneReport {
-            removed_count: 9000,
-            new_tail_seq: 1001,
-            checkpoint_seq: Some(1001),
-        };
+        let report =
+            PruneReport { removed_count: 9000, new_tail_seq: 1001, checkpoint_seq: Some(1001) };
         assert_eq!(report.removed_count, 9000);
         assert_eq!(report.new_tail_seq, 1001);
         assert_eq!(report.checkpoint_seq, Some(1001));

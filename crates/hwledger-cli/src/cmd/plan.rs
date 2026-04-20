@@ -7,7 +7,9 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use comfy_table::Table;
 use hwledger_arch::{classify, Config as ArchConfig};
-use hwledger_core::math::{KvFormula, PlannerSnapshot, KvQuant as CoreKvQuant, WeightQuant as CoreWeightQuant};
+use hwledger_core::math::{
+    KvFormula, KvQuant as CoreKvQuant, PlannerSnapshot, WeightQuant as CoreWeightQuant,
+};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
