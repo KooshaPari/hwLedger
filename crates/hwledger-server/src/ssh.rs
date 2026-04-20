@@ -3,17 +3,21 @@
 //! Provides connection pooling to remote hosts via SSH and parses GPU telemetry
 //! from nvidia-smi, rocm-smi, and system_profiler outputs.
 //!
-//! Uses russh 0.46 native client implementation for SSH connectivity with
-//! deadpool-based connection pooling.
+//! Uses russh 0.46 native client implementation (no subprocess) for SSH
+//! connectivity. Authentication supports `Agent` (via `SSH_AUTH_SOCK`),
+//! `KeyPath` (private key on disk), and `KeyData` (inline PEM).
 
 use crate::error::ServerError;
-use anyhow::Result;
+use anyhow::{anyhow, bail, Result};
 use hwledger_fleet_proto::DeviceReport;
+use russh::client::{self, Handle, Handler};
+use russh::keys as russh_keys;
+use russh::keys::key::PublicKey;
+use russh::ChannelMsg;
 use serde::{Deserialize, Serialize};
-use std::net::SocketAddr;
 use std::path::PathBuf;
+use std::sync::Arc;
 use std::time::Duration;
-use tokio::net::TcpStream;
 use tracing::{debug, info, warn};
 
 /// SSH identity variants for authentication.
@@ -40,7 +44,6 @@ pub struct SshHost {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bastion: Option<Box<SshHost>>,
 }
-
 
 /// Pool of SSH connections to a single host via russh.
 /// Uses deadpool to manage connection reuse with Clone-able handles.
@@ -104,86 +107,137 @@ impl SshPool {
         })
     }
 
-    /// Execute a remote command via SSH using native russh client.
+    /// Execute a remote command via SSH using the native russh client.
     /// Traces to: FR-FLEET-003, ADR-0003
     async fn run_command(&self, cmd: &str) -> Result<String> {
-        let addr = format!("{}:{}", self.host.hostname, self.host.port);
-        let socket_addr: SocketAddr =
-            addr.parse().map_err(|e| anyhow::anyhow!("Invalid SSH address {}: {}", addr, e))?;
+        let addr = (self.host.hostname.as_str(), self.host.port);
+        debug!("SSH: russh connecting to {}:{}", self.host.hostname, self.host.port);
 
-        debug!("SSH: TCP connecting to {}", addr);
+        let config = Arc::new(client::Config {
+            inactivity_timeout: Some(Duration::from_secs(30)),
+            ..Default::default()
+        });
 
-        // TCP connect with 10s timeout
-        let _tcp = tokio::time::timeout(Duration::from_secs(10), TcpStream::connect(socket_addr))
-            .await
-            .map_err(|_| anyhow::anyhow!("SSH TCP connect timeout"))?
-            .map_err(|e| anyhow::anyhow!("SSH TCP connect failed: {}", e))?;
+        let mut session =
+            tokio::time::timeout(Duration::from_secs(10), client::connect(config, addr, SshClient))
+                .await
+                .map_err(|_| anyhow!("SSH handshake timeout after 10s"))??;
 
-        debug!("SSH: TCP connected, starting SSH handshake on {}", addr);
+        self.authenticate(&mut session).await?;
 
-        // Create a minimal SSH client handler
-        // russh 0.46 requires implementing the Handler trait
-        // For production, a proper Handler impl would handle key exchange, channel events, etc.
-        // This implementation accepts any host key (logs warning) and authenticates via pubkey.
+        let mut channel = session.channel_open_session().await?;
+        channel.exec(true, cmd).await?;
 
-        // For now, fall back to subprocess ssh(1) as workaround since russh Handler is complex
-        // Full russh integration would require:
-        // 1. struct MyHandler impl Handler { ... }
-        // 2. Client::connect() with config
-        // 3. Authentication via Handler callbacks
-        // 4. Channel exec and output collection
-        //
-        // This is a known limitation; production would use full Handler trait.
+        let mut stdout = Vec::<u8>::new();
+        let mut stderr = Vec::<u8>::new();
+        let mut exit: Option<u32> = None;
 
-        debug!("SSH: executing command '{}' on {}", cmd, self.host.hostname);
-
-        // Build ssh command with explicit port and user
-        let mut ssh_cmd = std::process::Command::new("ssh");
-        ssh_cmd.arg("-p").arg(self.host.port.to_string());
-
-        // Prepare ssh command arguments based on identity
-        match &self.host.identity {
-            SshIdentity::Agent => {
-                ssh_cmd.arg("-A");
+        loop {
+            match tokio::time::timeout(Duration::from_secs(30), channel.wait()).await {
+                Err(_) => bail!("SSH command read timeout after 30s"),
+                Ok(None) => break,
+                Ok(Some(msg)) => match msg {
+                    ChannelMsg::Data { ref data } => stdout.extend_from_slice(data),
+                    ChannelMsg::ExtendedData { ref data, ext: 1 } => stderr.extend_from_slice(data),
+                    ChannelMsg::ExitStatus { exit_status } => exit = Some(exit_status),
+                    ChannelMsg::Eof | ChannelMsg::Close => break,
+                    _ => {}
+                },
             }
+        }
+
+        let _ = session.disconnect(russh::Disconnect::ByApplication, "done", "en").await;
+
+        match exit {
+            Some(0) => {
+                let out = String::from_utf8(stdout)
+                    .map_err(|e| anyhow!("SSH output is not valid UTF-8: {}", e))?;
+                info!("SSH: command '{}' on {} completed successfully", cmd, self.host.hostname);
+                Ok(out)
+            }
+            Some(code) => {
+                let stderr_str = String::from_utf8_lossy(&stderr);
+                bail!("SSH command exited with status {}: {}", code, stderr_str.trim())
+            }
+            None => bail!("SSH channel closed without exit status"),
+        }
+    }
+
+    /// Authenticate the russh session according to the configured identity.
+    async fn authenticate(&self, session: &mut Handle<SshClient>) -> Result<()> {
+        let user = self.host.user.clone();
+        let ok = match &self.host.identity {
             SshIdentity::KeyPath(path) => {
-                ssh_cmd.arg("-i").arg(path);
+                let key = russh_keys::load_secret_key(path, None)
+                    .map_err(|e| anyhow!("failed to load SSH key {}: {}", path.display(), e))?;
+                session.authenticate_publickey(user.clone(), Arc::new(key)).await?
             }
-            SshIdentity::KeyData { pem: _pem, passphrase: _ } => {
-                warn!("SSH KeyData variant deferred; use Agent or KeyPath");
-                return Err(anyhow::anyhow!(
-                    "SSH KeyData requires temp file; use Agent or KeyPath"
-                ));
+            SshIdentity::KeyData { pem, passphrase } => {
+                let key = russh_keys::decode_secret_key(pem, passphrase.as_deref())
+                    .map_err(|e| anyhow!("failed to decode inline SSH key: {}", e))?;
+                session.authenticate_publickey(user.clone(), Arc::new(key)).await?
+            }
+            SshIdentity::Agent => self.authenticate_agent(session, &user).await?,
+        };
+
+        if !ok {
+            bail!("SSH public-key authentication failed for {}@{}", user, self.host.hostname);
+        }
+        Ok(())
+    }
+
+    /// Walk identities exposed by `ssh-agent` (via `SSH_AUTH_SOCK`) and try
+    /// each one. Returns true on first success.
+    async fn authenticate_agent(
+        &self,
+        session: &mut Handle<SshClient>,
+        user: &str,
+    ) -> Result<bool> {
+        let mut agent = russh_keys::agent::client::AgentClient::connect_env()
+            .await
+            .map_err(|e| anyhow!("could not connect to ssh-agent (SSH_AUTH_SOCK): {}", e))?;
+
+        let identities: Vec<PublicKey> = agent
+            .request_identities()
+            .await
+            .map_err(|e| anyhow!("ssh-agent request_identities failed: {}", e))?;
+
+        if identities.is_empty() {
+            bail!("ssh-agent has no identities loaded");
+        }
+
+        for pk in identities {
+            let (returned, result) = session.authenticate_future(user.to_string(), pk, agent).await;
+            agent = returned;
+            match result {
+                Ok(true) => return Ok(true),
+                Ok(false) => continue,
+                Err(e) => {
+                    warn!("ssh-agent signer error: {:?}", e);
+                    continue;
+                }
             }
         }
-        ssh_cmd.arg("-o").arg("ConnectTimeout=10");
-        ssh_cmd.arg("-o").arg("StrictHostKeyChecking=accept-new");
-        ssh_cmd.arg(format!("{}@{}", self.host.user, self.host.hostname));
-        ssh_cmd.arg(cmd);
+        Ok(false)
+    }
+}
 
-        let output = tokio::time::timeout(
-            Duration::from_secs(30),
-            tokio::process::Command::from(ssh_cmd).output(),
-        )
-        .await
-        .map_err(|_| anyhow::anyhow!("SSH command execution timeout after 30s"))?
-        .map_err(|e| anyhow::anyhow!("SSH command failed: {}", e))?;
+/// Minimal SSH client handler.
+///
+/// MVP accepts any server key (logs a debug line). A production deployment
+/// should pin host keys via `~/.ssh/known_hosts` or the fleet ledger.
+struct SshClient;
 
-        if !output.status.success() {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            return Err(anyhow::anyhow!(
-                "SSH command exited with status {}: {}",
-                output.status.code().unwrap_or(-1),
-                stderr
-            ));
-        }
+#[async_trait::async_trait]
+impl Handler for SshClient {
+    type Error = russh::Error;
 
-        let stdout = String::from_utf8(output.stdout)
-            .map_err(|e| anyhow::anyhow!("SSH output is not valid UTF-8: {}", e))?;
-
-        info!("SSH: command '{}' on {} completed successfully", cmd, self.host.hostname);
-
-        Ok(stdout)
+    async fn check_server_key(
+        &mut self,
+        server_public_key: &PublicKey,
+    ) -> std::result::Result<bool, Self::Error> {
+        debug!("SSH: accepting server key fingerprint {}", server_public_key.fingerprint());
+        Ok(true)
     }
 }
 
