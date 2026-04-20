@@ -51,6 +51,10 @@ echo "${RECORDINGS}" | while IFS= read -r recording; do
 
     echo "Extracting keyframes from: ${tape_name}..."
 
+    # Always clear stale frames from prior runs — a shorter re-recording
+    # would otherwise leave old frame-NNN.png orphans mixed with new ones.
+    rm -f "${tape_keyframes_dir}"/frame-*.png
+
     # Extract I-frames (true keyframes); if none, fallback to 1 fps
     ffmpeg -i "${recording}" -vf "select='eq(pict_type,I)'" -vsync vfr -q:v 2 \
         "${tape_keyframes_dir}/frame-%03d.png" 2>&1 | grep -v "Press \[q\] to stop" || true

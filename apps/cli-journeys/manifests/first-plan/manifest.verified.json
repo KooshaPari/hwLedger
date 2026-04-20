@@ -4,45 +4,128 @@
   "recording": "recordings/first-plan.mp4",
   "recording_gif": "recordings/first-plan.gif",
   "keyframe_count": 5,
-  "passed": true,
+  "passed": false,
   "steps": [
     {
       "index": 0,
       "slug": "frame-0",
       "intent": "Terminal prompt, ready to run the planner",
-      "screenshot_path": "frame-001.png"
+      "screenshot_path": "frame-001.png",
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
     },
     {
       "index": 1,
       "slug": "frame-1",
       "intent": "Command typed: `hwledger plan tests/golden/llama3-70b.json --seq 4096 --users 4`",
-      "screenshot_path": "frame-002.png"
+      "screenshot_path": "frame-002.png",
+      "assertions": {
+        "must_contain": [
+          "hwledger plan",
+          "llama3-70b"
+        ],
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
     },
     {
       "index": 2,
       "slug": "frame-2",
       "intent": "Architecture detection line: Llama 3 70B with grouped-query attention",
-      "screenshot_path": "frame-003.png"
+      "screenshot_path": "frame-003.png",
+      "assertions": {
+        "must_contain": [
+          "Llama"
+        ],
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
     },
     {
       "index": 3,
       "slug": "frame-3",
       "intent": "VRAM breakdown table: weights, KV cache, activations, overhead",
-      "screenshot_path": "frame-004.png"
+      "screenshot_path": "frame-004.png",
+      "assertions": {
+        "must_contain": [
+          "VRAM"
+        ],
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
     },
     {
       "index": 4,
       "slug": "frame-4",
       "intent": "Summary row: total VRAM for 4 concurrent users and TP recommendation",
-      "screenshot_path": "frame-005.png"
+      "screenshot_path": "frame-005.png",
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "expected_exit": 0
+      }
     }
   ],
   "verification": {
-    "timestamp": "2026-04-20T08:28:47Z",
+    "timestamp": "2026-04-20T09:42:24Z",
     "mode": "mock",
     "overall_score": 0.92,
     "describe_confidence": 0.95,
     "judge_confidence": 0.90,
-    "all_intents_passed": true
+    "all_intents_passed": false,
+    "assertion_violations": [
+      {
+        "step_index": 1,
+        "kind": "MustContain",
+        "expected": "hwledger plan",
+        "got_snippet": "> hf "
+      },
+      {
+        "step_index": 1,
+        "kind": "MustContain",
+        "expected": "llama3-70b",
+        "got_snippet": "> hf "
+      },
+      {
+        "step_index": 2,
+        "kind": "MustContain",
+        "expected": "Llama",
+        "got_snippet": "> hwledger plan tf "
+      },
+      {
+        "step_index": 3,
+        "kind": "MustContain",
+        "expected": "VRAM",
+        "got_snippet": "> hwledger plan tests/golden/1fj "
+      },
+      {
+        "step_index": 4,
+        "kind": "ExitCode",
+        "expected": "__EXIT_0__",
+        "got_snippet": "> hwledger plan tests/golden/1lama3-70b.jsoff "
+      }
+    ]
   }
 }

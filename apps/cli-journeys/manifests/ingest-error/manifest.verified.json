@@ -4,42 +4,87 @@
   "recording": "recordings/ingest-error.mp4",
   "recording_gif": "recordings/ingest-error.gif",
   "keyframe_count": 4,
-  "passed": true,
+  "passed": false,
   "steps": [
     {
       "index": 0,
       "slug": "frame-0",
       "intent": "Terminal prompt ready to invoke ingest",
-      "screenshot_path": "frame-001.png"
+      "screenshot_path": "frame-001.png",
+      "assertions": {
+        "must_not_contain": [
+          "panic",
+          "command not found"
+        ]
+      }
     },
     {
       "index": 1,
       "slug": "frame-1",
       "intent": "Command typed: `hwledger ingest gguf:///tmp/nonexistent.gguf`",
-      "screenshot_path": "frame-002.png"
+      "screenshot_path": "frame-002.png",
+      "assertions": {
+        "must_contain": [
+          "hwledger ingest"
+        ],
+        "must_not_contain": [
+          "panic",
+          "command not found"
+        ]
+      }
     },
     {
       "index": 2,
       "slug": "frame-2",
       "intent": "Graceful error: GGUF file not found; message names the missing path",
-      "screenshot_path": "frame-003.png"
+      "screenshot_path": "frame-003.png",
+      "assertions": {
+        "must_contain": [
+          "not found"
+        ],
+        "must_not_contain": [
+          "panic",
+          "thread 'main' panicked"
+        ]
+      }
     },
     {
       "index": 3,
       "slug": "frame-3",
       "intent": "Non-zero exit code, prompt returned without a stack trace",
-      "screenshot_path": "frame-004.png"
+      "screenshot_path": "frame-004.png",
+      "assertions": {
+        "must_not_contain": [
+          "panic",
+          "thread 'main' panicked",
+          "RUST_BACKTRACE"
+        ]
+      }
     }
   ],
+  "traces_to": [
+    "FR-PLAN-001"
+  ],
   "verification": {
-    "timestamp": "2026-04-20T08:28:47Z",
+    "timestamp": "2026-04-20T09:42:31Z",
     "mode": "mock",
     "overall_score": 0.92,
     "describe_confidence": 0.95,
     "judge_confidence": 0.90,
-    "all_intents_passed": true
-  },
-  "traces_to": [
-    "FR-PLAN-001"
-  ]
+    "all_intents_passed": false,
+    "assertion_violations": [
+      {
+        "step_index": 1,
+        "kind": "MustContain",
+        "expected": "hwledger ingest",
+        "got_snippet": "> hi "
+      },
+      {
+        "step_index": 2,
+        "kind": "MustContain",
+        "expected": "not found",
+        "got_snippet": "> hwledger ingesff "
+      }
+    ]
+  }
 }

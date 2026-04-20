@@ -4,55 +4,111 @@
   "recording": "recordings/probe-watch.mp4",
   "recording_gif": "recordings/probe-watch.gif",
   "keyframe_count": 6,
-  "passed": true,
+  "passed": false,
   "steps": [
     {
       "index": 0,
       "slug": "frame-0",
       "intent": "Terminal prompt",
-      "screenshot_path": "frame-001.png"
+      "screenshot_path": "frame-001.png",
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
     },
     {
       "index": 1,
       "slug": "frame-1",
       "intent": "Command typed: `hwledger probe watch --interval 1s --json`",
-      "screenshot_path": "frame-002.png"
+      "screenshot_path": "frame-002.png",
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
     },
     {
       "index": 2,
       "slug": "frame-2",
       "intent": "First NDJSON sample printed with timestamp and GPU utilization",
-      "screenshot_path": "frame-003.png"
+      "screenshot_path": "frame-003.png",
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
     },
     {
       "index": 3,
       "slug": "frame-3",
       "intent": "Second sample one second later showing delta in memory / util",
-      "screenshot_path": "frame-004.png"
+      "screenshot_path": "frame-004.png",
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
     },
     {
       "index": 4,
       "slug": "frame-4",
       "intent": "Third sample confirming the streaming cadence",
-      "screenshot_path": "frame-005.png"
+      "screenshot_path": "frame-005.png",
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
     },
     {
       "index": 5,
       "slug": "frame-5",
       "intent": "Ctrl+C received; watcher exits cleanly and returns prompt",
-      "screenshot_path": "frame-006.png"
+      "screenshot_path": "frame-006.png",
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
     }
   ],
+  "traces_to": [
+    "FR-TEL-001",
+    "FR-TEL-002"
+  ],
   "verification": {
-    "timestamp": "2026-04-20T08:28:47Z",
+    "timestamp": "2026-04-20T09:42:47Z",
     "mode": "mock",
     "overall_score": 0.92,
     "describe_confidence": 0.95,
     "judge_confidence": 0.90,
-    "all_intents_passed": true
-  },
-  "traces_to": [
-    "FR-TEL-001",
-    "FR-TEL-002"
-  ]
+    "all_intents_passed": false,
+    "assertion_violations": [
+      {
+        "step_index": 5,
+        "kind": "MustNotContain",
+        "expected": "error:",
+        "got_snippet": "edger_probe: Failed to initialize AMD probe: backend initialization failed: I/0 error: No such file or directory (os error 2) 2026-04-207T08:06:02.475149Z WARN hwledg"
+      }
+    ]
+  }
 }

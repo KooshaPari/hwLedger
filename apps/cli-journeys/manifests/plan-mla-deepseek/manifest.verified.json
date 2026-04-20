@@ -4,33 +4,66 @@
   "recording": "recordings/plan-mla-deepseek.mp4",
   "recording_gif": "recordings/plan-mla-deepseek.gif",
   "keyframe_count": 3,
-  "passed": true,
+  "passed": false,
   "steps": [
     {
       "index": 0,
       "slug": "frame-0",
       "intent": "Plan at --seq 2048: MLA classification, compact KV cache via kv_lora_rank",
-      "screenshot_path": "frame-001.png"
+      "screenshot_path": "frame-001.png",
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
     },
     {
       "index": 1,
       "slug": "frame-1",
       "intent": "Plan at --seq 32768: KV footprint grows linearly but stays bounded by MLA",
-      "screenshot_path": "frame-002.png"
+      "screenshot_path": "frame-002.png",
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
     },
     {
       "index": 2,
       "slug": "frame-2",
       "intent": "Plan at --seq 131072: 128K context fits because MLA compresses KV projections",
-      "screenshot_path": "frame-003.png"
+      "screenshot_path": "frame-003.png",
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "expected_exit": 0
+      }
     }
   ],
   "verification": {
-    "timestamp": "2026-04-20T08:28:47Z",
+    "timestamp": "2026-04-20T09:42:41Z",
     "mode": "mock",
     "overall_score": 0.92,
     "describe_confidence": 0.95,
     "judge_confidence": 0.90,
-    "all_intents_passed": true
+    "all_intents_passed": false,
+    "assertion_violations": [
+      {
+        "step_index": 2,
+        "kind": "ExitCode",
+        "expected": "__EXIT_0__",
+        "got_snippet": "BESO SEBS OSS EO SEHDEE: Py DED DOS DCR OSD COSC OSCE SC ODES DOS SOD OS SESSCODCOSS  Total | 47.31 MB $--------------------- 4---------------------------------…"
+      }
+    ]
   }
 }

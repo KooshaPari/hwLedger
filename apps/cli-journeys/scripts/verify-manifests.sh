@@ -112,19 +112,13 @@ verify_manifest() {
         # Extract violations by re-running with --strict and capturing non-zero,
         # but keep the JSON list minimal. The CLI prints human text; we build a
         # compact JSON representation from its lines.
-        assertion_violations=$(echo "${assert_stdout}" | awk '
-            /^    step / {
-                # Example: `    step 2: must_not_contain expected="error:" got="..."
-                match($0, /step ([0-9]+): ([a-z_]+) expected=\"([^\"]*)\" got=\"([^\"]*)\"/, arr)
-                if (arr[1] != "") {
-                    kind = arr[2]
-                    if (kind == "must_contain") kind = "MustContain"
-                    else if (kind == "must_not_contain") kind = "MustNotContain"
-                    else if (kind == "exit_code") kind = "ExitCode"
-                    printf "%s{\"step_index\":%s,\"kind\":\"%s\",\"expected\":\"%s\",\"got_snippet\":\"%s\"}", (n++ ? "," : ""), arr[1], kind, arr[3], arr[4]
-                }
-            }
-            END { printf "" }
+        assertion_violations=$(echo "${assert_stdout}" | perl -ne '
+            next unless /^\s+step (\d+): (\w+) expected="([^"]*)" got="([^"]*)"/;
+            my ($idx, $kind, $exp, $got) = ($1, $2, $3, $4);
+            $kind = { must_contain => "MustContain", must_not_contain => "MustNotContain", exit_code => "ExitCode" }->{$kind} // $kind;
+            for ($exp, $got) { s/\\/\\\\/g; s/"/\\"/g; }
+            print "," if $n++;
+            printf "{\"step_index\":%d,\"kind\":\"%s\",\"expected\":\"%s\",\"got_snippet\":\"%s\"}", $idx, $kind, $exp, $got;
         ')
         assertion_violations="[${assertion_violations}]"
         rm -f "${tmp_manifest}"

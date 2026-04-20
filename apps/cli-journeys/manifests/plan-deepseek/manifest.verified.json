@@ -4,48 +4,104 @@
   "recording": "recordings/plan-deepseek.mp4",
   "recording_gif": "recordings/plan-deepseek.gif",
   "keyframe_count": 5,
-  "passed": true,
+  "passed": false,
   "steps": [
     {
       "index": 0,
       "slug": "frame-0",
       "intent": "Terminal at prompt, ready to run planner",
-      "screenshot_path": "frame-001.png"
+      "screenshot_path": "frame-001.png",
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
     },
     {
       "index": 1,
       "slug": "frame-1",
       "intent": "Command typed: `hwledger plan tests/golden/deepseek-v3.json --seq 2048 --users 2`",
-      "screenshot_path": "frame-002.png"
+      "screenshot_path": "frame-002.png",
+      "assertions": {
+        "must_contain": [
+          "hwledger plan",
+          "deepseek-v3"
+        ],
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
     },
     {
       "index": 2,
       "slug": "frame-2",
       "intent": "Architecture detection line: MLA with kv_lora_rank=512",
-      "screenshot_path": "frame-003.png"
+      "screenshot_path": "frame-003.png",
+      "assertions": {
+        "must_contain": [
+          "MLA",
+          "kv_lora_rank"
+        ],
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
     },
     {
       "index": 3,
       "slug": "frame-3",
       "intent": "VRAM breakdown: weights, KV cache, activations at 2K sequence",
-      "screenshot_path": "frame-004.png"
+      "screenshot_path": "frame-004.png",
+      "assertions": {
+        "must_contain": [
+          "VRAM"
+        ],
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
     },
     {
       "index": 4,
       "slug": "frame-4",
       "intent": "Second invocation at --seq 32768 showing KV growth under longer context",
-      "screenshot_path": "frame-005.png"
+      "screenshot_path": "frame-005.png",
+      "assertions": {
+        "must_contain": [
+          "32768"
+        ],
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "expected_exit": 0
+      }
     }
   ],
+  "traces_to": [
+    "FR-PLAN-003"
+  ],
   "verification": {
-    "timestamp": "2026-04-20T08:28:47Z",
+    "timestamp": "2026-04-20T09:42:35Z",
     "mode": "mock",
     "overall_score": 0.92,
     "describe_confidence": 0.95,
     "judge_confidence": 0.90,
-    "all_intents_passed": true
-  },
-  "traces_to": [
-    "FR-PLAN-003"
-  ]
+    "all_intents_passed": false,
+    "assertion_violations": []
+  }
 }

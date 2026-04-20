@@ -10,27 +10,49 @@
       "index": 0,
       "slug": "frame-0",
       "intent": "Command typed: `cargo run -q -p hwledger-traceability --` (default, non-strict)",
-      "screenshot_path": "frame-001.png"
+      "screenshot_path": "frame-001.png",
+      "assertions": {
+        "must_not_contain": [
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
     },
     {
       "index": 1,
       "slug": "frame-1",
       "intent": "Report prints with exit code 0 even though some FRs are missing impl rows",
-      "screenshot_path": "frame-002.png"
+      "screenshot_path": "frame-002.png",
+      "assertions": {
+        "must_not_contain": [
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
     },
     {
       "index": 2,
       "slug": "frame-2",
       "intent": "Command typed: `cargo run -q -p hwledger-traceability -- --strict` — strict mode fails, listing FRs with missing implementation and exiting non-zero",
-      "screenshot_path": "frame-003.png"
+      "screenshot_path": "frame-003.png",
+      "assertions": {
+        "must_not_contain": [
+          "unexpected argument",
+          "command not found",
+          "thread 'main' panicked"
+        ]
+      }
     }
   ],
   "verification": {
-    "timestamp": "2026-04-20T08:28:48Z",
+    "timestamp": "2026-04-20T09:42:50Z",
     "mode": "mock",
     "overall_score": 0.92,
     "describe_confidence": 0.95,
     "judge_confidence": 0.90,
-    "all_intents_passed": true
+    "all_intents_passed": true,
+    "assertion_violations": []
   }
 }
