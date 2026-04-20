@@ -10,10 +10,10 @@ description = "Core data types and traits for hwLedger hardware telemetry infras
 
 [dependencies]
 thiserror.workspace = true
+serde_json.workspace = true
 
 [dev-dependencies]
 proptest = "1"
-serde_json.workspace = true
 criterion = { workspace = true }
 
 [[bench]]

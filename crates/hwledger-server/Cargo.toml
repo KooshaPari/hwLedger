@@ -41,6 +41,8 @@ base64 = "0.22"
 urlencoding = "2.1"
 async-trait = "0.1"
 clap = { workspace = true, features = ["derive"] }
+russh.workspace = true
+russh-keys.workspace = true
 
 [dev-dependencies]
 hwledger-ledger = { path = "../hwledger-ledger" }

@@ -191,30 +191,52 @@ impl AnnotationScanner {
                 if !cited_frs.is_empty() {
                     let mut test_name = "unknown".to_string();
                     let mut is_ignored = false;
-                    let mut test_line = i;
+                    let mut test_line: Option<usize> = None;
 
+                    // Search backwards for #[test] marker
                     for j in (0..=i).rev() {
                         let scan_line = lines[j];
                         if test_pattern.is_match(scan_line) {
-                            test_line = j;
+                            test_line = Some(j);
                             if j > 0 && ignore_pattern.is_match(lines[j - 1]) {
                                 is_ignored = true;
                             }
-                        }
-                        if test_line < i && j > test_line {
-                            if let Some(caps) = fn_pattern.captures(scan_line) {
-                                if let Some(name) = caps.get(1) {
-                                    test_name = name.as_str().to_string();
-                                    break;
-                                }
-                            }
+                            break;
                         }
                         if j == 0 {
                             break;
                         }
                     }
 
-                    if test_line < i {
+                    // If not found backwards, search forwards for #[test] marker
+                    if test_line.is_none() {
+                        for j in (i + 1)..lines.len() {
+                            let scan_line = lines[j];
+                            if test_pattern.is_match(scan_line) {
+                                test_line = Some(j);
+                                if j > 0 && ignore_pattern.is_match(lines[j - 1]) {
+                                    is_ignored = true;
+                                }
+                                break;
+                            }
+                            // Stop searching if we hit another function/struct def
+                            if fn_pattern.is_match(scan_line) || struct_pattern.is_match(scan_line) {
+                                break;
+                            }
+                        }
+                    }
+
+                    // Extract test name from the function definition
+                    if let Some(tl) = test_line {
+                        for j in (tl + 1)..std::cmp::min(tl + 5, lines.len()) {
+                            if let Some(caps) = fn_pattern.captures(lines[j]) {
+                                if let Some(name) = caps.get(1) {
+                                    test_name = name.as_str().to_string();
+                                    break;
+                                }
+                            }
+                        }
+
                         annotations.push(TraceAnnotation {
                             citer: Citer::RustTest,
                             verb: AnnotationVerb::Traces,

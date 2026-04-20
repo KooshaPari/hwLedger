@@ -5,5 +5,7 @@
 //! VRAM equation via [`TotalMemory`] (TODO: WP06+).
 
 pub mod attention;
+pub mod export;
 
 pub use attention::{AttentionKind, KvFormula, LayerKind};
+pub use export::{KvQuant, PlannerSnapshot, WeightQuant};
