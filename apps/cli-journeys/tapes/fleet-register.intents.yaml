@@ -1,0 +1,20 @@
+journey: fleet-register
+steps:
+  - index: 0
+    intent: "Terminal prompt (server launched silently in the background)"
+  - index: 1
+    intent: "Command typed: `hwledger fleet register --server http://localhost:8080`"
+  - index: 2
+    intent: "Continuation: `--token dev-bootstrap-token --hostname demo-laptop`"
+  - index: 3
+    intent: "Registration submitted; server responds with agent id"
+  - index: 4
+    intent: "Confirmation line showing registered agent UUID and fingerprint"
+  - index: 5
+    intent: "Follow-up: `hwledger fleet status --server ... --token ...`"
+  - index: 6
+    intent: "Status table listing the just-registered agent with hostname demo-laptop"
+  - index: 7
+    intent: "Agent row shows online status and last-heartbeat column"
+  - index: 8
+    intent: "Prompt returned after server is shut down"

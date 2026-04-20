@@ -1,0 +1,10 @@
+journey: ingest-error
+steps:
+  - index: 0
+    intent: "Terminal prompt ready to invoke ingest"
+  - index: 1
+    intent: "Command typed: `hwledger ingest gguf:///tmp/nonexistent.gguf`"
+  - index: 2
+    intent: "Graceful error: GGUF file not found; message names the missing path"
+  - index: 3
+    intent: "Non-zero exit code, prompt returned without a stack trace"

@@ -1,0 +1,12 @@
+journey: plan-deepseek
+steps:
+  - index: 0
+    intent: "Terminal at prompt, ready to run planner"
+  - index: 1
+    intent: "Command typed: `hwledger plan tests/golden/deepseek-v3.json --seq 2048 --users 2`"
+  - index: 2
+    intent: "Architecture detection line: MLA with kv_lora_rank=512"
+  - index: 3
+    intent: "VRAM breakdown: weights, KV cache, activations at 2K sequence"
+  - index: 4
+    intent: "Second invocation at --seq 32768 showing KV growth under longer context"

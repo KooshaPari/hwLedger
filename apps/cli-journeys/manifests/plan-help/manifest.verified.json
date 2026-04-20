@@ -1,27 +1,50 @@
 {
-  "id": "cli-plan-help",
-  "title": "hwledger plan-help",
-  "intent": "CLI help text for the plan subcommand",
+  "id": "plan-help",
+  "intent": "Show the plan command's help text with all available options",
+  "recording": "recordings/plan-help.mp4",
+  "recording_gif": "recordings/plan-help.gif",
+  "keyframe_count": 6,
+  "passed": true,
   "steps": [
     {
       "index": 0,
-      "slug": "launch",
-      "intent": "Frame 1 of 2",
-      "screenshot_path": "keyframes/plan-help/frame-001.png"
+      "slug": "frame-0",
+      "intent": "Terminal prompt awaiting command",
+      "screenshot_path": "frame-001.png"
     },
     {
       "index": 1,
-      "slug": "final",
-      "intent": "Frame 2 of 2",
-      "screenshot_path": "keyframes/plan-help/frame-002.png"
+      "slug": "frame-1",
+      "intent": "Command typed: `hwledger plan --help`",
+      "screenshot_path": "frame-002.png"
+    },
+    {
+      "index": 2,
+      "slug": "frame-2",
+      "intent": "Usage line and positional PATH argument description",
+      "screenshot_path": "frame-003.png"
+    },
+    {
+      "index": 3,
+      "slug": "frame-3",
+      "intent": "Options block: --seq, --users, --batch, --weight-quant, --kv-quant",
+      "screenshot_path": "frame-004.png"
+    },
+    {
+      "index": 4,
+      "slug": "frame-4",
+      "intent": "Options block continued: --device-total-vram, --json, --export, --no-color",
+      "screenshot_path": "frame-005.png"
+    },
+    {
+      "index": 5,
+      "slug": "frame-5",
+      "intent": "Trailing --help line and prompt returned",
+      "screenshot_path": "frame-006.png"
     }
   ],
-  "recording": "recordings/plan-help.mp4",
-  "recording_gif": "recordings/plan-help.gif",
-  "keyframe_count": 2,
-  "passed": true,
   "verification": {
-    "timestamp": "2026-04-19T07:28:29Z",
+    "timestamp": "2026-04-20T08:07:53Z",
     "mode": "mock",
     "overall_score": 0.92,
     "describe_confidence": 0.95,

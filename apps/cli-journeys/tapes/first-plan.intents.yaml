@@ -1,0 +1,15 @@
+# Per-frame intent narration for the first-plan journey.
+# Keyed by step index (0-based). Verifier maps 1:1 onto manifest steps;
+# extra frames fall back to "<journey intent> (frame N)".
+journey: first-plan
+steps:
+  - index: 0
+    intent: "Terminal prompt, ready to run the planner"
+  - index: 1
+    intent: "Command typed: `hwledger plan tests/golden/llama3-70b.json --seq 4096 --users 4`"
+  - index: 2
+    intent: "Architecture detection line: Llama 3 70B with grouped-query attention"
+  - index: 3
+    intent: "VRAM breakdown table: weights, KV cache, activations, overhead"
+  - index: 4
+    intent: "Summary row: total VRAM for 4 concurrent users and TP recommendation"

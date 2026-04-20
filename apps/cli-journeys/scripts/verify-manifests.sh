@@ -7,6 +7,13 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 JOURNEYS_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 MANIFESTS_DIR="${JOURNEYS_ROOT}/manifests"
+TAPES_DIR="${JOURNEYS_ROOT}/tapes"
+
+# yq is used to pull per-step intents from <journey>.intents.yaml. If yq or the
+# YAML file is missing we fall back to the manifest's existing placeholder text.
+if ! command -v yq >/dev/null 2>&1; then
+    echo "warn: yq not installed; per-step intents will keep their placeholder text"
+fi
 
 # Determine if using real API or mock
 if [ -n "${ANTHROPIC_API_KEY:-}" ]; then
@@ -38,6 +45,28 @@ verify_manifest() {
 
     # Create verified output
     verified_json=$(jq -r . <<< "${manifest_json}")
+
+    # Overlay per-step intents from tapes/<journey>.intents.yaml if present.
+    # YAML schema:
+    #   journey: <id>
+    #   steps:
+    #     - index: 0
+    #       intent: "..."
+    intents_yaml="${TAPES_DIR}/${journey_name}.intents.yaml"
+    if [ -f "${intents_yaml}" ] && command -v yq >/dev/null 2>&1; then
+        intents_json=$(yq -o=json '.steps' "${intents_yaml}")
+        verified_json=$(jq --argjson overlay "${intents_json}" '
+            .steps = (
+                .steps | map(
+                    . as $step |
+                    ( $overlay[]? | select(.index == $step.index) ) as $hit |
+                    if $hit == null then $step
+                    else $step + { intent: $hit.intent }
+                    end
+                )
+            )
+        ' <<< "${verified_json}")
+    fi
 
     # Add verification metadata
     verified_json=$(jq \

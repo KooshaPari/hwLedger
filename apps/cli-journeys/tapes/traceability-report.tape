@@ -25,7 +25,7 @@ Type "  --markdown-out /tmp/trace.md \\"
 Sleep 600ms
 Enter
 Sleep 600ms
-Type "  --include-coverage"
+Type "  --verbose"
 Sleep 600ms
 Enter
 Sleep 3000ms

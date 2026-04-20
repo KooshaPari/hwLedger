@@ -1,0 +1,8 @@
+journey: plan-mla-deepseek
+steps:
+  - index: 0
+    intent: "Plan at --seq 2048: MLA classification, compact KV cache via kv_lora_rank"
+  - index: 1
+    intent: "Plan at --seq 32768: KV footprint grows linearly but stays bounded by MLA"
+  - index: 2
+    intent: "Plan at --seq 131072: 128K context fits because MLA compresses KV projections"

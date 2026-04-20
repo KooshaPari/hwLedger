@@ -10,18 +10,27 @@ REPO_ROOT="$(cd "${JOURNEYS_ROOT}/../.." && pwd)"
 TAPES_DIR="${JOURNEYS_ROOT}/tapes"
 RECORDINGS_DIR="${JOURNEYS_ROOT}/recordings"
 
+# Tapes use relative output paths like apps/cli-journeys/recordings/...
+# VHS resolves those against its cwd, so always run from the repo root.
+cd "${REPO_ROOT}"
+
 # Ensure VHS is available
 if ! command -v vhs &> /dev/null; then
     echo "Error: vhs not found. Install with: brew install vhs"
     exit 1
 fi
 
-# Ensure CLI binary exists
+# Ensure CLI binary exists. Upstream crate produces hwledger-cli; tapes call hwledger.
 CLI_BIN="${REPO_ROOT}/target/release/hwledger"
-if [ ! -f "${CLI_BIN}" ]; then
-    echo "Error: hwledger binary not found at ${CLI_BIN}"
+CLI_SRC="${REPO_ROOT}/target/release/hwledger-cli"
+if [ ! -f "${CLI_SRC}" ]; then
+    echo "Error: hwledger-cli binary not found at ${CLI_SRC}"
     echo "Run: cargo build --release -p hwledger-cli"
     exit 1
+fi
+# Keep tape-friendly `hwledger` symlink in sync with the freshly built binary.
+if [ ! -f "${CLI_BIN}" ] || [ "${CLI_SRC}" -nt "${CLI_BIN}" ]; then
+    ln -sf "hwledger-cli" "${CLI_BIN}"
 fi
 
 mkdir -p "${RECORDINGS_DIR}"

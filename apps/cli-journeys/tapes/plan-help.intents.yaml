@@ -1,0 +1,14 @@
+journey: plan-help
+steps:
+  - index: 0
+    intent: "Terminal prompt awaiting command"
+  - index: 1
+    intent: "Command typed: `hwledger plan --help`"
+  - index: 2
+    intent: "Usage line and positional PATH argument description"
+  - index: 3
+    intent: "Options block: --seq, --users, --batch, --weight-quant, --kv-quant"
+  - index: 4
+    intent: "Options block continued: --device-total-vram, --json, --export, --no-color"
+  - index: 5
+    intent: "Trailing --help line and prompt returned"

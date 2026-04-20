@@ -1,0 +1,20 @@
+journey: traceability-report
+steps:
+  - index: 0
+    intent: "Terminal prompt"
+  - index: 1
+    intent: "Command typed: `cargo run -q -p hwledger-traceability -- --markdown-out /tmp/trace.md --verbose`"
+  - index: 2
+    intent: "Cargo compiles and launches the traceability tool"
+  - index: 3
+    intent: "Cross-Dimensional Traceability Report header printed"
+  - index: 4
+    intent: "Coverage summary: total FRs/NFRs, fully traced, zero coverage counts"
+  - index: 5
+    intent: "`head -50 /tmp/trace.md` previews the markdown output"
+  - index: 6
+    intent: "Markdown header section with FR inventory table"
+  - index: 7
+    intent: "FR rows showing test references and coverage marks"
+  - index: 8
+    intent: "Prompt returned after the report preview"

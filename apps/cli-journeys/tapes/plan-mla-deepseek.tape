@@ -17,17 +17,17 @@ Output "apps/cli-journeys/recordings/plan-mla-deepseek.gif"
 Output "apps/cli-journeys/recordings/plan-mla-deepseek.mp4"
 
 Sleep 1500ms
-Type "hwledger plan tests/golden/deepseek-v3.json --seq 2048 --mla"
+Type "hwledger plan tests/golden/deepseek-v3.json --seq 2048"
 Sleep 600ms
 Enter
 Sleep 2500ms
 
-Type "hwledger plan tests/golden/deepseek-v3.json --seq 32768 --mla"
+Type "hwledger plan tests/golden/deepseek-v3.json --seq 32768"
 Sleep 600ms
 Enter
 Sleep 2500ms
 
-Type "hwledger plan tests/golden/deepseek-v3.json --seq 131072 --mla"
+Type "hwledger plan tests/golden/deepseek-v3.json --seq 131072"
 Sleep 600ms
 Enter
 Sleep 2500ms

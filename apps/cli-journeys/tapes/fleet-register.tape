@@ -45,7 +45,7 @@ Sleep 600ms
 Enter
 Sleep 2500ms
 
-Type "hwledger fleet status --server http://localhost:8080"
+Type "hwledger fleet status --server http://localhost:8080 --token dev-bootstrap-token"
 Sleep 600ms
 Enter
 Sleep 2500ms

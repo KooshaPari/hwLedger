@@ -1,0 +1,14 @@
+journey: probe-watch
+steps:
+  - index: 0
+    intent: "Terminal prompt"
+  - index: 1
+    intent: "Command typed: `hwledger probe watch --interval 1s --json`"
+  - index: 2
+    intent: "First NDJSON sample printed with timestamp and GPU utilization"
+  - index: 3
+    intent: "Second sample one second later showing delta in memory / util"
+  - index: 4
+    intent: "Third sample confirming the streaming cadence"
+  - index: 5
+    intent: "Ctrl+C received; watcher exits cleanly and returns prompt"

@@ -1,0 +1,8 @@
+journey: probe-list
+steps:
+  - index: 0
+    intent: "Command typed: `hwledger probe list`"
+  - index: 1
+    intent: "Table output: detected GPU devices with VRAM, driver, PCI location"
+  - index: 2
+    intent: "Second invocation `hwledger probe list --json` returning NDJSON-style output"

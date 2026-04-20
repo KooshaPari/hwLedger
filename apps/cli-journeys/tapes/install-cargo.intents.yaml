@@ -1,0 +1,20 @@
+journey: install-cargo
+steps:
+  - index: 0
+    intent: "Terminal prompt"
+  - index: 1
+    intent: "Command typed: `cargo install --path crates/hwledger-cli --root /tmp/hwl-install`"
+  - index: 2
+    intent: "Cargo compiling hwledger-cli dependencies"
+  - index: 3
+    intent: "Cargo linking final hwledger-cli binary"
+  - index: 4
+    intent: "Install success line: binary placed under /tmp/hwl-install/bin/"
+  - index: 5
+    intent: "`hwledger-cli --version` prints semver and build metadata"
+  - index: 6
+    intent: "`hwledger-cli --help` prints subcommand summary"
+  - index: 7
+    intent: "Subcommands visible: plan, ingest, probe, fleet, version, completions"
+  - index: 8
+    intent: "Prompt returned, ready for next command"

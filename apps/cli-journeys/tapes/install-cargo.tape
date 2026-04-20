@@ -22,12 +22,12 @@ Sleep 600ms
 Enter
 Sleep 3500ms
 
-Type "/tmp/hwl-install/bin/hwledger --version"
+Type "/tmp/hwl-install/bin/hwledger-cli --version"
 Sleep 600ms
 Enter
 Sleep 1500ms
 
-Type "/tmp/hwl-install/bin/hwledger --help"
+Type "/tmp/hwl-install/bin/hwledger-cli --help"
 Sleep 600ms
 Enter
 Sleep 2500ms

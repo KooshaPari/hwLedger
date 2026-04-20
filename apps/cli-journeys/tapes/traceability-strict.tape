@@ -17,17 +17,12 @@ Output "apps/cli-journeys/recordings/traceability-strict.gif"
 Output "apps/cli-journeys/recordings/traceability-strict.mp4"
 
 Sleep 1500ms
-Type "cargo run -q -p hwledger-traceability -- --strict"
+Type "cargo run -q -p hwledger-traceability --"
 Sleep 600ms
 Enter
 Sleep 3000ms
 
-Type "echo '// Missing trace comment' > tests/fixture-no-trace.rs"
+Type "cargo run -q -p hwledger-traceability -- --strict"
 Sleep 600ms
 Enter
-Sleep 1500ms
-
-Type "cargo run -q -p hwledger-traceability -- --strict tests/fixture-no-trace.rs"
-Sleep 600ms
-Enter
-Sleep 2500ms
+Sleep 3500ms

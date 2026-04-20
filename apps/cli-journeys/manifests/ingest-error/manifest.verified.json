@@ -1,39 +1,38 @@
 {
-  "id": "cli-ingest-error",
-  "title": "hwledger ingest-error",
-  "intent": "CLI ingest command attempting to load a non-existent GGUF file",
-  "steps": [
-    {
-      "index": 0,
-      "slug": "launch",
-      "intent": "Frame 1 of 4",
-      "screenshot_path": "keyframes/ingest-error/frame-001.png"
-    },
-    {
-      "index": 1,
-      "slug": "step_2",
-      "intent": "Frame 2 of 4",
-      "screenshot_path": "keyframes/ingest-error/frame-002.png"
-    },
-    {
-      "index": 2,
-      "slug": "step_3",
-      "intent": "Frame 3 of 4",
-      "screenshot_path": "keyframes/ingest-error/frame-003.png"
-    },
-    {
-      "index": 3,
-      "slug": "final",
-      "intent": "Frame 4 of 4",
-      "screenshot_path": "keyframes/ingest-error/frame-004.png"
-    }
-  ],
+  "id": "ingest-error",
+  "intent": "Show graceful error handling when a model file doesn't exist",
   "recording": "recordings/ingest-error.mp4",
   "recording_gif": "recordings/ingest-error.gif",
   "keyframe_count": 4,
   "passed": true,
+  "steps": [
+    {
+      "index": 0,
+      "slug": "frame-0",
+      "intent": "Terminal prompt ready to invoke ingest",
+      "screenshot_path": "frame-001.png"
+    },
+    {
+      "index": 1,
+      "slug": "frame-1",
+      "intent": "Command typed: `hwledger ingest gguf:///tmp/nonexistent.gguf`",
+      "screenshot_path": "frame-002.png"
+    },
+    {
+      "index": 2,
+      "slug": "frame-2",
+      "intent": "Graceful error: GGUF file not found; message names the missing path",
+      "screenshot_path": "frame-003.png"
+    },
+    {
+      "index": 3,
+      "slug": "frame-3",
+      "intent": "Non-zero exit code, prompt returned without a stack trace",
+      "screenshot_path": "frame-004.png"
+    }
+  ],
   "verification": {
-    "timestamp": "2026-04-19T07:28:29Z",
+    "timestamp": "2026-04-20T08:07:53Z",
     "mode": "mock",
     "overall_score": 0.92,
     "describe_confidence": 0.95,

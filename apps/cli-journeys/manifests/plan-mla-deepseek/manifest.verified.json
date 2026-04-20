@@ -1,0 +1,36 @@
+{
+  "id": "plan-mla-deepseek",
+  "intent": "Show MLA classification and KV sequence invariance across 2K, 32K, 128K sequences",
+  "recording": "recordings/plan-mla-deepseek.mp4",
+  "recording_gif": "recordings/plan-mla-deepseek.gif",
+  "keyframe_count": 3,
+  "passed": true,
+  "steps": [
+    {
+      "index": 0,
+      "slug": "frame-0",
+      "intent": "Plan at --seq 2048: MLA classification, compact KV cache via kv_lora_rank",
+      "screenshot_path": "frame-001.png"
+    },
+    {
+      "index": 1,
+      "slug": "frame-1",
+      "intent": "Plan at --seq 32768: KV footprint grows linearly but stays bounded by MLA",
+      "screenshot_path": "frame-002.png"
+    },
+    {
+      "index": 2,
+      "slug": "frame-2",
+      "intent": "Plan at --seq 131072: 128K context fits because MLA compresses KV projections",
+      "screenshot_path": "frame-003.png"
+    }
+  ],
+  "verification": {
+    "timestamp": "2026-04-20T08:07:53Z",
+    "mode": "mock",
+    "overall_score": 0.92,
+    "describe_confidence": 0.95,
+    "judge_confidence": 0.90,
+    "all_intents_passed": true
+  }
+}

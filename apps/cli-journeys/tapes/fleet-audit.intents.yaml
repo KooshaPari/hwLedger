@@ -1,0 +1,14 @@
+journey: fleet-audit
+steps:
+  - index: 0
+    intent: "Terminal prompt (audit-backed server running in background)"
+  - index: 1
+    intent: "Command typed: `hwledger fleet audit --server http://localhost:8080 --limit 3`"
+  - index: 2
+    intent: "Audit log header printed with column titles"
+  - index: 3
+    intent: "First audit entry: timestamp, actor, action, subject"
+  - index: 4
+    intent: "Remaining two entries up to --limit 3 ceiling"
+  - index: 5
+    intent: "Prompt returned; background server torn down silently"

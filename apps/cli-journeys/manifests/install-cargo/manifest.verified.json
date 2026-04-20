@@ -1,0 +1,72 @@
+{
+  "id": "install-cargo",
+  "intent": "Install hwledger from source with cargo, then verify version and help",
+  "recording": "recordings/install-cargo.mp4",
+  "recording_gif": "recordings/install-cargo.gif",
+  "keyframe_count": 9,
+  "passed": true,
+  "steps": [
+    {
+      "index": 0,
+      "slug": "frame-0",
+      "intent": "Terminal prompt",
+      "screenshot_path": "frame-001.png"
+    },
+    {
+      "index": 1,
+      "slug": "frame-1",
+      "intent": "Command typed: `cargo install --path crates/hwledger-cli --root /tmp/hwl-install`",
+      "screenshot_path": "frame-002.png"
+    },
+    {
+      "index": 2,
+      "slug": "frame-2",
+      "intent": "Cargo compiling hwledger-cli dependencies",
+      "screenshot_path": "frame-003.png"
+    },
+    {
+      "index": 3,
+      "slug": "frame-3",
+      "intent": "Cargo linking final hwledger-cli binary",
+      "screenshot_path": "frame-004.png"
+    },
+    {
+      "index": 4,
+      "slug": "frame-4",
+      "intent": "Install success line: binary placed under /tmp/hwl-install/bin/",
+      "screenshot_path": "frame-005.png"
+    },
+    {
+      "index": 5,
+      "slug": "frame-5",
+      "intent": "`hwledger-cli --version` prints semver and build metadata",
+      "screenshot_path": "frame-006.png"
+    },
+    {
+      "index": 6,
+      "slug": "frame-6",
+      "intent": "`hwledger-cli --help` prints subcommand summary",
+      "screenshot_path": "frame-007.png"
+    },
+    {
+      "index": 7,
+      "slug": "frame-7",
+      "intent": "Subcommands visible: plan, ingest, probe, fleet, version, completions",
+      "screenshot_path": "frame-008.png"
+    },
+    {
+      "index": 8,
+      "slug": "frame-8",
+      "intent": "Prompt returned, ready for next command",
+      "screenshot_path": "frame-009.png"
+    }
+  ],
+  "verification": {
+    "timestamp": "2026-04-20T08:07:53Z",
+    "mode": "mock",
+    "overall_score": 0.92,
+    "describe_confidence": 0.95,
+    "judge_confidence": 0.90,
+    "all_intents_passed": true
+  }
+}

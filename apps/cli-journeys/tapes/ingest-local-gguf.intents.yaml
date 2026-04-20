@@ -1,0 +1,10 @@
+journey: ingest-local-gguf
+steps:
+  - index: 0
+    intent: "Terminal prompt"
+  - index: 1
+    intent: "Command typed: `hwledger ingest gguf://tests/golden/fixtures/tiny.gguf --json`"
+  - index: 2
+    intent: "JSON document opens: schema, source.kind=gguf, source.location"
+  - index: 3
+    intent: "Metadata fields: architecture, parameters, quantization inferred from GGUF"

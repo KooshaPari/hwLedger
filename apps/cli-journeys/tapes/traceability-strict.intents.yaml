@@ -1,0 +1,8 @@
+journey: traceability-strict
+steps:
+  - index: 0
+    intent: "Command typed: `cargo run -q -p hwledger-traceability --` (default, non-strict)"
+  - index: 1
+    intent: "Report prints with exit code 0 even though some FRs are missing impl rows"
+  - index: 2
+    intent: "Command typed: `cargo run -q -p hwledger-traceability -- --strict` — strict mode fails, listing FRs with missing implementation and exiting non-zero"
