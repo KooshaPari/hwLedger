@@ -11,7 +11,6 @@ Complete reference for all 16 crates in the hwLedger workspace.
 
 - [hwledger-core](/architecture/crates/hwledger-core) — Central library with math, ingestion, planning
 - [hwledger-arch](/architecture/crates/hwledger-arch) — Architecture classification (NVIDIA, AMD, Metal, Intel)
-- [hwledger-math](/architecture/crates/hwledger-math) — Math kernels and dispatch (referenced by core)
 
 ## Inference layer
 
