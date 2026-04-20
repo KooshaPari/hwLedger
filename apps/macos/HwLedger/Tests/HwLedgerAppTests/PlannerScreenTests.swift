@@ -250,4 +250,31 @@ final class PlannerScreenTests: XCTestCase {
             "Effective batch should not exceed requested batch size"
         )
     }
+
+    // MARK: - Test 11: Layer heatmap renders correct number of rectangles
+    // Traces to: FR-PLAN-005, FR-UI-003
+    func testLayerHeatmapRenderCount() throws {
+        let layers = try HwLedger.planLayers(
+            configJson: llama8bJson,
+            seqLen: 2048,
+            kvQuantization: .fp16
+        )
+
+        // Llama 8B has 32 hidden layers in our test config
+        XCTAssertEqual(layers.count, 32, "should have 32 layer contributions for Llama 8B")
+        XCTAssertGreaterThan(layers.max() ?? 0, 0, "at least one layer should have non-zero KV bytes")
+    }
+
+    // MARK: - Test 12: MLA heatmap is layer-invariant
+    // Traces to: FR-PLAN-005, FR-UI-003
+    func testMLAHeatmapLayerInvariant() throws {
+        let layers = try HwLedger.planLayers(
+            configJson: deepseekJson,
+            seqLen: 4096,
+            kvQuantization: .fp16
+        )
+
+        XCTAssertEqual(layers.count, 1, "MLA should return single contribution (invariant across layers)")
+        XCTAssertGreaterThan(layers[0], 0, "MLA contribution should be non-zero")
+    }
 }

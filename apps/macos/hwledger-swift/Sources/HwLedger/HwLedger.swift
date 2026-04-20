@@ -200,6 +200,45 @@ public struct HwLedger {
         return try PlannerResult(from: resultPtr.pointee)
     }
 
+    /// Compute per-layer KV cache contributions.
+    ///
+    /// - Parameters:
+    ///   - configJson: JSON string with model config
+    ///   - seqLen: sequence length
+    ///   - kvQuantization: KV cache quantization mode
+    /// - Returns: Array of per-layer KV bytes (one element per layer)
+    /// - Throws: HwLedgerError if computation fails
+    public static func planLayers(
+        configJson: String,
+        seqLen: UInt64,
+        kvQuantization: KvQuantization = .fp16
+    ) throws -> [UInt64] {
+        let configJsonCStr = UnsafeMutablePointer<Int8>(
+            mutating: (configJson as NSString).utf8String!
+        )
+
+        var cInput = hwledger_PlannerInput(
+            config_json: configJsonCStr,
+            seq_len: seqLen,
+            concurrent_users: 1,
+            batch_size: 1,
+            kv_quant: UInt8(kvQuantization.rawValue),
+            weight_quant: 0
+        )
+
+        var outLen: UInt32 = 0
+        guard let ptr = hwledger_plan_layer_contributions(&cInput, &outLen) else {
+            throw HwLedgerError.invalidInput("planLayers failed: invalid configuration")
+        }
+
+        defer {
+            hwledger_plan_layer_contributions_free(ptr, outLen)
+        }
+
+        let slice = UnsafeBufferPointer(start: ptr, count: Int(outLen))
+        return Array(slice)
+    }
+
     /// Detect all available GPU devices.
     ///
     /// - Returns: Array of detected DeviceInfo
@@ -355,6 +394,12 @@ internal func hwledger_plan(_ input: UnsafeMutablePointer<hwledger_PlannerInput>
 
 @_silgen_name("hwledger_plan_free")
 internal func hwledger_plan_free(_ result: UnsafeMutablePointer<hwledger_PlannerResult>?)
+
+@_silgen_name("hwledger_plan_layer_contributions")
+internal func hwledger_plan_layer_contributions(_ input: UnsafeMutablePointer<hwledger_PlannerInput>?, _ outLen: UnsafeMutablePointer<UInt32>?) -> UnsafeMutablePointer<UInt64>?
+
+@_silgen_name("hwledger_plan_layer_contributions_free")
+internal func hwledger_plan_layer_contributions_free(_ ptr: UnsafeMutablePointer<UInt64>?, _ len: UInt32)
 
 @_silgen_name("hwledger_probe_detect")
 internal func hwledger_probe_detect(_ outCount: UnsafeMutablePointer<UInt>?) -> UnsafeMutablePointer<hwledger_DeviceInfo>?

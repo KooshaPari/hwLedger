@@ -1,13 +1,13 @@
 //! Plan subcommand: GPU memory allocation planning.
 //!
-//! Traces to: FR-PLAN-003
+//! Traces to: FR-PLAN-003, FR-PLAN-005
 
 use crate::output;
 use anyhow::{Context, Result};
 use clap::Parser;
 use comfy_table::Table;
 use hwledger_arch::{classify, Config as ArchConfig};
-use hwledger_core::math::KvFormula;
+use hwledger_core::math::{KvFormula, PlannerSnapshot, KvQuant as CoreKvQuant, WeightQuant as CoreWeightQuant};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
@@ -46,6 +46,11 @@ pub struct PlanArgs {
     /// Output as JSON instead of table.
     #[arg(long)]
     json: bool,
+
+    /// Export configuration for inference framework: vllm, llama-cpp, or mlx.
+    /// Mutually exclusive with --json.
+    #[arg(long, value_name = "FORMAT", value_parser = ["vllm", "llama-cpp", "mlx"])]
+    export: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -167,6 +172,54 @@ pub fn run(args: PlanArgs) -> Result<()> {
 
     // Classify architecture
     let attention_kind = classify(&arch_cfg).context("failed to classify architecture")?;
+
+    // If exporting, compute the snapshot and export directly
+    if let Some(export_format) = &args.export {
+        let kv_q = match args.kv_quant {
+            KvQuant::Fp16 => CoreKvQuant::Fp16,
+            KvQuant::Fp8 => CoreKvQuant::Fp8,
+            KvQuant::Int8 => CoreKvQuant::Int8,
+            KvQuant::Int4 => CoreKvQuant::Int4,
+            KvQuant::ThreeBit => CoreKvQuant::ThreeBit,
+        };
+
+        let weight_q = match args.weight_quant {
+            WeightQuant::Fp16 => CoreWeightQuant::Fp16,
+            WeightQuant::Bf16 => CoreWeightQuant::Bf16,
+            WeightQuant::Int8 => CoreWeightQuant::Int8,
+            WeightQuant::Int4 => CoreWeightQuant::Int4,
+            WeightQuant::ThreeBit => CoreWeightQuant::ThreeBit,
+        };
+
+        let snapshot = PlannerSnapshot {
+            model_name: arch_cfg.model_type.clone().unwrap_or_else(|| "unknown".to_string()),
+            attention: attention_kind,
+            seq_len: args.seq,
+            concurrent_users: args.users,
+            batch_size: args.batch,
+            kv_quant: kv_q,
+            weight_quant: weight_q,
+        };
+
+        match export_format.as_str() {
+            "vllm" => {
+                let args = snapshot.export_vllm_args();
+                println!("{}", args.join(" "));
+            }
+            "llama-cpp" => {
+                let args = snapshot.export_llama_cpp_args();
+                println!("{}", args.join(" "));
+            }
+            "mlx" => {
+                let config = snapshot.export_mlx_config();
+                println!("{}", serde_json::to_string_pretty(&config)?);
+            }
+            _ => {
+                anyhow::bail!("unknown export format: {}", export_format);
+            }
+        }
+        return Ok(());
+    }
 
     let attention_label = format!("{:?}", attention_kind);
 

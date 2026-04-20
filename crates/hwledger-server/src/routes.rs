@@ -354,14 +354,14 @@ pub async fn get_rentals(
 /// Ranks by (fit_score, cost_per_hour).
 /// Traces to: FR-FLEET-007
 pub async fn placement_suggestions(
-    State(_state): State<Arc<AppState>>,
+    State(state): State<Arc<AppState>>,
     axum::extract::Query(params): axum::extract::Query<HashMap<String, String>>,
 ) -> Result<Json<Vec<PlacementSuggestion>>, ServerError> {
     let _model_ref = params.get("model_ref").ok_or_else(|| ServerError::Validation {
         reason: "missing 'model_ref' query parameter".to_string(),
     })?;
 
-    let _min_vram_gb: u32 = params
+    let min_vram_gb: u32 = params
         .get("min_vram_gb")
         .ok_or_else(|| ServerError::Validation {
             reason: "missing 'min_vram_gb' query parameter".to_string(),
@@ -371,8 +371,146 @@ pub async fn placement_suggestions(
             reason: "invalid 'min_vram_gb' (expected integer)".to_string(),
         })?;
 
-    // TODO(fleet-placement-v2): implement placement ranking
-    Ok(Json(vec![]))
+    let min_vram_bytes = (min_vram_gb as u64) * 1024 * 1024 * 1024;
+
+    // Collect agents from the database
+    let agents: Vec<(String, u64)> = sqlx::query_as::<_, (String, i64)>(
+        "SELECT id, COALESCE(
+            (SELECT COALESCE(MAX(free_vram_bytes), 0) FROM telemetry WHERE agent_id = agents.id),
+            0
+        ) as max_free_vram FROM agents"
+    )
+    .fetch_all(&state.db)
+    .await
+    .unwrap_or_default()
+    .into_iter()
+    .map(|(id, vram)| (id, vram as u64))
+    .collect();
+
+    let mut candidates: Vec<PlacementCandidate> = Vec::new();
+
+    // Score each agent
+    for (agent_id, free_vram_bytes) in agents {
+        let device_vram: i64 = sqlx::query_scalar::<_, i64>(
+            "SELECT COALESCE(MAX(total_vram_bytes), 1) FROM devices WHERE agent_id = ?"
+        )
+        .bind(&agent_id)
+        .fetch_one(&state.db)
+        .await
+        .unwrap_or(1);
+
+        let total_vram_bytes = device_vram as u64;
+
+        // Fit score: clamp((free - required) / total, 0, 1)
+        let fit_score = if free_vram_bytes >= min_vram_bytes {
+            let excess = free_vram_bytes - min_vram_bytes;
+            ((excess as f32) / (total_vram_bytes as f32)).clamp(0.0, 1.0)
+        } else {
+            0.0
+        };
+
+        // Cost score for agents is always 1.0 (free/internal)
+        let cost_score = 1.0f32;
+
+        let rank = 0.7 * fit_score + 0.3 * cost_score;
+
+        candidates.push(PlacementCandidate {
+            agent_id: Some(agent_id),
+            rental_offering: None,
+            fit_score,
+            cost_score,
+            rank,
+        });
+    }
+
+    // Score each rental offering
+    if let Ok(rentals_catalog_lock) = state.rentals_catalog.try_read() {
+        if let Some(rentals_catalog) = rentals_catalog_lock.as_ref() {
+            for offering in &rentals_catalog.entries {
+                let offering_vram_bytes = (offering.vram_gb as u64) * 1024 * 1024 * 1024;
+
+                // Only include rentals that meet minimum VRAM
+                if offering_vram_bytes < min_vram_bytes {
+                    continue;
+                }
+
+                // Fit score: (offering_vram - required) / offering_vram, clamped to [0, 1]
+                let excess = offering_vram_bytes - min_vram_bytes;
+                let fit_score =
+                    ((excess as f32) / (offering_vram_bytes as f32)).clamp(0.0, 1.0);
+
+                // Cost score: 1.0 / (1.0 + hourly_usd)
+                let cost_val: f32 = 1.0f32 / (1.0f32 + offering.hourly_usd as f32);
+                let cost_score = cost_val.clamp(0.0, 1.0);
+
+                let rank = 0.7f32 * fit_score + 0.3f32 * cost_score;
+
+                candidates.push(PlacementCandidate {
+                    agent_id: None,
+                    rental_offering: Some(offering.clone()),
+                    fit_score,
+                    cost_score,
+                    rank,
+                });
+            }
+        }
+    }
+
+    // Sort by rank descending, then by fit_score descending, then by cost ascending
+    candidates.sort_by(|a, b| {
+        b.rank
+            .partial_cmp(&a.rank)
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .then_with(|| {
+                b.fit_score
+                    .partial_cmp(&a.fit_score)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+            })
+            .then_with(|| a.cost_score.partial_cmp(&b.cost_score)
+                .unwrap_or(std::cmp::Ordering::Equal))
+    });
+
+    // Convert to PlacementSuggestion and return top 5
+    let suggestions: Vec<PlacementSuggestion> = candidates
+        .into_iter()
+        .take(5)
+        .map(|c| {
+            let location = if let Some(ref offering) = c.rental_offering {
+                format!("{} ({})", offering.gpu_model, offering.region)
+            } else {
+                format!("agent-{}", c.agent_id.unwrap_or_default())
+            };
+            let cost_per_hour_usd = c
+                .rental_offering
+                .as_ref()
+                .map(|o| o.hourly_usd)
+                .unwrap_or(0.0);
+
+            PlacementSuggestion {
+                location,
+                fit_score: c.fit_score,
+                cost_per_hour_usd,
+                rank: c.rank,
+            }
+        })
+        .collect();
+
+    Ok(Json(suggestions))
+}
+
+/// Placement candidate combining agent or rental offering with computed scores.
+#[derive(Debug, Clone, Serialize)]
+pub struct PlacementCandidate {
+    /// Agent UUID if this is an internal agent, None for rentals.
+    pub agent_id: Option<String>,
+    /// Rental offering if this is a cloud rental, None for internal agents.
+    pub rental_offering: Option<rentals::RentalOffering>,
+    /// VRAM fitness score: clamp((free_vram - required_vram) / total_vram, 0, 1).
+    pub fit_score: f32,
+    /// Cost score: 1.0 / (1.0 + hourly_usd), ranging [0, 1).
+    pub cost_score: f32,
+    /// Combined rank: 0.7 * fit_score + 0.3 * cost_score.
+    pub rank: f32,
 }
 
 /// Placement suggestion with location, fit score, and estimated cost.
@@ -381,6 +519,7 @@ pub struct PlacementSuggestion {
     pub location: String,
     pub fit_score: f32,
     pub cost_per_hour_usd: f64,
+    pub rank: f32,
 }
 
 #[cfg(test)]
@@ -395,5 +534,97 @@ mod tests {
         assert_eq!(json, "\"Succeeded\"");
         let state2: JobState = serde_json::from_str(&json).expect("deserialize");
         assert_eq!(state, state2);
+    }
+
+    // Traces to: FR-FLEET-007
+    #[test]
+    fn test_placement_fit_score_when_free_exceeds_required() {
+        let required_vram = 24u64 * 1024 * 1024 * 1024; // 24GB
+        let free_vram = 80u64 * 1024 * 1024 * 1024;    // 80GB
+        let total_vram = 80u64 * 1024 * 1024 * 1024;
+
+        let excess = free_vram - required_vram;
+        let fit_score = ((excess as f32) / (total_vram as f32)).clamp(0.0, 1.0);
+        // (80-24)/80 = 56/80 = 0.7, so assert > 0.6
+        assert!(fit_score > 0.6);
+    }
+
+    // Traces to: FR-FLEET-007
+    #[test]
+    fn test_placement_fit_score_when_free_insufficient() {
+        let required_vram = 80u64 * 1024 * 1024 * 1024; // 80GB
+        let free_vram = 24u64 * 1024 * 1024 * 1024;    // 24GB
+        let _total_vram = 24u64 * 1024 * 1024 * 1024;
+
+        // Fit score should be 0 if free < required
+        let fit_score = if free_vram >= required_vram {
+            let excess = free_vram - required_vram;
+            ((excess as f32) / (_total_vram as f32)).clamp(0.0, 1.0)
+        } else {
+            0.0f32
+        };
+
+        assert_eq!(fit_score, 0.0);
+    }
+
+    // Traces to: FR-FLEET-007
+    #[test]
+    fn test_placement_cost_score_monotonic_in_price() {
+        let cost1 = 1.0 / (1.0 + 0.30f32);
+        let cost2 = 1.0 / (1.0 + 2.0f32);
+
+        // Cheaper should have higher cost_score
+        assert!(cost1 > cost2);
+    }
+
+    // Traces to: FR-FLEET-007
+    #[test]
+    fn test_placement_rank_combines_fit_and_cost() {
+        let fit_score = 0.9f32;
+        let cost_score = 0.5f32;
+        let rank = 0.7f32 * fit_score + 0.3f32 * cost_score;
+
+        // rank = 0.7*0.9 + 0.3*0.5 = 0.63 + 0.15 = 0.78
+        // So rank (0.78) < fit_score (0.9), which is expected
+        assert!(rank < fit_score);
+        assert!(rank > cost_score);
+    }
+
+    // Traces to: FR-FLEET-007
+    #[test]
+    fn test_placement_candidate_ordering_by_rank() {
+        let mut candidates = [
+            PlacementCandidate {
+                agent_id: Some("a1".to_string()),
+                rental_offering: None,
+                fit_score: 0.5f32,
+                cost_score: 0.5f32,
+                rank: 0.5f32,
+            },
+            PlacementCandidate {
+                agent_id: Some("a2".to_string()),
+                rental_offering: None,
+                fit_score: 0.9f32,
+                cost_score: 0.9f32,
+                rank: 0.9f32,
+            },
+            PlacementCandidate {
+                agent_id: Some("a3".to_string()),
+                rental_offering: None,
+                fit_score: 0.7f32,
+                cost_score: 0.7f32,
+                rank: 0.7f32,
+            },
+        ].to_vec();
+
+        candidates.sort_by(|a, b| {
+            b.rank
+                .partial_cmp(&a.rank)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
+
+        assert_eq!(candidates[0].rank, 0.9f32);
+        assert_eq!(candidates[1].rank, 0.7f32);
+        assert_eq!(candidates[2].rank, 0.5f32);
     }
 }

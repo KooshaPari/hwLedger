@@ -6,6 +6,7 @@
 //! heartbeats, and job reports. SQLite backend persists agent state, device inventory,
 //! and telemetry history.
 
+pub mod admin_extractor;
 pub mod ca;
 pub mod cert_extract;
 pub mod config;

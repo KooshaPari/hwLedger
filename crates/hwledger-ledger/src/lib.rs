@@ -12,10 +12,12 @@
 
 pub mod error;
 pub mod event;
+pub mod retention;
 pub mod store;
 
 pub use error::{LedgerError, Result};
 pub use event::HwLedgerEvent;
+pub use retention::{Checkpoint, PruneReport, RetentionPolicy};
 pub use store::{AuditEntry, AuditLog, AuditReceipt};
 
 pub fn version() -> &'static str {

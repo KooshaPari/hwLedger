@@ -6,8 +6,9 @@ Traces to: FR-PLAN-003 (Memory Planning)
 
 import json
 import streamlit as st
+import plotly.graph_objects as go
 from pathlib import Path
-from lib.ffi import plan, is_available, PlanResult
+from lib.ffi import plan, plan_layers, export_vllm, export_llama_cpp, export_mlx, is_available, PlanResult
 from lib.charts import stacked_bar_chart, gauge_chart
 
 
@@ -135,6 +136,34 @@ with col1:
     fig = stacked_bar_chart(result)
     st.plotly_chart(fig, use_container_width=True, key="plan_chart")
 
+    # Layer heatmap
+    st.subheader("Per-Layer KV Contributions")
+    layers = plan_layers(
+        config_json=config_str,
+        seq_len=seq_len,
+        kv_quant=kv_quants[kv_quant],
+    )
+
+    if layers:
+        max_val = max(layers) if layers else 1
+        min_val = min(layers) if layers else 0
+        normalized = [(x - min_val) / max(1, max_val - min_val) for x in layers]
+
+        # Heatmap row: 1 row x N columns (one per layer)
+        fig_heat = go.Figure(data=go.Heatmap(
+            z=[[norm for norm in normalized]],
+            colorscale='Purples',
+            showscale=True,
+            colorbar=dict(title="Relative KV Bytes"),
+        ))
+        fig_heat.update_layout(
+            height=150,
+            margin=dict(l=0, r=0, t=0, b=0),
+            xaxis_title="Layer Index",
+            yaxis=dict(showticklabels=False),
+        )
+        st.plotly_chart(fig_heat, use_container_width=True, key="layer_heatmap")
+
 with col2:
     # Metrics
     st.metric("Total Memory", f"{result.total_gb:.2f} GB")
@@ -160,6 +189,56 @@ breakdown_data = {
 }
 
 st.dataframe(breakdown_data, use_container_width=True, hide_index=True)
+
+# Export section
+st.subheader("Export Configuration")
+
+col_export1, col_export2, col_export3 = st.columns(3)
+
+with col_export1:
+    if st.button("Export as vLLM", use_container_width=True, key="export_vllm_btn"):
+        vllm_args = export_vllm(
+            config_json=config_str,
+            seq_len=seq_len,
+            concurrent_users=concurrent_users,
+            batch_size=batch_size,
+            kv_quant=kv_quants[kv_quant],
+            weight_quant=weight_quants[weight_quant],
+        )
+        if vllm_args:
+            st.code(vllm_args, language="bash")
+        else:
+            st.error("Export failed")
+
+with col_export2:
+    if st.button("Export as llama.cpp", use_container_width=True, key="export_llama_btn"):
+        llama_args = export_llama_cpp(
+            config_json=config_str,
+            seq_len=seq_len,
+            concurrent_users=concurrent_users,
+            batch_size=batch_size,
+            kv_quant=kv_quants[kv_quant],
+            weight_quant=weight_quants[weight_quant],
+        )
+        if llama_args:
+            st.code(llama_args, language="bash")
+        else:
+            st.error("Export failed")
+
+with col_export3:
+    if st.button("Export as MLX", use_container_width=True, key="export_mlx_btn"):
+        mlx_config = export_mlx(
+            config_json=config_str,
+            seq_len=seq_len,
+            concurrent_users=concurrent_users,
+            batch_size=batch_size,
+            kv_quant=kv_quants[kv_quant],
+            weight_quant=weight_quants[weight_quant],
+        )
+        if mlx_config:
+            st.code(mlx_config, language="json")
+        else:
+            st.error("Export failed")
 
 # Config preview
 st.subheader("Model Config (JSON)")

@@ -8,6 +8,7 @@ struct PlannerScreen: View {
     @State private var kvQuant: KvQuantization = .fp16
     @State private var weightQuant: WeightQuantization = .fp16
     @State private var plannerResult: PlannerResult?
+    @State private var layerContributions: [UInt64] = []
     @State private var error: String?
 
     private let testConfig = """
@@ -43,6 +44,11 @@ struct PlannerScreen: View {
 
                     if let result = plannerResult {
                         planResultSection(result)
+
+                        if !layerContributions.isEmpty {
+                            Divider()
+                            layerHeatmapSection()
+                        }
                     } else if let error = error {
                         Text("Error: \(error)")
                             .foregroundColor(.red)
@@ -165,6 +171,54 @@ struct PlannerScreen: View {
         return String(format: "%.0f MB", mb)
     }
 
+    private func layerHeatmapSection() -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Per-Layer KV Contributions")
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundColor(.secondary)
+
+            let maxValue = layerContributions.max() ?? 1
+            let minValue = layerContributions.min() ?? 0
+
+            HStack(spacing: 2) {
+                ForEach(0..<layerContributions.count, id: \.self) { i in
+                    let contribution = Double(layerContributions[i])
+                    let normalized = (contribution - Double(minValue)) / max(1, Double(maxValue - minValue))
+                    let color = interpolateColor(value: normalized)
+
+                    Rectangle()
+                        .fill(color)
+                        .frame(height: 20)
+                }
+            }
+            .frame(height: 20)
+            .accessibilityIdentifier("layer-heatmap")
+        }
+        .padding(12)
+        .background(Color.gray.opacity(0.05))
+        .cornerRadius(6)
+    }
+
+    private func interpolateColor(value: Double) -> Color {
+        let normalized = max(0, min(1, value))
+        if normalized < 0.5 {
+            let t = normalized * 2
+            return Color(
+                red: 0.85 + (0.15 * t),
+                green: 0.85 + (0.0 * t),
+                blue: 0.85 + (0.15 * t)
+            )
+        } else {
+            let t = (normalized - 0.5) * 2
+            return Color(
+                red: 1.0 + (-0.5 * t),
+                green: 0.85 + (-0.35 * t),
+                blue: 1.0 + (-0.6 * t)
+            )
+        }
+    }
+
     private func updatePlan() {
         do {
             plannerResult = try HwLedger.plan(
@@ -175,9 +229,17 @@ struct PlannerScreen: View {
                 kvQuantization: kvQuant,
                 weightQuantization: weightQuant
             )
+
+            layerContributions = try HwLedger.planLayers(
+                configJson: testConfig,
+                seqLen: UInt64(seqLen),
+                kvQuantization: kvQuant
+            )
+
             error = nil
         } catch {
             plannerResult = nil
+            layerContributions = []
             self.error = String(describing: error)
         }
     }

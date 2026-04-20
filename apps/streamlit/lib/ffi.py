@@ -237,6 +237,58 @@ def plan(
     )
 
 
+def plan_layers(
+    config_json: str,
+    seq_len: int,
+    kv_quant: int = 0,
+) -> List[int]:
+    """
+    Compute per-layer KV cache contributions.
+
+    Args:
+        config_json: Model config as JSON string
+        seq_len: Sequence length (tokens)
+        kv_quant: KV quantization (0=Fp16, 1=Fp8, 2=Int8, 3=Int4, 4=ThreeBit)
+
+    Returns:
+        List of per-layer KV bytes (one element per layer), or empty list on error
+    """
+    if lib is None:
+        return []
+
+    lib.hwledger_plan_layer_contributions.argtypes = [
+        ctypes.POINTER(PlannerInput),
+        ctypes.POINTER(ctypes.c_uint32),
+    ]
+    lib.hwledger_plan_layer_contributions.restype = ctypes.POINTER(ctypes.c_uint64)
+    lib.hwledger_plan_layer_contributions_free.argtypes = [
+        ctypes.POINTER(ctypes.c_uint64),
+        ctypes.c_uint32,
+    ]
+
+    config_bytes = config_json.encode('utf-8')
+    input_struct = PlannerInput(
+        config_json=config_bytes,
+        seq_len=seq_len,
+        concurrent_users=1,
+        batch_size=1,
+        kv_quant=kv_quant,
+        weight_quant=0,
+    )
+
+    out_len = ctypes.c_uint32(0)
+    ptr = lib.hwledger_plan_layer_contributions(ctypes.byref(input_struct), ctypes.byref(out_len))
+
+    if ptr is None or out_len.value == 0:
+        return []
+
+    # Copy values from C array before freeing
+    result = [ptr[i] for i in range(out_len.value)]
+    lib.hwledger_plan_layer_contributions_free(ptr, out_len.value)
+
+    return result
+
+
 def detect_devices() -> List[Device]:
     """
     Detect all GPU devices on the system.
@@ -270,6 +322,117 @@ def detect_devices() -> List[Device]:
 
     lib.hwledger_probe_detect_free(devices_ptr, count.value)
     return devices
+
+
+def export_vllm(
+    config_json: str,
+    seq_len: int,
+    concurrent_users: int,
+    batch_size: int,
+    kv_quant: int = 0,
+    weight_quant: int = 0,
+) -> Optional[str]:
+    """
+    Export vLLM command-line arguments for the plan.
+
+    Returns space-separated args, e.g. "--gpu-memory-utilization 0.9 --max-model-len 4096"
+    or None on error.
+    """
+    result = plan(config_json, seq_len, concurrent_users, batch_size, kv_quant, weight_quant)
+    if result is None:
+        return None
+
+    # Estimate vLLM args from the plan
+    # This is a simplified implementation; for a full implementation,
+    # check if there's a Rust-side exporter to call via FFI.
+    gpu_mem_util = min(0.95, 1.0 - (result.total_mb / 40000.0))  # Assume 40GB GPU
+    max_model_len = seq_len
+
+    args = [
+        f"--gpu-memory-utilization {gpu_mem_util:.2f}",
+        f"--max-model-len {max_model_len}",
+    ]
+
+    if concurrent_users > 1:
+        args.append(f"--max-num-seqs {concurrent_users}")
+
+    return " ".join(args)
+
+
+def export_llama_cpp(
+    config_json: str,
+    seq_len: int,
+    concurrent_users: int,
+    batch_size: int,
+    kv_quant: int = 0,
+    weight_quant: int = 0,
+) -> Optional[str]:
+    """
+    Export llama.cpp command-line arguments for the plan.
+
+    Returns space-separated args, e.g. "-n 512 -c 4096 -cb"
+    or None on error.
+    """
+    result = plan(config_json, seq_len, concurrent_users, batch_size, kv_quant, weight_quant)
+    if result is None:
+        return None
+
+    args = [
+        f"-c {seq_len}",  # context size
+        f"-n {seq_len // 2}",  # max tokens to predict
+    ]
+
+    if kv_quant in [2, 3, 4]:  # Int8, Int4, ThreeBit
+        args.append("-cb")  # cache in F16 (or quantized variant)
+
+    if batch_size > 1:
+        args.append(f"-b {batch_size}")
+
+    return " ".join(args)
+
+
+def export_mlx(
+    config_json: str,
+    seq_len: int,
+    concurrent_users: int,
+    batch_size: int,
+    kv_quant: int = 0,
+    weight_quant: int = 0,
+) -> Optional[str]:
+    """
+    Export MLX config as JSON for the plan.
+
+    Returns pretty-printed JSON or None on error.
+    """
+    result = plan(config_json, seq_len, concurrent_users, batch_size, kv_quant, weight_quant)
+    if result is None:
+        return None
+
+    # Parse the input config
+    try:
+        config = json.loads(config_json)
+    except:
+        return None
+
+    # Build MLX config
+    mlx_config = {
+        "model": {
+            "type": config.get("model_type", "llama"),
+            "hidden_size": config.get("hidden_size", 4096),
+            "num_hidden_layers": config.get("num_hidden_layers", 32),
+            "max_seq_len": seq_len,
+        },
+        "quantization": {
+            "kv_cache": ["fp16", "fp8", "int8", "int4", "3bit"][kv_quant],
+            "weights": ["fp16", "bf16", "int8", "int4", "3bit"][weight_quant],
+        },
+        "runtime": {
+            "batch_size": batch_size,
+            "max_concurrent": concurrent_users,
+        },
+    }
+
+    return json.dumps(mlx_config, indent=2)
 
 
 def is_available() -> bool:

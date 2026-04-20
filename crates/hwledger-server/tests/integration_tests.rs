@@ -127,6 +127,7 @@ mod common {
             ca_cert_path: temp_dir.path().join("ca.crt"),
             ca_key_path: temp_dir.path().join("ca.key"),
             bootstrap_tokens: vec!["test-bootstrap-token".to_string()],
+            require_admin_cert: false,
         };
 
         let state = Arc::new(AppState { db, ca, config, rentals_catalog: RwLock::new(None) });
@@ -576,6 +577,7 @@ fn test_server_config_custom() {
         ca_cert_path: PathBuf::from("/etc/ca.crt"),
         ca_key_path: PathBuf::from("/etc/ca.key"),
         bootstrap_tokens: vec!["custom-token-1".to_string(), "custom-token-2".to_string()],
+        require_admin_cert: true,
     };
 
     assert_eq!(config.bind.port(), 8080);

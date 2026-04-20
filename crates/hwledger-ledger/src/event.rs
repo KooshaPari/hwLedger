@@ -49,6 +49,9 @@ pub enum HwLedgerEvent {
 
     /// Security event (auth failures, cert rotations, etc.).
     SecurityEvent { kind: String, actor: Option<String>, detail: String },
+
+    /// Checkpoint marking a pruned segment (for retention & chain verification).
+    Checkpoint { seq_range: (u64, u64), chain_hash: String, created_at_ms: u64 },
 }
 
 impl HwLedgerEvent {
@@ -63,6 +66,7 @@ impl HwLedgerEvent {
             HwLedgerEvent::JobStateChanged { .. } => "job_state_changed",
             HwLedgerEvent::ConfigChanged { .. } => "config_changed",
             HwLedgerEvent::SecurityEvent { .. } => "security_event",
+            HwLedgerEvent::Checkpoint { .. } => "checkpoint",
         }
     }
 }

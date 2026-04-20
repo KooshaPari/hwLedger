@@ -52,6 +52,7 @@ async fn main() -> Result<()> {
         ca_cert_path: args.ca_cert,
         ca_key_path: args.ca_key,
         bootstrap_tokens: vec![args.bootstrap_token],
+        require_admin_cert: cfg!(not(debug_assertions)),
     };
 
     tracing::info!("Starting hwledger-server v{}", env!("CARGO_PKG_VERSION"));

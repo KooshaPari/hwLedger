@@ -128,4 +128,54 @@ final class HwLedgerTests: XCTestCase {
         // effective_batch = min(batch_size, concurrent_users) = min(4, 8) = 4
         XCTAssertEqual(result.effectiveBatch, 4, "effective_batch should clamp to batch_size")
     }
+
+    /// Test per-layer KV contributions for DeepSeek-V3 (MLA, layer-invariant).
+    /// Traces to: FR-PLAN-005
+    func testPlanLayersDeepSeekV3() throws {
+        let configJson = """
+        {
+          "model_type": "deepseek",
+          "num_hidden_layers": 62,
+          "hidden_size": 4096,
+          "kv_lora_rank": 512,
+          "qk_rope_head_dim": 64
+        }
+        """
+
+        let layers = try HwLedger.planLayers(
+            configJson: configJson,
+            seqLen: 4096,
+            kvQuantization: .fp16
+        )
+
+        XCTAssertEqual(layers.count, 1, "MLA should have 1 layer contribution (invariant)")
+        XCTAssertGreaterThan(layers[0], 0, "layer contribution should be > 0")
+    }
+
+    /// Test per-layer KV contributions for a hybrid 40-layer model with mixed attention.
+    /// Traces to: FR-PLAN-005
+    func testPlanLayersHybrid40Layers() throws {
+        let configJson = """
+        {
+          "model_type": "hybrid",
+          "num_hidden_layers": 40,
+          "hidden_size": 4096,
+          "num_attention_heads": 32,
+          "num_key_value_heads": 8,
+          "mla_layer_indices": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        }
+        """
+
+        let layers = try HwLedger.planLayers(
+            configJson: configJson,
+            seqLen: 2048,
+            kvQuantization: .fp16
+        )
+
+        XCTAssertEqual(layers.count, 40, "should have 40 layer contributions")
+        // 10 full-attention layers (positions 0-9) should have non-zero values
+        for i in 0..<10 {
+            XCTAssertGreaterThan(layers[i], 0, "full-attention layer \(i) should have non-zero KV bytes")
+        }
+    }
 }
