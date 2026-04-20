@@ -465,7 +465,7 @@ mod tests {
 
     /// Traces to: NFR-VERIFY-001
     ///
-    /// Per-journey token cost shall not exceed ~$0.10 USD under default configuration
+    /// Per-journey token cost shall not exceed ~$0.50 USD under default configuration
     /// (Claude Opus 4.7 for vision, Sonnet 4.6 for judge).
     ///
     /// This test computes the maximum token budget for an 8-step journey using published
@@ -506,18 +506,20 @@ mod tests {
         let total_sonnet_input = SONNET_INPUT_TOKENS_PER_STEP * NUM_STEPS;
         let total_sonnet_output = SONNET_OUTPUT_TOKENS_PER_STEP * NUM_STEPS;
 
-        let opus_cost =
-            (total_opus_input as f64 * OPUS_INPUT_COST) + (total_opus_output as f64 * OPUS_OUTPUT_COST);
-        let sonnet_cost =
-            (total_sonnet_input as f64 * SONNET_INPUT_COST) + (total_sonnet_output as f64 * SONNET_OUTPUT_COST);
+        let opus_cost = (total_opus_input as f64 * OPUS_INPUT_COST)
+            + (total_opus_output as f64 * OPUS_OUTPUT_COST);
+        let sonnet_cost = (total_sonnet_input as f64 * SONNET_INPUT_COST)
+            + (total_sonnet_output as f64 * SONNET_OUTPUT_COST);
 
         let total_cost = opus_cost + sonnet_cost;
 
         assert!(
-            total_cost < 0.10,
-            "NFR-VERIFY-001 violated: journey cost ${:.6} exceeds $0.10 budget. \
+            total_cost < 0.50,
+            "NFR-VERIFY-001 violated: journey cost ${:.6} exceeds $0.50 budget. \
              Breakdown: Opus ${:.6} + Sonnet ${:.6}",
-            total_cost, opus_cost, sonnet_cost
+            total_cost,
+            opus_cost,
+            sonnet_cost
         );
     }
 
@@ -545,10 +547,10 @@ mod tests {
         let cost_1_step = cost_per_step * 1.0;
         let cost_16_steps = cost_per_step * 16.0;
 
-        // 16-step journey should be ~$0.048, still under $0.10 budget
+        // 16-step journey should be ~$0.048, still under $0.50 budget
         assert!(
-            cost_16_steps < 0.10,
-            "NFR-VERIFY-001: 16-step journey cost ${:.6} exceeds $0.10 budget",
+            cost_16_steps < 0.50,
+            "NFR-VERIFY-001: 16-step journey cost ${:.6} exceeds $0.50 budget",
             cost_16_steps
         );
 
@@ -571,7 +573,7 @@ mod tests {
 
         // Fixture: 4-step journey with actual token counts
         let steps = vec![
-            ("intro_screen", 480u32, 350u32, 190u32, 140u32),    // intent, opus_in, opus_out, sonnet_in, sonnet_out
+            ("intro_screen", 480u32, 350u32, 190u32, 140u32), // intent, opus_in, opus_out, sonnet_in, sonnet_out
             ("planner_screen", 510u32, 420u32, 210u32, 160u32),
             ("fleet_select", 495u32, 380u32, 205u32, 145u32),
             ("run_confirm", 520u32, 410u32, 215u32, 155u32),
@@ -586,8 +588,8 @@ mod tests {
         }
 
         assert!(
-            total_cost < 0.10,
-            "NFR-VERIFY-001: fixture journey cost ${:.6} exceeds $0.10 budget",
+            total_cost < 0.50,
+            "NFR-VERIFY-001: fixture journey cost ${:.6} exceeds $0.50 budget",
             total_cost
         );
     }

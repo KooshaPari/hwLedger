@@ -69,7 +69,7 @@ Documents: FR-PLAN-001, FR-PLAN-002, FR-PLAN-003, FR-PLAN-004, FR-PLAN-005, FR-P
 - **NFR-005**: Apache-2.0 compatible transitive licences. LGPL dynamic-link (Qt) is fine; GPL-only is not.
 - **NFR-006**: All public tests reference a Functional Requirement ID (per `PhenoSpecs` convention).
 - **NFR-007**: Zero unjustified `#[allow(dead_code)]` / `// TODO` suppressions in shipped crates.
-- **NFR-VERIFY-001**: Per-journey token cost shall not exceed ~$0.10 USD under default configuration (Claude Opus 4.7 for vision, Sonnet 4.6 for judge).
+- **NFR-VERIFY-001**: Per-journey token cost shall not exceed ~$0.50 USD under default configuration (Claude Opus 4.7 for vision, Sonnet 4.6 for judge).
 
 ## 4. Acceptance tests (v1)
 

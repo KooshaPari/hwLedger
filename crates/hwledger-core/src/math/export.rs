@@ -109,10 +109,7 @@ impl PlannerSnapshot {
     ///
     /// Returns flags like: `["-c", "32768", "--n-gpu-layers", "40", "--parallel", "4"]`
     pub fn export_llama_cpp_args(&self) -> Vec<String> {
-        let mut args = vec![
-            "-c".to_string(),
-            self.seq_len.to_string(),
-        ];
+        let mut args = vec!["-c".to_string(), self.seq_len.to_string()];
 
         // Estimate n-gpu-layers based on attention kind (heuristic).
         // Assume 40 layers as a middle ground for major models.
@@ -167,10 +164,7 @@ mod tests {
     fn deepseek_v3_snapshot() -> PlannerSnapshot {
         PlannerSnapshot {
             model_name: "deepseek-ai/DeepSeek-V3".to_string(),
-            attention: AttentionKind::Mla {
-                kv_lora_rank: 512,
-                qk_rope_head_dim: 64,
-            },
+            attention: AttentionKind::Mla { kv_lora_rank: 512, qk_rope_head_dim: 64 },
             seq_len: 32_000,
             concurrent_users: 4,
             batch_size: 2,
@@ -182,11 +176,7 @@ mod tests {
     fn llama3_70b_snapshot() -> PlannerSnapshot {
         PlannerSnapshot {
             model_name: "meta-llama/Llama-3-70B".to_string(),
-            attention: AttentionKind::Gqa {
-                num_layers: 80,
-                num_kv_heads: 8,
-                head_dim: 128,
-            },
+            attention: AttentionKind::Gqa { num_layers: 80, num_kv_heads: 8, head_dim: 128 },
             seq_len: 8_000,
             concurrent_users: 2,
             batch_size: 1,

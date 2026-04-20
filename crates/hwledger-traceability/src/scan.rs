@@ -220,7 +220,8 @@ impl AnnotationScanner {
                                 break;
                             }
                             // Stop searching if we hit another function/struct def
-                            if fn_pattern.is_match(scan_line) || struct_pattern.is_match(scan_line) {
+                            if fn_pattern.is_match(scan_line) || struct_pattern.is_match(scan_line)
+                            {
                                 break;
                             }
                         }
@@ -228,8 +229,9 @@ impl AnnotationScanner {
 
                     // Extract test name from the function definition
                     if let Some(tl) = test_line {
-                        for j in (tl + 1)..std::cmp::min(tl + 5, lines.len()) {
-                            if let Some(caps) = fn_pattern.captures(lines[j]) {
+                        let end = std::cmp::min(tl + 5, lines.len());
+                        for scan_line in &lines[(tl + 1)..end] {
+                            if let Some(caps) = fn_pattern.captures(scan_line) {
                                 if let Some(name) = caps.get(1) {
                                     test_name = name.as_str().to_string();
                                     break;

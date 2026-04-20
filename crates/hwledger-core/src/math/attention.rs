@@ -124,18 +124,14 @@ impl KvFormula for AttentionKind {
             }
             AttentionKind::Mla { kv_lora_rank, qk_rope_head_dim } => {
                 // Layer-invariant; one representative per-layer value.
-                let bytes_per_layer =
-                    (f64::from(*kv_lora_rank) + f64::from(*qk_rope_head_dim)) * b;
+                let bytes_per_layer = (f64::from(*kv_lora_rank) + f64::from(*qk_rope_head_dim)) * b;
                 vec![bytes_per_layer.ceil() as u64; 1]
             }
             AttentionKind::SlidingWindow { num_layers, num_kv_heads, head_dim, window } => {
                 let effective = seq_len.min(u64::from(*window)) as f64;
-                let bytes_per_layer = 2.0
-                    * f64::from(*num_kv_heads)
-                    * f64::from(*head_dim)
-                    * effective
-                    * b
-                    / (seq_len.max(1) as f64);
+                let bytes_per_layer =
+                    2.0 * f64::from(*num_kv_heads) * f64::from(*head_dim) * effective * b
+                        / (seq_len.max(1) as f64);
                 vec![bytes_per_layer.ceil() as u64; *num_layers as usize]
             }
             AttentionKind::Ssm { num_layers, state_size } => {
@@ -143,20 +139,14 @@ impl KvFormula for AttentionKind {
                 vec![bytes_per_layer.ceil() as u64; *num_layers as usize]
             }
             AttentionKind::Hybrid(layers) => {
-                layers
-                    .iter()
-                    .map(|l| layer_bytes_per_token(l, seq_len, b).ceil() as u64)
-                    .collect()
+                layers.iter().map(|l| layer_bytes_per_token(l, seq_len, b).ceil() as u64).collect()
             }
             AttentionKind::AttentionSink { num_layers, num_kv_heads, head_dim, sinks, window } => {
                 let cap = f64::from(*sinks) + f64::from(*window);
                 let effective = (seq_len as f64).min(cap);
-                let bytes_per_layer = 2.0
-                    * f64::from(*num_kv_heads)
-                    * f64::from(*head_dim)
-                    * effective
-                    * b
-                    / (seq_len.max(1) as f64);
+                let bytes_per_layer =
+                    2.0 * f64::from(*num_kv_heads) * f64::from(*head_dim) * effective * b
+                        / (seq_len.max(1) as f64);
                 vec![bytes_per_layer.ceil() as u64; *num_layers as usize]
             }
         }
@@ -302,7 +292,10 @@ mod tests {
         // Each layer contributes 2·64·128·2 = 32,768 bytes/token.
         let expected_per_layer = 2 * 64 * 128 * 2;
         let expected_sum = expected_per_layer * 80;
-        assert_eq!(sum, expected_sum as u64, "sum of layer contributions = {sum}, expected = {expected_sum}");
+        assert_eq!(
+            sum, expected_sum as u64,
+            "sum of layer contributions = {sum}, expected = {expected_sum}"
+        );
     }
 
     #[test]

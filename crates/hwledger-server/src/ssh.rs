@@ -106,19 +106,16 @@ impl SshPool {
         // Real russh 0.46 integration: TCP connect → SSH handshake → key auth → exec → read stdout → close
 
         let addr = format!("{}:{}", self.host.hostname, self.host.port);
-        let socket_addr: SocketAddr = addr.parse()
-            .map_err(|e| anyhow::anyhow!("Invalid SSH address {}: {}", addr, e))?;
+        let socket_addr: SocketAddr =
+            addr.parse().map_err(|e| anyhow::anyhow!("Invalid SSH address {}: {}", addr, e))?;
 
         debug!("SSH: connecting to {}", addr);
 
         // TCP connect with timeout
-        let tcp = tokio::time::timeout(
-            Duration::from_secs(10),
-            TcpStream::connect(socket_addr)
-        )
-        .await
-        .map_err(|_| anyhow::anyhow!("SSH TCP connect timeout"))?
-        .map_err(|e| anyhow::anyhow!("SSH TCP connect failed: {}", e))?;
+        let tcp = tokio::time::timeout(Duration::from_secs(10), TcpStream::connect(socket_addr))
+            .await
+            .map_err(|_| anyhow::anyhow!("SSH TCP connect timeout"))?
+            .map_err(|e| anyhow::anyhow!("SSH TCP connect failed: {}", e))?;
 
         let _ = tcp; // Ensure TCP connection is held for the duration
 
@@ -147,7 +144,9 @@ impl SshPool {
             SshIdentity::KeyData { pem: _pem, passphrase: _ } => {
                 // For embedded PEM, we'd need to write a temp file; defer to v2
                 warn!("SSH KeyData variant not yet supported in MVP; use Agent or KeyPath");
-                return Err(anyhow::anyhow!("SSH KeyData not yet implemented; use Agent or KeyPath"));
+                return Err(anyhow::anyhow!(
+                    "SSH KeyData not yet implemented; use Agent or KeyPath"
+                ));
             }
         }
         ssh_cmd.arg("-o").arg("ConnectTimeout=10");
@@ -157,7 +156,7 @@ impl SshPool {
 
         let output = tokio::time::timeout(
             Duration::from_secs(30),
-            tokio::process::Command::from(ssh_cmd).output()
+            tokio::process::Command::from(ssh_cmd).output(),
         )
         .await
         .map_err(|_| anyhow::anyhow!("SSH command execution timeout after 30s"))?
@@ -165,8 +164,11 @@ impl SshPool {
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            return Err(anyhow::anyhow!("SSH command exited with status {}: {}",
-                output.status.code().unwrap_or(-1), stderr));
+            return Err(anyhow::anyhow!(
+                "SSH command exited with status {}: {}",
+                output.status.code().unwrap_or(-1),
+                stderr
+            ));
         }
 
         let stdout = String::from_utf8(output.stdout)

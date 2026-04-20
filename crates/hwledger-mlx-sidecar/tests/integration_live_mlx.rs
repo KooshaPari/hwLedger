@@ -7,12 +7,7 @@
 //!
 //! Traces to: FR-INF-001, FR-INF-002, FR-INF-003 (live generation)
 
-use hwledger_mlx_sidecar::{MlxError, MlxSidecar, MlxSidecarConfig};
-use serde_json::json;
-use std::path::PathBuf;
-use std::process::{Command, Stdio};
-use std::time::Duration;
-use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+use std::process::Stdio;
 use tokio::process::Child;
 
 /// Check if live MLX tests are enabled via HWLEDGER_MLX_LIVE=1
@@ -23,6 +18,7 @@ fn mlx_live_enabled() -> bool {
 /// Spawn a Python process running hwledger_rpc.py with a real engine pool.
 /// Expected: omlx-fork is available in sidecars/omlx-fork/
 /// Requires: mlx-lm, omlx packages installed in a venv.
+#[allow(dead_code)]
 async fn spawn_real_rpc_sidecar() -> Result<Child, String> {
     // Check if omlx-fork exists
     let omlx_fork_path = std::path::PathBuf::from("sidecars/omlx-fork");
@@ -32,7 +28,7 @@ async fn spawn_real_rpc_sidecar() -> Result<Child, String> {
 
     // Try to spawn with python3 -m omlx.hwledger_rpc
     // Assumes: venv is activated or mlx-lm + omlx are installed globally
-    let mut child = tokio::process::Command::new("python3")
+    let child = tokio::process::Command::new("python3")
         .arg("-m")
         .arg("omlx.hwledger_rpc")
         .stdin(Stdio::piped())
