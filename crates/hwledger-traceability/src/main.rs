@@ -99,8 +99,8 @@ fn main() -> Result<()> {
             "coverage": &report,
             "journey_coverage": &journey_report,
         });
-        let json =
-            serde_json::to_string_pretty(&envelope).context("Failed to serialize report to JSON")?;
+        let json = serde_json::to_string_pretty(&envelope)
+            .context("Failed to serialize report to JSON")?;
         println!("{}", json);
     } else if let Some(out_path) = args.markdown_out {
         let mut md = report.to_markdown();
@@ -127,7 +127,11 @@ fn main() -> Result<()> {
                     JourneyStatus::Ok => continue,
                     JourneyStatus::Missing => "missing journey for tagged FR".to_string(),
                     JourneyStatus::LowScore => {
-                        format!("score {:.2} < {:.2}", row.score.unwrap_or(0.0), hwledger_traceability::MIN_JOURNEY_SCORE)
+                        format!(
+                            "score {:.2} < {:.2}",
+                            row.score.unwrap_or(0.0),
+                            hwledger_traceability::MIN_JOURNEY_SCORE
+                        )
                     }
                     JourneyStatus::NotPassed => "journey not passed".to_string(),
                 };

@@ -405,7 +405,9 @@ mod tests {
             id: "FR-PLAN-001".to_string(),
             kind: crate::prd::FrKind::Fr,
             description: "Test".to_string(),
-            section: "Test Section".to_string(), journey_kinds: vec![] };
+            section: "Test Section".to_string(),
+            journey_kinds: vec![],
+        };
         let trace = TestTrace {
             file: "test.rs".to_string(),
             line: 10,
@@ -427,7 +429,9 @@ mod tests {
             id: "FR-PLAN-001".to_string(),
             kind: crate::prd::FrKind::Fr,
             description: "Test".to_string(),
-            section: "Test Section".to_string(), journey_kinds: vec![] };
+            section: "Test Section".to_string(),
+            journey_kinds: vec![],
+        };
 
         let annotations = vec![
             // Test
@@ -474,7 +478,9 @@ mod tests {
             id: "FR-PLAN-002".to_string(),
             kind: crate::prd::FrKind::Fr,
             description: "Test".to_string(),
-            section: "Test Section".to_string(), journey_kinds: vec![] };
+            section: "Test Section".to_string(),
+            journey_kinds: vec![],
+        };
 
         let annotations = vec![TraceAnnotation {
             citer: Citer::DocPage,

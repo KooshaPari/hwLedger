@@ -89,11 +89,7 @@ pub fn scan_verified(repo: &Path) -> Result<JourneyScan, JourneyError> {
     Ok(out)
 }
 
-fn collect_dir(
-    dir: &Path,
-    kind: JourneyKind,
-    out: &mut JourneyScan,
-) -> Result<(), JourneyError> {
+fn collect_dir(dir: &Path, kind: JourneyKind, out: &mut JourneyScan) -> Result<(), JourneyError> {
     // Each journey lives in a subdirectory; verified manifest is manifest.verified.json.
     for entry in std::fs::read_dir(dir)? {
         let entry = entry?;
@@ -103,9 +99,9 @@ fn collect_dir(
             if mani.exists() {
                 match load_manifest(&mani, kind) {
                     Ok(m) => out.manifests.push(m),
-                    Err(e) => out
-                        .warnings
-                        .push(format!("failed to parse {}: {}", mani.display(), e)),
+                    Err(e) => {
+                        out.warnings.push(format!("failed to parse {}: {}", mani.display(), e))
+                    }
                 }
             }
         }
@@ -258,11 +254,7 @@ pub fn render_markdown(report: &JourneyReport) -> String {
         for r in &report.rows {
             let jid = r.journey_id.clone().unwrap_or_else(|| "—".into());
             let score = r.score.map(|s| format!("{:.2}", s)).unwrap_or_else(|| "—".into());
-            let passed = r
-                .passed
-                .map(|p| if p { "yes" } else { "no" })
-                .unwrap_or("—")
-                .to_string();
+            let passed = r.passed.map(|p| if p { "yes" } else { "no" }).unwrap_or("—").to_string();
             let status = match r.status {
                 JourneyStatus::Ok => "OK",
                 JourneyStatus::Missing => "MISSING",
@@ -316,11 +308,20 @@ mod tests {
         }
     }
 
-    fn manifest(id: &str, kind: JourneyKind, traces: Vec<&str>, score: f64, passed: bool) -> JourneyManifest {
+    fn manifest(
+        id: &str,
+        kind: JourneyKind,
+        traces: Vec<&str>,
+        score: f64,
+        passed: bool,
+    ) -> JourneyManifest {
         JourneyManifest {
             id: id.into(),
             passed,
-            verification: Some(ManifestVerification { overall_score: score, all_intents_passed: passed }),
+            verification: Some(ManifestVerification {
+                overall_score: score,
+                all_intents_passed: passed,
+            }),
             traces_to: traces.into_iter().map(String::from).collect(),
             kind: Some(kind),
             manifest_path: PathBuf::from(format!("fake/{}/manifest.verified.json", id)),
@@ -330,8 +331,7 @@ mod tests {
     /// Traces to: FR-TRACE-001
     #[test]
     fn test_journey_kind_parse_multi() {
-        let parsed: Vec<_> =
-            "cli, web , GUI".split(',').filter_map(JourneyKind::parse).collect();
+        let parsed: Vec<_> = "cli, web , GUI".split(',').filter_map(JourneyKind::parse).collect();
         assert_eq!(parsed, vec![JourneyKind::Cli, JourneyKind::Web, JourneyKind::Gui]);
     }
 
@@ -411,7 +411,13 @@ mod tests {
     fn test_happy_path_journey_ok() {
         let frs = vec![fr("FR-PLAN-003", vec![JourneyKind::Cli])];
         let scan = JourneyScan {
-            manifests: vec![manifest("cli-plan", JourneyKind::Cli, vec!["FR-PLAN-003"], 0.92, true)],
+            manifests: vec![manifest(
+                "cli-plan",
+                JourneyKind::Cli,
+                vec!["FR-PLAN-003"],
+                0.92,
+                true,
+            )],
             warnings: vec![],
         };
         let rep = evaluate(&frs, &scan);
@@ -424,7 +430,13 @@ mod tests {
     fn test_render_markdown_includes_header_and_row() {
         let frs = vec![fr("FR-PLAN-003", vec![JourneyKind::Cli])];
         let scan = JourneyScan {
-            manifests: vec![manifest("cli-plan", JourneyKind::Cli, vec!["FR-PLAN-003"], 0.92, true)],
+            manifests: vec![manifest(
+                "cli-plan",
+                JourneyKind::Cli,
+                vec!["FR-PLAN-003"],
+                0.92,
+                true,
+            )],
             warnings: vec![],
         };
         let rep = evaluate(&frs, &scan);
