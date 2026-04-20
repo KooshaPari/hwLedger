@@ -1,50 +1,51 @@
 {
-  "id": "cli-plan-deepseek",
-  "traces_to": ["FR-PLAN-003"],
-  "title": "hwledger plan-deepseek",
-  "intent": "CLI plan command memory allocation for DeepSeek-V3 with 2048 seq, 2 users",
-  "steps": [
-    {
-      "index": 0,
-      "slug": "launch",
-      "intent": "Frame 1 of 5",
-      "screenshot_path": "keyframes/plan-deepseek/frame-001.png"
-    },
-    {
-      "index": 1,
-      "slug": "step_2",
-      "intent": "Frame 2 of 5",
-      "screenshot_path": "keyframes/plan-deepseek/frame-002.png"
-    },
-    {
-      "index": 2,
-      "slug": "step_3",
-      "intent": "Frame 3 of 5",
-      "screenshot_path": "keyframes/plan-deepseek/frame-003.png"
-    },
-    {
-      "index": 3,
-      "slug": "step_4",
-      "intent": "Frame 4 of 5",
-      "screenshot_path": "keyframes/plan-deepseek/frame-004.png"
-    },
-    {
-      "index": 4,
-      "slug": "final",
-      "intent": "Frame 5 of 5",
-      "screenshot_path": "keyframes/plan-deepseek/frame-005.png"
-    }
-  ],
+  "id": "plan-deepseek",
+  "intent": "Plan with Deepseek at 2K seq, then at 32K to show KV growth under scaling",
   "recording": "recordings/plan-deepseek.mp4",
   "recording_gif": "recordings/plan-deepseek.gif",
   "keyframe_count": 5,
   "passed": true,
+  "steps": [
+    {
+      "index": 0,
+      "slug": "frame-0",
+      "intent": "Terminal at prompt, ready to run planner",
+      "screenshot_path": "frame-001.png"
+    },
+    {
+      "index": 1,
+      "slug": "frame-1",
+      "intent": "Command typed: `hwledger plan tests/golden/deepseek-v3.json --seq 2048 --users 2`",
+      "screenshot_path": "frame-002.png"
+    },
+    {
+      "index": 2,
+      "slug": "frame-2",
+      "intent": "Architecture detection line: MLA with kv_lora_rank=512",
+      "screenshot_path": "frame-003.png"
+    },
+    {
+      "index": 3,
+      "slug": "frame-3",
+      "intent": "VRAM breakdown: weights, KV cache, activations at 2K sequence",
+      "screenshot_path": "frame-004.png"
+    },
+    {
+      "index": 4,
+      "slug": "frame-4",
+      "intent": "Second invocation at --seq 32768 showing KV growth under longer context",
+      "screenshot_path": "frame-005.png"
+    }
+  ],
   "verification": {
-    "timestamp": "2026-04-19T07:28:29Z",
+    "timestamp": "2026-04-20T08:28:47Z",
     "mode": "mock",
     "overall_score": 0.92,
     "describe_confidence": 0.95,
     "judge_confidence": 0.90,
     "all_intents_passed": true
-  }
+  },
+  "traces_to": [
+    "FR-PLAN-003"
+  ]
 }

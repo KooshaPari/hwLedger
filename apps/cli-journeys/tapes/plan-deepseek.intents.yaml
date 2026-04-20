@@ -1,4 +1,5 @@
 journey: plan-deepseek
+traces_to: ["FR-PLAN-003"]
 steps:
   - index: 0
     intent: "Terminal at prompt, ready to run planner"

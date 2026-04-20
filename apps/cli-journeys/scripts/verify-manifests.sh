@@ -66,6 +66,12 @@ verify_manifest() {
                 )
             )
         ' <<< "${verified_json}")
+
+        # Overlay top-level traces_to if the YAML declares it.
+        traces_yaml=$(yq -o=json '.traces_to // []' "${intents_yaml}")
+        if [ "${traces_yaml}" != "[]" ]; then
+            verified_json=$(jq --argjson tr "${traces_yaml}" '. + {traces_to: $tr}' <<< "${verified_json}")
+        fi
     fi
 
     # Add verification metadata

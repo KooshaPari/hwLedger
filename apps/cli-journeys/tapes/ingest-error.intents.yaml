@@ -1,4 +1,5 @@
 journey: ingest-error
+traces_to: ["FR-PLAN-001"]
 steps:
   - index: 0
     intent: "Terminal prompt ready to invoke ingest"

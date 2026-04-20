@@ -26,11 +26,15 @@
     }
   ],
   "verification": {
-    "timestamp": "2026-04-20T08:07:53Z",
+    "timestamp": "2026-04-20T08:28:47Z",
     "mode": "mock",
     "overall_score": 0.92,
     "describe_confidence": 0.95,
     "judge_confidence": 0.90,
     "all_intents_passed": true
-  }
+  },
+  "traces_to": [
+    "FR-TEL-001",
+    "FR-TEL-002"
+  ]
 }

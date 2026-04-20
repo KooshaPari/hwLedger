@@ -1,4 +1,5 @@
 journey: probe-watch
+traces_to: ["FR-TEL-001", "FR-TEL-002"]
 steps:
   - index: 0
     intent: "Terminal prompt"
