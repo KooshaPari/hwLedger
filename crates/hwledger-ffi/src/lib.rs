@@ -274,6 +274,76 @@ pub unsafe extern "C" fn hwledger_plan_free(result: *mut PlannerResult) {
     }
 }
 
+/// Compute per-layer KV contributions for heatmap rendering.
+///
+/// Parses config_json, classifies architecture, and returns a malloc'd array
+/// of per-layer bytes/token. Caller must call hwledger_plan_layer_contributions_free.
+/// out_len is filled with the number of layers.
+///
+/// # Safety
+///
+/// Caller must ensure `input` and `out_len` are valid pointers.
+///
+/// Traces to: FR-PLAN-005
+/// Returns NULL on error; caller must check.
+#[no_mangle]
+pub unsafe extern "C" fn hwledger_plan_layer_contributions(
+    input: *const PlannerInput,
+    out_len: *mut u32,
+) -> *mut u64 {
+    info!("plan_layer_contributions: FFI call");
+    let input = &*input;
+
+    let config_json = unsafe { CStr::from_ptr(input.config_json).to_string_lossy().to_string() };
+
+    let cfg: ArchConfig = match serde_json::from_str(&config_json) {
+        Ok(c) => c,
+        Err(e) => {
+            error!("plan_layer_contributions: JSON parse failed: {}", e);
+            return std::ptr::null_mut();
+        }
+    };
+
+    let attention_kind = match classify(&cfg) {
+        Ok(ak) => ak,
+        Err(e) => {
+            error!("plan_layer_contributions: classify failed: {}", e);
+            return std::ptr::null_mut();
+        }
+    };
+
+    let kv_quant = match input.kv_quant {
+        0 => KvQuant::Fp16,
+        1 => KvQuant::Fp8,
+        2 => KvQuant::Int8,
+        3 => KvQuant::Int4,
+        4 => KvQuant::ThreeBit,
+        _ => KvQuant::Fp16,
+    };
+
+    let kv_bytes_per_element = kv_quant.bytes_per_element();
+    let contribs = attention_kind.layer_contributions(input.seq_len, kv_bytes_per_element);
+
+    let len = contribs.len() as u32;
+    unsafe { *out_len = len };
+
+    let ptr = contribs.as_ptr() as *mut u64;
+    std::mem::forget(contribs);
+    ptr
+}
+
+/// Free a layer contributions array allocated by hwledger_plan_layer_contributions.
+///
+/// # Safety
+///
+/// Caller must ensure `ptr` was allocated by hwledger_plan_layer_contributions and `len` matches.
+#[no_mangle]
+pub unsafe extern "C" fn hwledger_plan_layer_contributions_free(ptr: *mut u64, len: u32) {
+    if !ptr.is_null() {
+        let _ = Vec::from_raw_parts(ptr, len as usize, len as usize);
+    }
+}
+
 /// Detect all available GPU devices on the system.
 ///
 /// Returns a malloc'd array of DeviceInfo; caller must call hwledger_detect_free.

@@ -52,6 +52,9 @@ pub enum AttentionKind {
 /// length and element width.
 pub trait KvFormula {
     fn bytes_per_token(&self, seq_len: u64, b: BytesPerElement) -> f64;
+    /// Per-layer bytes/token contributions. For layer-invariant architectures
+    /// (MLA), returns a single entry; for heterogeneous layers (Hybrid), varies.
+    fn layer_contributions(&self, seq_len: u64, b: BytesPerElement) -> Vec<u64>;
 }
 
 impl KvFormula for AttentionKind {
@@ -100,6 +103,61 @@ impl KvFormula for AttentionKind {
                     * effective
                     * b
                     / (seq_len.max(1) as f64)
+            }
+        }
+    }
+
+    fn layer_contributions(&self, seq_len: u64, b: BytesPerElement) -> Vec<u64> {
+        match self {
+            AttentionKind::Mha { num_layers, num_attention_heads, head_dim } => {
+                let bytes_per_layer =
+                    2.0 * f64::from(*num_attention_heads) * f64::from(*head_dim) * b;
+                vec![bytes_per_layer.ceil() as u64; *num_layers as usize]
+            }
+            AttentionKind::Gqa { num_layers, num_kv_heads, head_dim } => {
+                let bytes_per_layer = 2.0 * f64::from(*num_kv_heads) * f64::from(*head_dim) * b;
+                vec![bytes_per_layer.ceil() as u64; *num_layers as usize]
+            }
+            AttentionKind::Mqa { num_layers, head_dim } => {
+                let bytes_per_layer = 2.0 * f64::from(*head_dim) * b;
+                vec![bytes_per_layer.ceil() as u64; *num_layers as usize]
+            }
+            AttentionKind::Mla { kv_lora_rank, qk_rope_head_dim } => {
+                // Layer-invariant; one representative per-layer value.
+                let bytes_per_layer =
+                    (f64::from(*kv_lora_rank) + f64::from(*qk_rope_head_dim)) * b;
+                vec![bytes_per_layer.ceil() as u64; 1]
+            }
+            AttentionKind::SlidingWindow { num_layers, num_kv_heads, head_dim, window } => {
+                let effective = seq_len.min(u64::from(*window)) as f64;
+                let bytes_per_layer = 2.0
+                    * f64::from(*num_kv_heads)
+                    * f64::from(*head_dim)
+                    * effective
+                    * b
+                    / (seq_len.max(1) as f64);
+                vec![bytes_per_layer.ceil() as u64; *num_layers as usize]
+            }
+            AttentionKind::Ssm { num_layers, state_size } => {
+                let bytes_per_layer = f64::from(*state_size) * b;
+                vec![bytes_per_layer.ceil() as u64; *num_layers as usize]
+            }
+            AttentionKind::Hybrid(layers) => {
+                layers
+                    .iter()
+                    .map(|l| layer_bytes_per_token(l, seq_len, b).ceil() as u64)
+                    .collect()
+            }
+            AttentionKind::AttentionSink { num_layers, num_kv_heads, head_dim, sinks, window } => {
+                let cap = f64::from(*sinks) + f64::from(*window);
+                let effective = (seq_len as f64).min(cap);
+                let bytes_per_layer = 2.0
+                    * f64::from(*num_kv_heads)
+                    * f64::from(*head_dim)
+                    * effective
+                    * b
+                    / (seq_len.max(1) as f64);
+                vec![bytes_per_layer.ceil() as u64; *num_layers as usize]
             }
         }
     }
@@ -230,5 +288,78 @@ mod tests {
         let total = bpt * 10_000.0;
         // cap = 2048; total = 2·80·8·128·2048·2 = 671,088,640.
         assert!((total - 671_088_640.0).abs() < 1024.0, "total = {total}");
+    }
+
+    #[test]
+    fn layer_contributions_mha_sums_to_total() {
+        // Traces to: FR-PLAN-005
+        // Per-layer contributions are bytes/token. Sum of all layers should equal
+        // bytes_per_token(seq_len, b) from the trait.
+        let k = AttentionKind::Mha { num_layers: 80, num_attention_heads: 64, head_dim: 128 };
+        let contribs = k.layer_contributions(32_000, FP16);
+        assert_eq!(contribs.len(), 80, "MHA must have 80 layer contributions");
+        let sum: u64 = contribs.iter().sum();
+        // Each layer contributes 2·64·128·2 = 32,768 bytes/token.
+        let expected_per_layer = 2 * 64 * 128 * 2;
+        let expected_sum = expected_per_layer * 80;
+        assert_eq!(sum, expected_sum as u64, "sum of layer contributions = {sum}, expected = {expected_sum}");
+    }
+
+    #[test]
+    fn layer_contributions_gqa_uniform() {
+        // Traces to: FR-PLAN-005
+        let k = AttentionKind::Gqa { num_layers: 80, num_kv_heads: 8, head_dim: 128 };
+        let contribs = k.layer_contributions(32_000, FP16);
+        assert_eq!(contribs.len(), 80);
+        // All layers should be identical.
+        assert!(contribs.iter().all(|&x| x == contribs[0]));
+    }
+
+    #[test]
+    fn layer_contributions_mla_invariant() {
+        // Traces to: FR-PLAN-005
+        let k = AttentionKind::Mla { kv_lora_rank: 512, qk_rope_head_dim: 64 };
+        let contribs_32k = k.layer_contributions(32_000, FP16);
+        let contribs_128k = k.layer_contributions(128_000, FP16);
+        // MLA is layer-invariant; both should return [single_value].
+        assert_eq!(contribs_32k.len(), 1);
+        assert_eq!(contribs_128k.len(), 1);
+        assert_eq!(contribs_32k[0], contribs_128k[0], "MLA must be seq-invariant");
+    }
+
+    #[test]
+    fn layer_contributions_ssm_sums_to_total() {
+        // Traces to: FR-PLAN-005
+        let k = AttentionKind::Ssm { num_layers: 48, state_size: 64 };
+        let contribs = k.layer_contributions(1_000, FP16);
+        assert_eq!(contribs.len(), 48);
+        let sum: u64 = contribs.iter().sum();
+        // Total state = 48 * 64 * 2 = 6144 bytes.
+        assert_eq!(sum, 6144, "SSM total state = {sum}");
+    }
+
+    #[test]
+    fn layer_contributions_hybrid_per_layer() {
+        // Traces to: FR-PLAN-005
+        let layers: Vec<LayerKind> = (0..40)
+            .map(|i| {
+                if i % 4 == 0 {
+                    LayerKind::FullAttention { num_kv_heads: 2, head_dim: 256 }
+                } else {
+                    LayerKind::LinearAttention
+                }
+            })
+            .collect();
+        let k = AttentionKind::Hybrid(layers);
+        let contribs = k.layer_contributions(1_024, FP16);
+        assert_eq!(contribs.len(), 40, "Hybrid must have per-layer entry");
+        // Layers 0,4,8,12,... have FullAttention; others have zero.
+        for (i, &contrib) in contribs.iter().enumerate() {
+            if i % 4 == 0 {
+                assert!(contrib > 0, "Layer {i} (full attention) should have bytes");
+            } else {
+                assert_eq!(contrib, 0, "Layer {i} (linear attention) should have zero bytes");
+            }
+        }
     }
 }
