@@ -3,7 +3,17 @@ traces_to: ["FR-TEL-001", "FR-TEL-002"]
 steps:
   - index: 0
     intent: "Command typed: `hwledger probe list`"
+    assertions:
+      must_contain: ["hwledger probe list"]
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 1
     intent: "Table output: detected GPU devices with VRAM, driver, PCI location"
+    assertions:
+      must_contain: ["VRAM"]
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 2
     intent: "Second invocation `hwledger probe list --json` returning NDJSON-style output"
+    assertions:
+      must_contain: ["--json"]
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
+      expected_exit: 0

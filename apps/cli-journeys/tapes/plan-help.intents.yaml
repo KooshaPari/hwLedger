@@ -3,13 +3,26 @@ traces_to: ["FR-PLAN-003"]
 steps:
   - index: 0
     intent: "Terminal prompt awaiting command"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 1
     intent: "Command typed: `hwledger plan --help`"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 2
     intent: "Usage line and positional PATH argument description"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 3
     intent: "Options block: --seq, --users, --batch, --weight-quant, --kv-quant"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 4
     intent: "Options block continued: --device-total-vram, --json, --export, --no-color"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 5
     intent: "Trailing --help line and prompt returned"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
+      expected_exit: 0

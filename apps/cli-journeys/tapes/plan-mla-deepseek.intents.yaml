@@ -2,7 +2,14 @@ journey: plan-mla-deepseek
 steps:
   - index: 0
     intent: "Plan at --seq 2048: MLA classification, compact KV cache via kv_lora_rank"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 1
     intent: "Plan at --seq 32768: KV footprint grows linearly but stays bounded by MLA"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 2
     intent: "Plan at --seq 131072: 128K context fits because MLA compresses KV projections"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
+      expected_exit: 0

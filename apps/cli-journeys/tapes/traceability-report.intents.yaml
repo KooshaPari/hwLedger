@@ -2,19 +2,44 @@ journey: traceability-report
 steps:
   - index: 0
     intent: "Terminal prompt"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 1
     intent: "Command typed: `cargo run -q -p hwledger-traceability -- --markdown-out /tmp/trace.md --verbose`"
+    assertions:
+      must_contain: ["cargo run", "hwledger-traceability"]
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 2
     intent: "Cargo compiles and launches the traceability tool"
+    assertions:
+      # This is the frame that previously showed `error: unexpected argument`.
+      # These assertions are the regression gate.
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 3
     intent: "Cross-Dimensional Traceability Report header printed"
+    assertions:
+      must_contain: ["Traceability"]
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 4
     intent: "Coverage summary: total FRs/NFRs, fully traced, zero coverage counts"
+    assertions:
+      must_contain: ["FR"]
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 5
     intent: "`head -50 /tmp/trace.md` previews the markdown output"
+    assertions:
+      must_contain: ["trace.md"]
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 6
     intent: "Markdown header section with FR inventory table"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 7
     intent: "FR rows showing test references and coverage marks"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
   - index: 8
     intent: "Prompt returned after the report preview"
+    assertions:
+      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
+      expected_exit: 0
