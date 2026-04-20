@@ -2,10 +2,24 @@
 
 Interactive recordings of hwLedger workflows, end-to-end. Each journey captures an intent label per step, a keyframe gallery, and a Claude-verified blackbox description with a per-step judge score.
 
-Two families of journeys:
+Three families of journeys:
 
 1. **CLI** — recorded via [VHS](https://github.com/charmbracelet/vhs); run in any terminal.
 2. **GUI** — recorded via XCUITest + ScreenCaptureKit on macOS.
+3. **Web (Streamlit)** — recorded via headed Chromium + [Playwright](https://playwright.dev) against the `apps/streamlit` client.
+
+## Web (Streamlit) journeys
+
+Real-pixel Playwright recordings of the Streamlit web client. Each spec boots Streamlit on a loopback port, drives the page through a realistic interaction, and snapshots numbered keyframes alongside a narrated manifest.
+
+| Journey | What it demonstrates |
+|---|---|
+| [Planner — seq length sweep](./streamlit-planner.md) | Live memory planning; KV cache grows with context |
+| [Probe — device inventory](./streamlit-probe.md) | GPU enumeration via FFI in the browser |
+| [Fleet — offline fail-loudly](./streamlit-fleet.md) | Connect-error UX; no silent fallback (NFR-007) |
+| [Exports — vLLM / llama.cpp / MLX](./streamlit-exports.md) | One-click deploy configs from any plan |
+
+Recorded and verified via `apps/streamlit/journeys/scripts/record-all.sh` + `verify-manifests.sh`.
 
 ## CLI journeys (live)
 

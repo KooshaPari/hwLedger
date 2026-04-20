@@ -6,8 +6,9 @@
   "scripts": {
     "sync:adrs": "bash scripts/sync-adrs.sh",
     "sync:journeys": "bash scripts/sync-journey-artefacts.sh",
+    "sync:streamlit-journeys": "bash scripts/sync-streamlit-journeys.sh",
     "sync:research": "bash scripts/sync-research.sh",
-    "sync": "bash scripts/sync-adrs.sh && bash scripts/sync-journey-artefacts.sh && bash scripts/sync-research.sh",
+    "sync": "bash scripts/sync-adrs.sh && bash scripts/sync-journey-artefacts.sh && bash scripts/sync-streamlit-journeys.sh && bash scripts/sync-research.sh",
     "dev": "bun run sync && vitepress dev .",
     "build": "bun run sync && vitepress build .",
     "preview": "vitepress preview .",

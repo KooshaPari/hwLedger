@@ -155,6 +155,16 @@ export default withMermaid(defineConfig({
             { text: 'probe watch', link: '/journeys/cli-probe-watch' },
             { text: 'ingest error UX', link: '/journeys/cli-ingest-error' }
           ]
+        },
+        {
+          text: 'Web (Streamlit) journeys',
+          collapsed: false,
+          items: [
+            { text: 'Planner — seq length sweep', link: '/journeys/streamlit-planner' },
+            { text: 'Probe — device inventory', link: '/journeys/streamlit-probe' },
+            { text: 'Fleet — offline fail-loudly', link: '/journeys/streamlit-fleet' },
+            { text: 'Exports — vLLM / llama.cpp / MLX', link: '/journeys/streamlit-exports' }
+          ]
         }
       ]
     },

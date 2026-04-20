@@ -1,0 +1,16 @@
+{
+  "name": "hwledger-streamlit-journeys",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Playwright-driven journey recorder for the hwLedger Streamlit web client.",
+  "scripts": {
+    "record": "bash scripts/record-all.sh",
+    "verify": "bash scripts/verify-manifests.sh",
+    "playwright": "playwright test",
+    "playwright:ui": "playwright test --ui"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.47.0",
+    "typescript": "^5.5.4"
+  }
+}

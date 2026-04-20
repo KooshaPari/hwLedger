@@ -1,0 +1,41 @@
+{
+  "id": "streamlit-exports",
+  "title": "Streamlit Exports \u2014 vLLM, llama.cpp, MLX",
+  "intent": "From the Planner page, click each export button in turn and capture the generated deployment config for vLLM, llama.cpp, and MLX.",
+  "recording": "recordings/streamlit-exports.mp4",
+  "recording_gif": "recordings/streamlit-exports.gif",
+  "keyframe_count": 5,
+  "passed": true,
+  "steps": [
+    {
+      "index": 0,
+      "slug": "planner-ready",
+      "intent": "Planner page ready with a concrete plan already computed; we scroll down to the Export Configuration row.",
+      "screenshot_path": "frame-001.png"
+    },
+    {
+      "index": 1,
+      "slug": "export-row",
+      "intent": "Export Configuration row in view: three buttons \u2014 Export as vLLM, Export as llama.cpp, Export as MLX.",
+      "screenshot_path": "frame-002.png"
+    },
+    {
+      "index": 2,
+      "slug": "vllm-config",
+      "intent": "vLLM click: JSON payload with --model, --max-model-len, --max-num-seqs rendered in a code block.",
+      "screenshot_path": "frame-003.png"
+    },
+    {
+      "index": 3,
+      "slug": "llama-config",
+      "intent": "llama.cpp click: CLI arg string (-m, -c, -ngl) emitted for the same plan parameters.",
+      "screenshot_path": "frame-004.png"
+    },
+    {
+      "index": 4,
+      "slug": "mlx-config",
+      "intent": "MLX click: Apple Silicon deploy config serialised as JSON, completing the export triple.",
+      "screenshot_path": "frame-005.png"
+    }
+  ]
+}

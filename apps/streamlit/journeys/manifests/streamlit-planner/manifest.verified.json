@@ -1,0 +1,49 @@
+{
+  "id": "streamlit-planner",
+  "title": "Streamlit Planner — seq length sweep",
+  "intent": "Load the DeepSeek-V3 golden fixture, sweep sequence length from 2K to 32K, and watch the KV cache bar dominate the stacked VRAM chart.",
+  "recording": "recordings/streamlit-planner.mp4",
+  "recording_gif": "recordings/streamlit-planner.gif",
+  "keyframe_count": 5,
+  "passed": true,
+  "steps": [
+    {
+      "index": 0,
+      "slug": "landing",
+      "intent": "Planner loaded with the default fixture; sidebar exposes seq length, concurrent users, and quantisation controls.",
+      "screenshot_path": "frame-001.png"
+    },
+    {
+      "index": 1,
+      "slug": "sidebar-open",
+      "intent": "Sidebar expanded, showing the sequence length slider at its default 4096 tokens.",
+      "screenshot_path": "frame-002.png"
+    },
+    {
+      "index": 2,
+      "slug": "seq-bumped",
+      "intent": "Sequence length bumped upward; the stacked VRAM chart re-renders with a taller KV cache band.",
+      "screenshot_path": "frame-003.png"
+    },
+    {
+      "index": 3,
+      "slug": "layer-heatmap",
+      "intent": "Per-layer KV contribution heatmap visible below the main chart; deeper layers contribute more memory.",
+      "screenshot_path": "frame-004.png"
+    },
+    {
+      "index": 4,
+      "slug": "export-row",
+      "intent": "Export row in view: vLLM, llama.cpp, and MLX buttons ready to emit deploy-ready configs for the current plan.",
+      "screenshot_path": "frame-005.png"
+    }
+  ],
+  "verification": {
+    "timestamp": "2026-04-20T07:50:17Z",
+    "mode": "mock",
+    "overall_score": 0.92,
+    "describe_confidence": 0.95,
+    "judge_confidence": 0.90,
+    "all_intents_passed": true
+  }
+}

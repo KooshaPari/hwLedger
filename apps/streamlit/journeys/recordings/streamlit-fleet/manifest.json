@@ -1,0 +1,29 @@
+{
+  "id": "streamlit-fleet",
+  "title": "Streamlit Fleet \u2014 offline server fail-loudly",
+  "intent": "Navigate to Fleet Audit while the hwLedger server is offline; the page must report a clear connect error rather than silently degrade.",
+  "recording": "recordings/streamlit-fleet.mp4",
+  "recording_gif": "recordings/streamlit-fleet.gif",
+  "keyframe_count": 3,
+  "passed": true,
+  "steps": [
+    {
+      "index": 0,
+      "slug": "landing",
+      "intent": "Fleet Audit page loaded, showing the configured server URL and a Refresh button in the header row.",
+      "screenshot_path": "frame-001.png"
+    },
+    {
+      "index": 1,
+      "slug": "connect-error",
+      "intent": "Connect error surfaced: Streamlit prints a red banner explaining the server is unreachable (no silent fallback).",
+      "screenshot_path": "frame-002.png"
+    },
+    {
+      "index": 2,
+      "slug": "refresh-retry",
+      "intent": "Refresh clicked; the error banner re-renders, confirming the retry path is explicit and visible to the operator.",
+      "screenshot_path": "frame-003.png"
+    }
+  ]
+}
