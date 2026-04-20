@@ -16,6 +16,7 @@ pub mod rentals;
 pub mod routes;
 pub mod ssh;
 pub mod tailscale;
+pub mod tls;
 
 pub use config::ServerConfig;
 pub use error::ServerError;
@@ -50,10 +51,8 @@ pub async fn run(config: ServerConfig) -> Result<()> {
 
     // Create app state
     let state = Arc::new(AppState { db, ca, config, rentals_catalog: RwLock::new(None) });
-
-    // Bind listener before moving state
     let bind_addr = state.config.bind;
-    let listener = tokio::net::TcpListener::bind(&bind_addr).await?;
+    let tls_enabled = state.config.require_admin_cert;
 
     // Build router
     let router = Router::new()
@@ -83,12 +82,19 @@ pub async fn run(config: ServerConfig) -> Result<()> {
         .with_state(state)
         .into_make_service_with_connect_info::<std::net::SocketAddr>();
 
-    info!("Server listening on {} (plain HTTP for MVP)", bind_addr);
-
-    // TODO(fleet-auth-v2): wire up rustls mTLS listener
-
-    // Run server
-    axum::serve(listener, router).await?;
+    if tls_enabled {
+        let tls_config = tls::build_rustls_config()?;
+        let acceptor = tls::PeerCertAcceptor::new(tls_config);
+        info!("Server listening on https://{} (rustls mTLS, admin CN-gated)", bind_addr);
+        axum_server::bind(bind_addr).acceptor(acceptor).serve(router).await?;
+    } else {
+        let listener = tokio::net::TcpListener::bind(&bind_addr).await?;
+        info!(
+            "Server listening on http://{} (plain HTTP; X-Admin-Cert header for admin)",
+            bind_addr
+        );
+        axum::serve(listener, router).await?;
+    }
     Ok(())
 }
 

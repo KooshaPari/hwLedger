@@ -378,7 +378,7 @@ pub async fn placement_suggestions(
         "SELECT id, COALESCE(
             (SELECT COALESCE(MAX(free_vram_bytes), 0) FROM telemetry WHERE agent_id = agents.id),
             0
-        ) as max_free_vram FROM agents"
+        ) as max_free_vram FROM agents",
     )
     .fetch_all(&state.db)
     .await
@@ -392,7 +392,7 @@ pub async fn placement_suggestions(
     // Score each agent
     for (agent_id, free_vram_bytes) in agents {
         let device_vram: i64 = sqlx::query_scalar::<_, i64>(
-            "SELECT COALESCE(MAX(total_vram_bytes), 1) FROM devices WHERE agent_id = ?"
+            "SELECT COALESCE(MAX(total_vram_bytes), 1) FROM devices WHERE agent_id = ?",
         )
         .bind(&agent_id)
         .fetch_one(&state.db)
@@ -436,8 +436,7 @@ pub async fn placement_suggestions(
 
                 // Fit score: (offering_vram - required) / offering_vram, clamped to [0, 1]
                 let excess = offering_vram_bytes - min_vram_bytes;
-                let fit_score =
-                    ((excess as f32) / (offering_vram_bytes as f32)).clamp(0.0, 1.0);
+                let fit_score = ((excess as f32) / (offering_vram_bytes as f32)).clamp(0.0, 1.0);
 
                 // Cost score: 1.0 / (1.0 + hourly_usd)
                 let cost_val: f32 = 1.0f32 / (1.0f32 + offering.hourly_usd as f32);
@@ -462,12 +461,11 @@ pub async fn placement_suggestions(
             .partial_cmp(&a.rank)
             .unwrap_or(std::cmp::Ordering::Equal)
             .then_with(|| {
-                b.fit_score
-                    .partial_cmp(&a.fit_score)
-                    .unwrap_or(std::cmp::Ordering::Equal)
+                b.fit_score.partial_cmp(&a.fit_score).unwrap_or(std::cmp::Ordering::Equal)
             })
-            .then_with(|| a.cost_score.partial_cmp(&b.cost_score)
-                .unwrap_or(std::cmp::Ordering::Equal))
+            .then_with(|| {
+                a.cost_score.partial_cmp(&b.cost_score).unwrap_or(std::cmp::Ordering::Equal)
+            })
     });
 
     // Convert to PlacementSuggestion and return top 5
@@ -480,11 +478,7 @@ pub async fn placement_suggestions(
             } else {
                 format!("agent-{}", c.agent_id.unwrap_or_default())
             };
-            let cost_per_hour_usd = c
-                .rental_offering
-                .as_ref()
-                .map(|o| o.hourly_usd)
-                .unwrap_or(0.0);
+            let cost_per_hour_usd = c.rental_offering.as_ref().map(|o| o.hourly_usd).unwrap_or(0.0);
 
             PlacementSuggestion {
                 location,
@@ -540,7 +534,7 @@ mod tests {
     #[test]
     fn test_placement_fit_score_when_free_exceeds_required() {
         let required_vram = 24u64 * 1024 * 1024 * 1024; // 24GB
-        let free_vram = 80u64 * 1024 * 1024 * 1024;    // 80GB
+        let free_vram = 80u64 * 1024 * 1024 * 1024; // 80GB
         let total_vram = 80u64 * 1024 * 1024 * 1024;
 
         let excess = free_vram - required_vram;
@@ -553,7 +547,7 @@ mod tests {
     #[test]
     fn test_placement_fit_score_when_free_insufficient() {
         let required_vram = 80u64 * 1024 * 1024 * 1024; // 80GB
-        let free_vram = 24u64 * 1024 * 1024 * 1024;    // 24GB
+        let free_vram = 24u64 * 1024 * 1024 * 1024; // 24GB
         let _total_vram = 24u64 * 1024 * 1024 * 1024;
 
         // Fit score should be 0 if free < required
@@ -615,13 +609,10 @@ mod tests {
                 cost_score: 0.7f32,
                 rank: 0.7f32,
             },
-        ].to_vec();
+        ]
+        .to_vec();
 
-        candidates.sort_by(|a, b| {
-            b.rank
-                .partial_cmp(&a.rank)
-                .unwrap_or(std::cmp::Ordering::Equal)
-        });
+        candidates.sort_by(|a, b| b.rank.partial_cmp(&a.rank).unwrap_or(std::cmp::Ordering::Equal));
 
         assert_eq!(candidates[0].rank, 0.9f32);
         assert_eq!(candidates[1].rank, 0.7f32);

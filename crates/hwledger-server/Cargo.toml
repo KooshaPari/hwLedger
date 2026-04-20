@@ -43,6 +43,8 @@ async-trait = "0.1"
 clap = { workspace = true, features = ["derive"] }
 russh.workspace = true
 russh-keys.workspace = true
+tokio-rustls = "0.26"
+futures-util = "0.3"
 
 [dev-dependencies]
 hwledger-ledger = { path = "../hwledger-ledger" }
