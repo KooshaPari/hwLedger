@@ -7,6 +7,12 @@ description: Common issues and fixes
 
 ## GPU not detected
 
+<Shot src="/cli-journeys/keyframes/probe-list/frame-002.png"
+      caption="Healthy probe output — device row present"
+      size="small" align="right" />
+
+<!-- SHOT-TODO: capture an empty probe list result (no-GPU host) -->
+
 **Symptom**: `hwledger probe` returns empty GPU list.
 
 **Diagnosis**:
@@ -34,6 +40,11 @@ hwledger probe --json | jq .gpus
 brew install metal-tools
 # Restart Terminal
 ```
+
+<Shot src="/cli-journeys/keyframes/ingest-error/frame-001.png"
+      caption="Fail-loud error line (E-INGEST-02) — same style as NVML failures"
+      size="small" align="right"
+      :annotations='[{"bbox":[60,220,480,32],"label":"error code","color":"#f38ba8","style":"dashed"}]' />
 
 ## NVML library not found
 

@@ -7,6 +7,12 @@ description: Sparkle key, keychain, credentials
 
 Handling private keys, Sparkle certificates, and cloud API credentials securely.
 
+<Shot src="/cli-journeys/keyframes/fleet-register/frame-007.png"
+      caption="Signature attached during fleet register"
+      size="small" align="right" />
+
+<!-- SHOT-TODO: capture keychain unlock prompt when running hwledger fleet register -->
+
 ## Sparkle private key
 
 The Sparkle framework requires an Ed25519 private key for signing app updates.

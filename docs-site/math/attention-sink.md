@@ -5,6 +5,8 @@ description: Stabilizing long-context inference
 
 # Attention Sink Phenomenon
 
+<!-- SHOT-TODO: capture a planner run with --context > 100k showing the sink-warning line -->
+
 As context length increases beyond training data, attention weights "sink" (collapse) to early tokens (BOS, padding, first few tokens). Destabilizes long-context inference.
 
 ## Why this variant

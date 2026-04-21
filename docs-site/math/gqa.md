@@ -5,6 +5,13 @@ description: Multi-head queries, grouped key-values
 
 # Grouped Query Attention (GQA)
 
+<Shot src="/cli-journeys/keyframes/first-plan/frame-005.png"
+      caption="Planner VRAM fit line — typical GQA model"
+      size="small" align="right"
+      :annotations='[{"bbox":[80,180,400,24],"label":"fits","color":"#a6e3a1"}]' />
+
+<!-- SHOT-TODO: capture frame showing num_kv_heads detection -->
+
 Reduces KV cache size by sharing keys and values across multiple query heads.
 
 ## Formula

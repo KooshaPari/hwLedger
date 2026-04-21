@@ -16,6 +16,18 @@ Setting up a persistent fleet server on commodity hardware (old laptop, spare de
 
 ## Installation
 
+<Shot src="/cli-journeys/keyframes/fleet-register/frame-001.png"
+      caption="fleet register bootstrap"
+      size="small" align="right" />
+
+<Shot src="/cli-journeys/keyframes/fleet-register/frame-007.png"
+      caption="Signature attached to attestation"
+      size="small" align="left" />
+
+<Shot src="/cli-journeys/keyframes/fleet-audit/frame-005.png"
+      caption="audit summary after first run"
+      size="small" align="right" />
+
 ### 1. Download binary
 
 ```bash

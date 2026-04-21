@@ -6,6 +6,7 @@ import {
   JourneyViewer,
   KeyframeGallery,
   RecordingEmbed,
+  Shot,
 } from '@phenotype/journey-viewer'
 import JourneyStep from './components/JourneyStep.vue'
 import JudgeScore from './components/JudgeScore.vue'
@@ -23,5 +24,6 @@ export default {
     app.component('JourneyStep', JourneyStep)
     app.component('JudgeScore', JudgeScore)
     app.component('RecordingEmbed', RecordingEmbed)
+    app.component('Shot', Shot)
   }
 } satisfies Theme

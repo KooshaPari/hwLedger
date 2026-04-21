@@ -5,6 +5,12 @@ description: Full-rank attention with parallel heads
 
 # Multi-Head Attention (MHA)
 
+<Shot src="/cli-journeys/keyframes/plan-help/frame-005.png"
+      caption="--attention-kind flag (planner accepts MHA override)"
+      size="small" align="right" />
+
+<!-- SHOT-TODO: capture planner output for a pure-MHA model (e.g. LLaMA-2-7B) -->
+
 Standard Transformer attention mechanism, the foundation all other attention variants derive from.
 
 ## Formula

@@ -7,6 +7,12 @@ description: How hwLedger dispatches `plan` inputs — gold fixtures, local conf
 
 Traces to: **FR-HF-001**
 
+<Shot src="/cli-journeys/keyframes/plan-hf-resolve/frame-001.png"
+      caption="Resolver accepts an HF repo id and dispatches"
+      size="small" align="right" />
+
+<!-- SHOT-TODO: capture ambiguous-input disambiguation prompt -->
+
 Every client of hwLedger — the CLI, the Streamlit app, the SwiftUI GUI, and the
 C ABI used by third-party bindings — funnels user input through a single
 **model resolver**. The resolver is a pure function from a string to one of a

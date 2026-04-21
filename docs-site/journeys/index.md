@@ -21,7 +21,13 @@ Real-pixel Playwright recordings of the Streamlit web client. Each spec boots St
 | [HF Search — anon + handoff](./streamlit-hf-search.md) | Anonymous HF Hub search, quick picks, Planner handoff |
 | [What-If — technique sweep](./streamlit-what-if.md) | Baseline vs candidate under INT4/KV-FP8/LoRA/REAP/… |
 
-Recorded and verified via `apps/streamlit/journeys/scripts/record-all.sh` + `verify-manifests.sh`.
+Recorded and verified via the repo scripts
+[`apps/streamlit/journeys/scripts/record-all.sh`](https://github.com/KooshaPari/hwLedger/blob/main/apps/streamlit/journeys/scripts/record-all.sh)
+and
+[`apps/streamlit/journeys/scripts/verify-manifests.sh`](https://github.com/KooshaPari/hwLedger/blob/main/apps/streamlit/journeys/scripts/verify-manifests.sh).
+Generated manifests land in
+[`apps/streamlit/journeys/manifests/`](https://github.com/KooshaPari/hwLedger/tree/main/apps/streamlit/journeys/manifests)
+(repo paths, not site URLs).
 
 ## CLI journeys (live)
 
@@ -75,7 +81,15 @@ Requires a built `.app` bundle (`apps/macos/HwLedgerUITests/scripts/bundle-app.s
 
 ### Planner with Qwen2-7B (32K context)
 
-<JourneyViewer manifest="/journeys/planner-qwen2-7b-32k/manifest.json" />
+::: info Journey not yet recorded
+The Qwen2-7B 32K planner journey is a planned GUI tape — the manifest is not
+yet checked in. See
+[GUI Journeys Status](./gui-journeys-status) for the recording roadmap and
+track
+[hwLedger#qwen2-7b-32k](https://github.com/KooshaPari/hwLedger/issues?q=is%3Aissue+qwen2-7b-32k)
+for progress. In the meantime, watch the Streamlit equivalent:
+[Planner — seq length sweep](./streamlit-planner).
+:::
 
 ### Core GUI journeys
 
@@ -106,7 +120,7 @@ Each journey is a JSON manifest with:
   "recording": true,
   "keyframes": [
     {
-      "path": "/journeys/planner-qwen2-7b-32k/frame-001.png",
+      "path": "/cli-journeys/keyframes/plan-deepseek/frame-001.png",
       "caption": "Launch planner, select Qwen2-7B"
     }
   ],
@@ -114,7 +128,7 @@ Each journey is a JSON manifest with:
     {
       "slug": "select_model",
       "intent": "Choose model from HF hub",
-      "screenshot": "/journeys/planner-qwen2-7b-32k/thumb-select.png",
+      "screenshot": "/cli-journeys/keyframes/plan-deepseek/frame-002.png",
       "description": "User clicks model selector and searches for 'qwen2'",
       "judge_score": 0.95
     }

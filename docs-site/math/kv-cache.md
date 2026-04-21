@@ -1,5 +1,15 @@
 # KV Cache Formulas
 
+<Shot src="/cli-journeys/keyframes/plan-deepseek/frame-003.png"
+      caption="Live KV cache breakdown: weights / kv_cache / activations"
+      size="medium" align="right"
+      :annotations='[{"bbox":[120,340,220,28],"label":"kv_cache row","color":"#89b4fa"}]' />
+
+<Shot src="/cli-journeys/keyframes/plan-mla-deepseek/frame-002.png"
+      caption="Per-layer KV cache bytes"
+      size="small" align="left"
+      :annotations='[{"bbox":[140,200,260,32],"label":"per-layer bytes","color":"#a6e3a1"}]' />
+
 The math core is the soul of hwLedger. This document walks through the derivation of KV cache formulas per attention architecture, with interactive breakdowns and live calculation.
 
 ## Overview

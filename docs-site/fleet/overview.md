@@ -2,6 +2,23 @@
 
 The fleet ledger tracks heterogeneous hardware (local NVIDIA/AMD, Apple Silicon, cloud rentals) with a shared event-sourced audit log, cost model, and dispatch planner.
 
+<Shot src="/cli-journeys/keyframes/fleet-register/frame-001.png"
+      caption="fleet register — bootstrap"
+      size="small" align="right" />
+
+<Shot src="/cli-journeys/keyframes/fleet-register/frame-003.png"
+      caption="Host added"
+      size="small" align="left"
+      :annotations='[{"bbox":[80,160,360,24],"label":"host added","color":"#a6e3a1"}]' />
+
+<Shot src="/cli-journeys/keyframes/fleet-audit/frame-002.png"
+      caption="audit — attestation hash"
+      size="small" align="right" />
+
+<Shot src="/cli-journeys/keyframes/fleet-audit/frame-005.png"
+      caption="audit summary"
+      size="small" align="left" />
+
 ## Architecture
 
 ```mermaid

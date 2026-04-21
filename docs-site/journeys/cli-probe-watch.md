@@ -10,6 +10,19 @@ Running `hwledger probe --watch`:
 - Utilization percentage changes as workloads come and go
 - Clean Ctrl+C exit (<200 ms) with no leftover processes
 
+<Shot src="/cli-journeys/keyframes/probe-watch/frame-001.png"
+      caption="Live-refresh header"
+      size="small" align="right"
+      :annotations='[{"bbox":[60,80,400,20],"label":"Refresh header"}]' />
+
+<Shot src="/cli-journeys/keyframes/probe-watch/frame-002.png"
+      caption="Second tick — memory row updates"
+      size="small" align="left" />
+
+<Shot src="/cli-journeys/keyframes/probe-watch/frame-003.png"
+      caption="Clean Ctrl+C exit line"
+      size="small" align="right" />
+
 This is useful for:
 - Watching a running inference job
 - Stress testing (check if GPU throttles under load)

@@ -16,6 +16,9 @@ hero:
       text: Get Started
       link: /getting-started/install
     - theme: alt
+      text: Visual walkthrough
+      link: /guides/visual-walkthrough-plan-deepseek
+    - theme: alt
       text: View Architecture
       link: /architecture/
 

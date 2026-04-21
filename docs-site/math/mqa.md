@@ -5,6 +5,12 @@ description: Single shared key-value head
 
 # Multi-Query Attention (MQA)
 
+<Shot src="/cli-journeys/keyframes/first-plan/frame-007.png"
+      caption="KV cache row — 8× smaller for MQA vs MHA"
+      size="small" align="right" />
+
+<!-- SHOT-TODO: capture planner output against an MQA-only model (PaLM config) -->
+
 Extreme KV cache compression: all query heads share a single K, V head.
 
 ## Formula

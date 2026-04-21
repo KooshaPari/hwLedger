@@ -5,6 +5,12 @@ description: Local context with exponential recurrence
 
 # Sliding Window Attention
 
+<Shot src="/cli-journeys/keyframes/plan-help/frame-007.png"
+      caption="--window-size flag documented in plan --help"
+      size="small" align="right" />
+
+<!-- SHOT-TODO: capture planner output for Mistral-7B (window=4096) -->
+
 Restricts attention to a local context window (e.g., 4K tokens) while allowing information to flow globally via stacking.
 
 ## Formula

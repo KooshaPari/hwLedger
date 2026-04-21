@@ -5,6 +5,12 @@ Traces to: **FR-HF-001**, FR-PLAN-003
 hwLedger can query the Hugging Face Hub directly to discover models, pull their
 `config.json`, and plan memory — no manual download required.
 
+<Shot src="/cli-journeys/keyframes/plan-hf-resolve/frame-001.png"
+      caption="plan --hf resolves HF model ID and continues"
+      size="small" align="right" />
+
+<!-- SHOT-TODO: capture the HF search pretty-printer output -->
+
 ## Anonymous by default
 
 Public endpoints on `https://huggingface.co/api/models` work without any

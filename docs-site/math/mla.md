@@ -5,6 +5,10 @@ description: Low-rank KV projection
 
 # Multi-Head Latent Attention (MLA)
 
+<Shot src="/cli-journeys/keyframes/plan-deepseek/frame-003.png"
+      caption="Planner auto-detects MLA with kv_lora_rank=512 for DeepSeek-V3"
+      size="small" align="right" />
+
 Compresses KV cache by projecting to a low-rank latent space before multi-head operation.
 
 ## Formula
@@ -24,9 +28,19 @@ Benefit: KV cache is d_latent-sized instead of d_model-sized.
 
 MLA was the DeepSeek team's answer to the specific problem that even GQA's 8× compression left long-context (>100K) inference infeasible on commodity hardware for models in the 200B+ parameter class. By projecting into a latent space *before* splitting into heads, MLA stores a single `kv_lora_rank`-sized tensor per token instead of per-head K and V tensors — a 10–16× reduction over GQA at equivalent quality. It was introduced in [DeepSeek-V2 (2024)](https://arxiv.org/abs/2405.04434) and productionized in [DeepSeek-V3 (2024–2025)](https://arxiv.org/abs/2412.19437) and DeepSeek-R1 (2025). The technique is also the basis for Qwen's latent variants.
 
+<Shot src="/cli-journeys/keyframes/plan-mla-deepseek/frame-002.png"
+      caption="Per-layer KV cache breakdown for DeepSeek-V2 MLA sweep"
+      size="small" align="left" />
+
 **hwLedger accounting gotcha.** MLA's KV footprint is `2 * kv_lora_rank * bytes` per token per layer — NOT `2 * num_kv_heads * head_dim * bytes`. A naive reuse of the GQA formula overstates memory by ~10× for DeepSeek-V3. `AttentionKind::MLA { latent_dim }` carries the latent dim explicitly; the planner will refuse to produce a result if `latent_dim` is missing rather than silently fall back to GQA math.
 
+<!-- SHOT-TODO: inline <Shot> showing the refusal-to-plan error when latent_dim is missing -->
+
 ## Memory footprint (32K context, 7B model)
+
+<Shot src="/cli-journeys/keyframes/plan-mla-deepseek/frame-003.png"
+      caption="KV cache footprint (32K context) at FP16"
+      size="medium" align="right" />
 
 DeepSeek-V2 with MLA (d_latent = 256 vs d_model = 4096):
 - KV cache per layer: 32K × 256 × 2 = **16.4 MB/layer**

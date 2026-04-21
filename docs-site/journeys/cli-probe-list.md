@@ -12,6 +12,19 @@ Running `hwledger probe` displays:
 
 Watch as the probe detects your hardware in real-time. On multi-GPU boxes, you'll see each device listed separately.
 
+<Shot src="/cli-journeys/keyframes/probe-list/frame-001.png"
+      caption="Command entered"
+      size="small" align="left" />
+
+<Shot src="/cli-journeys/keyframes/probe-list/frame-002.png"
+      caption="Device 0 row printed"
+      size="small" align="right"
+      :annotations='[{"bbox":[40,120,480,20],"label":"Device 0","color":"#cba6f7"}]' />
+
+<Shot src="/cli-journeys/keyframes/probe-list/frame-003.png"
+      caption="Summary footer with backend badge"
+      size="small" align="left" />
+
 <JourneyViewer manifest="/cli-journeys/manifests/probe-list/manifest.verified.json" />
 
 ## What to watch for

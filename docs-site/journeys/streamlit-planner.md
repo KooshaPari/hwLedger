@@ -2,6 +2,14 @@
 
 The Streamlit planner is the browser-native cousin of `hwledger plan`: a golden model fixture on one side, a stacked VRAM chart on the other, and live sliders for sequence length, concurrent users, and quantisation wired into the same FFI the CLI uses.
 
+<Shot src="/cli-journeys/keyframes/plan-deepseek/frame-003.png"
+      caption="CLI VRAM breakdown — same math as the Streamlit chart"
+      size="small" align="right" />
+
+<Shot src="/cli-journeys/keyframes/plan-mla-deepseek/frame-002.png"
+      caption="Per-layer KV cache row (CLI equivalent)"
+      size="small" align="left" />
+
 ## What you'll see
 
 This journey opens the DeepSeek-V3 fixture, sweeps the sequence-length slider upward from 4K tokens, and watches the stacked VRAM bar chart re-render. The **KV cache** band grows roughly quadratically with context — the whole point of the planner is that the operator *sees* that growth before deploying.

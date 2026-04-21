@@ -1,5 +1,13 @@
 # Probe backend reference — Apple Silicon (Metal / IOKit)
 
+<Shot src="/cli-journeys/keyframes/probe-list/frame-002.png"
+      caption="Metal backend — device 0 detected"
+      size="small" align="right" />
+
+<Shot src="/cli-journeys/keyframes/probe-watch/frame-001.png"
+      caption="probe watch — live refresh"
+      size="small" align="left" />
+
 The `hwledger-probe` crate exposes a trait-based `GpuProbe` abstraction with four concrete backends. This page documents the Apple Silicon (Metal / IOKit) backend in detail, including the IOKit key matrix and chip-support table.
 
 ## Design goals

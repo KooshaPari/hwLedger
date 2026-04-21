@@ -9,6 +9,11 @@ Running ingest with a missing file:
 hwledger ingest gguf:///tmp/does-not-exist.gguf
 ```
 
+<Shot src="/cli-journeys/keyframes/ingest-error/frame-001.png"
+      caption="Error message + hint"
+      size="small" align="right"
+      :annotations='[{"bbox":[60,220,480,32],"label":"E-INGEST-02","color":"#f38ba8","style":"dashed"}]' />
+
 The tool returns:
 - **Exit code**: 3 (Resource not found)
 - **Error message**: "File not found: /tmp/does-not-exist.gguf"

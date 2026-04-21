@@ -5,6 +5,8 @@ description: Linear recurrence alternative to attention
 
 # State Space Models (SSM)
 
+<!-- SHOT-TODO: capture planner output for Mamba-2 or a Jamba hybrid (SSM vs attention rows side-by-side) -->
+
 Linear recurrence architecture as alternative to Transformer attention, offering O(n) memory and constant decoding latency.
 
 ## Formula

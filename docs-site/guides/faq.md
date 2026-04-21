@@ -5,9 +5,17 @@ description: Common questions and answers
 
 # FAQ
 
+<Shot src="/cli-journeys/keyframes/probe-list/frame-002.png"
+      caption="probe list — the easiest GPU-support check"
+      size="small" align="right" />
+
 ## Does hwLedger work on CPU?
 
 Not efficiently. hwLedger is optimized for GPU inference (NVIDIA CUDA, AMD ROCm, Apple Metal). CPU inference is supported as fallback but will be 10-100x slower. Use for testing only.
+
+<Shot src="/cli-journeys/keyframes/plan-deepseek/frame-003.png"
+      caption="Sample plan output (DeepSeek-V3, MLA)"
+      size="small" align="left" />
 
 ## Which GPUs are supported?
 

@@ -15,10 +15,22 @@ Get hwLedger running on your system.
 
 ### 1. Clone the repository
 
+<Shot src="/cli-journeys/keyframes/install-cargo/frame-001.png"
+      caption="cargo install — download"
+      size="small" align="right" />
+
 ```bash
 git clone https://github.com/KooshaPari/hwLedger.git
 cd hwLedger
 ```
+
+<Shot src="/cli-journeys/keyframes/install-cargo/frame-002.png"
+      caption="Compile progress"
+      size="small" align="left" />
+
+<Shot src="/cli-journeys/keyframes/install-cargo/frame-004.png"
+      caption="Binary installed and on PATH"
+      size="small" align="right" />
 
 ### 2. Install Rust (if not already installed)
 

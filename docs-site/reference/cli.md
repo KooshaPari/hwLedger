@@ -9,6 +9,15 @@ Complete reference for all `hwledger` subcommands.
 
 ## plan
 
+<Shot src="/cli-journeys/keyframes/plan-help/frame-001.png"
+      caption="hwledger plan --help"
+      size="small" align="right"
+      :annotations='[{"bbox":[40,60,520,20],"label":"usage"}]' />
+
+<Shot src="/cli-journeys/keyframes/plan-deepseek/frame-003.png"
+      caption="Typical plan output: VRAM breakdown + architecture detection"
+      size="small" align="right" />
+
 Memory planner: estimates VRAM and selects optimal tensor parallelism, quantization, and attention variant.
 
 ```bash
@@ -43,6 +52,15 @@ hwledger plan --model llama-70b --context 8000 --json | jq .vram_required
 
 ## probe
 
+<Shot src="/cli-journeys/keyframes/probe-list/frame-002.png"
+      caption="probe list — one device row per GPU"
+      size="small" align="right"
+      :annotations='[{"bbox":[40,120,480,20],"label":"device 0","color":"#cba6f7"}]' />
+
+<Shot src="/cli-journeys/keyframes/probe-watch/frame-001.png"
+      caption="probe watch — live-refresh header"
+      size="small" align="left" />
+
 GPU discovery and telemetry: list available GPUs, memory, compute capability.
 
 ```bash
@@ -68,6 +86,13 @@ hwledger probe --json | jq '.gpus[].vram_free_gb'
 ```
 
 ## ingest
+
+<Shot src="/cli-journeys/keyframes/ingest-error/frame-001.png"
+      caption="ingest — fail-loud error path (E-INGEST-02)"
+      size="small" align="right"
+      :annotations='[{"bbox":[60,220,480,32],"label":"error code","color":"#f38ba8","style":"dashed"}]' />
+
+<!-- SHOT-TODO: capture a successful HF ingest run -->
 
 Download and cache models from HuggingFace or Ollama.
 
@@ -125,6 +150,15 @@ hwledger run --model llama-70b --remote tcp://fleet.example.com:5443 input.json
 
 ## fleet
 
+<Shot src="/cli-journeys/keyframes/fleet-register/frame-003.png"
+      caption="fleet register — host added"
+      size="small" align="right"
+      :annotations='[{"bbox":[80,160,360,24],"label":"host added","color":"#a6e3a1"}]' />
+
+<Shot src="/cli-journeys/keyframes/fleet-audit/frame-002.png"
+      caption="fleet audit — attestation hash verified"
+      size="small" align="left" />
+
 Fleet orchestration: register agents, query status, submit jobs.
 
 ```bash
@@ -156,6 +190,15 @@ hwledger fleet jobs [--agent <AGENT_ID>] [--status <STATUS>] [--json]
 ```
 
 ## audit
+
+<Shot src="/cli-journeys/keyframes/traceability-report/frame-001.png"
+      caption="audit — FR coverage headline"
+      size="small" align="right"
+      :annotations='[{"bbox":[40,40,560,24],"label":"FR coverage"}]' />
+
+<Shot src="/cli-journeys/keyframes/traceability-report/frame-003.png"
+      caption="Per-crate coverage table"
+      size="small" align="left" />
 
 Verify ledger integrity and export audit trail.
 
