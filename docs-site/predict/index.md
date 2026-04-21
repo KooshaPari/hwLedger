@@ -44,6 +44,34 @@ hwledger-cli predict tests/golden/llama3-70b.json \
 Outputs a side-by-side delta table, a transformation verdict, warnings, and a
 citations block you can verify yourself.
 
+## Live FFI contract
+
+The prediction core is reachable from every client via a stable C ABI. Both
+symbol names are exported by `libhwledger_ffi` and produce byte-identical JSON:
+
+```c
+// Canonical name used by the CLI and Streamlit.
+char* hwledger_predict(
+    const char* baseline_config_json,
+    const char* candidate_config_json,
+    const char* techniques_json,    // JSON array of snake_case technique ids
+    const char* workload_json);     // {"prefill_tokens","decode_tokens","batch","seq_len","hardware"}
+
+// Alias for the same function. Used by SwiftUI WhatIfScreen and the
+// Streamlit try-live probe. Forwards verbatim to hwledger_predict.
+char* hwledger_predict_whatif(
+    const char* baseline_config_json,
+    const char* candidate_config_json,
+    const char* techniques_json,
+    const char* workload_json);
+
+// Free the returned JSON string.
+void  hwledger_predict_free(char* ptr);
+```
+
+The alias exists so older client branches that grep for `hwledger_predict_whatif`
+keep compiling; new code should prefer `hwledger_predict` directly.
+
 ## Next
 
 - [Techniques catalog](./techniques.md) — all 29 supported methods with mem/compute/quality factors.

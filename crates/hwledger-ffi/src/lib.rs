@@ -1119,6 +1119,21 @@ pub unsafe extern "C" fn hwledger_hf_free_string(ptr: *mut c_char) {
     }
 }
 
+/// Alias for [`hwledger_predict`] — some clients (Streamlit + SwiftUI WhatIf)
+/// expect this symbol name. Forwards unchanged.
+///
+/// # Safety
+/// Same contract as [`hwledger_predict`].
+#[no_mangle]
+pub unsafe extern "C" fn hwledger_predict_whatif(
+    baseline_config_json: *const c_char,
+    candidate_config_json: *const c_char,
+    techniques_json: *const c_char,
+    workload_json: *const c_char,
+) -> *mut c_char {
+    hwledger_predict(baseline_config_json, candidate_config_json, techniques_json, workload_json)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1198,5 +1213,39 @@ mod tests {
 
         let result = unsafe { hwledger_plan(&input) };
         assert!(result.is_null(), "should return null on invalid JSON");
+    }
+
+    /// `hwledger_predict_whatif` alias produces byte-identical output to
+    /// `hwledger_predict` for the same input. Traces to: FR-PLAN-003.
+    #[test]
+    fn test_predict_whatif_alias_matches_canonical() {
+        let baseline = CString::new(
+            r#"{"model_type":"llama","num_hidden_layers":32,"hidden_size":4096,"num_attention_heads":32,"num_key_value_heads":32}"#,
+        ).unwrap();
+        let techniques = CString::new(r#"["int4_awq"]"#).unwrap();
+        let workload = CString::new(
+            r#"{"prefill_tokens":2048,"decode_tokens":256,"batch":1,"seq_len":2048,"hardware":"A100-80G"}"#,
+        ).unwrap();
+        unsafe {
+            let p1 = hwledger_predict(
+                baseline.as_ptr(),
+                baseline.as_ptr(),
+                techniques.as_ptr(),
+                workload.as_ptr(),
+            );
+            let p2 = hwledger_predict_whatif(
+                baseline.as_ptr(),
+                baseline.as_ptr(),
+                techniques.as_ptr(),
+                workload.as_ptr(),
+            );
+            assert!(!p1.is_null() && !p2.is_null());
+            let s1 = CStr::from_ptr(p1).to_str().unwrap().to_string();
+            let s2 = CStr::from_ptr(p2).to_str().unwrap().to_string();
+            hwledger_predict_free(p1);
+            hwledger_predict_free(p2);
+            assert_eq!(s1, s2);
+            assert!(!s1.is_empty());
+        }
     }
 }

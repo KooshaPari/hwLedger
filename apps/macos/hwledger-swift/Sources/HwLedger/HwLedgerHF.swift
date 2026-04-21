@@ -335,8 +335,30 @@ extension HwLedger {
         techniques: [CompressionTechnique],
         workload: WhatIfWorkload
     ) async throws -> Prediction {
-        // TODO: wire FFI — call `hwledger_predict(baseline, candidate, techniques_json, workload_json)`.
-        fatalError("TODO: wire FFI — hwledger_predict not yet exported")
+        let techJson = try String(
+            data: JSONEncoder().encode(techniques.map { $0.rawValue }),
+            encoding: .utf8
+        ) ?? "[]"
+        let workloadJson = try String(
+            data: JSONEncoder().encode(workload),
+            encoding: .utf8
+        ) ?? "{}"
+        return try await Task.detached(priority: .userInitiated) {
+            try baseline.withCString { bp in
+                try candidate.withCString { cp in
+                    try techJson.withCString { tp in
+                        try workloadJson.withCString { wp in
+                            guard let raw = hwledger_predict_whatif_ffi(bp, cp, tp, wp) else {
+                                throw HwLedgerError.invalidData("hwledger_predict_whatif returned null")
+                            }
+                            defer { hwledger_predict_free_ffi(raw) }
+                            let json = String(cString: raw)
+                            return try decodePrediction(json: json)
+                        }
+                    }
+                }
+            }
+        }.value
     }
 
     // MARK: - Decoder helpers (testable, no FFI required)
@@ -469,3 +491,14 @@ internal func hwledger_resolve_model(
 
 @_silgen_name("hwledger_hf_free_string")
 internal func hwledger_hf_free_string(_ ptr: UnsafeMutablePointer<Int8>?)
+
+@_silgen_name("hwledger_predict_whatif")
+internal func hwledger_predict_whatif_ffi(
+    _ baselineConfigJson: UnsafePointer<Int8>?,
+    _ candidateConfigJson: UnsafePointer<Int8>?,
+    _ techniquesJson: UnsafePointer<Int8>?,
+    _ workloadJson: UnsafePointer<Int8>?
+) -> UnsafeMutablePointer<Int8>?
+
+@_silgen_name("hwledger_predict_free")
+internal func hwledger_predict_free_ffi(_ ptr: UnsafeMutablePointer<Int8>?)
