@@ -66,6 +66,28 @@ pub fn classify(manifest_path: &Path, root: &Path) -> Option<Resolved> {
         });
     }
 
+    // CLI (apps source-of-truth): cli-journeys/manifests/<id>/manifest.verified.json
+    // (identical to the docs-site layout but rooted at `apps/`).
+    // Handled by the first clause above when <root> is `apps/`.
+
+    // Streamlit (apps source-of-truth):
+    // streamlit/journeys/manifests/<id>/manifest.verified.json
+    if parts.len() >= 5
+        && parts[0] == "streamlit"
+        && parts[1] == "journeys"
+        && parts[2] == "manifests"
+    {
+        let id = parts[3].to_string();
+        let base = root.join("streamlit").join("journeys");
+        return Some(Resolved {
+            family: Family::Streamlit,
+            journey_id: id.clone(),
+            manifest_path: manifest_path.to_path_buf(),
+            keyframes_src: base.join("recordings").join(&id),
+            output_mp4: base.join("recordings").join(&id).join(format!("{id}.rich.mp4")),
+        });
+    }
+
     // GUI: gui-journeys/<id>/manifest.verified.json
     if parts.len() >= 3 && parts[0] == "gui-journeys" {
         let id = parts[1].to_string();
