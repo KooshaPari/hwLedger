@@ -652,3 +652,151 @@ fn test_job_state_all_variants() {
         assert_eq!(state, deserialized);
     }
 }
+
+// ============================================================================
+// Fleet SSH probe wire-up (fleet-ssh-exec-v1)
+// ============================================================================
+
+/// `POST /v1/agents/{id}/probe` must:
+///   1. Return 200 even when SSH fails (probe host is unreachable in tests).
+///   2. Emit `ssh_probe_triggered` + `ssh_probe_failed` audit events.
+///   3. Reference the registered hostname in the failure detail.
+///
+/// This exercises the real wire-up: the handler resolves an SSH identity from
+/// env, constructs an `SshHost` against the registered hostname, invokes
+/// `SshPool::probe`, and writes terminal audit events.
+///
+/// Traces to: FR-FLEET-003, FR-FLEET-006
+#[tokio::test]
+async fn test_trigger_agent_probe_emits_audit_events() {
+    let state = common::create_test_app_state().await.expect("create state");
+    let router = common::create_test_router(state.clone());
+
+    // Register an agent first (hostname will never resolve).
+    let agent_id = Uuid::new_v4();
+    let req = AgentRegistration {
+        agent_id,
+        bootstrap_token: "test-bootstrap-token".to_string(),
+        hostname: "unreachable-probe-target.invalid".to_string(),
+        cert_csr_pem: "-----BEGIN CERTIFICATE REQUEST-----\nMIICpTCCAY0CAQAwDzENMAsGA1UEAwwKdGVzdC1jc3IK\n-----END CERTIFICATE REQUEST-----".to_string(),
+        platform: Platform {
+            os: "Linux".to_string(),
+            arch: "x86_64".to_string(),
+            kernel: "5.10.0".to_string(),
+            total_ram_bytes: 32 * 1024 * 1024 * 1024,
+            cpu_model: "x86".to_string(),
+        },
+    };
+    let body = serde_json::to_string(&req).expect("serialize reg");
+    let reg_req = Request::builder()
+        .method("POST")
+        .uri("/v1/agents/register")
+        .header("Content-Type", "application/json")
+        .body(Body::from(body))
+        .unwrap();
+    let reg_resp = router.clone().oneshot(reg_req).await.unwrap();
+    assert_eq!(reg_resp.status(), axum::http::StatusCode::CREATED);
+
+    // Force the SSH identity to something guaranteed to not reach the fake
+    // hostname so the handler takes the failure path deterministically.
+    std::env::set_var("HWLEDGER_SSH_USER", "probe-test");
+    std::env::remove_var("HWLEDGER_SSH_KEY_PATH");
+
+    let probe_req = Request::builder()
+        .method("POST")
+        .uri(format!("/v1/agents/{agent_id}/probe"))
+        .body(Body::empty())
+        .unwrap();
+    let probe_resp = router.clone().oneshot(probe_req).await.unwrap();
+    assert_eq!(probe_resp.status(), axum::http::StatusCode::OK);
+
+    let bytes = axum::body::to_bytes(probe_resp.into_body(), usize::MAX).await.unwrap();
+    let json: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+
+    assert_eq!(json["ok"], serde_json::Value::Bool(false));
+    assert_eq!(json["hostname"], "unreachable-probe-target.invalid");
+    assert!(json["trigger_audit_seq"].as_u64().is_some());
+    assert!(json["completion_audit_seq"].as_u64().is_some());
+    assert!(json["error"].as_str().is_some());
+
+    // Audit log must contain both the trigger and the failure.
+    let history = state.audit_log.history(100).await.expect("history");
+    let kinds: Vec<String> = history.iter().map(|e| e.event.kind().to_string()).collect();
+    assert!(kinds.iter().any(|k| k == "security_event"));
+    let mut found_trigger = false;
+    let mut found_failure = false;
+    for entry in &history {
+        if let hwledger_ledger::HwLedgerEvent::SecurityEvent { kind, detail, .. } = &entry.event {
+            if kind == "ssh_probe_triggered" {
+                found_trigger = true;
+                assert!(detail.contains(&agent_id.to_string()));
+                assert!(detail.contains("unreachable-probe-target.invalid"));
+            }
+            if kind == "ssh_probe_failed" {
+                found_failure = true;
+                assert!(detail.contains(&agent_id.to_string()));
+            }
+        }
+    }
+    assert!(found_trigger, "ssh_probe_triggered not found in audit log");
+    assert!(found_failure, "ssh_probe_failed not found in audit log");
+}
+
+/// Print-friendly demo: captures one SSH probe audit event as it fires and
+/// emits its JSON form via `eprintln!` so `cargo test -- --nocapture` reveals
+/// the wire-up result.
+#[tokio::test]
+async fn test_trigger_agent_probe_prints_audit_json() {
+    let state = common::create_test_app_state().await.expect("create state");
+    let router = common::create_test_router(state.clone());
+
+    let agent_id = Uuid::new_v4();
+    let req = AgentRegistration {
+        agent_id,
+        bootstrap_token: "test-bootstrap-token".to_string(),
+        hostname: "probe-demo-host.invalid".to_string(),
+        cert_csr_pem: "-----BEGIN CERTIFICATE REQUEST-----\nMIICpTCCAY0CAQAwDzENMAsGA1UEAwwKdGVzdC1jc3IK\n-----END CERTIFICATE REQUEST-----".to_string(),
+        platform: Platform {
+            os: "Linux".into(),
+            arch: "x86_64".into(),
+            kernel: "5.10.0".into(),
+            total_ram_bytes: 16 * 1024 * 1024 * 1024,
+            cpu_model: "demo".into(),
+        },
+    };
+    let body = serde_json::to_string(&req).unwrap();
+    let reg = Request::builder()
+        .method("POST")
+        .uri("/v1/agents/register")
+        .header("Content-Type", "application/json")
+        .body(Body::from(body))
+        .unwrap();
+    let _ = router.clone().oneshot(reg).await.unwrap();
+
+    std::env::set_var("HWLEDGER_SSH_USER", "probe-demo");
+    std::env::remove_var("HWLEDGER_SSH_KEY_PATH");
+    let probe = Request::builder()
+        .method("POST")
+        .uri(format!("/v1/agents/{agent_id}/probe"))
+        .body(Body::empty())
+        .unwrap();
+    let _ = router.oneshot(probe).await.unwrap();
+
+    let history = state.audit_log.history(100).await.unwrap();
+    for entry in &history {
+        if let hwledger_ledger::HwLedgerEvent::SecurityEvent { kind, .. } = &entry.event {
+            if kind.starts_with("ssh_probe_") {
+                eprintln!(
+                    "AUDIT_EVENT_FIRED: {}",
+                    serde_json::json!({
+                        "seq": entry.seq,
+                        "hash": entry.hash,
+                        "previous_hash": entry.previous_hash,
+                        "event_type": entry.event.kind(),
+                        "event": entry.event,
+                    })
+                );
+            }
+        }
+    }
+}
