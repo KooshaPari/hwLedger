@@ -1,5 +1,38 @@
 import SwiftUI
+import AppKit
 import HwLedger
+
+/// Canned fixtures surfaced via the "Load fixture" menu on the Planner.
+/// Each applies a sequence length + user count + model input in one click.
+struct PlannerFixture: Identifiable {
+    let id: String
+    let label: String
+    let modelInput: String
+    let seqLen: UInt64
+    let users: Double
+}
+
+/// Supported export targets. `planner-export-<kind>` is the id suffix.
+enum PlannerExportKind: String, CaseIterable, Identifiable {
+    case vllm, llamaCpp, mlx, json
+    var id: String { rawValue }
+    var menuLabel: String {
+        switch self {
+        case .vllm: return "vLLM flags"
+        case .llamaCpp: return "llama.cpp args"
+        case .mlx: return "MLX JSON"
+        case .json: return "Raw JSON"
+        }
+    }
+    var idSuffix: String {
+        switch self {
+        case .vllm: return "vllm"
+        case .llamaCpp: return "llama-cpp"
+        case .mlx: return "mlx"
+        case .json: return "json"
+        }
+    }
+}
 
 /// Planner screen with a live resolver combobox that replaces the static
 /// Golden Fixture picker. The combobox feeds a debounced call into
@@ -40,6 +73,25 @@ struct PlannerScreen: View {
     @State private var isResolving: Bool = false
     @State private var resolveDebounceTask: Task<Void, Never>?
     @State private var activeConfigJson: String?
+
+    // Export flow
+    @State private var exportModalVisible: Bool = false
+    @State private var exportKind: PlannerExportKind = .vllm
+    @State private var exportFlagString: String = ""
+    @State private var exportCopiedToastVisible: Bool = false
+    @State private var exportCopiedToastMsg: String = ""
+    @State private var exportCopiedToastTask: Task<Void, Never>?
+
+    static let plannerFixtures: [PlannerFixture] = [
+        PlannerFixture(id: "deepseek-v3-32k-8u", label: "DeepSeek-V3 @ 32k / 8 users",
+                       modelInput: "gold:deepseek-v3", seqLen: 32_768, users: 8),
+        PlannerFixture(id: "llama-3-1-8b-4k-1u", label: "Llama-3.1-8B @ 4k / 1 user",
+                       modelInput: "gold:llama-3.1-8b", seqLen: 4_096, users: 1),
+        PlannerFixture(id: "mixtral-8x7b-16k-4u", label: "Mixtral-8x7B @ 16k / 4 users",
+                       modelInput: "gold:mixtral-8x7b", seqLen: 16_384, users: 4),
+        PlannerFixture(id: "qwen2-7b-8k-2u", label: "Qwen2-7B @ 8k / 2 users",
+                       modelInput: "gold:qwen2-7b", seqLen: 8_192, users: 2),
+    ]
 
     /// Current sequence length derived from the log-scale slider, clamped
     /// to `modelMaxContext` when known.
@@ -98,13 +150,17 @@ struct PlannerScreen: View {
                     sliderSection(label: "Concurrent Users", value: $concurrentUsers, range: 1...16)
                     sliderSection(label: "Batch Size", value: $batchSize, range: 1...8)
 
-                    HStack {
+                    HStack(spacing: 8) {
                         Button(action: runPlanAction) {
                             Label("Plan", systemImage: "play.fill")
                                 .frame(minWidth: 120)
                         }
                         .disabled(!canPlan)
                         .accessibilityIdentifier("planner-plan-button")
+
+                        loadFixtureMenu
+
+                        exportMenu
 
                         if !canPlan {
                             Text("Resolve a model to enable planning.")
@@ -138,6 +194,20 @@ struct PlannerScreen: View {
             Spacer()
         }
         .padding()
+        .sheet(isPresented: $exportModalVisible) { exportModalView }
+        .overlay(alignment: .bottom) {
+            if exportCopiedToastVisible {
+                Text(exportCopiedToastMsg)
+                    .font(.caption)
+                    .padding(.horizontal, 12).padding(.vertical, 6)
+                    .background(Color.black.opacity(0.8))
+                    .foregroundColor(.white)
+                    .cornerRadius(6)
+                    .padding(.bottom, 16)
+                    .accessibilityIdentifier("planner-export-copied-toast")
+                    .transition(.opacity)
+            }
+        }
         .onChange(of: state.modelInput) { _, newValue in
             scheduleResolve(for: newValue)
         }
@@ -631,6 +701,137 @@ struct PlannerScreen: View {
             plannerResult = nil
             layerContributions = []
             self.error = String(describing: error)
+        }
+    }
+
+    // MARK: - Load fixture menu
+
+    private var loadFixtureMenu: some View {
+        Menu {
+            ForEach(Self.plannerFixtures) { fix in
+                Button(fix.label) { loadFixture(fix) }
+                    .accessibilityIdentifier("planner-fixture-\(fix.id)")
+            }
+        } label: {
+            Label("Load fixture", systemImage: "tray.and.arrow.down")
+        }
+        .menuStyle(.borderlessButton)
+        .fixedSize()
+        .accessibilityIdentifier("planner-load-fixture-button")
+        .accessibilityElement(children: .contain)
+        .accessibilityAddTraits(.isButton)
+        .background(
+            // Hidden anchor so the menu list is discoverable by UI tests
+            // under the stable identifier `planner-fixture-menu` even when
+            // SwiftUI flattens the pop-over tree.
+            Color.clear.accessibilityIdentifier("planner-fixture-menu")
+        )
+    }
+
+    private func loadFixture(_ fix: PlannerFixture) {
+        appState.modelInput = fix.modelInput
+        concurrentUsers = fix.users
+        seqLogValue = log10(max(Double(fix.seqLen), 128))
+        scheduleResolve(for: fix.modelInput, debounceMs: 0)
+    }
+
+    // MARK: - Export menu + modal
+
+    private var exportMenu: some View {
+        Menu {
+            ForEach(PlannerExportKind.allCases) { kind in
+                Button(kind.menuLabel) { runExport(kind: kind) }
+                    .accessibilityIdentifier("planner-export-\(kind.idSuffix)")
+            }
+        } label: {
+            Label("Export", systemImage: "square.and.arrow.up")
+        }
+        .menuStyle(.borderlessButton)
+        .fixedSize()
+        .disabled(plannerResult == nil)
+        .accessibilityIdentifier("planner-export-button")
+        .background(
+            Color.clear.accessibilityIdentifier("planner-export-menu")
+        )
+    }
+
+    private func runExport(kind: PlannerExportKind) {
+        exportKind = kind
+        exportFlagString = buildExportString(kind: kind)
+        exportModalVisible = true
+    }
+
+    /// Build a flag string for the chosen runtime based on the current
+    /// planner state. The strings are deterministic given the resolved model +
+    /// seq length + concurrent users inputs.
+    private func buildExportString(kind: PlannerExportKind) -> String {
+        let modelId = (appState.modelInput.isEmpty ? "model" : appState.modelInput)
+            .replacingOccurrences(of: "gold:", with: "")
+        let seq = seqLen
+        let users = UInt32(concurrentUsers)
+        switch kind {
+        case .vllm:
+            return """
+            --model \(modelId) \
+            --max-model-len \(seq) \
+            --max-num-seqs \(users) \
+            --gpu-memory-utilization 0.92 \
+            --dtype bf16
+            """
+        case .llamaCpp:
+            return "-m \(modelId) -c \(seq) -np \(users) -ngl 999"
+        case .mlx:
+            return """
+            {"model":"\(modelId)","max_tokens":\(seq),"concurrency":\(users),"dtype":"bf16"}
+            """
+        case .json:
+            let bytes = plannerResult?.totalBytes ?? 0
+            return """
+            {"model":"\(modelId)","seq_len":\(seq),"users":\(users),"total_bytes":\(bytes)}
+            """
+        }
+    }
+
+    @ViewBuilder
+    private var exportModalView: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Export · \(exportKind.menuLabel)").font(.headline)
+                Spacer()
+                Button("Close") { exportModalVisible = false }
+            }
+            Divider()
+            ScrollView {
+                Text(exportFlagString)
+                    .font(.system(.body, design: .monospaced))
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(8)
+                    .accessibilityIdentifier("planner-export-flag-string")
+            }
+            .frame(minWidth: 520, minHeight: 160)
+            .background(Color.gray.opacity(0.05))
+            .cornerRadius(4)
+            HStack {
+                Button("Copy") { copyExport() }
+                    .accessibilityIdentifier("planner-export-copy-button")
+                Spacer()
+            }
+        }
+        .padding(20)
+        .frame(minWidth: 600, minHeight: 320)
+        .accessibilityIdentifier("planner-export-modal")
+    }
+
+    private func copyExport() {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(exportFlagString, forType: .string)
+        exportCopiedToastMsg = "Copied \(exportKind.menuLabel) (\(exportFlagString.count) chars)"
+        exportCopiedToastTask?.cancel()
+        exportCopiedToastVisible = true
+        exportCopiedToastTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 1_500_000_000)
+            if !Task.isCancelled { exportCopiedToastVisible = false }
         }
     }
 }

@@ -1,0 +1,7 @@
+{
+  "id": "settings-gui-mtls",
+  "passed": false,
+  "pending_record": true,
+  "reason": "Screen Recording + Accessibility permission must be granted to Terminal/Xcode. Then re-run: cd apps/macos/HwLedgerUITests && swift test --filter settings_gui_mtls",
+  "steps": []
+}
