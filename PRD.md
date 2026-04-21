@@ -14,70 +14,70 @@ Documents: FR-PLAN-001, FR-PLAN-002, FR-PLAN-003, FR-PLAN-004, FR-PLAN-005, FR-P
 ### 2.1 Capacity planner
 
 - **FR-PLAN-001** [journey_kind: cli]: Ingest model metadata from HF Hub, local GGUF, local safetensors, local MLX (.npz + config), Ollama, LM Studio catalog.
-- **FR-PLAN-002**: Classify architecture into an `AttentionKind` variant: `Mha`, `Gqa`, `Mqa`, `Mla`, `SlidingWindow`, `Ssm`, `Hybrid(Vec<Kind>)`, `AttentionSink`.
+- **FR-PLAN-002** [journey_kind: none]: Classify architecture into an `AttentionKind` variant: `Mha`, `Gqa`, `Mqa`, `Mla`, `SlidingWindow`, `Ssm`, `Hybrid(Vec<Kind>)`, `AttentionSink`.
 - **FR-PLAN-003** [journey_kind: cli]: Compute `VRAM ≈ W + O + KV(seq, users) + Prefill(batch, seq)` per §5 of PLAN.md. Formulas per architecture.
-- **FR-PLAN-004**: Interactive sliders for Sequence Length, Concurrent Users, Batch Size, Weight Quant, KV Quant. Log scale on appropriate axes.
-- **FR-PLAN-005**: Live stacked-bar breakdown (weights | KV | runtime | prefill | free). Per-layer heatmap showing which layers carry KV load.
-- **FR-PLAN-006**: Green/yellow/red fit gauge per selected target device (from probe or fleet).
-- **FR-PLAN-007**: Export a planner snapshot as vLLM CLI flags, llama.cpp flags, or an MLX sidecar config JSON.
+- **FR-PLAN-004** [journey_kind: gui]: Interactive sliders for Sequence Length, Concurrent Users, Batch Size, Weight Quant, KV Quant. Log scale on appropriate axes.
+- **FR-PLAN-005** [journey_kind: gui]: Live stacked-bar breakdown (weights | KV | runtime | prefill | free). Per-layer heatmap showing which layers carry KV load.
+- **FR-PLAN-006** [journey_kind: gui]: Green/yellow/red fit gauge per selected target device (from probe or fleet).
+- **FR-PLAN-007** [journey_kind: cli]: Export a planner snapshot as vLLM CLI flags, llama.cpp flags, or an MLX sidecar config JSON.
 - **FR-HF-001** [journey_kind: cli]: Hugging Face Hub search (anonymous by default; optional `HF_TOKEN` for gated/private repos and higher rate limits). Surfaces `hwledger search query|pull|plan` in the CLI, `hwledger_hf_search`/`hwledger_hf_plan` in the FFI, and a 24 h filesystem cache at `~/.cache/hwledger/hf/` with an `--offline` mode.
 
 ### 2.2 Live telemetry
 
 - **FR-TEL-001** [journey_kind: cli]: `GpuProbe` trait with four backends: NVIDIA (nvml-wrapper), AMD (rocm-smi shell), Apple Silicon (macmon shell), Intel (best-effort sysfs).
 - **FR-TEL-002** [journey_kind: cli]: Device enumeration, total/free VRAM, utilisation %, temperature, power, process-level VRAM.
-- **FR-TEL-003**: Predicted-vs-actual reconciliation panel on the Planner screen.
-- **FR-TEL-004**: Explicit "unsupported" states with failure reason — never silent 0 s.
+- **FR-TEL-003** [journey_kind: gui]: Predicted-vs-actual reconciliation panel on the Planner screen.
+- **FR-TEL-004** [journey_kind: cli]: Explicit "unsupported" states with failure reason — never silent 0 s.
 
 ### 2.3 Inference runtime (MVP: macOS only)
 
-- **FR-INF-001**: Spawn and supervise oMlx-fork Python sidecar under a uv-managed venv.
-- **FR-INF-002**: JSON-RPC over stdio for prompt submission, streaming token output, cancellation, model load/unload, memory RPCs.
-- **FR-INF-003**: Reuse oMlx's SSD-paged KV cache for agent-loop TTFT wins.
-- **FR-INF-004**: Graceful supervisor: `signal_hook` SIGTERM, SIGCHLD reaping, no zombie processes.
-- **FR-INF-005**: Run screen: prompt input, token stream, live VRAM delta vs. planner prediction.
+- **FR-INF-001** [journey_kind: none]: Spawn and supervise oMlx-fork Python sidecar under a uv-managed venv.
+- **FR-INF-002** [journey_kind: none]: JSON-RPC over stdio for prompt submission, streaming token output, cancellation, model load/unload, memory RPCs.
+- **FR-INF-003** [journey_kind: none]: Reuse oMlx's SSD-paged KV cache for agent-loop TTFT wins.
+- **FR-INF-004** [journey_kind: none]: Graceful supervisor: `signal_hook` SIGTERM, SIGCHLD reaping, no zombie processes.
+- **FR-INF-005** [journey_kind: gui]: Run screen: prompt input, token stream, live VRAM delta vs. planner prediction.
 
 ### 2.4 Fleet ledger
 
-- **FR-FLEET-001**: Central `hwledger-server` daemon with mTLS, SQLite-backed ledger, axum routes.
-- **FR-FLEET-002**: `hwledger-agent` per-host binary, auto-registers via bootstrap token + rcgen-generated per-agent cert.
-- **FR-FLEET-003**: Agentless SSH fallback via russh + deadpool, parses nvidia-smi / rocm-smi / system_profiler output.
-- **FR-FLEET-004**: Tailscale integration via `tailscale status --json` shell-out.
-- **FR-FLEET-005**: Cloud rental discovery: RunPod (crate), Vast.ai / Lambda / Modal (reqwest). Spot-price cache 1 h TTL.
-- **FR-FLEET-006**: Event-sourced audit log via `phenotype-event-sourcing` (SHA-256 hash chain).
-- **FR-FLEET-007**: "Best fit" placement suggestions ranked by (fit-score, cost/hour).
-- **FR-FLEET-008**: SSH-exec dispatch for MVP. Queue deferred to v2.
+- **FR-FLEET-001** [journey_kind: none]: Central `hwledger-server` daemon with mTLS, SQLite-backed ledger, axum routes.
+- **FR-FLEET-002** [journey_kind: cli]: `hwledger-agent` per-host binary, auto-registers via bootstrap token + rcgen-generated per-agent cert.
+- **FR-FLEET-003** [journey_kind: cli]: Agentless SSH fallback via russh + deadpool, parses nvidia-smi / rocm-smi / system_profiler output.
+- **FR-FLEET-004** [journey_kind: cli]: Tailscale integration via `tailscale status --json` shell-out.
+- **FR-FLEET-005** [journey_kind: cli]: Cloud rental discovery: RunPod (crate), Vast.ai / Lambda / Modal (reqwest). Spot-price cache 1 h TTL.
+- **FR-FLEET-006** [journey_kind: cli]: Event-sourced audit log via `phenotype-event-sourcing` (SHA-256 hash chain).
+- **FR-FLEET-007** [journey_kind: gui]: "Best fit" placement suggestions ranked by (fit-score, cost/hour).
+- **FR-FLEET-008** [journey_kind: cli]: SSH-exec dispatch for MVP. Queue deferred to v2.
 
 ### 2.5 Desktop GUI (macOS MVP)
 
 - **FR-UI-001** [journey_kind: gui]: SwiftUI app consuming `hwledger-ffi` via UniFFI-generated Swift bindings + XCFramework.
-- **FR-UI-002**: Six screens — Library, Planner, Fleet, Run, Ledger, Settings — see PLAN.md §6.
-- **FR-UI-003**: Codesigned, notarised, distributed as DMG with Sparkle-based auto-update.
-- **FR-UI-004**: Offline-first. No mandatory network except for HF metadata fetches and rental API calls.
+- **FR-UI-002** [journey_kind: gui]: Six screens — Library, Planner, Fleet, Run, Ledger, Settings — see PLAN.md §6.
+- **FR-UI-003** [journey_kind: none]: Codesigned, notarised, distributed as DMG with Sparkle-based auto-update.
+- **FR-UI-004** [journey_kind: gui]: Offline-first. No mandatory network except for HF metadata fetches and rental API calls.
 
 ### 2.6 User-journey verification (WP27: Blackbox screenshot verification)
 
-- **FR-UX-VERIFY-001**: Every user-journey screenshot step must emit a blackbox description produced by Claude Opus 4.7 vision without prior context.
-- **FR-UX-VERIFY-002**: Each description is compared against its intent label by Claude Sonnet 4.6 (judge). Score <= 2 surfaces as a failing journey.
-- **FR-UX-VERIFY-003**: Verification results serialize to `manifest.verified.json` alongside journey manifest for VitePress rendering (WP28).
+- **FR-UX-VERIFY-001** [journey_kind: none]: Every user-journey screenshot step must emit a blackbox description produced by Claude Opus 4.7 vision without prior context.
+- **FR-UX-VERIFY-002** [journey_kind: none]: Each description is compared against its intent label by Claude Sonnet 4.6 (judge). Score <= 2 surfaces as a failing journey.
+- **FR-UX-VERIFY-003** [journey_kind: none]: Verification results serialize to `manifest.verified.json` alongside journey manifest for VitePress rendering (WP28).
 
 ### 2.7 Traceability extensions (journey coverage)
 
-- **FR-TRACE-001**: PRD parser must accept inline `[journey_kind: cli|gui|web]` tags (comma-separated) on FR header lines and expose the parsed kinds on the FR record.
-- **FR-TRACE-002**: Journey manifest scanner must walk `docs-site/public/{cli,gui,streamlit}-journeys/**/manifest.verified.json`, skipping missing directories with a warning rather than panicking.
-- **FR-TRACE-003**: Traceability gate must FAIL (non-zero exit) when an FR tagged with a `journey_kind` has no verified journey whose `traces_to` cites it, or when a journey cites a non-existent FR (orphan), or when a journey's `verification.passed == false` / `overall_score < 0.7`.
-- **FR-TRACE-004**: Traceability markdown report must emit a `## Journey coverage` section with a table `FR | kind | journey id | score | passed`.
+- **FR-TRACE-001** [journey_kind: cli]: PRD parser must accept inline `[journey_kind: cli|gui|web|none]` tags (comma-separated) on FR header lines and expose the parsed kinds on the FR record. `none` is an explicit-no-journey marker for server-internal or spec-only primitives.
+- **FR-TRACE-002** [journey_kind: cli]: Journey manifest scanner must walk `docs-site/public/{cli,gui,streamlit}-journeys/**/manifest.verified.json`, skipping missing directories with a warning rather than panicking.
+- **FR-TRACE-003** [journey_kind: cli]: Traceability gate must FAIL (non-zero exit) when an FR tagged with a `journey_kind` has no verified journey whose `traces_to` cites it, or when a journey cites a non-existent FR (orphan), or when a journey's `verification.passed == false` / `overall_score < 0.7`.
+- **FR-TRACE-004** [journey_kind: cli]: Traceability markdown report must emit a `## Journey coverage` section with a table `FR | kind | journey id | score | passed`.
 
 ## 3. Non-functional requirements
 
-- **NFR-001**: Planner math ±200 MB of ground truth across 10 canonical models.
-- **NFR-002**: Agent ↔ server steady-state ≤ 2 MB/host/hour of metrics traffic.
-- **NFR-003**: Central ledger handles ≥ 10k events/day on SQLite without degradation.
-- **NFR-004**: Cost estimator matches actual rental billing within 5 % over 24 h.
-- **NFR-005**: Apache-2.0 compatible transitive licences. LGPL dynamic-link (Qt) is fine; GPL-only is not.
-- **NFR-006**: All public tests reference a Functional Requirement ID (per `PhenoSpecs` convention).
-- **NFR-007**: Zero unjustified `#[allow(dead_code)]` / `// TODO` suppressions in shipped crates.
-- **NFR-VERIFY-001**: Per-journey token cost shall not exceed ~$0.50 USD under default configuration (Claude Opus 4.7 for vision, Sonnet 4.6 for judge).
+- **NFR-001** [journey_kind: none]: Planner math ±200 MB of ground truth across 10 canonical models.
+- **NFR-002** [journey_kind: none]: Agent ↔ server steady-state ≤ 2 MB/host/hour of metrics traffic.
+- **NFR-003** [journey_kind: none]: Central ledger handles ≥ 10k events/day on SQLite without degradation.
+- **NFR-004** [journey_kind: none]: Cost estimator matches actual rental billing within 5 % over 24 h.
+- **NFR-005** [journey_kind: none]: Apache-2.0 compatible transitive licences. LGPL dynamic-link (Qt) is fine; GPL-only is not.
+- **NFR-006** [journey_kind: none]: All public tests reference a Functional Requirement ID (per `PhenoSpecs` convention).
+- **NFR-007** [journey_kind: none]: Zero unjustified `#[allow(dead_code)]` / `// TODO` suppressions in shipped crates.
+- **NFR-VERIFY-001** [journey_kind: none]: Per-journey token cost shall not exceed ~$0.50 USD under default configuration (Claude Opus 4.7 for vision, Sonnet 4.6 for judge).
 
 ## 4. Acceptance tests (v1)
 

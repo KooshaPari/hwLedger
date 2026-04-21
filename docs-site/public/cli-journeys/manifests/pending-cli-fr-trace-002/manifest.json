@@ -1,0 +1,9 @@
+{
+  "id": "pending-cli-fr-trace-002",
+  "intent": "PENDING RECORD — blackbox tape not yet captured for FR-TRACE-002 (cli).",
+  "keyframe_count": 0,
+  "passed": false,
+  "recording": null,
+  "steps": [],
+  "traces_to": ["FR-TRACE-002"]
+}

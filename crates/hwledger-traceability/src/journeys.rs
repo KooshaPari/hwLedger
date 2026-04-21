@@ -187,6 +187,13 @@ pub fn evaluate(frs: &[FrSpec], scan: &JourneyScan) -> JourneyReport {
     // FR coverage — per (FR, kind) tagged, find a matching verified manifest.
     for fr in frs {
         for kind in &fr.journey_kinds {
+            // `[journey_kind: none]` is an explicit-no-journey declaration
+            // for server-internal or spec-only primitives (NFRs, parser
+            // internals). Skip it — it should not drive a manifest lookup
+            // and it should NOT fail the gate.
+            if matches!(kind, JourneyKind::None) {
+                continue;
+            }
             // Find manifests for this kind that trace to this FR.
             let mut matches: Vec<&JourneyManifest> = scan
                 .manifests

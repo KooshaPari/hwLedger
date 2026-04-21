@@ -1,0 +1,9 @@
+{
+  "id": "pending-gui-fr-plan-006",
+  "intent": "PENDING RECORD — blackbox tape not yet captured for FR-PLAN-006 (gui).",
+  "keyframe_count": 0,
+  "passed": false,
+  "recording": null,
+  "steps": [],
+  "traces_to": ["FR-PLAN-006"]
+}
