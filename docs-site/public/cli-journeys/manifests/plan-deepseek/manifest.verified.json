@@ -5,6 +5,7 @@
   "passed": false,
   "recording": "recordings/plan-deepseek.mp4",
   "recording_gif": "recordings/plan-deepseek.gif",
+  "recording_rich": "recordings/plan-deepseek/plan-deepseek.rich.mp4",
   "steps": [
     {
       "assertions": {

@@ -5,4 +5,5 @@ public/*.gif
 public/*.png
 public/*.wav
 public/*.mp3
+public/keyframes/
 !public/.gitkeep
