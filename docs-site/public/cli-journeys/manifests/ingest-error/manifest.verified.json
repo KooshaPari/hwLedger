@@ -5,6 +5,9 @@
   "passed": false,
   "recording": "recordings/ingest-error.mp4",
   "recording_gif": "recordings/ingest-error.gif",
+  "recording_rich": "recordings/ingest-error/ingest-error.rich.mp4",
+  "recording_rich_manifest_sha256": "3adc81a662ae16c775e28bf9bc13e1449e34d9e5eccbea842bef00f11696af49",
+  "recording_rich_sha256": "082fa6344d3b462e2d2e86cc1685eb416698b6da3cfada2c3dffffd7142b2cd2",
   "steps": [
     {
       "assertions": {

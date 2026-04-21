@@ -5,6 +5,9 @@
   "passed": true,
   "recording": "recordings/fleet-register.mp4",
   "recording_gif": "recordings/fleet-register.gif",
+  "recording_rich": "recordings/fleet-register/fleet-register.rich.mp4",
+  "recording_rich_manifest_sha256": "407ae7a983bbded3b5928322b3ab39150e309b7349597a9abfa1404556616c53",
+  "recording_rich_sha256": "0f32e3e5bb0ab60e3cd37be93884ea0f9246a883a089baded85b4e8d82866730",
   "steps": [
     {
       "assertions": {

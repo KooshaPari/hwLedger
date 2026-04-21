@@ -5,6 +5,9 @@
   "passed": true,
   "recording": "recordings/install-cargo.mp4",
   "recording_gif": "recordings/install-cargo.gif",
+  "recording_rich": "recordings/install-cargo/install-cargo.rich.mp4",
+  "recording_rich_manifest_sha256": "308cbcdc372e3f813ae37991de2cd33ca01b530b8617537ca61ae2e995047599",
+  "recording_rich_sha256": "156ebb0af6cbf08b3628397b740eecf9140bd84881bd874b22a64564d23435ae",
   "steps": [
     {
       "assertions": {
