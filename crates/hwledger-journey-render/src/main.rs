@@ -201,4 +201,3 @@ fn main() -> anyhow::Result<()> {
         Cmd::ProjectAnnotations { yaml, manifests } => project_annotations(&yaml, &manifests),
     }
 }
-
