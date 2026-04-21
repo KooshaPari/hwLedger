@@ -20,8 +20,12 @@ members = [
     "crates/hwledger-hf-client",
     "crates/hwledger-predict",
     "crates/hwledger-devtools",
+    "crates/hwledger-attest",
     "tools/dev-harness",
-    "tools/streamlit-journey-runner",
+    "tools/bundle-app",
+    "tools/run-journeys",
+    "tools/streamlit-recorder",
+    "apps/windows/hwledger-tauri/src-tauri",
 ]
 exclude = [
     # Vendored phenotype-event-sourcing is a path dep, not a member;
