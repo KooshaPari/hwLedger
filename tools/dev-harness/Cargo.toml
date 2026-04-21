@@ -1,0 +1,36 @@
+[package]
+name = "hwledger-dev-harness"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "hwLedger dev orchestrator: builds FFI/CLI/server, launches server, docs-site, and streamlit with colorized combined log tailing."
+
+[[bin]]
+name = "hwledger-dev-harness"
+path = "src/main.rs"
+
+[lib]
+name = "hwledger_dev_harness"
+path = "src/lib.rs"
+
+[features]
+default = []
+# When enabled, child process spawns are replaced by no-op sleepers. Used in
+# integration tests so `up`/`down` can be exercised without real toolchains.
+mock-spawn = []
+
+[dependencies]
+anyhow = { workspace = true }
+clap = { workspace = true }
+owo-colors = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+dirs = { workspace = true }
+libc = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

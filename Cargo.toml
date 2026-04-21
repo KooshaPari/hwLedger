@@ -20,6 +20,7 @@ members = [
     "crates/hwledger-hf-client",
     "crates/hwledger-predict",
     "crates/hwledger-devtools",
+    "tools/dev-harness",
 ]
 exclude = [
     # Vendored phenotype-event-sourcing is a path dep, not a member;

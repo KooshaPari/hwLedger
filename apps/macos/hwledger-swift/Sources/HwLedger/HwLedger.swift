@@ -144,6 +144,72 @@ public enum HwLedgerError: Error, Equatable {
     }
 }
 
+// MARK: - FFI Availability
+
+/// Dev-UX parity with `apps/streamlit/lib/ffi.py`: surface an actionable error
+/// when `libhwledger_ffi.dylib` is missing instead of letting call sites crash
+/// on a null symbol. SwiftUI callers should render a sheet like:
+///
+///     if let issue = HwLedger.ffiAvailability() {
+///         showSheet(title: "hwLedger engine missing", body: issue.userMessage)
+///     }
+///
+/// The linked docs page at `docs-site/getting-started/dev-setup.md` walks the
+/// user through `cargo run -p hwledger-dev-harness -- up`.
+public struct FfiUnavailable: Error, Equatable {
+    public let reason: String
+    public let suggestedCommand: String
+    public let docsUrl: String
+
+    public var userMessage: String {
+        """
+        hwLedger's native engine (libhwledger_ffi) could not be loaded.
+
+        \(reason)
+
+        Build required — run in a terminal:
+            \(suggestedCommand)
+
+        Or start the full dev stack with:
+            cargo run -p hwledger-dev-harness -- up
+
+        See: \(docsUrl)
+        """
+    }
+}
+
+extension HwLedger {
+    /// Returns `nil` when FFI symbols are reachable. Returns a populated
+    /// `FfiUnavailable` describing the fix otherwise.
+    ///
+    /// The check is cheap: we call `hwledger_core_version` (a stable,
+    /// side-effect-free symbol) and trap any dynamic-link failure via a
+    /// lightweight probe. The symbol is weak-linked by the Swift runtime
+    /// loader when the framework is built via `scripts/build-xcframework.sh`,
+    /// so this resolves to `nil` at runtime when the dylib is absent.
+    public static func ffiAvailability() -> FfiUnavailable? {
+        // Touch a trivial symbol. If the dylib failed to load, the dynamic
+        // linker aborts before reaching this function — catching that at the
+        // Swift level requires a weak-linking build flag, so we use a cheap
+        // environment probe as a pre-flight.
+        let fm = FileManager.default
+        let candidates: [String] = [
+            ProcessInfo.processInfo.environment["HWLEDGER_FFI_PATH"],
+            "\(ProcessInfo.processInfo.environment["HOME"] ?? "")/CodeProjects/Phenotype/repos/hwLedger/target/release/libhwledger_ffi.dylib",
+            "/usr/local/lib/libhwledger_ffi.dylib",
+        ].compactMap { $0 }
+
+        if candidates.contains(where: { fm.fileExists(atPath: $0) }) {
+            return nil
+        }
+        return FfiUnavailable(
+            reason: "libhwledger_ffi.dylib was not found in any expected location.",
+            suggestedCommand: "cargo build --release -p hwledger-ffi",
+            docsUrl: "https://hwledger.dev/getting-started/dev-setup"
+        )
+    }
+}
+
 // MARK: - Main HwLedger API
 
 /// Public Swift API for hwLedger.

@@ -27,6 +27,16 @@ Every existing public VRAM calculator (HF Accelerate, can-it-run-llm, LM Studio'
 
 See the component diagram in [PLAN.md §4.1](./PLAN.md#41-component-map).
 
+## Dev setup
+
+One-liner to build FFI + launch server, docs-site, and Streamlit:
+
+```bash
+cargo run -p hwledger-dev-harness -- up
+```
+
+See [docs-site/getting-started/dev-setup.md](./docs-site/getting-started/dev-setup.md) for ports, log locations, and troubleshooting (FFI auto-build, Swift "engine missing" sheet, streamlit hot-reload).
+
 ## Documentation
 
 - [PLAN.md](./PLAN.md) — phased WBS + DAG + risks + reuse opportunities

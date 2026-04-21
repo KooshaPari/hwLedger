@@ -11,39 +11,220 @@ import ctypes
 import json
 import os
 import platform
+import subprocess
+import sys
+import time
 from pathlib import Path
 from dataclasses import dataclass
 from typing import Optional, List
 
+# Module-level state for pages to surface build errors in-UI instead of the
+# legacy cryptic "Library not found" message. See `is_available()` +
+# `FFI_BUILD_ERROR` / `FFI_BUILD_LOG`.
+FFI_BUILD_ERROR: Optional[str] = None
+FFI_BUILD_LOG: Optional[str] = None
 
-# Load the shared library
-def _load_library() -> Optional[ctypes.CDLL]:
-    """Load libhwledger_ffi from target/release."""
+
+def _libname() -> Optional[str]:
     system = platform.system()
     if system == "Darwin":
-        libname = "libhwledger_ffi.dylib"
-    elif system == "Linux":
-        libname = "libhwledger_ffi.so"
-    elif system == "Windows":
-        libname = "hwledger_ffi.dll"
-    else:
+        return "libhwledger_ffi.dylib"
+    if system == "Linux":
+        return "libhwledger_ffi.so"
+    if system == "Windows":
+        return "hwledger_ffi.dll"
+    return None
+
+
+def _repo_root() -> Path:
+    """apps/streamlit/lib/ffi.py -> repo root (four levels up)."""
+    return Path(__file__).resolve().parent.parent.parent.parent
+
+
+def _candidate_paths(libname: str) -> List[Path]:
+    base = _repo_root()
+    override = os.environ.get("HWLEDGER_FFI_PATH")
+    paths: List[Path] = []
+    if override:
+        paths.append(Path(override))
+    paths.extend(
+        [
+            base / "target" / "release" / libname,
+            Path.home() / ".cargo" / "target" / "release" / libname,
+            Path("/usr/local/lib") / libname,
+        ]
+    )
+    return paths
+
+
+def _newest_source_mtime(root: Path) -> float:
+    """Newest mtime under crates/hwledger-ffi/src. Used to detect stale dylib."""
+    src = root / "crates" / "hwledger-ffi" / "src"
+    newest = 0.0
+    if not src.exists():
+        return newest
+    for p in src.rglob("*"):
+        if p.is_file():
+            try:
+                m = p.stat().st_mtime
+                if m > newest:
+                    newest = m
+            except OSError:
+                continue
+    return newest
+
+
+def _needs_build(libname: str) -> bool:
+    for candidate in _candidate_paths(libname):
+        if candidate.exists():
+            try:
+                dylib_mtime = candidate.stat().st_mtime
+            except OSError:
+                continue
+            src_mtime = _newest_source_mtime(_repo_root())
+            # Rebuild when any FFI source is newer than the built artifact.
+            if src_mtime > dylib_mtime:
+                return True
+            return False
+    return True
+
+
+def _build_lock_path() -> Path:
+    """Cross-process lock so concurrent Streamlit pages don't race `cargo build`."""
+    lock_dir = Path(os.environ.get("HWLEDGER_HOME", str(Path.home() / ".hwledger")))
+    lock_dir.mkdir(parents=True, exist_ok=True)
+    return lock_dir / "ffi-build.lock"
+
+
+def _acquire_lock(path: Path, timeout_s: float = 300.0):
+    """Best-effort POSIX flock; falls back to exclusive-create pidfile on Windows."""
+    try:
+        import fcntl  # type: ignore
+    except ImportError:
+        deadline = time.monotonic() + timeout_s
+        while time.monotonic() < deadline:
+            try:
+                fd = os.open(str(path), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+                os.write(fd, str(os.getpid()).encode())
+                return fd
+            except FileExistsError:
+                time.sleep(0.5)
+        return None
+    f = open(path, "w")
+    try:
+        fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+    except OSError:
+        f.close()
+        return None
+    return f
+
+
+def _release_lock(handle, path: Path) -> None:
+    try:
+        if isinstance(handle, int):
+            os.close(handle)
+            try:
+                path.unlink()
+            except OSError:
+                pass
+        else:
+            try:
+                import fcntl  # type: ignore
+
+                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+            except Exception:
+                pass
+            handle.close()
+    except Exception:
+        pass
+
+
+def _cargo_build_ffi(repo_root: Path):
+    """Run `cargo build --release -p hwledger-ffi`, streaming output to stdout.
+
+    Returns ``(ok, combined_log)``. The log is also stashed on FFI_BUILD_LOG
+    so pages can render the failure in-page instead of forcing users to
+    switch to the Streamlit server terminal.
+    """
+    cmd = ["cargo", "build", "--release", "-p", "hwledger-ffi"]
+    print(f"[hwledger-ffi] auto-building: {' '.join(cmd)}", flush=True)
+    buf: List[str] = []
+    try:
+        proc = subprocess.Popen(
+            cmd,
+            cwd=str(repo_root),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
+        )
+    except FileNotFoundError:
+        msg = (
+            "cargo not found on PATH. Install Rust via https://rustup.rs and "
+            "retry, or set HWLEDGER_SKIP_FFI_AUTOBUILD=1 to disable auto-build."
+        )
+        return False, msg
+    assert proc.stdout is not None
+    for line in proc.stdout:
+        sys.stdout.write(line)
+        sys.stdout.flush()
+        buf.append(line)
+    rc = proc.wait()
+    return rc == 0, "".join(buf)
+
+
+def _load_library() -> Optional[ctypes.CDLL]:
+    """Load libhwledger_ffi from target/release, auto-building if needed.
+
+    Auto-build triggers when (a) no artifact is found in any candidate path,
+    or (b) an artifact exists but is older than the newest file under
+    ``crates/hwledger-ffi/src/**``. Set ``HWLEDGER_SKIP_FFI_AUTOBUILD=1``
+    (CI) to disable the auto-build and fall back to the legacy
+    "please run cargo build" behavior.
+
+    On failure, populates ``FFI_BUILD_ERROR`` + ``FFI_BUILD_LOG`` so
+    Streamlit pages can render the build log in-page.
+    """
+    global FFI_BUILD_ERROR, FFI_BUILD_LOG
+    libname = _libname()
+    if libname is None:
+        FFI_BUILD_ERROR = f"unsupported platform: {platform.system()}"
         return None
 
-    # Try relative paths from this file
-    base = Path(__file__).parent.parent.parent.parent
-    candidates = [
-        base / "target" / "release" / libname,
-        Path.home() / ".cargo" / "target" / "release" / libname,
-        Path("/usr/local/lib") / libname,
-    ]
+    skip = os.environ.get("HWLEDGER_SKIP_FFI_AUTOBUILD") == "1"
+    if _needs_build(libname) and not skip:
+        lock_path = _build_lock_path()
+        handle = _acquire_lock(lock_path)
+        try:
+            # Re-check after lock; another Streamlit page may have built it
+            # while we were queued behind its flock.
+            if _needs_build(libname):
+                ok, log = _cargo_build_ffi(_repo_root())
+                if not ok:
+                    FFI_BUILD_ERROR = (
+                        "hwledger-ffi build failed. See log below or run "
+                        "`cargo build --release -p hwledger-ffi` manually."
+                    )
+                    FFI_BUILD_LOG = log
+                    return None
+        finally:
+            if handle is not None:
+                _release_lock(handle, lock_path)
 
-    for path in candidates:
+    for path in _candidate_paths(libname):
         if path.exists():
             try:
                 return ctypes.CDLL(str(path))
-            except Exception:
+            except Exception as e:
+                FFI_BUILD_ERROR = f"failed to dlopen {path}: {e}"
                 continue
 
+    if FFI_BUILD_ERROR is None:
+        FFI_BUILD_ERROR = (
+            f"{libname} not found. Auto-build is disabled "
+            "(HWLEDGER_SKIP_FFI_AUTOBUILD=1); run "
+            "`cargo build --release -p hwledger-ffi` to produce it."
+        )
     return None
 
 
@@ -435,6 +616,63 @@ def export_mlx(
     return json.dumps(mlx_config, indent=2)
 
 
+def predict(
+    baseline_config_json: str,
+    candidate_config_json: str,
+    techniques: Optional[List[str]] = None,
+    prefill_tokens: int = 1024,
+    decode_tokens: int = 256,
+    batch: int = 1,
+    seq_len: int = 4096,
+    hardware: str = "A100-80G",
+) -> Optional[dict]:
+    """Call hwledger_predict() — returns parsed Prediction dict or None.
+
+    Traces to: FR-PREDICT-001 (prediction buffet).
+    """
+    if lib is None:
+        return None
+    try:
+        lib.hwledger_predict.argtypes = [
+            ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p,
+        ]
+        lib.hwledger_predict.restype = ctypes.c_void_p
+        lib.hwledger_predict_free.argtypes = [ctypes.c_void_p]
+        lib.hwledger_predict_free.restype = None
+    except AttributeError:
+        return None  # FFI library older than this build
+
+    tech_json = json.dumps(techniques or [])
+    workload_json = json.dumps({
+        "prefill_tokens": prefill_tokens,
+        "decode_tokens": decode_tokens,
+        "batch": batch,
+        "seq_len": seq_len,
+        "hardware": hardware,
+    })
+    ptr = lib.hwledger_predict(
+        baseline_config_json.encode("utf-8"),
+        candidate_config_json.encode("utf-8"),
+        tech_json.encode("utf-8"),
+        workload_json.encode("utf-8"),
+    )
+    if not ptr:
+        return None
+    raw = ctypes.string_at(ptr).decode("utf-8", errors="replace")
+    lib.hwledger_predict_free(ptr)
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        return None
+
+
 def is_available() -> bool:
     """Check if FFI library is loaded and available."""
     return lib is not None
+
+
+def predict_available() -> bool:
+    """Check if hwledger_predict is present in the loaded library."""
+    if lib is None:
+        return False
+    return hasattr(lib, "hwledger_predict")
