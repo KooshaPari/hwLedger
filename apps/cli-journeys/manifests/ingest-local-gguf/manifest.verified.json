@@ -16,72 +16,84 @@
         ],
         "ocr_required": false
       },
+      "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-0)",
       "index": 0,
       "intent": "Terminal prompt",
       "screenshot_path": "frame-001.png",
       "slug": "frame-0"
     },
     {
+      "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
       "intent": "Ingest a local GGUF model file and output JSON metadata (frame 2)",
       "screenshot_path": "frame-002.png",
       "slug": "frame-1"
     },
     {
+      "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-2)",
       "index": 2,
       "intent": "Ingest a local GGUF model file and output JSON metadata (frame 3)",
       "screenshot_path": "frame-003.png",
       "slug": "frame-2"
     },
     {
+      "blind_description": "Shell session showing a command header and a paragraph of structured stdout. (frame slug: frame-3)",
       "index": 3,
       "intent": "Ingest a local GGUF model file and output JSON metadata (frame 4)",
       "screenshot_path": "frame-004.png",
       "slug": "frame-3"
     },
     {
+      "blind_description": "Terminal window with a list-style summary and no visible error indicator. (frame slug: frame-4)",
       "index": 4,
       "intent": "Ingest a local GGUF model file and output JSON metadata (frame 5)",
       "screenshot_path": "frame-005.png",
       "slug": "frame-4"
     },
     {
+      "blind_description": "Shell prompt displaying the result of a subcommand — multi-line text output. (frame slug: frame-5)",
       "index": 5,
       "intent": "Ingest a local GGUF model file and output JSON metadata (frame 6)",
       "screenshot_path": "frame-006.png",
       "slug": "frame-5"
     },
     {
+      "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-6)",
       "index": 6,
       "intent": "Ingest a local GGUF model file and output JSON metadata (frame 7)",
       "screenshot_path": "frame-007.png",
       "slug": "frame-6"
     },
     {
+      "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-7)",
       "index": 7,
       "intent": "Ingest a local GGUF model file and output JSON metadata (frame 8)",
       "screenshot_path": "frame-008.png",
       "slug": "frame-7"
     },
     {
+      "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-8)",
       "index": 8,
       "intent": "Ingest a local GGUF model file and output JSON metadata (frame 9)",
       "screenshot_path": "frame-009.png",
       "slug": "frame-8"
     },
     {
+      "blind_description": "Shell session showing a command header and a paragraph of structured stdout. (frame slug: frame-9)",
       "index": 9,
       "intent": "Ingest a local GGUF model file and output JSON metadata (frame 10)",
       "screenshot_path": "frame-010.png",
       "slug": "frame-9"
     },
     {
+      "blind_description": "Terminal window with a list-style summary and no visible error indicator. (frame slug: frame-10)",
       "index": 10,
       "intent": "Ingest a local GGUF model file and output JSON metadata (frame 11)",
       "screenshot_path": "frame-011.png",
       "slug": "frame-10"
     },
     {
+      "blind_description": "Shell prompt displaying the result of a subcommand — multi-line text output. (frame slug: frame-11)",
       "index": 11,
       "intent": "Ingest a local GGUF model file and output JSON metadata (frame 12)",
       "screenshot_path": "frame-012.png",
@@ -108,6 +120,7 @@
         ],
         "ocr_required": false
       },
+      "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-12)",
       "index": 12,
       "intent": "JSON metadata document: schema, source.kind=gguf, source.location, model.model_type, attention_kind, num_heads; trailing __EXIT sentinel",
       "screenshot_path": "frame-013.png",
@@ -125,6 +138,6 @@
     "judge_confidence": 0.9,
     "mode": "mock",
     "overall_score": 0.92,
-    "timestamp": "2026-04-21T00:36:16Z"
+    "timestamp": "2026-04-21T01:02:50Z"
   }
 }

@@ -29,6 +29,7 @@ anyhow.workspace = true
 chrono.workspace = true
 reqwest.workspace = true
 hwledger-fleet-proto = { path = "../hwledger-fleet-proto" }
+hwledger-ledger = { path = "../hwledger-ledger" }
 axum-server = { version = "0.7", features = ["tls-rustls"] }
 time = "0.3"
 x509-parser = "0.16"
@@ -47,7 +48,6 @@ tokio-rustls = "0.26"
 futures-util = "0.3"
 
 [dev-dependencies]
-hwledger-ledger = { path = "../hwledger-ledger" }
 criterion = { workspace = true }
 
 [[bench]]

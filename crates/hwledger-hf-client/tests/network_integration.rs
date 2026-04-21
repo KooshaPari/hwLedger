@@ -24,10 +24,8 @@ async fn live_search_deepseek_anonymous() {
 #[ignore]
 async fn live_plan_deepseek_v3_seq_8192() {
     let client = HfClient::new(None);
-    let cfg = client
-        .fetch_config("deepseek-ai/DeepSeek-V3", None)
-        .await
-        .expect("config.json fetch");
+    let cfg =
+        client.fetch_config("deepseek-ai/DeepSeek-V3", None).await.expect("config.json fetch");
     assert!(cfg.get("model_type").is_some(), "config should contain model_type");
     // Snapshot tolerance — only assert gross shape to allow small drift.
     let layers = cfg.get("num_hidden_layers").and_then(|v| v.as_u64()).unwrap_or(0);

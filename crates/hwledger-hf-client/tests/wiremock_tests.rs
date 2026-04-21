@@ -187,8 +187,7 @@ async fn offline_mode_uses_cache_and_skips_network() {
     .to_string();
     cache.write(&key, &body).unwrap();
 
-    let client =
-        HfClient::new(None).with_base(server.uri()).with_cache(cache).offline(true);
+    let client = HfClient::new(None).with_base(server.uri()).with_cache(cache).offline(true);
     let results = client.search_models(&q).await.unwrap();
     assert_eq!(results.len(), 1);
     assert_eq!(results[0].id, "cached/model");

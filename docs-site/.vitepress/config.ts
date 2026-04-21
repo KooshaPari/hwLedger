@@ -4,6 +4,7 @@ import { withMermaid } from 'vitepress-plugin-mermaid'
 import { readdirSync, readFileSync } from 'fs'
 import { join } from 'path'
 import matter from 'gray-matter'
+import { richRefs } from './plugins/rich-refs'
 
 // Auto-generate sidebar for /research/ by reading frontmatter from research/*.md
 function buildResearchSidebar() {
@@ -94,6 +95,9 @@ export default withMermaid(defineConfig({
     'localhostLinks',
     // Journeys file paths that will exist after UI tests run
     /HwLedgerUITests/,
+    // rich-refs plugin links: FR index page not yet scaffolded; future ADRs.
+    /^\/reference\/fr(?:#.*)?$/,
+    /^\/architecture\/adrs\/00[1-9][0-9](?:-.*)?$/,
   ],
   description: 'LLM capacity planner + fleet ledger + desktop inference runtime',
   base: process.env.GITHUB_ACTIONS ? '/hwLedger/' : '/',
@@ -107,7 +111,10 @@ export default withMermaid(defineConfig({
   // highlighter). We also drop the MathJax CDN <script> below — VitePress
   // renders math to SVG at build time, no client-side engine needed.
   markdown: {
-    math: true
+    math: true,
+    config: (md) => {
+      md.use(richRefs)
+    }
   },
 
   themeConfig: {
@@ -118,6 +125,7 @@ export default withMermaid(defineConfig({
       { text: 'Home', link: '/' },
       { text: 'Architecture', link: '/architecture/' },
       { text: 'Math', link: '/math/kv-cache' },
+      { text: 'Predict', link: '/predict/' },
       { text: 'Fleet', link: '/fleet/overview' },
       { text: 'Getting Started', link: '/getting-started/install' },
       { text: 'Research', link: '/research/' },
@@ -133,6 +141,7 @@ export default withMermaid(defineConfig({
             { text: 'Architecture', link: '/architecture/' },
             { text: 'Architecture Decisions', link: '/architecture/adrs' },
             { text: 'Math Core', link: '/math/kv-cache' },
+            { text: 'Prediction Buffet', link: '/predict/' },
             { text: 'Fleet Ledger', link: '/fleet/overview' },
             { text: 'Getting Started', link: '/getting-started/install' },
             { text: 'Research', link: '/research/' }
@@ -153,6 +162,13 @@ export default withMermaid(defineConfig({
 
       '/math/': [
         { text: 'KV Cache Formulas', link: '/math/kv-cache' }
+      ],
+
+      '/predict/': [
+        { text: 'Overview', link: '/predict/' },
+        { text: 'Techniques catalog', link: '/predict/techniques' },
+        { text: 'Methodology', link: '/predict/methodology' },
+        { text: 'Benchmark corpus', link: '/predict/benchmarks' }
       ],
 
       '/fleet/': [
@@ -186,7 +202,9 @@ export default withMermaid(defineConfig({
             { text: 'Planner — seq length sweep', link: '/journeys/streamlit-planner' },
             { text: 'Probe — device inventory', link: '/journeys/streamlit-probe' },
             { text: 'Fleet — offline fail-loudly', link: '/journeys/streamlit-fleet' },
-            { text: 'Exports — vLLM / llama.cpp / MLX', link: '/journeys/streamlit-exports' }
+            { text: 'Exports — vLLM / llama.cpp / MLX', link: '/journeys/streamlit-exports' },
+            { text: 'HF Search — anon + handoff', link: '/journeys/streamlit-hf-search' },
+            { text: 'What-If — technique sweep', link: '/journeys/streamlit-what-if' }
           ]
         },
         {

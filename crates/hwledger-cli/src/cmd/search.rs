@@ -263,7 +263,10 @@ async fn run_plan(args: SearchPlanArgs) -> Result<()> {
     if args.json {
         println!("{}", serde_json::to_string_pretty(&result)?);
     } else {
-        eprintln!("hf-plan: {} (seq={}, users={}, batch={})", args.repo_id, opts.seq, opts.users, opts.batch);
+        eprintln!(
+            "hf-plan: {} (seq={}, users={}, batch={})",
+            args.repo_id, opts.seq, opts.users, opts.batch
+        );
         print_plan_result(&result)?;
     }
     Ok(())
@@ -271,14 +274,7 @@ async fn run_plan(args: SearchPlanArgs) -> Result<()> {
 
 fn print_model_table(models: &[ModelCard]) {
     let mut table = Table::new();
-    table.set_header(vec![
-        "repo-id",
-        "params",
-        "downloads",
-        "likes",
-        "library",
-        "last-modified",
-    ]);
+    table.set_header(vec!["repo-id", "params", "downloads", "likes", "library", "last-modified"]);
     for m in models {
         table.add_row(vec![
             m.id.clone(),
@@ -313,7 +309,8 @@ fn format_hf_error(e: HfError) -> anyhow::Error {
             anyhow!("model is gated or private (path {}): {}", path, hint)
         }
         HfError::RateLimited { retry_after_secs, has_token } => {
-            let after = retry_after_secs.map(|s| format!(" retry after {}s.", s)).unwrap_or_default();
+            let after =
+                retry_after_secs.map(|s| format!(" retry after {}s.", s)).unwrap_or_default();
             let hint = if has_token {
                 "You are authenticated. Back off and retry."
             } else {

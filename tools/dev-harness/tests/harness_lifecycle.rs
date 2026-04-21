@@ -13,9 +13,7 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-use hwledger_dev_harness::{
-    pid_file, spawn_service, teardown, HarnessState, Palette, UpConfig,
-};
+use hwledger_dev_harness::{pid_file, spawn_service, teardown, HarnessState, Palette, UpConfig};
 
 fn setup_home() -> PathBuf {
     let dir = tempfile::tempdir().expect("tempdir").keep();
@@ -38,28 +36,12 @@ fn up_writes_pid_file_and_down_tears_down() {
     let env: HashMap<String, String> = HashMap::new();
 
     // Spawn two mock services.
-    let a = spawn_service(
-        &cfg,
-        "svc-a",
-        "unused",
-        &[],
-        &env,
-        &cfg.repo_root,
-        Some(8080),
-        &mut palette,
-    )
-    .expect("spawn a");
-    let b = spawn_service(
-        &cfg,
-        "svc-b",
-        "unused",
-        &[],
-        &env,
-        &cfg.repo_root,
-        Some(8511),
-        &mut palette,
-    )
-    .expect("spawn b");
+    let a =
+        spawn_service(&cfg, "svc-a", "unused", &[], &env, &cfg.repo_root, Some(8080), &mut palette)
+            .expect("spawn a");
+    let b =
+        spawn_service(&cfg, "svc-b", "unused", &[], &env, &cfg.repo_root, Some(8511), &mut palette)
+            .expect("spawn b");
     state.services.push(a.clone());
     state.services.push(b.clone());
 

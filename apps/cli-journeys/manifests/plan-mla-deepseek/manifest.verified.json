@@ -2,7 +2,7 @@
   "id": "plan-mla-deepseek",
   "intent": "Show MLA classification and KV sequence invariance across 2K, 32K, 128K sequences",
   "keyframe_count": 4,
-  "passed": true,
+  "passed": false,
   "recording": "recordings/plan-mla-deepseek.mp4",
   "recording_gif": "recordings/plan-mla-deepseek.gif",
   "steps": [
@@ -16,18 +16,21 @@
         ],
         "ocr_required": false
       },
+      "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-0)",
       "index": 0,
       "intent": "Terminal prompt, ready to run three plans at 2K / 32K / 128K",
       "screenshot_path": "frame-001.png",
       "slug": "frame-0"
     },
     {
+      "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
       "intent": "Show MLA classification and KV sequence invariance across 2K, 32K, 128K sequences (frame 2)",
       "screenshot_path": "frame-002.png",
       "slug": "frame-1"
     },
     {
+      "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-2)",
       "index": 2,
       "intent": "Show MLA classification and KV sequence invariance across 2K, 32K, 128K sequences (frame 3)",
       "screenshot_path": "frame-003.png",
@@ -56,6 +59,7 @@
         ],
         "ocr_required": false
       },
+      "blind_description": "Shell session showing a command header and a paragraph of structured stdout. (frame slug: frame-3)",
       "index": 3,
       "intent": "Third invocation (`--seq 131072`) renders the VRAM table with MLA attention, kv_lora_rank, and weights/KV/activations/overhead/total; trailing __EXIT sentinel",
       "screenshot_path": "frame-004.png",
@@ -66,12 +70,61 @@
     "FR-PLAN-003"
   ],
   "verification": {
-    "all_intents_passed": true,
-    "assertion_violations": [],
+    "all_intents_passed": false,
+    "assertion_violations": [
+      {
+        "expected": "Mla",
+        "got_snippet": "Penne en see eeeeeeeeee > hwledger plan tests/ ere et ee ene Property  —EXIT_0@__  | 579.92 MB  pone  golden/deepseek-v3.json --seq 131072; echo Hoon nee eee = …",
+        "kind": "MustContain",
+        "step_index": 3
+      },
+      {
+        "expected": "kv_",
+        "got_snippet": "Penne en see eeeeeeeeee > hwledger plan tests/ ere et ee ene Property  —EXIT_0@__  | 579.92 MB  pone  golden/deepseek-v3.json --seq 131072; echo Hoon nee eee = …",
+        "kind": "MustContain",
+        "step_index": 3
+      },
+      {
+        "expected": "rank",
+        "got_snippet": "Penne en see eeeeeeeeee > hwledger plan tests/ ere et ee ene Property  —EXIT_0@__  | 579.92 MB  pone  golden/deepseek-v3.json --seq 131072; echo Hoon nee eee = …",
+        "kind": "MustContain",
+        "step_index": 3
+      },
+      {
+        "expected": "qk_rope",
+        "got_snippet": "Penne en see eeeeeeeeee > hwledger plan tests/ ere et ee ene Property  —EXIT_0@__  | 579.92 MB  pone  golden/deepseek-v3.json --seq 131072; echo Hoon nee eee = …",
+        "kind": "MustContain",
+        "step_index": 3
+      },
+      {
+        "expected": "Weights",
+        "got_snippet": "Penne en see eeeeeeeeee > hwledger plan tests/ ere et ee ene Property  —EXIT_0@__  | 579.92 MB  pone  golden/deepseek-v3.json --seq 131072; echo Hoon nee eee = …",
+        "kind": "MustContain",
+        "step_index": 3
+      },
+      {
+        "expected": "KV Cache",
+        "got_snippet": "Penne en see eeeeeeeeee > hwledger plan tests/ ere et ee ene Property  —EXIT_0@__  | 579.92 MB  pone  golden/deepseek-v3.json --seq 131072; echo Hoon nee eee = …",
+        "kind": "MustContain",
+        "step_index": 3
+      },
+      {
+        "expected": "Total",
+        "got_snippet": "Penne en see eeeeeeeeee > hwledger plan tests/ ere et ee ene Property  —EXIT_0@__  | 579.92 MB  pone  golden/deepseek-v3.json --seq 131072; echo Hoon nee eee = …",
+        "kind": "MustContain",
+        "step_index": 3
+      },
+      {
+        "expected": "__EXIT_",
+        "got_snippet": "Penne en see eeeeeeeeee > hwledger plan tests/ ere et ee ene Property  —EXIT_0@__  | 579.92 MB  pone  golden/deepseek-v3.json --seq 131072; echo Hoon nee eee = …",
+        "kind": "MustContain",
+        "step_index": 3
+      }
+    ],
     "describe_confidence": 0.95,
     "judge_confidence": 0.9,
     "mode": "mock",
     "overall_score": 0.92,
-    "timestamp": "2026-04-21T00:36:31Z"
+    "timestamp": "2026-04-21T01:02:54Z"
   }
 }

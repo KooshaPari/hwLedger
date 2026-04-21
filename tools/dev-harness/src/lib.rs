@@ -70,8 +70,8 @@ impl HarnessState {
         if !path.exists() {
             return Ok(Self::default());
         }
-        let raw = fs::read_to_string(path)
-            .with_context(|| format!("reading {}", path.display()))?;
+        let raw =
+            fs::read_to_string(path).with_context(|| format!("reading {}", path.display()))?;
         Ok(serde_json::from_str(&raw).unwrap_or_default())
     }
 
@@ -142,9 +142,7 @@ fn which(tool: &str) -> Option<PathBuf> {
 pub fn repo_root() -> Result<PathBuf> {
     let mut cur = std::env::current_dir()?;
     loop {
-        if cur.join("Cargo.toml").is_file()
-            && cur.join("crates/hwledger-ffi").is_dir()
-        {
+        if cur.join("Cargo.toml").is_file() && cur.join("crates/hwledger-ffi").is_dir() {
             return Ok(cur);
         }
         if !cur.pop() {
@@ -210,11 +208,7 @@ pub fn build_workspace(cfg: &UpConfig) -> Result<()> {
         .context("failed to invoke cargo build")?;
 
     if !status.success() {
-        bail!(
-            "cargo build failed (see {}). exit code: {:?}",
-            log_path.display(),
-            status.code()
-        );
+        bail!("cargo build failed (see {}). exit code: {:?}", log_path.display(), status.code());
     }
     Ok(())
 }
@@ -244,15 +238,10 @@ pub fn spawn_service(
         ("sleep".into(), vec!["3600".into()])
     };
     #[cfg(not(feature = "mock-spawn"))]
-    let (real_cmd, real_args): (String, Vec<String>) =
-        (cmd.to_string(), args.to_vec());
+    let (real_cmd, real_args): (String, Vec<String>) = (cmd.to_string(), args.to_vec());
 
     let mut command = Command::new(&real_cmd);
-    command
-        .args(&real_args)
-        .current_dir(cwd)
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped());
+    command.args(&real_args).current_dir(cwd).stdout(Stdio::piped()).stderr(Stdio::piped());
     for (k, v) in env {
         command.env(k, v);
     }
@@ -273,7 +262,6 @@ pub fn spawn_service(
     if let Some(err) = child.stderr.take() {
         let tag = format!("{name}!err");
         let lf = log_file;
-        let color = color;
         thread::spawn(move || pump(err, lf, &tag, &color));
     }
 
@@ -281,12 +269,7 @@ pub fn spawn_service(
     // from `down` reading the PID file. We intentionally do not call `wait()`.
     std::mem::forget(child);
 
-    Ok(ServiceRecord {
-        name: name.to_string(),
-        pid,
-        port,
-        log_path,
-    })
+    Ok(ServiceRecord { name: name.to_string(), pid, port, log_path })
 }
 
 fn pump<R: std::io::Read + Send + 'static>(
@@ -384,9 +367,7 @@ fn kill_pid(pid: u32) -> Result<()> {
 #[cfg(not(unix))]
 fn kill_pid(pid: u32) -> Result<()> {
     // Windows: use taskkill.
-    let status = Command::new("taskkill")
-        .args(["/PID", &pid.to_string(), "/F"])
-        .status()?;
+    let status = Command::new("taskkill").args(["/PID", &pid.to_string(), "/F"]).status()?;
     if !status.success() {
         bail!("taskkill /PID {pid} failed: {status}");
     }

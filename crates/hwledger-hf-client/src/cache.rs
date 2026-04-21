@@ -120,8 +120,7 @@ mod tests {
         // TTL 0 means everything is stale — but our `read` returns the value
         // regardless (staleness is purely advisory; the client decides policy).
         let tmp = TempDir::new().unwrap();
-        let cache =
-            HfCache::new(tmp.path().to_path_buf()).with_ttl(Duration::from_millis(0));
+        let cache = HfCache::new(tmp.path().to_path_buf()).with_ttl(Duration::from_millis(0));
         cache.write("k", r#"{"a":2}"#).unwrap();
         let v: serde_json::Value = cache.read("k").unwrap().unwrap();
         assert_eq!(v["a"], 2);

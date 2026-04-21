@@ -55,11 +55,7 @@ fn main() -> Result<()> {
 
     let cli = Cli::parse();
     match cli.cmd {
-        Cmd::Up {
-            clients,
-            port_base,
-            skip_build,
-        } => cmd_up(clients, port_base, skip_build),
+        Cmd::Up { clients, port_base, skip_build } => cmd_up(clients, port_base, skip_build),
         Cmd::Down => cmd_down(),
         Cmd::Status => cmd_status(),
     }
@@ -67,12 +63,7 @@ fn main() -> Result<()> {
 
 fn cmd_up(clients: Vec<String>, port_base: u16, skip_build: bool) -> Result<()> {
     let root = repo_root().context("hwLedger repo root not found")?;
-    let cfg = UpConfig {
-        clients,
-        port_base,
-        repo_root: root.clone(),
-        release: true,
-    };
+    let cfg = UpConfig { clients, port_base, repo_root: root.clone(), release: true };
 
     // 1. Toolchain.
     let missing = check_toolchain();
@@ -106,13 +97,10 @@ fn cmd_up(clients: Vec<String>, port_base: u16, skip_build: bool) -> Result<()> 
     {
         let port = cfg.port_base + 80;
         let bin = target_bin(&root, "hwledger-server");
-        let args = vec![
-            "--port".to_string(),
-            port.to_string(),
-            "--dev".to_string(),
-        ];
+        let args = vec!["--port".to_string(), port.to_string(), "--dev".to_string()];
         let env: HashMap<String, String> = HashMap::new();
-        let rec = spawn_service(&cfg, "server", &bin, &args, &env, &root, Some(port), &mut palette)?;
+        let rec =
+            spawn_service(&cfg, "server", &bin, &args, &env, &root, Some(port), &mut palette)?;
         state.services.push(rec);
     }
 
@@ -124,12 +112,7 @@ fn cmd_up(clients: Vec<String>, port_base: u16, skip_build: bool) -> Result<()> 
             &cfg,
             "docs-site",
             "bun",
-            &[
-                "run".into(),
-                "dev".into(),
-                "--port".into(),
-                port.to_string(),
-            ],
+            &["run".into(), "dev".into(), "--port".into(), port.to_string()],
             &env,
             &root.join("docs-site"),
             Some(port),
@@ -232,7 +215,10 @@ fn cmd_status() -> Result<()> {
     for svc in &state.services {
         println!(
             "{:12} pid={:<7} port={:?} log={}",
-            svc.name, svc.pid, svc.port, svc.log_path.display()
+            svc.name,
+            svc.pid,
+            svc.port,
+            svc.log_path.display()
         );
     }
     Ok(())

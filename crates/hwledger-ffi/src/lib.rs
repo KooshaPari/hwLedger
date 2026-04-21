@@ -542,7 +542,8 @@ pub unsafe extern "C" fn hwledger_predict(
     techniques_json: *const c_char,
     workload_json: *const c_char,
 ) -> *mut c_char {
-    if baseline_config_json.is_null() || candidate_config_json.is_null() || workload_json.is_null() {
+    if baseline_config_json.is_null() || candidate_config_json.is_null() || workload_json.is_null()
+    {
         return std::ptr::null_mut();
     }
     let b_raw = match CStr::from_ptr(baseline_config_json).to_str() {
@@ -595,9 +596,7 @@ fn predict_json_inner(
     techniques_json: &str,
     workload_json: &str,
 ) -> Result<String, String> {
-    use hwledger_predict::{
-        predict, Plan, PredictRequest, Technique, TechniqueKind, Workload,
-    };
+    use hwledger_predict::{predict, Plan, PredictRequest, Technique, TechniqueKind, Workload};
 
     fn plan_from_cfg(cfg_json: &str) -> Result<Plan, String> {
         let cfg = ArchConfig::from_json(cfg_json).map_err(|e| format!("parse config: {e}"))?;
@@ -627,8 +626,8 @@ fn predict_json_inner(
     let baseline = plan_from_cfg(baseline_cfg)?;
     let candidate = plan_from_cfg(candidate_cfg)?;
 
-    let tech_names: Vec<String> = serde_json::from_str(techniques_json)
-        .map_err(|e| format!("techniques json: {e}"))?;
+    let tech_names: Vec<String> =
+        serde_json::from_str(techniques_json).map_err(|e| format!("techniques json: {e}"))?;
     let mut techniques = Vec::with_capacity(tech_names.len());
     for name in tech_names {
         let kind: TechniqueKind = serde_json::from_value(serde_json::Value::String(name.clone()))
@@ -645,7 +644,8 @@ fn predict_json_inner(
         #[serde(default)]
         hardware: Option<String>,
     }
-    let w: WloadIn = serde_json::from_str(workload_json).map_err(|e| format!("workload json: {e}"))?;
+    let w: WloadIn =
+        serde_json::from_str(workload_json).map_err(|e| format!("workload json: {e}"))?;
 
     let req = PredictRequest {
         baseline,

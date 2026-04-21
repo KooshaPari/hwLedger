@@ -1,0 +1,41 @@
+{
+  "id": "streamlit-hf-search",
+  "title": "Streamlit HF Search — anon search + handoff",
+  "intent": "Load the HF Search page, browse the 2025-2026 quick picks, type a query, pick filters, and hand off a selected model to the Planner.",
+  "recording": "recordings/streamlit-hf-search.mp4",
+  "recording_gif": "recordings/streamlit-hf-search.gif",
+  "keyframe_count": 5,
+  "passed": true,
+  "steps": [
+    {
+      "index": 0,
+      "slug": "landing",
+      "intent": "HF Search landed; Quick picks grid visible with 2025-2026 releases and download-count badges.",
+      "screenshot_path": "frame-001.png"
+    },
+    {
+      "index": 1,
+      "slug": "search-typed",
+      "intent": "User types 'llama' into the search box; quick picks remain visible above.",
+      "screenshot_path": "frame-002.png"
+    },
+    {
+      "index": 2,
+      "slug": "results",
+      "intent": "Search returned; results table shows models with downloads, likes, library, tags, and last-modified.",
+      "screenshot_path": "frame-003.png"
+    },
+    {
+      "index": 3,
+      "slug": "model-actions",
+      "intent": "Per-row actions visible: each model exposes a 'Plan it' button that primes the Planner session.",
+      "screenshot_path": "frame-004.png"
+    },
+    {
+      "index": 4,
+      "slug": "handoff-planner",
+      "intent": "Handoff complete: Planner opens with the chosen model id banner at the top.",
+      "screenshot_path": "frame-005.png"
+    }
+  ]
+}

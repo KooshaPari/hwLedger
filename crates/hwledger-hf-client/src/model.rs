@@ -32,7 +32,9 @@ impl std::str::FromStr for SortKey {
             "likes" | "like" => Ok(SortKey::Likes),
             "recent" | "lastmodified" | "last_modified" => Ok(SortKey::Recent),
             "trending" | "trendingscore" => Ok(SortKey::Trending),
-            other => Err(format!("unknown sort key `{}` (use downloads|likes|recent|trending)", other)),
+            other => {
+                Err(format!("unknown sort key `{}` (use downloads|likes|recent|trending)", other))
+            }
         }
     }
 }
@@ -249,7 +251,8 @@ fn estimate_params_from_tags(tags: &[String], id: &str) -> Option<u64> {
         for cap in re.captures_iter(s) {
             if let Some(n_str) = cap.get(1) {
                 if let Ok(n) = n_str.as_str().parse::<f64>() {
-                    let unit = cap.get(2).map(|m| m.as_str().to_ascii_uppercase()).unwrap_or_default();
+                    let unit =
+                        cap.get(2).map(|m| m.as_str().to_ascii_uppercase()).unwrap_or_default();
                     let mult = match unit.as_str() {
                         "B" => 1_000_000_000.0,
                         "M" => 1_000_000.0,

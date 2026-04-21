@@ -21,11 +21,9 @@ pub mod cache;
 pub mod error;
 pub mod model;
 
-pub use cache::{HfCache, CacheKind};
+pub use cache::{CacheKind, HfCache};
 pub use error::{HfError, Result};
-pub use model::{
-    ModelCard, ModelCardDetail, SearchQuery, SiblingFile, SortKey,
-};
+pub use model::{ModelCard, ModelCardDetail, SearchQuery, SiblingFile, SortKey};
 
 use reqwest::{header, Client, StatusCode};
 use std::time::Duration;
@@ -164,7 +162,10 @@ impl HfClient {
                     .get(header::RETRY_AFTER)
                     .and_then(|v| v.to_str().ok())
                     .and_then(|v| v.parse::<u32>().ok());
-                Err(HfError::RateLimited { retry_after_secs: retry_after, has_token: self.has_token() })
+                Err(HfError::RateLimited {
+                    retry_after_secs: retry_after,
+                    has_token: self.has_token(),
+                })
             }
             s => Err(HfError::Http { status: s.as_u16(), path: path.to_string() }),
         }
@@ -181,9 +182,8 @@ impl HfClient {
     /// Fetch full card for a single repo.
     pub async fn get_model(&self, repo_id: &str) -> Result<ModelCardDetail> {
         let path = format!("/api/models/{}", repo_id);
-        let raw: model::RawModelCardDetail = self
-            .get_json(&path, &[], CacheKind::Card(repo_id.to_string()))
-            .await?;
+        let raw: model::RawModelCardDetail =
+            self.get_json(&path, &[], CacheKind::Card(repo_id.to_string())).await?;
         Ok(ModelCardDetail::from(raw))
     }
 
@@ -195,7 +195,11 @@ impl HfClient {
     ) -> Result<serde_json::Value> {
         let rev = revision.unwrap_or("main");
         let path = format!("/{}/resolve/{}/config.json", repo_id, rev);
-        self.get_json(&path, &[], CacheKind::Config { repo_id: repo_id.to_string(), rev: rev.to_string() })
-            .await
+        self.get_json(
+            &path,
+            &[],
+            CacheKind::Config { repo_id: repo_id.to_string(), rev: rev.to_string() },
+        )
+        .await
     }
 }

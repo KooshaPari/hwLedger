@@ -1,0 +1,18 @@
+[package]
+name = "hwledger-devtools"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Developer tooling binaries for hwLedger: FFI hot-reload watcher, Streamlit dev runner."
+
+[[bin]]
+name = "hwledger-streamlit-dev"
+path = "src/streamlit_dev.rs"
+
+[dependencies]
+notify = "6"
+anyhow = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
