@@ -289,15 +289,18 @@ struct HfSearchScreen: View {
         isLoading = true
         errorMessage = nil
 
+        let activeQuery = debouncedQuery.isEmpty ? query : debouncedQuery
+        let libraryArg = libraryFilter == "any" ? nil : libraryFilter
+        let pipelineArg = pipelineTagFilter == "any" ? nil : pipelineTagFilter
+        let sortArg = sortBy
+
         Task { @MainActor in
             do {
-                // The live FFI is not yet wired; fall back to a stubbed
-                // response so the UI remains exercisable end-to-end.
-                let response = try await performSearch(
-                    query: debouncedQuery.isEmpty ? query : debouncedQuery,
-                    library: libraryFilter == "any" ? nil : libraryFilter,
-                    pipeline: pipelineTagFilter == "any" ? nil : pipelineTagFilter,
-                    sort: sortBy
+                let response = try await HwLedger.searchHf(
+                    query: activeQuery,
+                    library: libraryArg,
+                    pipelineTag: pipelineArg,
+                    sort: sortArg
                 )
                 results = response.models
                 rateLimited = response.rateLimited
@@ -307,62 +310,6 @@ struct HfSearchScreen: View {
             }
             isLoading = false
         }
-    }
-
-    /// Wraps the real FFI when available; until then, returns a stubbed
-    /// set of results so the screen is usable and the journey tests can
-    /// exercise it without a network call.
-    private func performSearch(
-        query: String,
-        library: String?,
-        pipeline: String?,
-        sort: String
-    ) async throws -> HfSearchResponse {
-        // TODO: wire FFI — swap to `HwLedger.searchHf(query:library:pipelineTag:sort:)`
-        // once hwledger_hf_search is exported.
-        let stubModels: [ModelCard] = [
-            ModelCard(
-                repoId: "meta-llama/Llama-3.1-8B",
-                displayName: "Llama 3.1 8B",
-                paramCount: 8_000_000_000,
-                downloads: 2_340_000,
-                lastModified: "2025-09-14",
-                pipelineTag: "text-generation",
-                library: library ?? "transformers",
-                tags: ["llama", "text-generation"],
-                trending: 0.9,
-                configJson: "{\"model_type\":\"llama\"}"
-            ),
-            ModelCard(
-                repoId: "mistralai/Mistral-7B-v0.3",
-                displayName: "Mistral 7B v0.3",
-                paramCount: 7_000_000_000,
-                downloads: 1_120_000,
-                lastModified: "2025-08-01",
-                pipelineTag: "text-generation",
-                library: library ?? "transformers",
-                tags: ["mistral", "text-generation"],
-                trending: 0.7,
-                configJson: "{\"model_type\":\"mistral\"}"
-            ),
-            ModelCard(
-                repoId: "Qwen/Qwen2-7B",
-                displayName: "Qwen2 7B",
-                paramCount: 7_000_000_000,
-                downloads: 980_000,
-                lastModified: "2025-07-15",
-                pipelineTag: "text-generation",
-                library: library ?? "transformers",
-                tags: ["qwen", "text-generation"],
-                trending: 0.8,
-                configJson: "{\"model_type\":\"qwen\"}"
-            )
-        ]
-        let q = query.lowercased()
-        let filtered = q.isEmpty ? stubModels : stubModels.filter {
-            $0.repoId.lowercased().contains(q)
-        }
-        return HfSearchResponse(models: filtered, rateLimited: false, nextCursor: nil)
     }
 
     private func useModelInPlanner(_ model: ModelCard) {

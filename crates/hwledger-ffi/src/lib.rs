@@ -1134,6 +1134,24 @@ pub unsafe extern "C" fn hwledger_predict_whatif(
     hwledger_predict(baseline_config_json, candidate_config_json, techniques_json, workload_json)
 }
 
+/// Alias for [`hwledger_hf_plan`] — some SwiftUI/Streamlit clients expect this
+/// symbol name (consistent with `hwledger_predict_whatif` aliasing). Forwards
+/// unchanged.
+///
+/// # Safety
+/// Same contract as [`hwledger_hf_plan`].
+#[no_mangle]
+pub unsafe extern "C" fn hwledger_plan_hf(
+    repo_id: *const c_char,
+    seq: u64,
+    users: u32,
+    kv_quant: u8,
+    weight_quant: u8,
+    token: *const c_char,
+) -> *mut PlannerResult {
+    hwledger_hf_plan(repo_id, seq, users, kv_quant, weight_quant, token)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1246,6 +1264,21 @@ mod tests {
             hwledger_predict_free(p2);
             assert_eq!(s1, s2);
             assert!(!s1.is_empty());
+        }
+    }
+
+    /// `hwledger_plan_hf` alias produces the same null-on-invalid behaviour as
+    /// `hwledger_hf_plan`. A real HF fetch is skipped here (network-dependent);
+    /// we verify the null-input guard forwards correctly so both symbols are
+    /// callable and equivalent for their common invalid path.
+    /// Traces to: FR-HF-001, FR-PLAN-003.
+    #[test]
+    fn test_plan_hf_alias_null_input_matches_canonical() {
+        unsafe {
+            let a = hwledger_hf_plan(std::ptr::null(), 2048, 1, 0, 0, std::ptr::null());
+            let b = hwledger_plan_hf(std::ptr::null(), 2048, 1, 0, 0, std::ptr::null());
+            assert!(a.is_null());
+            assert!(b.is_null());
         }
     }
 }
