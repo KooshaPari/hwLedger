@@ -5,6 +5,11 @@
   "passed": false,
   "recording": "recordings/plan-deepseek.mp4",
   "recording_gif": "recordings/plan-deepseek.gif",
+<<<<<<< Updated upstream
+=======
+  "keyframe_count": 5,
+  "passed": false,
+>>>>>>> Stashed changes
   "steps": [
     {
       "assertions": {
@@ -20,14 +25,43 @@
       "index": 0,
       "intent": "Terminal at prompt, ready to run planner",
       "screenshot_path": "frame-001.png",
+<<<<<<< Updated upstream
       "slug": "frame-0"
+=======
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
+>>>>>>> Stashed changes
     },
     {
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
+<<<<<<< Updated upstream
       "intent": "Plan with Deepseek at 2K seq, then at 32K to show KV growth under scaling (frame 2)",
       "screenshot_path": "frame-002.png",
       "slug": "frame-1"
+=======
+      "slug": "frame-1",
+      "intent": "Command typed: `hwledger plan tests/golden/deepseek-v3.json --seq 2048 --users 2`",
+      "screenshot_path": "frame-002.png",
+      "assertions": {
+        "must_contain": [
+          "hwledger plan",
+          "deepseek-v3"
+        ],
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
+>>>>>>> Stashed changes
     },
     {
       "assertions": {
@@ -55,15 +89,69 @@
       },
       "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-2)",
       "index": 2,
+<<<<<<< Updated upstream
       "intent": "Second invocation (`--seq 32768 --users 2`) renders the VRAM table with MLA attention, weights/KV/activations/overhead/total rows; trailing __EXIT sentinel",
       "screenshot_path": "frame-003.png",
       "slug": "frame-2"
+=======
+      "slug": "frame-2",
+      "intent": "Architecture detection line: MLA with kv_lora_rank=512",
+      "screenshot_path": "frame-003.png",
+      "assertions": {
+        "must_contain": [
+          "MLA",
+          "kv_lora_rank"
+        ],
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
+    },
+    {
+      "index": 3,
+      "slug": "frame-3",
+      "intent": "VRAM breakdown: weights, KV cache, activations at 2K sequence",
+      "screenshot_path": "frame-004.png",
+      "assertions": {
+        "must_contain": [
+          "VRAM"
+        ],
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
+    },
+    {
+      "index": 4,
+      "slug": "frame-4",
+      "intent": "Second invocation at --seq 32768 showing KV growth under longer context",
+      "screenshot_path": "frame-005.png",
+      "assertions": {
+        "must_contain": [
+          "32768"
+        ],
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "expected_exit": 0
+      }
+>>>>>>> Stashed changes
     }
   ],
   "traces_to": [
     "FR-PLAN-003"
   ],
   "verification": {
+<<<<<<< Updated upstream
     "all_intents_passed": false,
     "assertion_violations": [
       {
@@ -128,3 +216,14 @@
     "timestamp": "2026-04-21T01:02:52Z"
   }
 }
+=======
+    "timestamp": "2026-04-20T09:42:35Z",
+    "mode": "mock",
+    "overall_score": 0.92,
+    "describe_confidence": 0.95,
+    "judge_confidence": 0.90,
+    "all_intents_passed": false,
+    "assertion_violations": []
+  }
+}
+>>>>>>> Stashed changes

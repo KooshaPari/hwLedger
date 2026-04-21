@@ -43,6 +43,39 @@ pub struct SshHost {
     pub identity: SshIdentity,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bastion: Option<Box<SshHost>>,
+    /// Pre-pinned SSH host key fingerprint (SHA-256, openssh format like
+    /// `SHA256:abc…`). When set, the server key presented at handshake must
+    /// match this value exactly — `~/.ssh/known_hosts` is bypassed. Use for
+    /// programmatic trust loops where the fingerprint ships alongside the
+    /// ledger's `HostEnrolled` event.
+    ///
+    /// Traces to: FR-FLEET-003
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub expected_fingerprint: Option<String>,
+}
+
+/// Structured host-key verification errors surfaced through
+/// [`SshClient::check_server_key`]. Rich enough for the CLI and server
+/// layers to drive a trust decision.
+///
+/// Traces to: FR-FLEET-003
+#[derive(Debug, thiserror::Error)]
+pub enum SshError {
+    /// Host is not in `known_hosts` and TOFU is disabled.
+    #[error("unknown SSH host {hostname}: fingerprint {fingerprint} not in known_hosts")]
+    KnownHostsPrompt { hostname: String, fingerprint: String },
+
+    /// Host is in `known_hosts` but the key has changed — possible MITM.
+    #[error("SSH host key for {hostname} CHANGED (possible MITM): new fingerprint {fingerprint}")]
+    KnownHostsKeyChanged { hostname: String, fingerprint: String },
+
+    /// Expected fingerprint was supplied but the actual one differs.
+    #[error("SSH host {hostname} fingerprint mismatch: expected {expected}, got {actual}")]
+    FingerprintMismatch { hostname: String, expected: String, actual: String },
+
+    /// Wrapped lower-level russh error (required by russh's Handler trait).
+    #[error("russh error: {0}")]
+    Russh(#[from] russh::Error),
 }
 
 /// Pool of SSH connections to a single host via russh.
@@ -118,10 +151,24 @@ impl SshPool {
             ..Default::default()
         });
 
-        let mut session =
-            tokio::time::timeout(Duration::from_secs(10), client::connect(config, addr, SshClient))
+        let policy = HostKeyPolicy::from_env(&self.host);
+        let (handler, last_err) = SshClient::new(policy);
+
+        let connect_res =
+            tokio::time::timeout(Duration::from_secs(10), client::connect(config, addr, handler))
                 .await
-                .map_err(|_| anyhow!("SSH handshake timeout after 10s"))??;
+                .map_err(|_| anyhow!("SSH handshake timeout after 10s"))?;
+
+        let mut session = match connect_res {
+            Ok(s) => s,
+            Err(e) => {
+                // Surface the structured host-key verdict if present.
+                if let Some(host_err) = last_err.lock().unwrap().take() {
+                    return Err(anyhow!("{host_err}"));
+                }
+                return Err(e.into());
+            }
+        };
 
         self.authenticate(&mut session).await?;
 
@@ -222,22 +269,198 @@ impl SshPool {
     }
 }
 
-/// Minimal SSH client handler.
+/// Host-key verification policy consumed by [`SshClient`].
 ///
-/// MVP accepts any server key (logs a debug line). A production deployment
-/// should pin host keys via `~/.ssh/known_hosts` or the fleet ledger.
-struct SshClient;
+/// Traces to: FR-FLEET-003
+#[derive(Debug, Clone)]
+pub struct HostKeyPolicy {
+    pub hostname: String,
+    pub port: u16,
+    /// Optional pinned fingerprint; when `Some`, takes precedence over
+    /// `known_hosts`.
+    pub expected_fingerprint: Option<String>,
+    /// Override for the `known_hosts` path (defaults to `~/.ssh/known_hosts`).
+    pub known_hosts_path: Option<PathBuf>,
+    /// Trust-on-first-use: when the key is absent, auto-append and continue.
+    /// Enabled via env var `HWLEDGER_SSH_TOFU=1`.
+    pub tofu: bool,
+}
+
+impl HostKeyPolicy {
+    fn from_env(host: &SshHost) -> Self {
+        let tofu = std::env::var("HWLEDGER_SSH_TOFU").map(|v| v == "1").unwrap_or(false);
+        HostKeyPolicy {
+            hostname: host.hostname.clone(),
+            port: host.port,
+            expected_fingerprint: host.expected_fingerprint.clone(),
+            known_hosts_path: None,
+            tofu,
+        }
+    }
+}
+
+/// SSH client handler with host-key pinning.
+///
+/// The handshake rejects any server whose key is not:
+/// - byte-equal to `policy.expected_fingerprint` (when set), OR
+/// - recorded in `known_hosts` (default `~/.ssh/known_hosts`), OR
+/// - newly encountered under `HWLEDGER_SSH_TOFU=1` (in which case it is
+///   appended to `known_hosts` before continuing).
+///
+/// Rejection reasons are stashed in `last_error` so the caller can surface
+/// them after `client::connect` returns `Err`.
+///
+/// Traces to: FR-FLEET-003
+pub struct SshClient {
+    policy: HostKeyPolicy,
+    last_error: Arc<std::sync::Mutex<Option<SshError>>>,
+}
+
+impl SshClient {
+    /// Construct a policy-bound client. The returned `last_error` slot lets
+    /// the caller introspect the rejection reason after handshake failure.
+    pub fn new(policy: HostKeyPolicy) -> (Self, Arc<std::sync::Mutex<Option<SshError>>>) {
+        let slot = Arc::new(std::sync::Mutex::new(None));
+        (SshClient { policy, last_error: slot.clone() }, slot)
+    }
+
+    fn default_known_hosts_path() -> Option<PathBuf> {
+        std::env::var_os("HOME").map(|h| PathBuf::from(h).join(".ssh").join("known_hosts"))
+    }
+
+    /// Core decision routine — factored out for direct unit testing.
+    /// Returns `Ok(true)` on accept, `Err(SshError::*)` with rich reason
+    /// on reject. `Ok(false)` is not used (reject paths always carry info).
+    fn decide(
+        policy: &HostKeyPolicy,
+        server_pub: &PublicKey,
+    ) -> std::result::Result<bool, SshError> {
+        let fingerprint = server_pub.fingerprint();
+
+        // 1) Programmatic pin always wins.
+        if let Some(expected) = &policy.expected_fingerprint {
+            return if fingerprint == *expected {
+                Ok(true)
+            } else {
+                Err(SshError::FingerprintMismatch {
+                    hostname: policy.hostname.clone(),
+                    expected: expected.clone(),
+                    actual: fingerprint,
+                })
+            };
+        }
+
+        // 2) known_hosts lookup.
+        let path =
+            policy.known_hosts_path.clone().or_else(Self::default_known_hosts_path).ok_or_else(
+                || SshError::KnownHostsPrompt {
+                    hostname: policy.hostname.clone(),
+                    fingerprint: fingerprint.clone(),
+                },
+            )?;
+
+        if path.exists() {
+            match russh_keys::check_known_hosts_path(
+                &policy.hostname,
+                policy.port,
+                server_pub,
+                &path,
+            ) {
+                Ok(true) => return Ok(true),
+                Ok(false) => { /* fall through to TOFU / prompt */ }
+                Err(russh_keys::Error::KeyChanged { .. }) => {
+                    return Err(SshError::KnownHostsKeyChanged {
+                        hostname: policy.hostname.clone(),
+                        fingerprint,
+                    });
+                }
+                Err(e) => {
+                    warn!("known_hosts scan failed for {}: {}", policy.hostname, e);
+                }
+            }
+        }
+
+        // 3) TOFU: auto-learn and append.
+        if policy.tofu {
+            if let Some(parent) = path.parent() {
+                let _ = std::fs::create_dir_all(parent);
+            }
+            match russh_keys::known_hosts::learn_known_hosts_path(
+                &policy.hostname,
+                policy.port,
+                server_pub,
+                &path,
+            ) {
+                Ok(()) => {
+                    info!(
+                        "SSH TOFU: appended {} ({}) to {}",
+                        policy.hostname,
+                        fingerprint,
+                        path.display()
+                    );
+                    return Ok(true);
+                }
+                Err(e) => {
+                    warn!("failed to append to {}: {}", path.display(), e);
+                }
+            }
+        }
+
+        // 4) Unknown host — hard reject with fingerprint for prompt.
+        Err(SshError::KnownHostsPrompt { hostname: policy.hostname.clone(), fingerprint })
+    }
+}
 
 #[async_trait::async_trait]
 impl Handler for SshClient {
-    type Error = russh::Error;
+    type Error = SshError;
 
     async fn check_server_key(
         &mut self,
         server_public_key: &PublicKey,
     ) -> std::result::Result<bool, Self::Error> {
-        debug!("SSH: accepting server key fingerprint {}", server_public_key.fingerprint());
-        Ok(true)
+        match Self::decide(&self.policy, server_public_key) {
+            Ok(accepted) => {
+                debug!(
+                    "SSH: host key decision accept={} fingerprint={}",
+                    accepted,
+                    server_public_key.fingerprint()
+                );
+                Ok(accepted)
+            }
+            Err(e) => {
+                // Stash a clone of the structured reason so the connect
+                // caller can surface it verbatim. SshError is not Clone
+                // because russh::Error isn't, so hand-copy the informative
+                // variants and fall back to the typed err for russh wraps.
+                let stash = match &e {
+                    SshError::KnownHostsPrompt { hostname, fingerprint } => {
+                        Some(SshError::KnownHostsPrompt {
+                            hostname: hostname.clone(),
+                            fingerprint: fingerprint.clone(),
+                        })
+                    }
+                    SshError::KnownHostsKeyChanged { hostname, fingerprint } => {
+                        Some(SshError::KnownHostsKeyChanged {
+                            hostname: hostname.clone(),
+                            fingerprint: fingerprint.clone(),
+                        })
+                    }
+                    SshError::FingerprintMismatch { hostname, expected, actual } => {
+                        Some(SshError::FingerprintMismatch {
+                            hostname: hostname.clone(),
+                            expected: expected.clone(),
+                            actual: actual.clone(),
+                        })
+                    }
+                    SshError::Russh(_) => None,
+                };
+                if let Some(s) = stash {
+                    *self.last_error.lock().unwrap() = Some(s);
+                }
+                Err(e)
+            }
+        }
     }
 }
 
@@ -449,6 +672,7 @@ mod tests {
             user: "testuser".to_string(),
             identity: SshIdentity::Agent,
             bastion: None,
+            expected_fingerprint: None,
         };
         let pool = SshPool::new(host, 5).await;
         assert!(pool.is_ok());
@@ -463,6 +687,7 @@ mod tests {
             user: "testuser".to_string(),
             identity: SshIdentity::Agent,
             bastion: None,
+            expected_fingerprint: None,
         };
         let pool = SshPool::new(host, 5).await;
         assert!(pool.is_err());
@@ -475,6 +700,81 @@ mod tests {
         assert_eq!(format!("{:?}", identity), "Agent");
     }
 
+    fn generate_pub_key() -> PublicKey {
+        let kp = russh_keys::key::KeyPair::generate_ed25519();
+        match kp {
+            russh_keys::key::KeyPair::Ed25519(sk) => PublicKey::Ed25519(sk.verifying_key()),
+            #[allow(unreachable_patterns)]
+            _ => unreachable!("generate_ed25519 always returns Ed25519"),
+        }
+    }
+
+    fn policy_for(path: &std::path::Path, hostname: &str, tofu: bool) -> HostKeyPolicy {
+        HostKeyPolicy {
+            hostname: hostname.to_string(),
+            port: 22,
+            expected_fingerprint: None,
+            known_hosts_path: Some(path.to_path_buf()),
+            tofu,
+        }
+    }
+
+    /// Traces to: FR-FLEET-003 — known host: fingerprint already in
+    /// `known_hosts` so the policy accepts the server key silently.
+    #[test]
+    fn host_key_decide_known_host_accepts() {
+        let tmp = tempfile::tempdir().unwrap();
+        let kh = tmp.path().join("known_hosts");
+        let pk = generate_pub_key();
+        russh_keys::known_hosts::learn_known_hosts_path("host-known.example", 22, &pk, &kh)
+            .unwrap();
+
+        let policy = policy_for(&kh, "host-known.example", /*tofu=*/ false);
+        let outcome = SshClient::decide(&policy, &pk).expect("known host must accept");
+        assert!(outcome);
+    }
+
+    /// Traces to: FR-FLEET-003 — TOFU: unknown host is auto-appended and
+    /// subsequent visits re-accept from the freshly-written record.
+    #[test]
+    fn host_key_decide_tofu_appends_and_accepts() {
+        let tmp = tempfile::tempdir().unwrap();
+        let kh = tmp.path().join("known_hosts");
+        let pk = generate_pub_key();
+
+        let policy = policy_for(&kh, "host-new.example", /*tofu=*/ true);
+        let outcome = SshClient::decide(&policy, &pk).expect("tofu must accept first sight");
+        assert!(outcome);
+
+        let contents = std::fs::read_to_string(&kh).unwrap();
+        assert!(
+            contents.contains("host-new.example") || contents.contains("|1|"),
+            "known_hosts should contain a hashed or plain record: {contents}"
+        );
+        let outcome2 = SshClient::decide(&policy, &pk).expect("TOFU-learned key must re-accept");
+        assert!(outcome2);
+    }
+
+    /// Traces to: FR-FLEET-003 — strict mode (no tofu, no pin, unseen host):
+    /// the handler returns `KnownHostsPrompt` with the fingerprint so the
+    /// caller can drive a trust decision.
+    #[test]
+    fn host_key_decide_unknown_host_rejects_with_prompt() {
+        let tmp = tempfile::tempdir().unwrap();
+        let kh = tmp.path().join("known_hosts");
+        let pk = generate_pub_key();
+
+        let policy = policy_for(&kh, "host-unseen.example", /*tofu=*/ false);
+        let err = SshClient::decide(&policy, &pk).expect_err("unknown host must reject");
+        match err {
+            SshError::KnownHostsPrompt { hostname, fingerprint } => {
+                assert_eq!(hostname, "host-unseen.example");
+                assert_eq!(fingerprint, pk.fingerprint());
+            }
+            other => panic!("expected KnownHostsPrompt, got {other:?}"),
+        }
+    }
+
     // Traces to: FR-FLEET-003, ADR-0003
     #[test]
     fn test_ssh_host_serialization() {
@@ -484,6 +784,7 @@ mod tests {
             user: "ubuntu".to_string(),
             identity: SshIdentity::Agent,
             bastion: None,
+            expected_fingerprint: None,
         };
         let json = serde_json::to_string(&host).expect("serialize");
         let host2: SshHost = serde_json::from_str(&json).expect("deserialize");

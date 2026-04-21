@@ -376,3 +376,91 @@ fn kill_pid(pid: u32) -> Result<()> {
 
 /// Shared state used by the binary to coordinate cleanup across services.
 pub type HarnessHandle = Arc<Mutex<HarnessState>>;
+
+/// Check if a pid is still alive. On Unix, uses `kill(pid, 0)`. On Windows,
+/// shells out to `tasklist`.
+#[cfg(unix)]
+pub fn pid_alive(pid: u32) -> bool {
+    // SAFETY: signal 0 performs no side effects — it only validates whether the
+    // process exists and we have permission to signal it.
+    let ret = unsafe { libc::kill(pid as i32, 0) };
+    if ret == 0 {
+        return true;
+    }
+    let err = std::io::Error::last_os_error();
+    err.raw_os_error() == Some(libc::EPERM)
+}
+
+#[cfg(not(unix))]
+pub fn pid_alive(pid: u32) -> bool {
+    let output = Command::new("tasklist").args(["/FI", &format!("PID eq {pid}"), "/NH"]).output();
+    match output {
+        Ok(o) => String::from_utf8_lossy(&o.stdout).contains(&pid.to_string()),
+        Err(_) => false,
+    }
+}
+
+/// Minimal HTTP GET probe over plain TCP. Avoids pulling a heavyweight HTTP
+/// client just for the `status` subcommand. Returns the numeric status code.
+pub fn http_probe(url: &str, timeout: std::time::Duration) -> Result<u16> {
+    use std::io::{Read, Write};
+    use std::net::{TcpStream, ToSocketAddrs};
+
+    let rest = url.strip_prefix("http://").context("only http:// supported by http_probe")?;
+    let (authority, path) = match rest.find('/') {
+        Some(i) => (&rest[..i], &rest[i..]),
+        None => (rest, "/"),
+    };
+    let (host, port) = match authority.rsplit_once(':') {
+        Some((h, p)) => (h.to_string(), p.parse::<u16>().unwrap_or(80)),
+        None => (authority.to_string(), 80u16),
+    };
+
+    let addr = (host.as_str(), port)
+        .to_socket_addrs()
+        .with_context(|| format!("resolve {host}:{port}"))?
+        .next()
+        .ok_or_else(|| anyhow::anyhow!("no address resolved for {host}:{port}"))?;
+
+    let mut stream =
+        TcpStream::connect_timeout(&addr, timeout).with_context(|| format!("connect {addr}"))?;
+    stream.set_read_timeout(Some(timeout))?;
+    stream.set_write_timeout(Some(timeout))?;
+
+    let req = format!(
+        "GET {path} HTTP/1.1\r\nHost: {host}:{port}\r\nConnection: close\r\nUser-Agent: hwledger-dev-harness/status\r\n\r\n"
+    );
+    stream.write_all(req.as_bytes())?;
+
+    let mut buf = [0u8; 256];
+    let n = stream.read(&mut buf)?;
+    let head = std::str::from_utf8(&buf[..n]).unwrap_or("");
+    let first_line = head.lines().next().unwrap_or("");
+    let code: u16 = first_line
+        .split_whitespace()
+        .nth(1)
+        .and_then(|s| s.parse().ok())
+        .ok_or_else(|| anyhow::anyhow!("no status code in response: {first_line:?}"))?;
+    Ok(code)
+}
+
+#[cfg(test)]
+mod lib_tests {
+    use super::*;
+
+    #[test]
+    fn test_pid_alive_current_process() {
+        assert!(pid_alive(std::process::id()));
+    }
+
+    #[test]
+    fn test_pid_alive_fake_high_pid() {
+        assert!(!pid_alive(9_999_999));
+    }
+
+    #[test]
+    fn test_http_probe_bad_url_scheme() {
+        let r = http_probe("https://example.com/", std::time::Duration::from_millis(100));
+        assert!(r.is_err());
+    }
+}

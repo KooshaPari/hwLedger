@@ -1,0 +1,49 @@
+# Local-CI Attestation Gate.
+#
+# GitHub Actions billing is exhausted — we do not re-run the gates remotely.
+# Instead, this workflow verifies the signed, hash-chained attestation
+# manifest that the developer's pre-push lefthook produced locally. If the
+# attestation covers this commit AND verifies (signature + chain), the push
+# is considered CI-green.
+#
+# Runs on self-hosted runners by preference; falls back to ubuntu-latest
+# which is cheap under the free tier. Either way, it only compiles the
+# `hwledger-attest` crate, not the whole workspace.
+
+name: attestation-gate
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  verify-attestation:
+    # Prefer a self-hosted runner if one is registered. If not, ubuntu-latest
+    # is used; the job only needs ~60s of compute to verify one signature.
+    runs-on: ${{ vars.ATTEST_RUNNER || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-attest-${{ hashFiles('crates/hwledger-attest/Cargo.toml') }}
+      - name: Publish dev public key to runner keystore
+        # Public keys live in-repo under .hwledger/pub-keys/; the verify step
+        # reads HWLEDGER_ATTEST_KEY_DIR for the registry.
+        run: |
+          mkdir -p .hwledger/pub-keys
+          ls -la .hwledger/pub-keys || true
+      - name: Verify attestation for HEAD
+        env:
+          HWLEDGER_ATTEST_KEY_DIR: ${{ github.workspace }}/.hwledger/pub-keys
+        run: |
+          cargo run --release -p hwledger-attest -- verify-push --local-ref ${{ github.sha }}

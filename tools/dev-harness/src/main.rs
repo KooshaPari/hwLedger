@@ -209,19 +209,54 @@ fn cmd_status() -> Result<()> {
     let pid_path = pid_file()?;
     let state = HarnessState::load(&pid_path)?;
     if state.services.is_empty() {
-        println!("no services recorded");
+        println!("no services recorded (pid file: {})", pid_path.display());
         return Ok(());
     }
+
+    // Header
+    println!(
+        "{:<12} {:<8} {:<6} {:<8} {:<12} {}",
+        "SERVICE".bold(),
+        "PID".bold(),
+        "PORT".bold(),
+        "PROC".bold(),
+        "HEALTH".bold(),
+        "LOG".bold()
+    );
     for svc in &state.services {
+        let alive = hwledger_dev_harness::pid_alive(svc.pid);
+        let proc_str = if alive { "up".green().to_string() } else { "down".red().to_string() };
+        let health_str = match svc.port {
+            Some(p) => probe_health(&svc.name, p),
+            None => "-".dimmed().to_string(),
+        };
+        let port_str = svc.port.map(|p| p.to_string()).unwrap_or_else(|| "-".into());
         println!(
-            "{:12} pid={:<7} port={:?} log={}",
+            "{:<12} {:<8} {:<6} {:<8} {:<12} {}",
             svc.name,
             svc.pid,
-            svc.port,
+            port_str,
+            proc_str,
+            health_str,
             svc.log_path.display()
         );
     }
     Ok(())
+}
+
+/// Probe a service-specific health endpoint. Returns a colorized status string.
+fn probe_health(service: &str, port: u16) -> String {
+    let url = match service {
+        "server" => format!("http://127.0.0.1:{port}/v1/health"),
+        "streamlit" => format!("http://127.0.0.1:{port}/_stcore/health"),
+        "docs-site" => format!("http://127.0.0.1:{port}/"),
+        _ => format!("http://127.0.0.1:{port}/"),
+    };
+    match hwledger_dev_harness::http_probe(&url, std::time::Duration::from_millis(800)) {
+        Ok(code) if (200..400).contains(&code) => format!("{} {}", "ok".green(), code.dimmed()),
+        Ok(code) => format!("{} {}", "warn".yellow(), code),
+        Err(_) => "unreachable".red().to_string(),
+    }
 }
 
 fn target_bin(root: &std::path::Path, name: &str) -> String {

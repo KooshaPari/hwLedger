@@ -36,6 +36,10 @@ struct ContentView: View {
             WhatIfScreen()
         case .fleet:
             FleetScreen()
+        case .probe:
+            ProbeScreen()
+        case .fleetMap:
+            FleetMapScreen()
         case .run:
             RunScreen()
         case .ledger:
@@ -57,6 +61,10 @@ struct ContentView: View {
             return "arrow.triangle.branch"
         case .fleet:
             return "server.rack"
+        case .probe:
+            return "waveform.path.ecg"
+        case .fleetMap:
+            return "map"
         case .run:
             return "play.circle"
         case .ledger:
@@ -73,6 +81,8 @@ struct ContentView: View {
         case .hfSearch: return "sidebar-hf-search"
         case .whatIf: return "sidebar-what-if"
         case .fleet: return "sidebar-fleet"
+        case .probe: return "sidebar-probe"
+        case .fleetMap: return "sidebar-fleet-map"
         case .run: return "sidebar-run"
         case .ledger: return "sidebar-ledger"
         case .settings: return "sidebar-settings"

@@ -521,9 +521,15 @@ pub async fn deregister_agent(
 }
 
 /// Trigger an SSH probe for a known agent.
-/// The Streamlit UI hits this to re-run device detection on a registered host.
-/// For MVP this appends an audit event and returns a queued receipt; the real
-/// SSH exec path is owned by `ssh::probe_host` (fleet-ssh-exec-v1).
+///
+/// End-to-end:
+///   1. Append `ssh_probe_triggered` audit event.
+///   2. Resolve SSH identity from env (`HWLEDGER_SSH_USER`, `HWLEDGER_SSH_PORT`,
+///      `HWLEDGER_SSH_KEY_PATH`; defaults to ssh-agent).
+///   3. Invoke `SshPool::probe` against the agent's registered hostname.
+///   4. Append one `DeviceReported` audit event per `DeviceReport`.
+///   5. Append a terminating `ssh_probe_completed` or `ssh_probe_failed` event.
+///
 /// Traces to: FR-FLEET-003, FR-FLEET-006
 pub async fn trigger_agent_probe(
     State(state): State<Arc<AppState>>,
@@ -539,7 +545,8 @@ pub async fn trigger_agent_probe(
         .ok_or_else(|| ServerError::Validation { reason: format!("agent {} not found", agent_id) })?
         .0;
 
-    let receipt = state
+    // Step 1: trigger event.
+    let trigger_receipt = state
         .audit_log
         .append(hwledger_ledger::HwLedgerEvent::SecurityEvent {
             kind: "ssh_probe_triggered".to_string(),
@@ -549,12 +556,113 @@ pub async fn trigger_agent_probe(
         .await
         .map_err(|e| ServerError::Internal { reason: e.to_string() })?;
 
-    Ok(Json(json!({
-        "queued": true,
-        "agent_id": agent_id.to_string(),
-        "hostname": hostname,
-        "audit_seq": receipt.seq,
-    })))
+    // Step 2: resolve SSH identity from env.
+    let user = std::env::var("HWLEDGER_SSH_USER").unwrap_or_else(|_| "root".to_string());
+    let port: u16 =
+        std::env::var("HWLEDGER_SSH_PORT").ok().and_then(|s| s.parse().ok()).unwrap_or(22);
+    let identity = match std::env::var("HWLEDGER_SSH_KEY_PATH") {
+        Ok(p) if !p.is_empty() => ssh::SshIdentity::KeyPath(std::path::PathBuf::from(p)),
+        _ => ssh::SshIdentity::Agent,
+    };
+
+    let ssh_host = ssh::SshHost {
+        hostname: hostname.clone(),
+        port,
+        user,
+        identity,
+        bastion: None,
+        expected_fingerprint: None,
+    };
+
+    // Step 3: probe.
+    let probe_result = match ssh::SshPool::new(ssh_host, 4).await {
+        Ok(pool) => pool.probe().await,
+        Err(e) => Err(ServerError::Internal { reason: format!("ssh pool init: {e}") }),
+    };
+
+    let mut device_receipts: Vec<u64> = Vec::new();
+    match probe_result {
+        Ok(reports) => {
+            // Step 4: append DeviceReported per device.
+            for (idx, report) in reports.iter().enumerate() {
+                if let Ok(r) = state
+                    .audit_log
+                    .append(hwledger_ledger::HwLedgerEvent::DeviceReported {
+                        agent_id,
+                        device_idx: idx as u32,
+                        backend: report.backend.clone(),
+                        name: report.name.clone(),
+                        total_vram_bytes: report.total_vram_bytes,
+                    })
+                    .await
+                {
+                    device_receipts.push(r.seq);
+                }
+            }
+
+            // Step 5: completion event.
+            let completion = state
+                .audit_log
+                .append(hwledger_ledger::HwLedgerEvent::SecurityEvent {
+                    kind: "ssh_probe_completed".to_string(),
+                    actor: None,
+                    detail: format!(
+                        "agent_id={} hostname={} devices={} trigger_seq={}",
+                        agent_id,
+                        hostname,
+                        reports.len(),
+                        trigger_receipt.seq
+                    ),
+                })
+                .await
+                .map_err(|e| ServerError::Internal { reason: e.to_string() })?;
+
+            let devices_json: Vec<serde_json::Value> = reports
+                .iter()
+                .map(|r| {
+                    json!({
+                        "backend": r.backend,
+                        "name": r.name,
+                        "total_vram_bytes": r.total_vram_bytes,
+                        "uuid": r.uuid,
+                    })
+                })
+                .collect();
+
+            Ok(Json(json!({
+                "ok": true,
+                "agent_id": agent_id.to_string(),
+                "hostname": hostname,
+                "trigger_audit_seq": trigger_receipt.seq,
+                "completion_audit_seq": completion.seq,
+                "device_audit_seqs": device_receipts,
+                "devices": devices_json,
+            })))
+        }
+        Err(e) => {
+            let completion = state
+                .audit_log
+                .append(hwledger_ledger::HwLedgerEvent::SecurityEvent {
+                    kind: "ssh_probe_failed".to_string(),
+                    actor: None,
+                    detail: format!(
+                        "agent_id={} hostname={} reason={} trigger_seq={}",
+                        agent_id, hostname, e, trigger_receipt.seq
+                    ),
+                })
+                .await
+                .map_err(|e| ServerError::Internal { reason: e.to_string() })?;
+
+            Ok(Json(json!({
+                "ok": false,
+                "agent_id": agent_id.to_string(),
+                "hostname": hostname,
+                "trigger_audit_seq": trigger_receipt.seq,
+                "completion_audit_seq": completion.seq,
+                "error": e.to_string(),
+            })))
+        }
+    }
 }
 
 /// List audit events, newest-first, with optional type filter.

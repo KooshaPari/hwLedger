@@ -181,7 +181,22 @@ impl GpuProbe for MetalProbe {
             return Err(ProbeError::DeviceNotFound(device_id));
         }
         // `Total Power` is milliwatts. Convert to watts.
-        self.lookup_perf_stat(POWER_KEYS_MW).map(|mw| (mw / 1000.0) as f32)
+        //
+        // On M1-class firmware `AGXAccelerator.PerformanceStatistics` does
+        // NOT expose any of `POWER_KEYS_MW` — that contract lands with M2+.
+        // Fall back to Apple's private `IOReport.framework` (shipped as
+        // `/usr/lib/libIOReport.dylib`), which exposes a `GPU Energy`
+        // subchannel on every Apple Silicon generation back to the
+        // original M1 (`powermetrics(8)` and `asitop` both read the same
+        // symbols). See [`iokit_power_fallback`] for the FFI + contract.
+        match self.lookup_perf_stat(POWER_KEYS_MW) {
+            Ok(mw) => Ok((mw / 1000.0) as f32),
+            Err(ProbeError::UnsupportedMetric { .. }) => match iokit_power_fallback() {
+                Some(w) => Ok(w),
+                None => Err(self.unsupported("Total Power")),
+            },
+            Err(e) => Err(e),
+        }
     }
 
     fn process_vram(&self, device_id: u32, _pid: u32) -> Result<u64, ProbeError> {
@@ -425,6 +440,195 @@ fn gpu_die_temperature_c() -> Option<f32> {
 }
 
 // ============================================================================
+// IOReport (private) — M1 GPU power fallback
+// ============================================================================
+//
+// `AGXAccelerator.PerformanceStatistics` exposes no power key on first-gen
+// Apple Silicon (M1 / M1 Pro / Max / Ultra). The private `IOReport` library
+// does — it's the same channel `powermetrics(8)` and `asitop` scrape. The
+// symbol set is stable since macOS 10.12.
+//
+// Sampling pattern:
+//   1. `IOReportCopyChannelsInGroup("Energy Model", NULL, 0, 0, 0)` — dict.
+//   2. `IOReportCreateSubscription(NULL, chans, &subbed, 0, NULL)` — handle.
+//   3. Take sample A, sleep 100 ms, take sample B.
+//   4. `IOReportCreateSamplesDelta(A, B, NULL)` — delta dict.
+//   5. Walk `delta["IOReportChannels"]`; for each entry whose
+//      `IOReportChannelGetSubGroup` or `...GetChannelName` matches
+//      `GPU Energy`, read `IOReportSimpleGetIntegerValue` (nanojoules).
+//   6. Divide total nanojoules by elapsed seconds → watts (÷1e9).
+//
+// Best-effort: any failure returns `None` so the caller surfaces
+// `UnsupportedMetric` instead of a misleading zero.
+//
+// On macOS the library is `/usr/lib/libIOReport.dylib` (confirmed via
+// `otool -L /usr/bin/powermetrics`), NOT a `.framework` bundle — link as a
+// dylib, not a framework.
+
+#[cfg(target_os = "macos")]
+#[allow(non_camel_case_types)]
+type IOReportSubscriptionRef = *mut std::ffi::c_void;
+
+#[cfg(target_os = "macos")]
+#[link(name = "IOReport", kind = "dylib")]
+extern "C" {
+    fn IOReportCopyChannelsInGroup(
+        group: CFStringRef,
+        subgroup: CFStringRef,
+        channel_id: u64,
+        channel_name: u64,
+        flags: u64,
+    ) -> CFDictionaryRef;
+
+    // Per macmon-core / asitop: first arg is an opaque void* (pass NULL),
+    // `desired_channels` is second, `subbed_channels` is an out param,
+    // and a CFTypeRef tail (NULL).
+    fn IOReportCreateSubscription(
+        opaque: *const std::ffi::c_void,
+        desired_channels: CFDictionaryRef,
+        subbed_channels: *mut CFDictionaryRef,
+        channel_id: u64,
+        options: *const std::ffi::c_void,
+    ) -> IOReportSubscriptionRef;
+
+    fn IOReportCreateSamples(
+        subscription: IOReportSubscriptionRef,
+        subbed_channels: CFDictionaryRef,
+        options: *const std::ffi::c_void,
+    ) -> CFDictionaryRef;
+
+    fn IOReportCreateSamplesDelta(
+        prev: CFDictionaryRef,
+        now: CFDictionaryRef,
+        options: *const std::ffi::c_void,
+    ) -> CFDictionaryRef;
+
+    fn IOReportChannelGetSubGroup(sample: CFDictionaryRef) -> CFStringRef;
+    fn IOReportChannelGetChannelName(sample: CFDictionaryRef) -> CFStringRef;
+    fn IOReportSimpleGetIntegerValue(sample: CFDictionaryRef, flags: i32) -> i64;
+}
+
+/// Best-effort IOReport-based GPU power read for M1-class firmware that
+/// doesn't expose `AGXAccelerator.PerformanceStatistics.Total Power`.
+///
+/// Returns `Some(watts)` on a clean sample, `None` on any failure (missing
+/// library, empty channel list, negative delta). Caller should treat
+/// `None` as `ProbeError::UnsupportedMetric` — no silent zeros per NFR-004.
+#[cfg(target_os = "macos")]
+fn iokit_power_fallback() -> Option<f32> {
+    use std::time::{Duration, Instant};
+
+    // SAFETY: all returned CFTypeRef pointers are balanced by explicit
+    // CFRelease or `wrap_under_create_rule` adoption. `chans` is retained
+    // by `IOReportCreateSubscription`, but `Copy*` also gave us a +1, so we
+    // release our own reference once ourselves.
+    unsafe {
+        let group = CFString::from_static_string("Energy Model");
+        let chans =
+            IOReportCopyChannelsInGroup(group.as_concrete_TypeRef(), std::ptr::null(), 0, 0, 0);
+        if chans.is_null() {
+            return None;
+        }
+
+        let mut subbed: CFDictionaryRef = std::ptr::null();
+        let subscription =
+            IOReportCreateSubscription(std::ptr::null(), chans, &mut subbed, 0, std::ptr::null());
+        if subscription.is_null() || subbed.is_null() {
+            CFRelease(chans as _);
+            return None;
+        }
+
+        let t0 = Instant::now();
+        let sample1 = IOReportCreateSamples(subscription, subbed, std::ptr::null());
+        if sample1.is_null() {
+            CFRelease(subscription as _);
+            CFRelease(subbed as _);
+            CFRelease(chans as _);
+            return None;
+        }
+
+        std::thread::sleep(Duration::from_millis(100));
+
+        let sample2 = IOReportCreateSamples(subscription, subbed, std::ptr::null());
+        let elapsed = t0.elapsed().as_secs_f64().max(1e-3);
+        if sample2.is_null() {
+            CFRelease(sample1 as _);
+            CFRelease(subscription as _);
+            CFRelease(subbed as _);
+            CFRelease(chans as _);
+            return None;
+        }
+
+        let delta = IOReportCreateSamplesDelta(sample1, sample2, std::ptr::null());
+        CFRelease(sample1 as _);
+        CFRelease(sample2 as _);
+        if delta.is_null() {
+            CFRelease(subscription as _);
+            CFRelease(subbed as _);
+            CFRelease(chans as _);
+            return None;
+        }
+        let delta_dict: CFDictionary<CFString, CFType> =
+            CFDictionary::wrap_under_create_rule(delta);
+
+        // Drill the delta for "IOReportChannels" → array of per-channel dicts.
+        let chans_key = CFString::from_static_string("IOReportChannels");
+        let mut gpu_nj: i64 = 0;
+        if let Some(chans_val) = delta_dict.find(&chans_key) {
+            let arr_ref = chans_val.as_CFTypeRef() as core_foundation_sys::array::CFArrayRef;
+            if !arr_ref.is_null() {
+                let arr: CFArray<CFType> = CFArray::wrap_under_get_rule(arr_ref);
+                for i in 0..arr.len() {
+                    let Some(entry) = arr.get(i) else { continue };
+                    let entry_ref = entry.as_CFTypeRef() as CFDictionaryRef;
+                    if entry_ref.is_null() {
+                        continue;
+                    }
+                    let sub = IOReportChannelGetSubGroup(entry_ref);
+                    let name = IOReportChannelGetChannelName(entry_ref);
+                    let sub_str = if sub.is_null() {
+                        String::new()
+                    } else {
+                        CFString::wrap_under_get_rule(sub).to_string()
+                    };
+                    let name_str = if name.is_null() {
+                        String::new()
+                    } else {
+                        CFString::wrap_under_get_rule(name).to_string()
+                    };
+                    // `powermetrics`/`asitop` channel names across generations:
+                    //   "GPU Energy" (M1 / M1 Pro / M1 Max / M1 Ultra)
+                    //   subgroup "GPU Energy"
+                    let is_gpu = name_str.contains("GPU Energy") || sub_str.contains("GPU Energy");
+                    if !is_gpu {
+                        continue;
+                    }
+                    let nj = IOReportSimpleGetIntegerValue(entry_ref, 0);
+                    if nj > 0 {
+                        gpu_nj = gpu_nj.saturating_add(nj);
+                    }
+                }
+            }
+        }
+
+        CFRelease(subscription as _);
+        CFRelease(subbed as _);
+        CFRelease(chans as _);
+
+        if gpu_nj <= 0 {
+            return None;
+        }
+        // Energy (nanojoules) ÷ time (s) → nanowatts → watts = /1e9.
+        let watts = (gpu_nj as f64) / elapsed / 1.0e9;
+        if watts.is_finite() && (0.0..300.0).contains(&watts) {
+            Some(watts as f32)
+        } else {
+            None
+        }
+    }
+}
+
+// ============================================================================
 // sysctl helper
 // ============================================================================
 
@@ -578,6 +782,28 @@ mod tests {
         assert!(msg.contains("temperature"));
         assert!(msg.contains("Apple M1"));
         assert!(msg.contains("26.0.1"));
+    }
+
+    /// Traces to: FR-TEL-002 — IOReport fallback returns a real watt reading
+    /// on M1-class hardware where `AGXAccelerator.Total Power` is absent.
+    /// Non-destructive: returns `None` off Apple Silicon or when the private
+    /// library is unavailable. `#[ignore]` so CI never runs it.
+    #[cfg(target_os = "macos")]
+    #[test]
+    #[ignore]
+    fn iokit_power_fallback_returns_plausible_watts() {
+        match iokit_power_fallback() {
+            Some(w) => {
+                eprintln!("[iokit_power_fallback] GPU power = {:.3} W", w);
+                assert!(
+                    (0.0..300.0).contains(&w),
+                    "IOReport GPU power outside sane envelope: {w} W"
+                );
+            }
+            None => eprintln!(
+                "IOReport returned None — acceptable on non-Apple-Silicon or sealed builds"
+            ),
+        }
     }
 
     /// Live integration: run only on the host's real GPU.

@@ -5,6 +5,11 @@
   "passed": true,
   "recording": "recordings/ingest-local-gguf.mp4",
   "recording_gif": "recordings/ingest-local-gguf.gif",
+<<<<<<< Updated upstream
+=======
+  "keyframe_count": 4,
+  "passed": false,
+>>>>>>> Stashed changes
   "steps": [
     {
       "assertions": {
@@ -20,25 +25,65 @@
       "index": 0,
       "intent": "Terminal prompt",
       "screenshot_path": "frame-001.png",
+<<<<<<< Updated upstream
       "slug": "frame-0"
+=======
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
+>>>>>>> Stashed changes
     },
     {
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
+<<<<<<< Updated upstream
       "intent": "Ingest a local GGUF model file and output JSON metadata (frame 2)",
       "screenshot_path": "frame-002.png",
       "slug": "frame-1"
+=======
+      "slug": "frame-1",
+      "intent": "Command typed: `hwledger ingest gguf://tests/golden/fixtures/tiny.gguf --json`",
+      "screenshot_path": "frame-002.png",
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
+>>>>>>> Stashed changes
     },
     {
       "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-2)",
       "index": 2,
+<<<<<<< Updated upstream
       "intent": "Ingest a local GGUF model file and output JSON metadata (frame 3)",
       "screenshot_path": "frame-003.png",
       "slug": "frame-2"
+=======
+      "slug": "frame-2",
+      "intent": "JSON document opens: schema, source.kind=gguf, source.location",
+      "screenshot_path": "frame-003.png",
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
+>>>>>>> Stashed changes
     },
     {
       "blind_description": "Shell session showing a command header and a paragraph of structured stdout. (frame slug: frame-3)",
       "index": 3,
+<<<<<<< Updated upstream
       "intent": "Ingest a local GGUF model file and output JSON metadata (frame 4)",
       "screenshot_path": "frame-004.png",
       "slug": "frame-3"
@@ -125,6 +170,20 @@
       "intent": "JSON metadata document: schema, source.kind=gguf, source.location, model.model_type, attention_kind, num_heads; trailing __EXIT sentinel",
       "screenshot_path": "frame-013.png",
       "slug": "frame-12"
+=======
+      "slug": "frame-3",
+      "intent": "Metadata fields: architecture, parameters, quantization inferred from GGUF",
+      "screenshot_path": "frame-004.png",
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "expected_exit": 0
+      }
+>>>>>>> Stashed changes
     }
   ],
   "traces_to": [
@@ -132,6 +191,7 @@
     "FR-INF-001"
   ],
   "verification": {
+<<<<<<< Updated upstream
     "all_intents_passed": true,
     "assertion_violations": [],
     "describe_confidence": 0.95,
@@ -139,5 +199,21 @@
     "mode": "mock",
     "overall_score": 0.92,
     "timestamp": "2026-04-21T01:02:50Z"
+=======
+    "timestamp": "2026-04-20T09:42:31Z",
+    "mode": "mock",
+    "overall_score": 0.92,
+    "describe_confidence": 0.95,
+    "judge_confidence": 0.90,
+    "all_intents_passed": false,
+    "assertion_violations": [
+      {
+        "step_index": 3,
+        "kind": "ExitCode",
+        "expected": "__EXIT_0__",
+        "got_snippet": "> hwledger ingest gguf://testsf] "
+      }
+    ]
+>>>>>>> Stashed changes
   }
 }

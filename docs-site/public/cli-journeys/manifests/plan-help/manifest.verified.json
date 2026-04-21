@@ -5,6 +5,11 @@
   "passed": false,
   "recording": "recordings/plan-help.mp4",
   "recording_gif": "recordings/plan-help.gif",
+<<<<<<< Updated upstream
+=======
+  "keyframe_count": 6,
+  "passed": false,
+>>>>>>> Stashed changes
   "steps": [
     {
       "assertions": {
@@ -20,39 +25,107 @@
       "index": 0,
       "intent": "Terminal prompt awaiting command",
       "screenshot_path": "frame-001.png",
+<<<<<<< Updated upstream
       "slug": "frame-0"
+=======
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
+>>>>>>> Stashed changes
     },
     {
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
+<<<<<<< Updated upstream
       "intent": "Show the plan command's help text with all available options (frame 2)",
       "screenshot_path": "frame-002.png",
       "slug": "frame-1"
+=======
+      "slug": "frame-1",
+      "intent": "Command typed: `hwledger plan --help`",
+      "screenshot_path": "frame-002.png",
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
+>>>>>>> Stashed changes
     },
     {
       "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-2)",
       "index": 2,
+<<<<<<< Updated upstream
       "intent": "Show the plan command's help text with all available options (frame 3)",
       "screenshot_path": "frame-003.png",
       "slug": "frame-2"
+=======
+      "slug": "frame-2",
+      "intent": "Usage line and positional PATH argument description",
+      "screenshot_path": "frame-003.png",
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
+>>>>>>> Stashed changes
     },
     {
       "blind_description": "Shell session showing a command header and a paragraph of structured stdout. (frame slug: frame-3)",
       "index": 3,
+<<<<<<< Updated upstream
       "intent": "Show the plan command's help text with all available options (frame 4)",
       "screenshot_path": "frame-004.png",
       "slug": "frame-3"
+=======
+      "slug": "frame-3",
+      "intent": "Options block: --seq, --users, --batch, --weight-quant, --kv-quant",
+      "screenshot_path": "frame-004.png",
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
+>>>>>>> Stashed changes
     },
     {
       "blind_description": "Terminal window with a list-style summary and no visible error indicator. (frame slug: frame-4)",
       "index": 4,
+<<<<<<< Updated upstream
       "intent": "Show the plan command's help text with all available options (frame 5)",
       "screenshot_path": "frame-005.png",
       "slug": "frame-4"
+=======
+      "slug": "frame-4",
+      "intent": "Options block continued: --device-total-vram, --json, --export, --no-color",
+      "screenshot_path": "frame-005.png",
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
+>>>>>>> Stashed changes
     },
     {
       "blind_description": "Shell prompt displaying the result of a subcommand — multi-line text output. (frame slug: frame-5)",
       "index": 5,
+<<<<<<< Updated upstream
       "intent": "Show the plan command's help text with all available options (frame 6)",
       "screenshot_path": "frame-006.png",
       "slug": "frame-5"
@@ -104,12 +177,27 @@
       "intent": "Tail of plan --help options: --users, --batch, --weight-quant, --kv-quant, --json, --export, --no-color; trailing __EXIT sentinel",
       "screenshot_path": "frame-010.png",
       "slug": "frame-9"
+=======
+      "slug": "frame-5",
+      "intent": "Trailing --help line and prompt returned",
+      "screenshot_path": "frame-006.png",
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "expected_exit": 0
+      }
+>>>>>>> Stashed changes
     }
   ],
   "traces_to": [
     "FR-PLAN-003"
   ],
   "verification": {
+<<<<<<< Updated upstream
     "all_intents_passed": false,
     "assertion_violations": [
       {
@@ -126,3 +214,21 @@
     "timestamp": "2026-04-21T01:02:54Z"
   }
 }
+=======
+    "timestamp": "2026-04-20T09:42:39Z",
+    "mode": "mock",
+    "overall_score": 0.92,
+    "describe_confidence": 0.95,
+    "judge_confidence": 0.90,
+    "all_intents_passed": false,
+    "assertion_violations": [
+      {
+        "step_index": 5,
+        "kind": "ExitCode",
+        "expected": "__EXIT_0__",
+        "got_snippet": "Sequence Length (context window size) [default: 2048] --users <USERS> Number of concurrent users [default: 1] --batch <BATCH> Batch size per iteration [default:…"
+      }
+    ]
+  }
+}
+>>>>>>> Stashed changes

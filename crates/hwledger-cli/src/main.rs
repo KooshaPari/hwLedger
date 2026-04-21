@@ -62,6 +62,10 @@ enum Commands {
     /// `gold:<name>`, or free text) into a structured model source.
     Resolve(cmd::resolve::ResolveArgs),
 
+    /// Local-CI attestation: build / verify / walk the hash-chained manifest log.
+    #[command(subcommand)]
+    Attest(cmd::attest::AttestSubcommand),
+
     /// Display version information.
     Version,
 
@@ -90,6 +94,7 @@ fn main() -> Result<()> {
         Commands::Search(subcommand) => cmd::search::run(subcommand),
         Commands::Predict(args) => cmd::predict::run(args),
         Commands::Resolve(args) => cmd::resolve::run(args),
+        Commands::Attest(sub) => cmd::attest::run(sub),
         Commands::Version => {
             println!("hwledger-cli v{}", VERSION);
             Ok(())

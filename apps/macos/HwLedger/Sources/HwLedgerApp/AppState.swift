@@ -8,6 +8,8 @@ enum Screen: String, CaseIterable, Identifiable {
     case hfSearch = "HF Search"
     case whatIf = "What-If"
     case fleet = "Fleet"
+    case probe = "Probe"
+    case fleetMap = "Fleet Map"
     case run = "Run"
     case ledger = "Ledger"
     case settings = "Settings"

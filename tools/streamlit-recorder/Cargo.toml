@@ -1,0 +1,23 @@
+[package]
+name = "hwledger-streamlit-recorder"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "hwLedger Streamlit journey recorder: boots app, runs Playwright, converts video artefacts."
+
+[[bin]]
+name = "hwledger-streamlit-recorder"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+clap = { workspace = true }
+owo-colors = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+ureq = { version = "2.10", default-features = false, features = ["tls"] }
+libc = { workspace = true }

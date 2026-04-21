@@ -1,5 +1,6 @@
 //! Command implementations for hwLedger CLI.
 
+pub mod attest;
 pub mod completions;
 pub mod fleet;
 pub mod ingest;

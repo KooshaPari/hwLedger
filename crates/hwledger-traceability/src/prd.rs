@@ -17,6 +17,12 @@ pub enum FrKind {
 
 /// User-visible journey kind extracted from an inline `[journey_kind: ...]` tag.
 ///
+/// `None` is an explicit-no-journey escape hatch for server-internal or
+/// purely-specification primitives (e.g. NFRs, parser internals) — it is
+/// recognised by the parser, appears on the [`FrSpec::journey_kinds`] list,
+/// and is *skipped* by the journey-coverage gate. Compare to an empty
+/// `journey_kinds` slice, which means "no tag at all" and fails the gate.
+///
 /// Traces to: FR-TRACE-001
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -24,6 +30,7 @@ pub enum JourneyKind {
     Cli,
     Gui,
     Web,
+    None,
 }
 
 impl JourneyKind {
@@ -33,6 +40,7 @@ impl JourneyKind {
             "cli" => Some(JourneyKind::Cli),
             "gui" => Some(JourneyKind::Gui),
             "web" => Some(JourneyKind::Web),
+            "none" => Some(JourneyKind::None),
             _ => None,
         }
     }
@@ -43,6 +51,7 @@ impl JourneyKind {
             JourneyKind::Cli => "cli",
             JourneyKind::Gui => "gui",
             JourneyKind::Web => "web",
+            JourneyKind::None => "none",
         }
     }
 }

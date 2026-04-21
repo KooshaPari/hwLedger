@@ -5,6 +5,11 @@
   "passed": true,
   "recording": "recordings/traceability-report.mp4",
   "recording_gif": "recordings/traceability-report.gif",
+<<<<<<< Updated upstream
+=======
+  "keyframe_count": 9,
+  "passed": false,
+>>>>>>> Stashed changes
   "steps": [
     {
       "assertions": {
@@ -17,23 +22,69 @@
       },
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-0)",
       "index": 0,
+<<<<<<< Updated upstream
       "intent": "Terminal prompt, ready to run hwledger-traceability",
       "screenshot_path": "frame-001.png",
       "slug": "frame-0"
+=======
+      "slug": "frame-0",
+      "intent": "Terminal prompt",
+      "screenshot_path": "frame-001.png",
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
+>>>>>>> Stashed changes
     },
     {
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
+<<<<<<< Updated upstream
       "intent": "Generate a markdown traceability report with coverage data and inspect the output (frame 2)",
       "screenshot_path": "frame-002.png",
       "slug": "frame-1"
+=======
+      "slug": "frame-1",
+      "intent": "Command typed: `cargo run -q -p hwledger-traceability -- --markdown-out /tmp/trace.md --verbose`",
+      "screenshot_path": "frame-002.png",
+      "assertions": {
+        "must_contain": [
+          "cargo run",
+          "hwledger-traceability"
+        ],
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
+>>>>>>> Stashed changes
     },
     {
       "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-2)",
       "index": 2,
+<<<<<<< Updated upstream
       "intent": "Generate a markdown traceability report with coverage data and inspect the output (frame 3)",
       "screenshot_path": "frame-003.png",
       "slug": "frame-2"
+=======
+      "slug": "frame-2",
+      "intent": "Cargo compiles and launches the traceability tool",
+      "screenshot_path": "frame-003.png",
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
+>>>>>>> Stashed changes
     },
     {
       "assertions": {
@@ -56,9 +107,103 @@
       },
       "blind_description": "Shell session showing a command header and a paragraph of structured stdout. (frame slug: frame-3)",
       "index": 3,
+<<<<<<< Updated upstream
       "intent": "Markdown report preview + FR grep count: tabular rows show FR-PLAN-00x, FR-TEL-00x, FR-INF-00x, FR-FLEET-00x with PART status; trailing __EXIT sentinel",
       "screenshot_path": "frame-004.png",
       "slug": "frame-3"
+=======
+      "slug": "frame-3",
+      "intent": "Cross-Dimensional Traceability Report header printed",
+      "screenshot_path": "frame-004.png",
+      "assertions": {
+        "must_contain": [
+          "Traceability"
+        ],
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
+    },
+    {
+      "index": 4,
+      "slug": "frame-4",
+      "intent": "Coverage summary: total FRs/NFRs, fully traced, zero coverage counts",
+      "screenshot_path": "frame-005.png",
+      "assertions": {
+        "must_contain": [
+          "FR"
+        ],
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
+    },
+    {
+      "index": 5,
+      "slug": "frame-5",
+      "intent": "`head -50 /tmp/trace.md` previews the markdown output",
+      "screenshot_path": "frame-006.png",
+      "assertions": {
+        "must_contain": [
+          "trace.md"
+        ],
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
+    },
+    {
+      "index": 6,
+      "slug": "frame-6",
+      "intent": "Markdown header section with FR inventory table",
+      "screenshot_path": "frame-007.png",
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
+    },
+    {
+      "index": 7,
+      "slug": "frame-7",
+      "intent": "FR rows showing test references and coverage marks",
+      "screenshot_path": "frame-008.png",
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ]
+      }
+    },
+    {
+      "index": 8,
+      "slug": "frame-8",
+      "intent": "Prompt returned after the report preview",
+      "screenshot_path": "frame-009.png",
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "expected_exit": 0
+      }
+>>>>>>> Stashed changes
     }
   ],
   "traces_to": [
@@ -67,6 +212,7 @@
     "FR-TRACE-003"
   ],
   "verification": {
+<<<<<<< Updated upstream
     "all_intents_passed": true,
     "assertion_violations": [],
     "describe_confidence": 0.95,
@@ -74,5 +220,14 @@
     "mode": "mock",
     "overall_score": 0.92,
     "timestamp": "2026-04-21T01:02:59Z"
+=======
+    "timestamp": "2026-04-20T09:42:48Z",
+    "mode": "mock",
+    "overall_score": 0.92,
+    "describe_confidence": 0.95,
+    "judge_confidence": 0.90,
+    "all_intents_passed": false,
+    "assertion_violations": []
+>>>>>>> Stashed changes
   }
 }

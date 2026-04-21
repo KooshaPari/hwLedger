@@ -148,6 +148,36 @@ pre-push:
           echo "XCFramework missing — skip Swift build (run scripts/build-xcframework.sh first)"
         fi
 
+    attest-build:
+      # Local-CI attestation: after the above gates have passed, emit a
+      # signed, hash-chained manifest to .hwledger/attestations.log. The
+      # (self-hosted) GitHub Actions workflow `attestation-gate.yml` verifies
+      # this manifest instead of re-running the gates (GitHub Actions billing
+      # is exhausted — local-CI IS the CI). First-run:
+      #   cargo run -p hwledger-attest -- genkey default
+      # See docs-site/quality/attestation.md.
+      run: |
+        set -euo pipefail
+        if [ -n "${HWLEDGER_SKIP_ATTEST:-}" ]; then
+          echo "HWLEDGER_SKIP_ATTEST set — skipping attestation (dev escape)"
+          exit 0
+        fi
+        KEY_ID="${HWLEDGER_ATTEST_KEY_ID:-default}"
+        KEY_DIR="${HWLEDGER_ATTEST_KEY_DIR:-$HOME/.hwledger/attest-keys}"
+        if [ ! -f "${KEY_DIR}/${KEY_ID}.sk" ]; then
+          echo "No attestation key for '${KEY_ID}' in ${KEY_DIR}."
+          echo "Run: cargo run -p hwledger-attest -- genkey ${KEY_ID}"
+          exit 1
+        fi
+        cargo run --quiet -p hwledger-attest --bin hwledger-attest -- build --key-id "${KEY_ID}" --synthetic >/dev/null
+
+    attest-verify-push:
+      # Reject the push if HEAD has no attestation or the chain is broken.
+      run: |
+        set -euo pipefail
+        if [ -n "${HWLEDGER_SKIP_ATTEST:-}" ]; then exit 0; fi
+        cargo run --quiet -p hwledger-attest --bin hwledger-attest -- verify-push --local-ref HEAD
+
     release-tag:
       # Detect v* tags being pushed without re-invoking `git push` (infinite
       # hook loop). Read stdin that git pipes to pre-push: lines look like

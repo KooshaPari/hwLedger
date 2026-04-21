@@ -40,6 +40,12 @@ Thumbs.db
 *.swp
 .~*
 
+# Attestation: log is committed (chain verification), private keys live
+# under ~/.hwledger/attest-keys/ and never touch the repo. A stray .sk in
+# a repo .hwledger/ folder would be a catastrophic secret leak.
+.hwledger/*.sk
+.hwledger/attest-keys/
+
 # Secrets / local config
 .env
 .env.*
