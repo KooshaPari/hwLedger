@@ -242,9 +242,8 @@ fn cmd_lockdown(_repo: &Path, args: &[String]) -> Result<()> {
     }
     let allow = std::env::var("HWLEDGER_ALLOW_FORCE").ok();
     let justification_path = std::env::var("HWLEDGER_FORCE_JUSTIFICATION").ok();
-    if allow.as_deref() == Some("1") && justification_path.is_some() {
-        let path = justification_path.unwrap();
-        if Path::new(&path).exists() {
+    if let (Some("1"), Some(path)) = (allow.as_deref(), justification_path.as_deref()) {
+        if Path::new(path).exists() {
             eprintln!("hwledger-attest: lockdown override accepted ({path})");
             return Ok(());
         }
