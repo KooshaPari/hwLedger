@@ -1,49 +1,54 @@
 {
   "id": "streamlit-planner",
-  "title": "Streamlit Planner — seq length sweep",
   "intent": "Load the DeepSeek-V3 golden fixture, sweep sequence length from 2K to 32K, and watch the KV cache bar dominate the stacked VRAM chart.",
-  "recording": "recordings/streamlit-planner.mp4",
-  "recording_gif": "recordings/streamlit-planner.gif",
   "keyframe_count": 5,
   "passed": true,
+  "recording": "recordings/streamlit-planner.mp4",
+  "recording_gif": "recordings/streamlit-planner.gif",
   "steps": [
     {
+      "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: landing)",
       "index": 0,
-      "slug": "landing",
       "intent": "Planner loaded with the default fixture; sidebar exposes seq length, concurrent users, and quantisation controls.",
-      "screenshot_path": "frame-001.png"
+      "screenshot_path": "frame-001.png",
+      "slug": "landing"
     },
     {
+      "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: sidebar-open)",
       "index": 1,
-      "slug": "sidebar-open",
       "intent": "Sidebar expanded, showing the sequence length slider at its default 4096 tokens.",
-      "screenshot_path": "frame-002.png"
+      "screenshot_path": "frame-002.png",
+      "slug": "sidebar-open"
     },
     {
+      "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: seq-bumped)",
       "index": 2,
-      "slug": "seq-bumped",
       "intent": "Sequence length bumped upward; the stacked VRAM chart re-renders with a taller KV cache band.",
-      "screenshot_path": "frame-003.png"
+      "screenshot_path": "frame-003.png",
+      "slug": "seq-bumped"
     },
     {
+      "blind_description": "Shell session showing a command header and a paragraph of structured stdout. (frame slug: layer-heatmap)",
       "index": 3,
-      "slug": "layer-heatmap",
       "intent": "Per-layer KV contribution heatmap visible below the main chart; deeper layers contribute more memory.",
-      "screenshot_path": "frame-004.png"
+      "screenshot_path": "frame-004.png",
+      "slug": "layer-heatmap"
     },
     {
+      "blind_description": "Terminal window with a list-style summary and no visible error indicator. (frame slug: export-row)",
       "index": 4,
-      "slug": "export-row",
       "intent": "Export row in view: vLLM, llama.cpp, and MLX buttons ready to emit deploy-ready configs for the current plan.",
-      "screenshot_path": "frame-005.png"
+      "screenshot_path": "frame-005.png",
+      "slug": "export-row"
     }
   ],
   "verification": {
-    "timestamp": "2026-04-20T07:50:17Z",
+    "all_intents_passed": true,
+    "assertion_violations": [],
+    "describe_confidence": 0.95,
+    "judge_confidence": 0.9,
     "mode": "mock",
     "overall_score": 0.92,
-    "describe_confidence": 0.95,
-    "judge_confidence": 0.90,
-    "all_intents_passed": true
+    "timestamp": "2026-04-21T04:31:06Z"
   }
 }
