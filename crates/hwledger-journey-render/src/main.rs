@@ -5,8 +5,7 @@ use std::path::{Path, PathBuf};
 
 use clap::{Parser, Subcommand};
 use hwledger_journey_render::{
-    annotate as run_annotate, build_rich_manifest, render as run_render, run, Annotation,
-    RenderPlan, RichManifest,
+    annotate as run_annotate, build_rich_manifest, run, Annotation, RenderPlan,
 };
 
 #[derive(Parser, Debug)]
@@ -203,8 +202,3 @@ fn main() -> anyhow::Result<()> {
     }
 }
 
-// Silence unused imports when tests aren't present.
-#[allow(dead_code)]
-fn _unused(_r: &RichManifest) {
-    let _ = run_render;
-}
