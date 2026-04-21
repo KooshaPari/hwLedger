@@ -7,6 +7,7 @@
 
 use hwledger_arch::{classify, Config as ArchConfig};
 use hwledger_core::math::{AttentionKind, KvFormula};
+use hwledger_hf_client::{HfClient, SearchQuery as HfSearchQuery, SortKey as HfSortKey};
 use hwledger_probe::detect as detect_probes;
 #[cfg(test)]
 use serde_json::json;
@@ -516,6 +517,152 @@ pub extern "C" fn hwledger_core_version() -> *const c_char {
     c"0.0.1".as_ptr()
 }
 
+// ============================================================================
+// Prediction buffet (hwledger-predict)
+// Traces to: FR-PREDICT-001
+// ============================================================================
+
+/// Predict the impact of a baseline→candidate swap plus techniques.
+///
+/// Inputs are JSON strings:
+///   - `baseline_config_json`: HF-style config.json for the baseline model.
+///   - `candidate_config_json`: HF-style config.json for the candidate model.
+///   - `techniques_json`: JSON array like `["int4_awq","speculative_decoding"]` (snake_case).
+///   - `workload_json`: `{ "prefill_tokens":..., "decode_tokens":..., "batch":..., "seq_len":..., "hardware":"A100-80G" }`.
+///
+/// Returns a malloc'd C string containing a JSON-encoded `Prediction`, or NULL on failure.
+/// Caller must free the returned string via `hwledger_predict_free`.
+///
+/// # Safety
+/// All pointer args must be NUL-terminated UTF-8 C strings or NULL. NULL args return NULL.
+#[no_mangle]
+pub unsafe extern "C" fn hwledger_predict(
+    baseline_config_json: *const c_char,
+    candidate_config_json: *const c_char,
+    techniques_json: *const c_char,
+    workload_json: *const c_char,
+) -> *mut c_char {
+    if baseline_config_json.is_null() || candidate_config_json.is_null() || workload_json.is_null() {
+        return std::ptr::null_mut();
+    }
+    let b_raw = match CStr::from_ptr(baseline_config_json).to_str() {
+        Ok(s) => s,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let c_raw = match CStr::from_ptr(candidate_config_json).to_str() {
+        Ok(s) => s,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let t_raw = if techniques_json.is_null() {
+        "[]"
+    } else {
+        match CStr::from_ptr(techniques_json).to_str() {
+            Ok(s) => s,
+            Err(_) => return std::ptr::null_mut(),
+        }
+    };
+    let w_raw = match CStr::from_ptr(workload_json).to_str() {
+        Ok(s) => s,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    match predict_json_inner(b_raw, c_raw, t_raw, w_raw) {
+        Ok(s) => match CString::new(s) {
+            Ok(c) => c.into_raw(),
+            Err(_) => std::ptr::null_mut(),
+        },
+        Err(e) => {
+            tracing::error!("hwledger_predict failed: {e}");
+            std::ptr::null_mut()
+        }
+    }
+}
+
+/// Free a string previously returned by [`hwledger_predict`].
+///
+/// # Safety
+/// `ptr` must be a pointer previously returned by [`hwledger_predict`] and not yet freed.
+#[no_mangle]
+pub unsafe extern "C" fn hwledger_predict_free(ptr: *mut c_char) {
+    if !ptr.is_null() {
+        drop(CString::from_raw(ptr));
+    }
+}
+
+fn predict_json_inner(
+    baseline_cfg: &str,
+    candidate_cfg: &str,
+    techniques_json: &str,
+    workload_json: &str,
+) -> Result<String, String> {
+    use hwledger_predict::{
+        predict, Plan, PredictRequest, Technique, TechniqueKind, Workload,
+    };
+
+    fn plan_from_cfg(cfg_json: &str) -> Result<Plan, String> {
+        let cfg = ArchConfig::from_json(cfg_json).map_err(|e| format!("parse config: {e}"))?;
+        let attn = classify(&cfg).map(|a| format!("{:?}", a)).unwrap_or_default();
+        let layers = cfg.num_hidden_layers.unwrap_or(32) as f64;
+        let hidden = cfg.hidden_size.unwrap_or(4096) as f64;
+        let params = 12.0 * hidden * hidden * layers;
+        let params_b = params / 1e9;
+        let weights_bytes = (params * 2.0) as u64;
+        let kv_bytes = (layers * hidden * 4096.0 * 2.0) as u64;
+        let family = cfg.model_type.clone().unwrap_or_else(|| "unknown".into());
+        Ok(Plan {
+            model_id: family.clone(),
+            family,
+            params_b,
+            attention_kind: attn,
+            weights_bytes,
+            kv_bytes,
+            activation_bytes: 0,
+            total_bytes: weights_bytes + kv_bytes,
+            weight_quant: "fp16".into(),
+            kv_quant: "fp16".into(),
+            decode_flops_per_token: None,
+        })
+    }
+
+    let baseline = plan_from_cfg(baseline_cfg)?;
+    let candidate = plan_from_cfg(candidate_cfg)?;
+
+    let tech_names: Vec<String> = serde_json::from_str(techniques_json)
+        .map_err(|e| format!("techniques json: {e}"))?;
+    let mut techniques = Vec::with_capacity(tech_names.len());
+    for name in tech_names {
+        let kind: TechniqueKind = serde_json::from_value(serde_json::Value::String(name.clone()))
+            .map_err(|e| format!("unknown technique '{name}': {e}"))?;
+        techniques.push(Technique { kind, params: Default::default() });
+    }
+
+    #[derive(serde::Deserialize)]
+    struct WloadIn {
+        prefill_tokens: u64,
+        decode_tokens: u64,
+        batch: u32,
+        seq_len: u64,
+        #[serde(default)]
+        hardware: Option<String>,
+    }
+    let w: WloadIn = serde_json::from_str(workload_json).map_err(|e| format!("workload json: {e}"))?;
+
+    let req = PredictRequest {
+        baseline,
+        candidate,
+        workload: Workload {
+            prefill_tokens: w.prefill_tokens,
+            decode_tokens: w.decode_tokens,
+            batch: w.batch,
+            seq_len: w.seq_len,
+        },
+        techniques,
+        hardware: w.hardware,
+    };
+    let p = predict(&req);
+    serde_json::to_string(&p).map_err(|e| format!("serialize prediction: {e}"))
+}
+
 /// Helper: estimate parameter count from config.json fields.
 fn estimate_param_count(cfg: &ArchConfig) -> u64 {
     let layers = cfg.num_hidden_layers.unwrap_or(32) as u64;
@@ -663,6 +810,198 @@ pub unsafe extern "C" fn hwledger_mlx_shutdown(handle: *mut MlxHandle) {
     info!("mlx_shutdown: stub");
     if !handle.is_null() {
         let _ = Box::from_raw(handle);
+    }
+}
+
+// ============================================================================
+// Hugging Face search FFI (Traces to: FR-HF-001)
+// ============================================================================
+
+fn c_str_to_opt_string(p: *const c_char) -> Option<String> {
+    if p.is_null() {
+        return None;
+    }
+    let s = unsafe { CStr::from_ptr(p) }.to_string_lossy().to_string();
+    if s.is_empty() {
+        None
+    } else {
+        Some(s)
+    }
+}
+
+fn into_c_string(s: String) -> *mut c_char {
+    CString::new(s).unwrap_or_default().into_raw()
+}
+
+fn error_json(msg: &str) -> *mut c_char {
+    let body = serde_json::json!({ "error": msg });
+    into_c_string(body.to_string())
+}
+
+/// Search Hugging Face models.
+///
+/// `query_json`: JSON matching [`hwledger_hf_client::SearchQuery`] shape, e.g.
+/// `{"text":"llama","sort":"Downloads","limit":5,"tags":[]}`.
+/// `token`: optional null-terminated HF token. Pass null for anonymous.
+///
+/// Returns a malloc'd null-terminated UTF-8 JSON array of ModelCard, or a JSON
+/// object `{"error":"..."}` on failure. Caller MUST free via
+/// [`hwledger_hf_free_string`].
+///
+/// # Safety
+///
+/// `query_json` must be a valid null-terminated UTF-8 string.
+/// `token` must be null or a valid null-terminated UTF-8 string.
+///
+/// Traces to: FR-HF-001
+#[no_mangle]
+pub unsafe extern "C" fn hwledger_hf_search(
+    query_json: *const c_char,
+    token: *const c_char,
+) -> *mut c_char {
+    if query_json.is_null() {
+        return error_json("query_json must not be null");
+    }
+    let raw = CStr::from_ptr(query_json).to_string_lossy().to_string();
+
+    // Deserialise leniently: accept a SearchQuery or a minimal `{text, limit}`.
+    #[derive(serde::Deserialize)]
+    struct In {
+        text: Option<String>,
+        #[serde(default)]
+        tags: Vec<String>,
+        library: Option<String>,
+        #[serde(default = "default_sort_str")]
+        sort: String,
+        #[serde(default = "default_limit")]
+        limit: u32,
+        min_downloads: Option<u64>,
+        author: Option<String>,
+        pipeline_tag: Option<String>,
+    }
+    fn default_sort_str() -> String {
+        "downloads".into()
+    }
+    fn default_limit() -> u32 {
+        20
+    }
+
+    let input: In = match serde_json::from_str(&raw) {
+        Ok(v) => v,
+        Err(e) => return error_json(&format!("invalid query_json: {}", e)),
+    };
+
+    let sort: HfSortKey = match input.sort.parse() {
+        Ok(s) => s,
+        Err(e) => return error_json(&e),
+    };
+
+    let q = HfSearchQuery {
+        text: input.text,
+        tags: input.tags,
+        library: input.library,
+        sort,
+        limit: input.limit.clamp(1, 100),
+        min_downloads: input.min_downloads,
+        author: input.author,
+        pipeline_tag: input.pipeline_tag,
+    };
+
+    let token = c_str_to_opt_string(token);
+    let client = HfClient::new(token);
+
+    // Build a one-shot runtime for this FFI call.
+    let rt = match tokio::runtime::Builder::new_current_thread().enable_all().build() {
+        Ok(rt) => rt,
+        Err(e) => return error_json(&format!("runtime init failed: {}", e)),
+    };
+
+    match rt.block_on(client.search_models(&q)) {
+        Ok(results) => match serde_json::to_string(&results) {
+            Ok(s) => into_c_string(s),
+            Err(e) => error_json(&format!("serialize: {}", e)),
+        },
+        Err(e) => error_json(&e.to_string()),
+    }
+}
+
+/// Plan directly from a Hugging Face repo id. Fetches `config.json` and runs
+/// the memory planner.
+///
+/// Returns a malloc'd `PlannerResult` (same layout as [`hwledger_plan`]) or
+/// null on failure. Free via [`hwledger_plan_free`].
+///
+/// # Safety
+///
+/// `repo_id` must be a valid null-terminated UTF-8 string. `token` may be
+/// null or a valid null-terminated UTF-8 string.
+///
+/// Traces to: FR-HF-001, FR-PLAN-003
+#[no_mangle]
+pub unsafe extern "C" fn hwledger_hf_plan(
+    repo_id: *const c_char,
+    seq: u64,
+    users: u32,
+    kv_quant: u8,
+    weight_quant: u8,
+    token: *const c_char,
+) -> *mut PlannerResult {
+    if repo_id.is_null() {
+        return std::ptr::null_mut();
+    }
+    let repo = CStr::from_ptr(repo_id).to_string_lossy().to_string();
+    let token = c_str_to_opt_string(token);
+    let client = HfClient::new(token);
+
+    let rt = match tokio::runtime::Builder::new_current_thread().enable_all().build() {
+        Ok(rt) => rt,
+        Err(e) => {
+            error!("hf_plan: runtime init: {}", e);
+            return std::ptr::null_mut();
+        }
+    };
+
+    let cfg_value = match rt.block_on(client.fetch_config(&repo, None)) {
+        Ok(v) => v,
+        Err(e) => {
+            error!("hf_plan: fetch_config failed: {}", e);
+            return std::ptr::null_mut();
+        }
+    };
+
+    let cfg_json = match serde_json::to_string(&cfg_value) {
+        Ok(s) => s,
+        Err(e) => {
+            error!("hf_plan: serialise: {}", e);
+            return std::ptr::null_mut();
+        }
+    };
+
+    let cstr = match CString::new(cfg_json) {
+        Ok(c) => c,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let input = PlannerInput {
+        config_json: cstr.as_ptr(),
+        seq_len: seq,
+        concurrent_users: users,
+        batch_size: 1,
+        kv_quant,
+        weight_quant,
+    };
+    hwledger_plan(&input)
+}
+
+/// Free a string allocated by any `hwledger_hf_*` JSON-returning function.
+///
+/// # Safety
+///
+/// `ptr` must have been returned by a function in this module that documents
+/// ownership transfer, or null.
+#[no_mangle]
+pub unsafe extern "C" fn hwledger_hf_free_string(ptr: *mut c_char) {
+    if !ptr.is_null() {
+        let _ = CString::from_raw(ptr);
     }
 }
 

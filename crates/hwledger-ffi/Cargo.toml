@@ -22,6 +22,8 @@ hwledger-core = { path = "../hwledger-core" }
 hwledger-arch = { path = "../hwledger-arch" }
 hwledger-ingest = { path = "../hwledger-ingest" }
 hwledger-probe = { path = "../hwledger-probe" }
+hwledger-hf-client = { path = "../hwledger-hf-client" }
+hwledger-predict = { path = "../hwledger-predict" }
 
 [build-dependencies]
 cbindgen = "0.27"

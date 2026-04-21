@@ -17,6 +17,9 @@ members = [
     "crates/hwledger-traceability",
     "crates/hwledger-release",
     "crates/hwledger-gui-recorder",
+    "crates/hwledger-hf-client",
+    "crates/hwledger-predict",
+    "crates/hwledger-devtools",
 ]
 exclude = [
     # Vendored phenotype-event-sourcing is a path dep, not a member;
@@ -112,6 +115,8 @@ hwledger-fleet-proto = { path = "crates/hwledger-fleet-proto" }
 hwledger-agent = { path = "crates/hwledger-agent" }
 hwledger-server = { path = "crates/hwledger-server" }
 hwledger-ffi = { path = "crates/hwledger-ffi" }
+hwledger-predict = { path = "crates/hwledger-predict" }
+hwledger-hf-client = { path = "crates/hwledger-hf-client" }
 
 # phenotype-shared reuse (ADR-0005). Pulled from KooshaPari/PhenoKits via git
 # so CI builds reproducibly without the parent repos workspace. Locked to `main`

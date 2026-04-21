@@ -51,6 +51,13 @@ enum Commands {
     #[command(subcommand)]
     Fleet(cmd::fleet::FleetSubcommand),
 
+    /// Search Hugging Face Hub for models (anonymous by default).
+    #[command(subcommand)]
+    Search(cmd::search::SearchSubcommand),
+
+    /// Predict the impact of swapping from a baseline config to a candidate (what-if).
+    Predict(cmd::predict::PredictArgs),
+
     /// Display version information.
     Version,
 
@@ -76,6 +83,8 @@ fn main() -> Result<()> {
         Commands::Ingest(args) => cmd::ingest::run(args),
         Commands::Probe(subcommand) => cmd::probe::run(subcommand),
         Commands::Fleet(subcommand) => cmd::fleet::run(subcommand),
+        Commands::Search(subcommand) => cmd::search::run(subcommand),
+        Commands::Predict(args) => cmd::predict::run(args),
         Commands::Version => {
             println!("hwledger-cli v{}", VERSION);
             Ok(())

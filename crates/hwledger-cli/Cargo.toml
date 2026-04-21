@@ -37,6 +37,8 @@ hwledger-ingest.workspace = true
 hwledger-probe.workspace = true
 hwledger-ledger.workspace = true
 hwledger-fleet-proto.workspace = true
+hwledger-hf-client.workspace = true
+hwledger-predict.workspace = true
 
 # HTTP client
 reqwest.workspace = true

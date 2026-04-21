@@ -1,6 +1,6 @@
 # hwLedger — Product Requirements Document (v0.1 draft)
 
-Documents: FR-PLAN-001, FR-PLAN-002, FR-PLAN-003, FR-PLAN-004, FR-PLAN-005, FR-PLAN-006, FR-PLAN-007, FR-TEL-001, FR-TEL-002, FR-TEL-003, FR-TEL-004, FR-INF-001, FR-INF-002, FR-INF-003, FR-INF-004, FR-INF-005, FR-FLEET-001, FR-FLEET-002, FR-FLEET-003, FR-FLEET-004, FR-FLEET-005, FR-FLEET-006, FR-FLEET-007, FR-FLEET-008, FR-UI-001, FR-UI-002, FR-UI-003, FR-UI-004, FR-UX-VERIFY-001, FR-UX-VERIFY-002, FR-UX-VERIFY-003, FR-TRACE-001, FR-TRACE-002, FR-TRACE-003, FR-TRACE-004, NFR-001, NFR-002, NFR-003, NFR-004, NFR-005, NFR-006, NFR-007, NFR-VERIFY-001
+Documents: FR-PLAN-001, FR-PLAN-002, FR-PLAN-003, FR-PLAN-004, FR-PLAN-005, FR-PLAN-006, FR-PLAN-007, FR-HF-001, FR-TEL-001, FR-TEL-002, FR-TEL-003, FR-TEL-004, FR-INF-001, FR-INF-002, FR-INF-003, FR-INF-004, FR-INF-005, FR-FLEET-001, FR-FLEET-002, FR-FLEET-003, FR-FLEET-004, FR-FLEET-005, FR-FLEET-006, FR-FLEET-007, FR-FLEET-008, FR-UI-001, FR-UI-002, FR-UI-003, FR-UI-004, FR-UX-VERIFY-001, FR-UX-VERIFY-002, FR-UX-VERIFY-003, FR-TRACE-001, FR-TRACE-002, FR-TRACE-003, FR-TRACE-004, NFR-001, NFR-002, NFR-003, NFR-004, NFR-005, NFR-006, NFR-007, NFR-VERIFY-001
 
 > Planner document. All acceptance criteria will translate into AgilePlus work packages before implementation. No code in this doc.
 
@@ -20,6 +20,7 @@ Documents: FR-PLAN-001, FR-PLAN-002, FR-PLAN-003, FR-PLAN-004, FR-PLAN-005, FR-P
 - **FR-PLAN-005**: Live stacked-bar breakdown (weights | KV | runtime | prefill | free). Per-layer heatmap showing which layers carry KV load.
 - **FR-PLAN-006**: Green/yellow/red fit gauge per selected target device (from probe or fleet).
 - **FR-PLAN-007**: Export a planner snapshot as vLLM CLI flags, llama.cpp flags, or an MLX sidecar config JSON.
+- **FR-HF-001** [journey_kind: cli]: Hugging Face Hub search (anonymous by default; optional `HF_TOKEN` for gated/private repos and higher rate limits). Surfaces `hwledger search query|pull|plan` in the CLI, `hwledger_hf_search`/`hwledger_hf_plan` in the FFI, and a 24 h filesystem cache at `~/.cache/hwledger/hf/` with an `--offline` mode.
 
 ### 2.2 Live telemetry
 
