@@ -96,55 +96,55 @@
     "assertion_violations": [
       {
         "expected": "Attention Kind",
-        "got_snippet": "@eocuossoceccpesocsoas > hwledger plan tests/ pone oe eee eeee eens Property  fpocososscecessessssesss EXIT_0__  | 49.79 MB  poe golden/deepseek-v3.json --seq 3…",
+        "got_snippet": "@eocuossoceccpesocsoas > hwledger plan tests/ pone oe eee eeee eens Property  fpocososscecessessssesss EXIT_0__  | 49.79 MB  poe golden/deepseek-v3.json --seq 3\u2026",
         "kind": "MustContain",
         "step_index": 2
       },
       {
         "expected": "Mla",
-        "got_snippet": "@eocuossoceccpesocsoas > hwledger plan tests/ pone oe eee eeee eens Property  fpocososscecessessssesss EXIT_0__  | 49.79 MB  poe golden/deepseek-v3.json --seq 3…",
+        "got_snippet": "@eocuossoceccpesocsoas > hwledger plan tests/ pone oe eee eeee eens Property  fpocososscecessessssesss EXIT_0__  | 49.79 MB  poe golden/deepseek-v3.json --seq 3\u2026",
         "kind": "MustContain",
         "step_index": 2
       },
       {
         "expected": "kv_",
-        "got_snippet": "@eocuossoceccpesocsoas > hwledger plan tests/ pone oe eee eeee eens Property  fpocososscecessessssesss EXIT_0__  | 49.79 MB  poe golden/deepseek-v3.json --seq 3…",
+        "got_snippet": "@eocuossoceccpesocsoas > hwledger plan tests/ pone oe eee eeee eens Property  fpocososscecessessssesss EXIT_0__  | 49.79 MB  poe golden/deepseek-v3.json --seq 3\u2026",
         "kind": "MustContain",
         "step_index": 2
       },
       {
         "expected": "rank",
-        "got_snippet": "@eocuossoceccpesocsoas > hwledger plan tests/ pone oe eee eeee eens Property  fpocososscecessessssesss EXIT_0__  | 49.79 MB  poe golden/deepseek-v3.json --seq 3…",
+        "got_snippet": "@eocuossoceccpesocsoas > hwledger plan tests/ pone oe eee eeee eens Property  fpocososscecessessssesss EXIT_0__  | 49.79 MB  poe golden/deepseek-v3.json --seq 3\u2026",
         "kind": "MustContain",
         "step_index": 2
       },
       {
         "expected": "qk_rope",
-        "got_snippet": "@eocuossoceccpesocsoas > hwledger plan tests/ pone oe eee eeee eens Property  fpocososscecessessssesss EXIT_0__  | 49.79 MB  poe golden/deepseek-v3.json --seq 3…",
+        "got_snippet": "@eocuossoceccpesocsoas > hwledger plan tests/ pone oe eee eeee eens Property  fpocososscecessessssesss EXIT_0__  | 49.79 MB  poe golden/deepseek-v3.json --seq 3\u2026",
         "kind": "MustContain",
         "step_index": 2
       },
       {
         "expected": "Weights",
-        "got_snippet": "@eocuossoceccpesocsoas > hwledger plan tests/ pone oe eee eeee eens Property  fpocososscecessessssesss EXIT_0__  | 49.79 MB  poe golden/deepseek-v3.json --seq 3…",
+        "got_snippet": "@eocuossoceccpesocsoas > hwledger plan tests/ pone oe eee eeee eens Property  fpocososscecessessssesss EXIT_0__  | 49.79 MB  poe golden/deepseek-v3.json --seq 3\u2026",
         "kind": "MustContain",
         "step_index": 2
       },
       {
         "expected": "KV Cache",
-        "got_snippet": "@eocuossoceccpesocsoas > hwledger plan tests/ pone oe eee eeee eens Property  fpocososscecessessssesss EXIT_0__  | 49.79 MB  poe golden/deepseek-v3.json --seq 3…",
+        "got_snippet": "@eocuossoceccpesocsoas > hwledger plan tests/ pone oe eee eeee eens Property  fpocososscecessessssesss EXIT_0__  | 49.79 MB  poe golden/deepseek-v3.json --seq 3\u2026",
         "kind": "MustContain",
         "step_index": 2
       },
       {
         "expected": "Total",
-        "got_snippet": "@eocuossoceccpesocsoas > hwledger plan tests/ pone oe eee eeee eens Property  fpocososscecessessssesss EXIT_0__  | 49.79 MB  poe golden/deepseek-v3.json --seq 3…",
+        "got_snippet": "@eocuossoceccpesocsoas > hwledger plan tests/ pone oe eee eeee eens Property  fpocososscecessessssesss EXIT_0__  | 49.79 MB  poe golden/deepseek-v3.json --seq 3\u2026",
         "kind": "MustContain",
         "step_index": 2
       },
       {
         "expected": "__EXIT_",
-        "got_snippet": "@eocuossoceccpesocsoas > hwledger plan tests/ pone oe eee eeee eens Property  fpocososscecessessssesss EXIT_0__  | 49.79 MB  poe golden/deepseek-v3.json --seq 3…",
+        "got_snippet": "@eocuossoceccpesocsoas > hwledger plan tests/ pone oe eee eeee eens Property  fpocososscecessessssesss EXIT_0__  | 49.79 MB  poe golden/deepseek-v3.json --seq 3\u2026",
         "kind": "MustContain",
         "step_index": 2
       }
@@ -154,5 +154,6 @@
     "mode": "mock",
     "overall_score": 0.92,
     "timestamp": "2026-04-21T08:21:23Z"
-  }
+  },
+  "recording_audio_voiceover": "recordings/plan-deepseek.voiceover.wav"
 }

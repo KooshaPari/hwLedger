@@ -81,5 +81,6 @@
     "mode": "mock",
     "overall_score": 0.92,
     "timestamp": "2026-04-21T08:21:27Z"
-  }
+  },
+  "recording_audio_voiceover": "recordings/probe-list.voiceover.wav"
 }

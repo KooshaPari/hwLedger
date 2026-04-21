@@ -74,6 +74,106 @@ impl RenderPlan {
     }
 }
 
+/// Synthesise a per-journey voiceover WAV via Piper, concatenating one
+/// utterance per step. Returns the public-relative path suitable for
+/// `manifest.voiceover.audio` (i.e. consumable via Remotion `staticFile()`).
+///
+/// Requires `piper` on PATH and a voice model at the path given by
+/// `HWLEDGER_PIPER_VOICE` (default: `~/.cache/piper/voices/en_US-lessac-medium.onnx`).
+pub fn synthesise_voiceover_piper(plan: &RenderPlan) -> Result<String, RenderError> {
+    let model = std::env::var("HWLEDGER_PIPER_VOICE")
+        .ok()
+        .map(PathBuf::from)
+        .filter(|p| p.exists())
+        .unwrap_or_else(|| {
+            let home = std::env::var("HOME").unwrap_or_default();
+            PathBuf::from(home).join(".cache/piper/voices/en_US-lessac-medium.onnx")
+        });
+    if !model.exists() {
+        return Err(RenderError::BadManifest(format!(
+            "piper voice model not found: {}",
+            model.display()
+        )));
+    }
+    if Command::new("piper").arg("--help").output().is_err() {
+        return Err(RenderError::BadManifest("piper not on PATH".into()));
+    }
+
+    let raw = std::fs::read_to_string(&plan.manifest_path)?;
+    let rich: RichManifest = serde_json::from_str(&raw)
+        .map_err(|e| RenderError::BadManifest(format!("manifest parse: {e}")))?;
+
+    let tmp_dir = plan.remotion_root.join("public").join("audio").join(&plan.journey_id);
+    std::fs::create_dir_all(&tmp_dir)?;
+    let mut parts: Vec<PathBuf> = Vec::new();
+    let intro = format!("{}. {}", plan.journey_id.replace('-', " "), rich.intent);
+    let intro_wav = tmp_dir.join("000-intro.wav");
+    piper_one(&model, &intro, &intro_wav)?;
+    parts.push(intro_wav);
+    for (i, step) in rich.steps.iter().enumerate() {
+        let line = step
+            .description
+            .clone()
+            .or_else(|| step.blind_description.clone())
+            .unwrap_or_else(|| step.intent.clone());
+        if line.trim().is_empty() {
+            continue;
+        }
+        let out = tmp_dir.join(format!("{i:03}-step.wav"));
+        piper_one(&model, &line, &out)?;
+        parts.push(out);
+    }
+
+    let list_path = tmp_dir.join("concat.txt");
+    let mut list = String::new();
+    for p in &parts {
+        list.push_str(&format!("file '{}'\n", p.display()));
+    }
+    std::fs::write(&list_path, list)?;
+    let out_wav = plan
+        .remotion_root
+        .join("public")
+        .join("audio")
+        .join(format!("{}.voiceover.wav", plan.journey_id));
+    if let Some(parent) = out_wav.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    let status = Command::new("ffmpeg")
+        .args(["-y", "-f", "concat", "-safe", "0", "-i"])
+        .arg(&list_path)
+        .args(["-c", "copy"])
+        .arg(&out_wav)
+        .status()?;
+    if !status.success() {
+        return Err(RenderError::BadManifest("ffmpeg concat failed".into()));
+    }
+    Ok(format!("audio/{}.voiceover.wav", plan.journey_id))
+}
+
+fn piper_one(model: &Path, text: &str, out_wav: &Path) -> Result<(), RenderError> {
+    use std::io::Write;
+    let mut child = Command::new("piper")
+        .arg("--model")
+        .arg(model)
+        .arg("--output_file")
+        .arg(out_wav)
+        .stdin(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .spawn()?;
+    if let Some(mut stdin) = child.stdin.take() {
+        stdin.write_all(text.as_bytes())?;
+    }
+    let out = child.wait_with_output()?;
+    if !out.status.success() {
+        return Err(RenderError::BadManifest(format!(
+            "piper failed: {}",
+            String::from_utf8_lossy(&out.stderr)
+        )));
+    }
+    Ok(())
+}
+
 /// Build the enriched manifest (merge base + sidecar scene-spec + voiceover
 /// metadata). Writes `<keyframes_dir>/manifest.rich.json` and returns it.
 pub fn build_rich_manifest(plan: &RenderPlan) -> Result<PathBuf, RenderError> {
@@ -90,8 +190,9 @@ pub fn build_rich_manifest(plan: &RenderPlan) -> Result<PathBuf, RenderError> {
             rich.scenes = Some(scenes);
         }
     }
-    rich.voiceover =
-        Some(VoiceoverSpec { backend: plan.voiceover.clone(), lines: None, audio: None });
+    let audio =
+        if plan.voiceover == "piper" { Some(synthesise_voiceover_piper(plan)?) } else { None };
+    rich.voiceover = Some(VoiceoverSpec { backend: plan.voiceover.clone(), lines: None, audio });
     rich.recording_rich =
         Some(format!("recordings/{}/{}.rich.mp4", plan.journey_id, plan.journey_id));
 

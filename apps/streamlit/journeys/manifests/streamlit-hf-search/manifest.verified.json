@@ -33,7 +33,7 @@
     {
       "blind_description": "Shell session showing a command header and a paragraph of structured stdout. (frame slug: model-actions)",
       "index": 3,
-      "intent": "Per-row actions visible: each model exposes a \"Plan it →\" button that primes the Planner session.",
+      "intent": "Per-row actions visible: each model exposes a \"Plan it \u2192\" button that primes the Planner session.",
       "screenshot_path": "frame-004.png",
       "slug": "model-actions"
     },
@@ -53,5 +53,6 @@
     "mode": "mock",
     "overall_score": 0.92,
     "timestamp": "2026-04-21T04:31:06Z"
-  }
+  },
+  "recording_audio_voiceover": "recordings/streamlit-hf-search.voiceover.wav"
 }
