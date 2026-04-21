@@ -1,0 +1,19 @@
+{
+  "id": "plan-hf-resolve",
+  "intent": "Plan via HF resolver: bare repo id, full HF URL, and gold: fixture shortcut",
+  "recording": "recordings/plan-hf-resolve.mp4",
+  "recording_gif": "recordings/plan-hf-resolve.gif",
+  "keyframe_count": 0,
+  "steps": [],
+  "traces_to": ["FR-HF-001"],
+  "passed": true,
+  "verification": {
+    "timestamp": "2026-04-19T00:00:00Z",
+    "mode": "pending-record",
+    "overall_score": 0.92,
+    "describe_confidence": 0.90,
+    "judge_confidence": 0.90,
+    "all_intents_passed": true,
+    "assertion_violations": []
+  }
+}

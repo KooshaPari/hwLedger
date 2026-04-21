@@ -184,3 +184,4 @@ hwledger audit --export audit.json --since "2026-04-11T00:00:00Z"
 - [Exit Codes](/reference/exit-codes)
 - [Getting Started](/getting-started/quickstart)
 - [Hugging Face search](/reference/hf-search)
+- [Model resolver](/reference/model-resolver)

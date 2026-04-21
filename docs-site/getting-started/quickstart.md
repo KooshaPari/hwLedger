@@ -58,5 +58,6 @@ hwledger plan tests/golden/deepseek-v3.json --seq 32768 --export mlx
 
 - [CLI reference](../reference/cli)
 - [Hugging Face search](../reference/hf-search)
+- [Model resolver](../reference/model-resolver)
 - [Fleet quickstart](../fleet/overview)
 - [Architecture overview](../architecture/)

@@ -179,6 +179,16 @@ export default withMermaid(defineConfig({
         { text: 'Installation', link: '/getting-started/install' }
       ],
 
+      '/reference/': [
+        { text: 'Reference', link: '/reference/' },
+        { text: 'CLI Commands', link: '/reference/cli' },
+        { text: 'Configuration', link: '/reference/config' },
+        { text: 'Exit Codes', link: '/reference/exit-codes' },
+        { text: 'Hugging Face search', link: '/reference/hf-search' },
+        { text: 'Model resolver', link: '/reference/model-resolver' },
+        { text: 'Probe backends', link: '/reference/probe-backends' }
+      ],
+
       '/research/': buildResearchSidebar(),
       '/research/imports-2026-04/': buildResearchSidebar(),
 
