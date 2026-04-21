@@ -306,26 +306,75 @@ extension HwLedger {
         query: String,
         library: String? = nil,
         pipelineTag: String? = nil,
-        sort: String = "downloads"
+        sort: String = "downloads",
+        limit: UInt32 = 20,
+        token: String? = nil
     ) async throws -> HfSearchResponse {
-        // The FFI function `hwledger_hf_search` is not yet exported from
-        // the Rust core. Decoding contract is already tested; real wiring
-        // lands when the sibling PR merges.
-        //
-        // TODO: wire FFI — call `hwledger_hf_search(query, library, pipeline_tag, sort)`,
-        // take the returned `*const c_char`, copy to Swift String, decode JSON to
-        // HfSearchResponse, free the buffer with `hwledger_string_free`.
-        fatalError("TODO: wire FFI — hwledger_hf_search not yet exported")
+        // Build the query JSON the Rust FFI expects. Matches the lenient
+        // `In` shape inside `hwledger_hf_search` in crates/hwledger-ffi.
+        var queryObj: [String: Any] = [
+            "text": query,
+            "sort": sort,
+            "limit": Int(limit),
+        ]
+        if let library { queryObj["library"] = library }
+        if let pipelineTag { queryObj["pipeline_tag"] = pipelineTag }
+
+        let queryData = try JSONSerialization.data(withJSONObject: queryObj)
+        guard let queryJson = String(data: queryData, encoding: .utf8) else {
+            throw HwLedgerError.invalidInput("searchHf: query encode failed")
+        }
+
+        return try await Task.detached(priority: .userInitiated) { () -> HfSearchResponse in
+            try queryJson.withCString { qp -> HfSearchResponse in
+                let tokenCStr: UnsafeMutablePointer<Int8>? = token.flatMap { strdup($0) }
+                defer { if let t = tokenCStr { free(t) } }
+
+                guard let raw = hwledger_hf_search(qp, tokenCStr) else {
+                    throw HwLedgerError.runtimeError("hwledger_hf_search returned null")
+                }
+                defer { hwledger_hf_free_string(raw) }
+                let json = String(cString: raw)
+                return try decodeHfSearchFfiPayload(json: json)
+            }
+        }.value
     }
 
     /// Run a plan for an HF repo-id (fetches config via HF client then plans).
     public static func planHf(
         repoId: String,
         seqLen: UInt64,
-        concurrentUsers: UInt32
+        concurrentUsers: UInt32,
+        kvQuantization: KvQuantization = .fp16,
+        weightQuantization: WeightQuantization = .fp16,
+        token: String? = nil
     ) async throws -> PlannerResult {
-        // TODO: wire FFI — call `hwledger_plan_hf(repo_id, seq_len, users)`.
-        fatalError("TODO: wire FFI — hwledger_plan_hf not yet exported")
+        let trimmed = repoId.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            throw HwLedgerError.invalidInput("planHf: repo_id must not be empty")
+        }
+
+        return try await Task.detached(priority: .userInitiated) { () -> PlannerResult in
+            try trimmed.withCString { rp -> PlannerResult in
+                let tokenCStr: UnsafeMutablePointer<Int8>? = token.flatMap { strdup($0) }
+                defer { if let t = tokenCStr { free(t) } }
+
+                guard let ptr = hwledger_hf_plan(
+                    rp,
+                    seqLen,
+                    concurrentUsers,
+                    UInt8(kvQuantization.rawValue),
+                    UInt8(weightQuantization.rawValue),
+                    tokenCStr
+                ) else {
+                    throw HwLedgerError.runtimeError(
+                        "hwledger_hf_plan returned null (invalid repo_id or fetch failed)"
+                    )
+                }
+                defer { hwledger_plan_free(ptr) }
+                return try PlannerResult(from: ptr.pointee)
+            }
+        }.value
     }
 
     /// Run a What-If prediction: baseline vs candidate with compression stack.
@@ -481,6 +530,99 @@ extension HwLedger {
     }
 }
 
+// MARK: - HF Search raw FFI payload mapping
+
+/// Rust FFI `hwledger_hf_search` returns `serde_json::to_string(&Vec<ModelCard>)`
+/// over the `hwledger_hf_client::ModelCard` shape (fields: `id`, `downloads`,
+/// `likes`, `tags`, `library_name`, `pipeline_tag`, `last_modified`,
+/// `params_estimate`). Failures come back as `{"error": "..."}`.
+///
+/// We map that into the Swift-facing [`HfSearchResponse`] so the UI contract is
+/// stable regardless of Rust-side serde changes.
+private struct HfFfiRawModel: Decodable {
+    let id: String
+    let downloads: UInt64?
+    let likes: UInt64?
+    let tags: [String]?
+    let libraryName: String?
+    let pipelineTag: String?
+    let lastModified: String?
+    let paramsEstimate: UInt64?
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case downloads
+        case likes
+        case tags
+        case libraryName = "library_name"
+        case pipelineTag = "pipeline_tag"
+        case lastModified = "last_modified"
+        case paramsEstimate = "params_estimate"
+    }
+}
+
+private struct HfFfiError: Decodable {
+    let error: String
+}
+
+/// Decode the raw payload emitted by `hwledger_hf_search`. Public so tests can
+/// exercise the live-path mapping without a network call. Handles both the
+/// success shape (`[ModelCard]`) and the error shape (`{"error":"..."}`).
+/// A 401 / 429 / rate-limit error message is mapped into an empty response
+/// with `rateLimited=true`.
+///
+/// Traces to: FR-HF-001
+internal func decodeHfSearchFfiPayload(json: String) throws -> HfSearchResponse {
+    guard let data = json.data(using: .utf8) else {
+        throw HwLedgerError.invalidData("hf_search payload is not UTF-8")
+    }
+    let decoder = JSONDecoder()
+
+    // First try the structured Swift shape — used by unit tests shipping the
+    // hand-authored `HfSearchResponse` contract (keeps backward-compat).
+    if let structured = try? decoder.decode(HfSearchResponse.self, from: data) {
+        return structured
+    }
+
+    // Try the Rust FFI raw shape: array of HF ModelCards.
+    if let raws = try? decoder.decode([HfFfiRawModel].self, from: data) {
+        let models = raws.map { raw -> ModelCard in
+            ModelCard(
+                repoId: raw.id,
+                displayName: nil,
+                paramCount: raw.paramsEstimate,
+                downloads: raw.downloads,
+                lastModified: raw.lastModified,
+                pipelineTag: raw.pipelineTag,
+                library: raw.libraryName,
+                tags: raw.tags ?? [],
+                trending: nil,
+                configJson: nil
+            )
+        }
+        return HfSearchResponse(models: models, rateLimited: false, nextCursor: nil)
+    }
+
+    // Error shape: `{"error": "..."}`.
+    if let err = try? decoder.decode(HfFfiError.self, from: data) {
+        let lower = err.error.lowercased()
+        // HF returns 401 for missing/invalid token, 429 for rate-limit, or a
+        // descriptive message. Fold all of those into the rate-limited banner.
+        let isRateLimited =
+            lower.contains("401")
+            || lower.contains("429")
+            || lower.contains("rate")
+            || lower.contains("unauthorized")
+            || lower.contains("unauthorised")
+        if isRateLimited {
+            return HfSearchResponse(models: [], rateLimited: true, nextCursor: nil)
+        }
+        throw HwLedgerError.runtimeError("hf_search: \(err.error)")
+    }
+
+    throw HwLedgerError.invalidData("hf_search: unexpected payload shape")
+}
+
 // MARK: - Resolver C FFI Declarations
 
 @_silgen_name("hwledger_resolve_model")
@@ -491,6 +633,22 @@ internal func hwledger_resolve_model(
 
 @_silgen_name("hwledger_hf_free_string")
 internal func hwledger_hf_free_string(_ ptr: UnsafeMutablePointer<Int8>?)
+
+@_silgen_name("hwledger_hf_search")
+internal func hwledger_hf_search(
+    _ queryJson: UnsafePointer<Int8>?,
+    _ token: UnsafePointer<Int8>?
+) -> UnsafeMutablePointer<Int8>?
+
+@_silgen_name("hwledger_hf_plan")
+internal func hwledger_hf_plan(
+    _ repoId: UnsafePointer<Int8>?,
+    _ seqLen: UInt64,
+    _ concurrentUsers: UInt32,
+    _ kvQuant: UInt8,
+    _ weightQuant: UInt8,
+    _ token: UnsafePointer<Int8>?
+) -> UnsafeMutablePointer<hwledger_PlannerResult>?
 
 @_silgen_name("hwledger_predict_whatif")
 internal func hwledger_predict_whatif_ffi(

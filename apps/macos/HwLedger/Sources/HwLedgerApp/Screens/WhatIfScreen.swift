@@ -418,7 +418,7 @@ struct WhatIfScreen: View {
     }
 }
 
-// MARK: - Model Picker Sheet (reuses HF search stub)
+// MARK: - Model Picker Sheet (live HF search via FFI)
 
 private struct ModelPickerSheet: View {
     let title: String
@@ -426,14 +426,31 @@ private struct ModelPickerSheet: View {
 
     @State private var query: String = ""
     @State private var results: [ModelCard] = []
+    @State private var isLoading: Bool = false
+    @State private var rateLimited: Bool = false
+    @State private var errorMessage: String?
+    @State private var debounceTask: Task<Void, Never>?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(title).font(.headline)
+            HStack {
+                Text(title).font(.headline)
+                Spacer()
+                if isLoading { ProgressView().controlSize(.small) }
+            }
             TextField("Search…", text: $query)
                 .textFieldStyle(.roundedBorder)
                 .accessibilityIdentifier("what-if-picker-input")
-                .onChange(of: query) { _, _ in refresh() }
+                .onChange(of: query) { _, newValue in scheduleRefresh(newValue) }
+            if rateLimited {
+                Text("HF rate-limited. Add a token in Settings.")
+                    .font(.caption).foregroundColor(.orange)
+                    .accessibilityIdentifier("what-if-picker-rate-limit")
+            }
+            if let err = errorMessage {
+                Text(err).font(.caption).foregroundColor(.red)
+                    .accessibilityIdentifier("what-if-picker-error")
+            }
             List {
                 ForEach(Array(results.enumerated()), id: \.element.id) { index, model in
                     Button(action: { onPick(model) }) {
@@ -448,24 +465,46 @@ private struct ModelPickerSheet: View {
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("what-if-picker-row-\(index)")
                 }
+                if results.isEmpty && !isLoading {
+                    Text(query.isEmpty ? "Type a query to search HuggingFace…" : "No results.")
+                        .foregroundColor(.secondary).font(.caption)
+                }
             }
             .listStyle(.plain)
         }
         .padding()
         .frame(minWidth: 420, minHeight: 360)
-        .onAppear { refresh() }
     }
 
-    private func refresh() {
-        let stub: [ModelCard] = [
-            ModelCard(repoId: "meta-llama/Llama-3.1-8B", paramCount: 8_000_000_000, configJson: "{\"model_type\":\"llama\"}"),
-            ModelCard(repoId: "meta-llama/Llama-3.1-70B", paramCount: 70_000_000_000, configJson: "{\"model_type\":\"llama\"}"),
-            ModelCard(repoId: "mistralai/Mistral-7B-v0.3", paramCount: 7_000_000_000, configJson: "{\"model_type\":\"mistral\"}"),
-            ModelCard(repoId: "Qwen/Qwen2-7B", paramCount: 7_000_000_000, configJson: "{\"model_type\":\"qwen\"}"),
-            ModelCard(repoId: "deepseek-ai/DeepSeek-V3", paramCount: 236_000_000_000, configJson: "{\"model_type\":\"deepseek\"}")
-        ]
-        let q = query.lowercased()
-        results = q.isEmpty ? stub : stub.filter { $0.repoId.lowercased().contains(q) }
+    private func scheduleRefresh(_ value: String) {
+        debounceTask?.cancel()
+        debounceTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 400_000_000)
+            if Task.isCancelled { return }
+            await refresh()
+        }
+    }
+
+    @MainActor
+    private func refresh() async {
+        let q = query.trimmingCharacters(in: .whitespaces)
+        guard !q.isEmpty else {
+            results = []
+            rateLimited = false
+            errorMessage = nil
+            return
+        }
+        isLoading = true
+        errorMessage = nil
+        do {
+            let response = try await HwLedger.searchHf(query: q)
+            results = response.models
+            rateLimited = response.rateLimited
+        } catch {
+            results = []
+            errorMessage = "Search failed: \(error)"
+        }
+        isLoading = false
     }
 
     private func formatParams(_ count: UInt64) -> String {
