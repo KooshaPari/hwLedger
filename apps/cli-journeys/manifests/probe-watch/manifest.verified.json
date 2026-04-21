@@ -5,6 +5,9 @@
   "passed": true,
   "recording": "recordings/probe-watch.mp4",
   "recording_gif": "recordings/probe-watch.gif",
+  "recording_rich": "recordings/probe-watch/probe-watch.rich.mp4",
+  "recording_rich_manifest_sha256": "d21ee3b7a0f52290e5528c38e05440f96e577a8f5056309c05002dabc37752ab",
+  "recording_rich_sha256": "398c4f494ff21a64cc92a41c9804fb20a73b34ff9ef1e55819d8b58c5a2a12bd",
   "steps": [
     {
       "assertions": {

@@ -5,6 +5,9 @@
   "passed": true,
   "recording": "recordings/traceability-strict.mp4",
   "recording_gif": "recordings/traceability-strict.gif",
+  "recording_rich": "recordings/traceability-strict/traceability-strict.rich.mp4",
+  "recording_rich_manifest_sha256": "58fb33327ba9763a447236fc1bd9c754befaab33ac2fff384fae58d382120dfc",
+  "recording_rich_sha256": "c1287bbec76c9921743d8ee9bddca0ef71803f756f058789f4c9a263550101a9",
   "steps": [
     {
       "assertions": {

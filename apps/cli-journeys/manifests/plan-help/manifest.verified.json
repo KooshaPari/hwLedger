@@ -5,6 +5,9 @@
   "passed": false,
   "recording": "recordings/plan-help.mp4",
   "recording_gif": "recordings/plan-help.gif",
+  "recording_rich": "recordings/plan-help/plan-help.rich.mp4",
+  "recording_rich_manifest_sha256": "8ee044d203c7f8f98d04bca0f2dbe2669cff0cad603b958ede9ae2ed4ba51eef",
+  "recording_rich_sha256": "b50fe453e08ea49184320323b2cd5a3a9ce8e6fdd1e050ab529315db1abc4a05",
   "steps": [
     {
       "assertions": {

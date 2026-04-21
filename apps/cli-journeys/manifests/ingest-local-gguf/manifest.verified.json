@@ -5,6 +5,9 @@
   "passed": true,
   "recording": "recordings/ingest-local-gguf.mp4",
   "recording_gif": "recordings/ingest-local-gguf.gif",
+  "recording_rich": "recordings/ingest-local-gguf/ingest-local-gguf.rich.mp4",
+  "recording_rich_manifest_sha256": "30c8bd3c2ed0651140277ef8b61a94b81f25dd27dd8dc22f15529d039db8cf7a",
+  "recording_rich_sha256": "f37c93916142e96dc60159789455fa1dd5c1954aedd5035b5095991ec9539df0",
   "steps": [
     {
       "assertions": {

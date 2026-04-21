@@ -5,6 +5,9 @@
   "passed": true,
   "recording": "recordings/plan-hf-resolve.mp4",
   "recording_gif": "recordings/plan-hf-resolve.gif",
+  "recording_rich": "recordings/plan-hf-resolve/plan-hf-resolve.rich.mp4",
+  "recording_rich_manifest_sha256": "839ef655926ddee2e754d8eaba1c19820a3aec01c8f46f7995b29017acad4519",
+  "recording_rich_sha256": "95aacd6cd52796e97f19d3c3a7ad18f5ec49138f7727638578f6cc15d91e44c5",
   "steps": [
     {
       "assertions": {

@@ -5,6 +5,9 @@
   "passed": true,
   "recording": "recordings/plan-mla-deepseek.mp4",
   "recording_gif": "recordings/plan-mla-deepseek.gif",
+  "recording_rich": "recordings/plan-mla-deepseek/plan-mla-deepseek.rich.mp4",
+  "recording_rich_manifest_sha256": "f80eb9ce8a5fd07d5036b47cc60db59457555e83c3ade560f49c9b5013339c39",
+  "recording_rich_sha256": "3cadc8ddb269901546290587ed3e11804c9843b423272c05e82d2be2b0037b55",
   "steps": [
     {
       "assertions": {
