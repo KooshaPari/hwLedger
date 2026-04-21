@@ -1,25 +1,10 @@
-#!/bin/bash
-# Sync ADR files from docs/adr/ to docs-site/architecture/adrs/
-
-set -e
-
+#!/usr/bin/env bash
+# Thin stub: forwards to `phenotype-journey sync --kind adrs ...`.
+set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-ADR_SRC="${REPO_ROOT}/docs/adr"
-ADR_DST="${REPO_ROOT}/docs-site/architecture/adrs"
-
-if [ ! -d "$ADR_SRC" ]; then
-  echo "Source directory $ADR_SRC does not exist"
-  exit 1
-fi
-
-mkdir -p "$ADR_DST"
-
-# Copy all ADR markdown files
-for adr_file in "$ADR_SRC"/*.md; do
-  if [ -f "$adr_file" ]; then
-    filename=$(basename "$adr_file")
-    cp "$adr_file" "$ADR_DST/$filename"
-  fi
-done
-
-echo "Synced $(ls -1 $ADR_SRC/*.md 2>/dev/null | wc -l) ADRs to $ADR_DST"
+SRC="${REPO_ROOT}/docs/adr"
+DST="${REPO_ROOT}/docs-site/architecture/adrs"
+[ -d "$SRC" ] || { echo "Source directory $SRC does not exist"; exit 1; }
+PHENOTYPE_JOURNEYS_ROOT="${PHENOTYPE_JOURNEYS_ROOT:-/Users/kooshapari/CodeProjects/Phenotype/repos/phenotype-journeys}"
+if command -v phenotype-journey >/dev/null 2>&1; then BIN=(phenotype-journey); else BIN=(cargo run --quiet --manifest-path "${PHENOTYPE_JOURNEYS_ROOT}/Cargo.toml" --bin phenotype-journey --); fi
+exec "${BIN[@]}" sync --from "$SRC" --to "$DST" --kind adrs
