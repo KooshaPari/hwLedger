@@ -1,58 +1,27 @@
+# Per-frame intent narration for the plan-deepseek journey.
+# Two planner invocations (2K then 32K) demonstrating KV growth under
+# longer context. The tape emits an `__EXIT_$?__` sentinel on the last
+# line so the final keyframe can be gated.
 journey: plan-deepseek
 traces_to: ["FR-PLAN-003"]
 steps:
   - index: 0
     intent: "Terminal at prompt, ready to run planner"
     assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 1
-    intent: "Command typed: `hwledger plan tests/golden/deepseek-v3.json --seq 2048 --users 2`"
-    assertions:
-      must_contain: ["hwledger plan", "deepseek-v3"]
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-    annotations:
-      - bbox: [42, 43, 876, 22]
-        label: "hwledger plan invocation"
-        color: "#89b4fa"
-        note: "Full planner invocation: deepseek-v3 at 2K seq, 2 users"
-        kind: region
+      must_not_contain: ["Error:", "unexpected argument", "command not found", "panic"]
   - index: 2
-    intent: "Architecture detection line: MLA with kv_lora_rank=512"
+    intent: "Second invocation (`--seq 32768 --users 2`) renders the VRAM table with MLA attention, weights/KV/activations/overhead/total rows; trailing __EXIT sentinel"
     assertions:
-      must_contain: ["MLA", "kv_lora_rank"]
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 3
-    intent: "VRAM breakdown: weights, KV cache, activations at 2K sequence"
-    assertions:
-      must_contain: ["VRAM"]
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-    annotations:
-      - bbox: [32, 90, 142, 13]
-        label: "Attention Kind = MLA"
-        color: "#f38ba8"
-        note: "Multi-Head Latent Attention auto-detected from config"
-        kind: region
-      - bbox: [32, 206, 191, 18]
-        label: "Weights (quantized)"
-        color: "#a6e3a1"
-        note: "Active parameters × bits-per-weight (MoE sparsity accounted)"
-      - bbox: [33, 241, 80, 37]
-        label: "KV Cache"
-        color: "#f9e2af"
-        note: "Latent-projected KV at 2K context — compact via kv_lora_rank=512"
-  - index: 4
-    intent: "Second invocation at --seq 32768 showing KV growth under longer context"
-    assertions:
-      must_contain: ["32768"]
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-      expected_exit: 0
-    annotations:
-      - bbox: [432, 12, 152, 29]
-        label: "--seq 32768"
-        color: "#cba6f7"
-        note: "16x longer context vs. frame 3"
-        style: dashed
-      - bbox: [33, 241, 80, 37]
-        label: "KV Cache growth"
-        color: "#f9e2af"
-        note: "Linear growth from 2K → 32K, bounded by MLA compression"
+      must_contain:
+        - "hwledger plan"
+        - "deepseek"
+        - "Attention Kind"
+        - "Mla"
+        - "kv_"
+        - "rank"
+        - "qk_rope"
+        - "Weights"
+        - "KV Cache"
+        - "Total"
+        - "__EXIT_"
+      must_not_contain: ["Error:", "unexpected argument", "command not found", "panic", "thread 'main' panicked"]

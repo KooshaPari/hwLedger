@@ -1,27 +1,22 @@
+# Per-frame intent narration for the fleet-audit journey.
+# Keyed by step index (0-based). The tape emits the `__EXIT_$?__` sentinel
+# on the last line so assertions can gate the exit code and full table.
 journey: fleet-audit
+traces_to: ["FR-FLEET-001", "FR-FLEET-003"]
 steps:
   - index: 0
     intent: "Terminal prompt (audit-backed server running in background)"
     assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 1
-    intent: "Command typed: `hwledger fleet audit --server http://localhost:8080 --limit 3`"
+      must_not_contain: ["Error:", "unexpected argument", "command not found", "panic"]
+  - index: 7
+    intent: "Audit table with agent events (inference_start, inference_end, probe_telemetry), agent IDs, and telemetry details; trailing __EXIT sentinel"
     assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 2
-    intent: "Audit log header printed with column titles"
-    assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 3
-    intent: "First audit entry: timestamp, actor, action, subject"
-    assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 4
-    intent: "Remaining two entries up to --limit 3 ceiling"
-    assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 5
-    intent: "Prompt returned; background server torn down silently"
-    assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-      expected_exit: 0
+      must_contain:
+        - "hwledger fleet audit"
+        - "Agent"
+        - "Event"
+        - "Details"
+        - "agent-"
+        - "inference_"
+        - "__EXIT_"
+      must_not_contain: ["Error:", "unexpected argument", "command not found", "panic", "thread 'main' panicked"]

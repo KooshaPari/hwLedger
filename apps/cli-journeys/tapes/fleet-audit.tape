@@ -28,19 +28,15 @@ Sleep 1s
 Show
 
 Sleep 1500ms
-Type "hwledger fleet audit \\"
-Sleep 600ms
+Type "clear"
+Sleep 200ms
 Enter
-Sleep 600ms
-Type "  --server http://localhost:8080 \\"
-Sleep 600ms
-Enter
-Sleep 600ms
-Type `  --limit 3; echo "__EXIT_$?__"`
-Sleep 600ms
+Sleep 200ms
+Type@5ms `hwledger fleet audit --server http://localhost:8080 --limit 3; echo "__EXIT_$?__"`
+Sleep 300ms
 Enter
 Sleep 3500ms
-Sleep 2000ms
+Sleep 1500ms
 
 Hide
 Type "kill %1; rm -f /tmp/hwl-audit.db"

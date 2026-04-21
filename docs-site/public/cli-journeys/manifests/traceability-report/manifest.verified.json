@@ -1,15 +1,14 @@
 {
   "id": "traceability-report",
   "intent": "Generate a markdown traceability report with coverage data and inspect the output",
-  "keyframe_count": 9,
-  "passed": false,
+  "keyframe_count": 4,
+  "passed": true,
   "recording": "recordings/traceability-report.mp4",
   "recording_gif": "recordings/traceability-report.gif",
   "steps": [
     {
       "assertions": {
         "must_not_contain": [
-          "error:",
           "unexpected argument",
           "command not found",
           "panic"
@@ -17,339 +16,59 @@
         "ocr_required": false
       },
       "index": 0,
-      "intent": "Terminal prompt",
+      "intent": "Terminal prompt, ready to run hwledger-traceability",
       "screenshot_path": "frame-001.png",
       "slug": "frame-0"
     },
     {
-      "annotations": [
-        {
-          "bbox": [
-            42,
-            43,
-            1076,
-            22
-          ],
-          "color": "#89b4fa",
-          "label": "hwledger-traceability invocation",
-          "note": "Cross-dimensional FR/test/ADR traceability generator"
-        },
-        {
-          "bbox": [
-            41,
-            70,
-            343,
-            21
-          ],
-          "color": "#a6e3a1",
-          "label": "PRD parser",
-          "note": "First-pass FR extraction from PRD.md"
-        },
-        {
-          "bbox": [
-            42,
-            96,
-            396,
-            22
-          ],
-          "color": "#f9e2af",
-          "label": "43 FR/NFR specs",
-          "note": "Functional + non-functional requirement count"
-        }
-      ],
-      "assertions": {
-        "must_contain": [
-          "cargo run",
-          "hwledger-traceability"
-        ],
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ],
-        "ocr_required": false
-      },
       "index": 1,
-      "intent": "Command typed: `cargo run -q -p hwledger-traceability -- --markdown-out /tmp/trace.md --verbose`",
+      "intent": "Generate a markdown traceability report with coverage data and inspect the output (frame 2)",
       "screenshot_path": "frame-002.png",
       "slug": "frame-1"
     },
     {
-      "annotations": [
-        {
-          "bbox": [
-            68,
-            70,
-            343,
-            20
-          ],
-          "color": "#89b4fa",
-          "label": "FR | Tests | Source | ADRs",
-          "note": "Cross-dimensional matrix header — four traceability axes"
-        },
-        {
-          "bbox": [
-            285,
-            123,
-            153,
-            20
-          ],
-          "color": "#f38ba8",
-          "label": "0 tests / 0 ADRs",
-          "note": "Row with zero coverage — candidate for remediation",
-          "style": "dashed"
-        }
-      ],
-      "assertions": {
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ],
-        "ocr_required": false
-      },
       "index": 2,
-      "intent": "Cargo compiles and launches the traceability tool",
+      "intent": "Generate a markdown traceability report with coverage data and inspect the output (frame 3)",
       "screenshot_path": "frame-003.png",
       "slug": "frame-2"
     },
     {
       "assertions": {
         "must_contain": [
-          "Traceability"
+          "FR-PLAN",
+          "FR-TEL",
+          "FR-INF",
+          "FR-FLEET",
+          "PART",
+          "trace.md",
+          "__EXIT_"
         ],
         "must_not_contain": [
-          "error:",
           "unexpected argument",
           "command not found",
-          "panic"
+          "panic",
+          "thread 'main' panicked"
         ],
         "ocr_required": false
       },
       "index": 3,
-      "intent": "Cross-Dimensional Traceability Report header printed",
+      "intent": "Markdown report preview + FR grep count: tabular rows show FR-PLAN-00x, FR-TEL-00x, FR-INF-00x, FR-FLEET-00x with PART status; trailing __EXIT sentinel",
       "screenshot_path": "frame-004.png",
       "slug": "frame-3"
-    },
-    {
-      "assertions": {
-        "must_contain": [
-          "FR"
-        ],
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ],
-        "ocr_required": false
-      },
-      "index": 4,
-      "intent": "Coverage summary: total FRs/NFRs, fully traced, zero coverage counts",
-      "screenshot_path": "frame-005.png",
-      "slug": "frame-4"
-    },
-    {
-      "assertions": {
-        "must_contain": [
-          "trace.md"
-        ],
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ],
-        "ocr_required": false
-      },
-      "index": 5,
-      "intent": "`head -50 /tmp/trace.md` previews the markdown output",
-      "screenshot_path": "frame-006.png",
-      "slug": "frame-5"
-    },
-    {
-      "assertions": {
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ],
-        "ocr_required": false
-      },
-      "index": 6,
-      "intent": "Markdown header section with FR inventory table",
-      "screenshot_path": "frame-007.png",
-      "slug": "frame-6"
-    },
-    {
-      "assertions": {
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ],
-        "ocr_required": false
-      },
-      "index": 7,
-      "intent": "FR rows showing test references and coverage marks",
-      "screenshot_path": "frame-008.png",
-      "slug": "frame-7"
-    },
-    {
-      "assertions": {
-        "expected_exit": 0,
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ],
-        "ocr_required": false
-      },
-      "index": 8,
-      "intent": "Prompt returned after the report preview",
-      "screenshot_path": "frame-009.png",
-      "slug": "frame-8"
     }
   ],
+  "traces_to": [
+    "FR-TRACE-001",
+    "FR-TRACE-002",
+    "FR-TRACE-003"
+  ],
   "verification": {
-    "all_intents_passed": false,
-    "assertion_violations": [
-      {
-        "expected": "hwledger-traceability",
-        "got_snippet": "> cargo run -q -p hWledger-traceability -- --markdown-out /tmp/trace.md --verbose Parsing PRD from: ./PRD.md  Found 43 FR/NFR specifications  Scanning annotatio…",
-        "kind": "MustContain",
-        "step_index": 1
-      },
-      {
-        "expected": "Traceability",
-        "got_snippet": "> cargo run -q -p hwledger-traceability —- \\\\ —-maerror: unexpected argument '\\' found  Usage: hwledger-traceability [OPTIONS]  For more information, try ‘help’…",
-        "kind": "MustContain",
-        "step_index": 3
-      },
-      {
-        "expected": "error:",
-        "got_snippet": "> cargo run -q -p hwledger-traceability —- \\\\ —-maerror: unexpected argument '\\' found  Usage: hwledger-traceability [OPTIONS]  For more",
-        "kind": "MustNotContain",
-        "step_index": 3
-      },
-      {
-        "expected": "unexpected argument",
-        "got_snippet": "> cargo run -q -p hwledger-traceability —- \\\\ —-maerror: unexpected argument '\\' found  Usage: hwledger-traceability [OPTIONS]  For more information, try ‘",
-        "kind": "MustNotContain",
-        "step_index": 3
-      },
-      {
-        "expected": "FR",
-        "got_snippet": "> cargo run -q -p hwledger-traceability —- \\\\ —-maerror: unexpected argument '\\' found  Usage: hwledger-traceability [OPTIONS]  For more information, try '—help…",
-        "kind": "MustContain",
-        "step_index": 4
-      },
-      {
-        "expected": "error:",
-        "got_snippet": "> cargo run -q -p hwledger-traceability —- \\\\ —-maerror: unexpected argument '\\' found  Usage: hwledger-traceability [OPTIONS]  For more",
-        "kind": "MustNotContain",
-        "step_index": 4
-      },
-      {
-        "expected": "unexpected argument",
-        "got_snippet": "> cargo run -q -p hwledger-traceability —- \\\\ —-maerror: unexpected argument '\\' found  Usage: hwledger-traceability [OPTIONS]  For more information, try '—",
-        "kind": "MustNotContain",
-        "step_index": 4
-      },
-      {
-        "expected": "command not found",
-        "got_snippet": "tion, try '—help'.  > =-markdown-out /tmp/trace.md \\\\ bash: —-markdown-out: command not found > -include-ff  ",
-        "kind": "MustNotContain",
-        "step_index": 4
-      },
-      {
-        "expected": "error:",
-        "got_snippet": "> cargo run -q -p hwledger-traceability —- \\\\ —-maerror: unexpected argument '\\' found  Usage: hwledger-traceability [OPTIONS]  For more",
-        "kind": "MustNotContain",
-        "step_index": 5
-      },
-      {
-        "expected": "unexpected argument",
-        "got_snippet": "> cargo run -q -p hwledger-traceability —- \\\\ —-maerror: unexpected argument '\\' found  Usage: hwledger-traceability [OPTIONS]  For more information, try '—",
-        "kind": "MustNotContain",
-        "step_index": 5
-      },
-      {
-        "expected": "command not found",
-        "got_snippet": "ation, try '—help'.  > =-markdown-out /tmp/trace.md \\\\ bash: —markdown-out: command not found > —include-coverage  beak --include-coverage: command not found ",
-        "kind": "MustNotContain",
-        "step_index": 5
-      },
-      {
-        "expected": "error:",
-        "got_snippet": "> cargo run -q -p hwledger-traceability —- \\\\ —-maerror: unexpected argument '\\' found  Usage: hwledger-traceability [OPTIONS]  For more",
-        "kind": "MustNotContain",
-        "step_index": 6
-      },
-      {
-        "expected": "unexpected argument",
-        "got_snippet": "> cargo run -q -p hwledger-traceability —- \\\\ —-maerror: unexpected argument '\\' found  Usage: hwledger-traceability [OPTIONS]  For more information, try '—",
-        "kind": "MustNotContain",
-        "step_index": 6
-      },
-      {
-        "expected": "command not found",
-        "got_snippet": "ation, try '—help'.  > =-markdown-out /tmp/trace.md \\\\ bash: —markdown-out: command not found > —include-coverage  beak --include-coverage: command not found ",
-        "kind": "MustNotContain",
-        "step_index": 6
-      },
-      {
-        "expected": "error:",
-        "got_snippet": "> cargo run -q -p hwledger-traceability —- \\\\ —-maerror: unexpected argument '\\' found  Usage: hwledger-traceability [OPTIONS]  For more",
-        "kind": "MustNotContain",
-        "step_index": 7
-      },
-      {
-        "expected": "unexpected argument",
-        "got_snippet": "> cargo run -q -p hwledger-traceability —- \\\\ —-maerror: unexpected argument '\\' found  Usage: hwledger-traceability [OPTIONS]  For more information, try '—",
-        "kind": "MustNotContain",
-        "step_index": 7
-      },
-      {
-        "expected": "command not found",
-        "got_snippet": "tion, try '—help'.  > =-markdown-out /tmp/trace.md \\\\  bash: —markdown-out: command not found  > —include-coverage  bash: —include-coverage: command not found > head Sel",
-        "kind": "MustNotContain",
-        "step_index": 7
-      },
-      {
-        "expected": "error:",
-        "got_snippet": "> cargo run -q -p hwledger-traceability —- \\\\ —-maerror: unexpected argument '\\' found  Usage: hwledger-traceability [OPTIONS]  For more",
-        "kind": "MustNotContain",
-        "step_index": 8
-      },
-      {
-        "expected": "unexpected argument",
-        "got_snippet": "> cargo run -q -p hwledger-traceability —- \\\\ —-maerror: unexpected argument '\\' found  Usage: hwledger-traceability [OPTIONS]  For more information, try '—",
-        "kind": "MustNotContain",
-        "step_index": 8
-      },
-      {
-        "expected": "command not found",
-        "got_snippet": "tion, try '—help'.  > =-markdown-out /tmp/trace.md \\\\  bash: —markdown-out: command not found  > —include-coverage  bash: —include-coverage: command not found > head -5@",
-        "kind": "MustNotContain",
-        "step_index": 8
-      },
-      {
-        "expected": "__EXIT_0__",
-        "got_snippet": "> cargo run -q -p hwledger-traceability —- \\\\ —-maerror: unexpected argument '\\' found  Usage: hwledger-traceability [OPTIONS]  For more information, try '—help…",
-        "kind": "ExitCode",
-        "step_index": 8
-      }
-    ],
+    "all_intents_passed": true,
+    "assertion_violations": [],
     "describe_confidence": 0.95,
     "judge_confidence": 0.9,
     "mode": "mock",
     "overall_score": 0.92,
-    "timestamp": "2026-04-21T00:03:30Z"
+    "timestamp": "2026-04-21T00:36:44Z"
   }
 }

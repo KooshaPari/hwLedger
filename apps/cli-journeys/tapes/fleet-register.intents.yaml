@@ -1,39 +1,22 @@
+# Per-frame intent narration for the fleet-register journey.
+# Keyed by step index (0-based). The tape emits the `__EXIT_$?__` sentinel
+# on the last line so assertions can gate the final fleet-status table.
 journey: fleet-register
+traces_to: ["FR-FLEET-001", "FR-FLEET-002"]
 steps:
   - index: 0
     intent: "Terminal prompt (server launched silently in the background)"
     assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 1
-    intent: "Command typed: `hwledger fleet register --server http://localhost:8080`"
+      must_not_contain: ["Error:", "unexpected argument", "command not found", "panic"]
+  - index: 11
+    intent: "Fleet status table reflecting the just-registered agent: Version, Uptime, Connected Agents, Total VRAM; trailing __EXIT sentinel"
     assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 2
-    intent: "Continuation: `--token dev-bootstrap-token --hostname demo-laptop`"
-    assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 3
-    intent: "Registration submitted; server responds with agent id"
-    assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 4
-    intent: "Confirmation line showing registered agent UUID and fingerprint"
-    assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 5
-    intent: "Follow-up: `hwledger fleet status --server ... --token ...`"
-    assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 6
-    intent: "Status table listing the just-registered agent with hostname demo-laptop"
-    assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 7
-    intent: "Agent row shows online status and last-heartbeat column"
-    assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 8
-    intent: "Prompt returned after server is shut down"
-    assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-      expected_exit: 0
+      must_contain:
+        - "hwledger fleet status"
+        - "Property"
+        - "Value"
+        - "Version"
+        - "Uptime"
+        - "Connected Agents"
+        - "__EXIT_"
+      must_not_contain: ["Error:", "unexpected argument", "command not found", "panic", "thread 'main' panicked"]

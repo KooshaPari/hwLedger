@@ -28,28 +28,24 @@ Sleep 1s
 Show
 
 Sleep 1500ms
-Type "hwledger fleet register \\"
-Sleep 600ms
+Type "clear"
+Sleep 200ms
 Enter
-Sleep 600ms
-Type "  --server http://localhost:8080 \\"
-Sleep 600ms
+Sleep 200ms
+Type@5ms "hwledger fleet register --server http://localhost:8080 --token dev-bootstrap-token --hostname demo-laptop"
+Sleep 300ms
 Enter
-Sleep 600ms
-Type "  --token dev-bootstrap-token \\"
-Sleep 600ms
-Enter
-Sleep 600ms
-Type "  --hostname demo-laptop"
-Sleep 600ms
-Enter
-Sleep 2500ms
+Sleep 2000ms
 
-Type `hwledger fleet status --server http://localhost:8080 --token dev-bootstrap-token; echo "__EXIT_$?__"`
-Sleep 600ms
+Type "clear"
+Sleep 200ms
+Enter
+Sleep 200ms
+Type@5ms `hwledger fleet status --server http://localhost:8080 --token dev-bootstrap-token; echo "__EXIT_$?__"`
+Sleep 300ms
 Enter
 Sleep 3500ms
-Sleep 2000ms
+Sleep 1500ms
 
 Hide
 Type "kill %1; rm -f /tmp/hwl-fleet.db"

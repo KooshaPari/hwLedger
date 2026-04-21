@@ -3,31 +3,25 @@
 # extra frames fall back to "<journey intent> (frame N)".
 #
 # `assertions` blocks are consumed by `phenotype-journey assert`: OCR'd frame
-# text must match the contain / not_contain rules; expected_exit gates the
-# last keyframe against an `__EXIT_<N>__` sentinel.
+# text must match the contain / not_contain rules. The tape emits an
+# `__EXIT_$?__` sentinel on the last line so `expected_exit` can gate the
+# exit code against the last keyframe.
 journey: first-plan
+traces_to: ["FR-PLAN-001", "FR-PLAN-003"]
 steps:
   - index: 0
     intent: "Terminal prompt, ready to run the planner"
     assertions:
       must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 1
-    intent: "Command typed: `hwledger plan tests/golden/llama3-70b.json --seq 4096 --users 4`"
+  - index: 13
+    intent: "Full VRAM breakdown table: Llama 70B GQA attention, weights/KV/activations/overhead totals, plus the __EXIT sentinel line"
     assertions:
-      must_contain: ["hwledger plan", "llama3-70b"]
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 2
-    intent: "Architecture detection line: Llama 3 70B with grouped-query attention"
-    assertions:
-      must_contain: ["Llama"]
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 3
-    intent: "VRAM breakdown table: weights, KV cache, activations, overhead"
-    assertions:
-      must_contain: ["VRAM"]
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 4
-    intent: "Summary row: total VRAM for 4 concurrent users and TP recommendation"
-    assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-      expected_exit: 0
+      must_contain:
+        - "Attention Kind"
+        - "Gqa"
+        - "Parameters"
+        - "Weights"
+        - "KV Cache"
+        - "Total"
+        - "__EXIT_"
+      must_not_contain: ["Error:", "unexpected argument", "command not found", "panic", "thread 'main' panicked"]

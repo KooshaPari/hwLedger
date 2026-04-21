@@ -20,10 +20,10 @@ Sleep 1500ms
 Type "hwledger probe watch --interval 1s --json"
 Sleep 600ms
 Enter
-Sleep 4500ms
+Sleep 3500ms
 Ctrl+C
-Sleep 1000ms
-Type `echo "__EXIT_0__"`
+Sleep 1500ms
+Type `echo "probe-watch-done __EXIT_$?__"`
 Sleep 300ms
 Enter
-Sleep 2000ms
+Sleep 2500ms

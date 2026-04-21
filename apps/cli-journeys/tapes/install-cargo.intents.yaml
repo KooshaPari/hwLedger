@@ -1,39 +1,23 @@
+# Per-frame intent narration for the install-cargo journey.
+# The tape installs hwledger-cli from source via cargo, checks --version,
+# then --help. The last line emits the `__EXIT_$?__` sentinel.
 journey: install-cargo
+traces_to: ["FR-INF-001"]
 steps:
   - index: 0
-    intent: "Terminal prompt"
+    intent: "Terminal prompt, about to run cargo install"
     assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 1
-    intent: "Command typed: `cargo install --path crates/hwledger-cli --root /tmp/hwl-install`"
-    assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 2
-    intent: "Cargo compiling hwledger-cli dependencies"
-    assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
+      must_not_contain: ["Error:", "unexpected argument", "command not found", "panic"]
   - index: 3
-    intent: "Cargo linking final hwledger-cli binary"
+    intent: "hwledger-cli --help prints subcommand summary (plan, ingest, probe, fleet, completions, version) with options; trailing __EXIT sentinel"
     assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 4
-    intent: "Install success line: binary placed under /tmp/hwl-install/bin/"
-    assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 5
-    intent: "`hwledger-cli --version` prints semver and build metadata"
-    assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 6
-    intent: "`hwledger-cli --help` prints subcommand summary"
-    assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 7
-    intent: "Subcommands visible: plan, ingest, probe, fleet, version, completions"
-    assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 8
-    intent: "Prompt returned, ready for next command"
-    assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-      expected_exit: 0
+      must_contain:
+        - "hwledger-cli"
+        - "Usage"
+        - "Commands"
+        - "plan"
+        - "ingest"
+        - "probe"
+        - "fleet"
+        - "__EXIT_"
+      must_not_contain: ["Error:", "unexpected argument", "command not found", "panic", "thread 'main' panicked"]

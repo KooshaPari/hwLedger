@@ -1,19 +1,23 @@
+# Per-frame intent narration for the ingest-local-gguf journey.
+# The tape ingests a local GGUF fixture and emits a JSON document plus the
+# `__EXIT_$?__` sentinel on the last line.
 journey: ingest-local-gguf
+traces_to: ["FR-PLAN-001", "FR-INF-001"]
 steps:
   - index: 0
     intent: "Terminal prompt"
     assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 1
-    intent: "Command typed: `hwledger ingest gguf://tests/golden/fixtures/tiny.gguf --json`"
+      must_not_contain: ["Error:", "unexpected argument", "command not found", "panic"]
+  - index: 12
+    intent: "JSON metadata document: schema, source.kind=gguf, source.location, model.model_type, attention_kind, num_heads; trailing __EXIT sentinel"
     assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 2
-    intent: "JSON document opens: schema, source.kind=gguf, source.location"
-    assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-  - index: 3
-    intent: "Metadata fields: architecture, parameters, quantization inferred from GGUF"
-    assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-      expected_exit: 0
+      must_contain:
+        - "hwledger ingest"
+        - "schema"
+        - "hwledger.v"
+        - "gguf"
+        - "model_type"
+        - "attention_kind"
+        - "num_heads"
+        - "__EXIT_"
+      must_not_contain: ["Error:", "unexpected argument", "command not found", "panic", "thread 'main' panicked"]

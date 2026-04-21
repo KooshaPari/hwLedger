@@ -17,7 +17,7 @@ Output "apps/cli-journeys/recordings/traceability-report.gif"
 Output "apps/cli-journeys/recordings/traceability-report.mp4"
 
 Sleep 1500ms
-Type "cargo run -q -p hwledger-traceability -- --markdown-out /tmp/trace.md --verbose"
+Type "hwledger-traceability --markdown-out /tmp/trace.md --verbose"
 Sleep 600ms
 Enter
 Sleep 4000ms
@@ -27,7 +27,7 @@ Sleep 600ms
 Enter
 Sleep 3000ms
 
-Type `grep -c '^| FR-' /tmp/trace.md; echo "__EXIT_$?__"`
+Type `grep -c 'FR-' /tmp/trace.md; echo "__EXIT_$?__"`
 Sleep 600ms
 Enter
 Sleep 3000ms

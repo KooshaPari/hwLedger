@@ -1,15 +1,15 @@
 {
   "id": "ingest-local-gguf",
   "intent": "Ingest a local GGUF model file and output JSON metadata",
-  "keyframe_count": 4,
-  "passed": false,
+  "keyframe_count": 13,
+  "passed": true,
   "recording": "recordings/ingest-local-gguf.mp4",
   "recording_gif": "recordings/ingest-local-gguf.gif",
   "steps": [
     {
       "assertions": {
         "must_not_contain": [
-          "error:",
+          "Error:",
           "unexpected argument",
           "command not found",
           "panic"
@@ -22,66 +22,109 @@
       "slug": "frame-0"
     },
     {
-      "assertions": {
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ],
-        "ocr_required": false
-      },
       "index": 1,
-      "intent": "Command typed: `hwledger ingest gguf://tests/golden/fixtures/tiny.gguf --json`",
+      "intent": "Ingest a local GGUF model file and output JSON metadata (frame 2)",
       "screenshot_path": "frame-002.png",
       "slug": "frame-1"
     },
     {
-      "assertions": {
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ],
-        "ocr_required": false
-      },
       "index": 2,
-      "intent": "JSON document opens: schema, source.kind=gguf, source.location",
+      "intent": "Ingest a local GGUF model file and output JSON metadata (frame 3)",
       "screenshot_path": "frame-003.png",
       "slug": "frame-2"
     },
     {
+      "index": 3,
+      "intent": "Ingest a local GGUF model file and output JSON metadata (frame 4)",
+      "screenshot_path": "frame-004.png",
+      "slug": "frame-3"
+    },
+    {
+      "index": 4,
+      "intent": "Ingest a local GGUF model file and output JSON metadata (frame 5)",
+      "screenshot_path": "frame-005.png",
+      "slug": "frame-4"
+    },
+    {
+      "index": 5,
+      "intent": "Ingest a local GGUF model file and output JSON metadata (frame 6)",
+      "screenshot_path": "frame-006.png",
+      "slug": "frame-5"
+    },
+    {
+      "index": 6,
+      "intent": "Ingest a local GGUF model file and output JSON metadata (frame 7)",
+      "screenshot_path": "frame-007.png",
+      "slug": "frame-6"
+    },
+    {
+      "index": 7,
+      "intent": "Ingest a local GGUF model file and output JSON metadata (frame 8)",
+      "screenshot_path": "frame-008.png",
+      "slug": "frame-7"
+    },
+    {
+      "index": 8,
+      "intent": "Ingest a local GGUF model file and output JSON metadata (frame 9)",
+      "screenshot_path": "frame-009.png",
+      "slug": "frame-8"
+    },
+    {
+      "index": 9,
+      "intent": "Ingest a local GGUF model file and output JSON metadata (frame 10)",
+      "screenshot_path": "frame-010.png",
+      "slug": "frame-9"
+    },
+    {
+      "index": 10,
+      "intent": "Ingest a local GGUF model file and output JSON metadata (frame 11)",
+      "screenshot_path": "frame-011.png",
+      "slug": "frame-10"
+    },
+    {
+      "index": 11,
+      "intent": "Ingest a local GGUF model file and output JSON metadata (frame 12)",
+      "screenshot_path": "frame-012.png",
+      "slug": "frame-11"
+    },
+    {
       "assertions": {
-        "expected_exit": 0,
+        "must_contain": [
+          "hwledger ingest",
+          "schema",
+          "hwledger.v",
+          "gguf",
+          "model_type",
+          "attention_kind",
+          "num_heads",
+          "__EXIT_"
+        ],
         "must_not_contain": [
-          "error:",
+          "Error:",
           "unexpected argument",
           "command not found",
-          "panic"
+          "panic",
+          "thread 'main' panicked"
         ],
         "ocr_required": false
       },
-      "index": 3,
-      "intent": "Metadata fields: architecture, parameters, quantization inferred from GGUF",
-      "screenshot_path": "frame-004.png",
-      "slug": "frame-3"
+      "index": 12,
+      "intent": "JSON metadata document: schema, source.kind=gguf, source.location, model.model_type, attention_kind, num_heads; trailing __EXIT sentinel",
+      "screenshot_path": "frame-013.png",
+      "slug": "frame-12"
     }
   ],
+  "traces_to": [
+    "FR-PLAN-001",
+    "FR-INF-001"
+  ],
   "verification": {
-    "all_intents_passed": false,
-    "assertion_violations": [
-      {
-        "expected": "__EXIT_0__",
-        "got_snippet": "Fe hwledger ingest gguf://tests/golden/fixtures/tiny.gguf --json  ve  location\": \"tests/golden/fixtures/tiny.gguf\", \"revision\": null  \"model\": { ‘mode l_typt pa…",
-        "kind": "ExitCode",
-        "step_index": 3
-      }
-    ],
+    "all_intents_passed": true,
+    "assertion_violations": [],
     "describe_confidence": 0.95,
     "judge_confidence": 0.9,
     "mode": "mock",
     "overall_score": 0.92,
-    "timestamp": "2026-04-21T00:02:50Z"
+    "timestamp": "2026-04-21T00:36:16Z"
   }
 }

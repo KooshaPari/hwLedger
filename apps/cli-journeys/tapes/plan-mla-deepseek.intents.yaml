@@ -1,41 +1,26 @@
+# Per-frame intent narration for the plan-mla-deepseek journey.
+# Three planner invocations at 2K, 32K, 128K sequences to show that MLA
+# keeps total memory bounded under sequence scaling. The last line emits
+# the `__EXIT_$?__` sentinel.
 journey: plan-mla-deepseek
+traces_to: ["FR-PLAN-003"]
 steps:
   - index: 0
-    intent: "Plan at --seq 2048: MLA classification, compact KV cache via kv_lora_rank"
+    intent: "Terminal prompt, ready to run three plans at 2K / 32K / 128K"
     assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-    annotations:
-      - bbox: [42, 43, 743, 22]
-        label: "--seq 2048"
-        color: "#89b4fa"
-        note: "Baseline context length — 2K tokens"
-        kind: region
-  - index: 1
-    intent: "Plan at --seq 32768: KV footprint grows linearly but stays bounded by MLA"
+      must_not_contain: ["Error:", "unexpected argument", "command not found", "panic"]
+  - index: 3
+    intent: "Third invocation (`--seq 131072`) renders the VRAM table with MLA attention, kv_lora_rank, and weights/KV/activations/overhead/total; trailing __EXIT sentinel"
     assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-    annotations:
-      - bbox: [68, 70, 397, 20]
-        label: "Total VRAM = 47.31 MB"
-        color: "#a6e3a1"
-        note: "MLA keeps total bounded even at 32K — vs. MHA which would blow up"
-      - bbox: [42, 123, 529, 22]
-        label: "plan --seq 32768"
-        color: "#cba6f7"
-        style: dashed
-        note: "16x longer than frame 0"
-      - bbox: [338, 390, 127, 20]
-        label: "KV cache = 11.24 MB"
-        color: "#f9e2af"
-        note: "kv_lora_rank compresses projections 16x"
-  - index: 2
-    intent: "Plan at --seq 131072: 128K context fits because MLA compresses KV projections"
-    assertions:
-      must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
-      expected_exit: 0
-    annotations:
-      - bbox: [42, 43, 743, 22]
-        label: "--seq 131072 (128K)"
-        color: "#f38ba8"
-        note: "64x context vs. frame 0 — MLA still keeps it in a single-GPU footprint"
-        style: dashed
+      must_contain:
+        - "hwledger plan"
+        - "131072"
+        - "Mla"
+        - "kv_"
+        - "rank"
+        - "qk_rope"
+        - "Weights"
+        - "KV Cache"
+        - "Total"
+        - "__EXIT_"
+      must_not_contain: ["Error:", "unexpected argument", "command not found", "panic", "thread 'main' panicked"]

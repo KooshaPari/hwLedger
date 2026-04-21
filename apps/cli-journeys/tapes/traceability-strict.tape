@@ -17,13 +17,13 @@ Output "apps/cli-journeys/recordings/traceability-strict.gif"
 Output "apps/cli-journeys/recordings/traceability-strict.mp4"
 
 Sleep 1500ms
-Type "cargo run -q -p hwledger-traceability --"
+Type "hwledger-traceability"
 Sleep 600ms
 Enter
 Sleep 3000ms
 
-Type `cargo run -q -p hwledger-traceability -- --strict; echo "__EXIT_$?__"`
-Sleep 600ms
+Type `set -o pipefail; hwledger-traceability --strict 2>&1 | tail -6; echo "__EXIT_$?__"`
+Sleep 300ms
 Enter
-Sleep 4500ms
+Sleep 3500ms
 Sleep 2000ms

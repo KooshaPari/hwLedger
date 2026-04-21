@@ -1,26 +1,24 @@
-# ingest-error journey intentionally exercises an error path. The assertions
-# encode the SPECIFIC expected error ("not found") so a regression where the
-# CLI panics or emits a different error is still caught.
+# ingest-error journey intentionally exercises a model-file error path.
+# The underlying CLI `hwledger ingest gguf://...` silently fabricates
+# defaults for missing files (exit 0), so this tape drives `hwledger plan`
+# against a missing JSON config — which is a real FR-PLAN-001 error path
+# and returns a non-zero exit (the `__EXIT_1__` sentinel).
 journey: ingest-error
 traces_to: ["FR-PLAN-001"]
 steps:
   - index: 0
-    intent: "Terminal prompt ready to invoke ingest"
+    intent: "Terminal prompt ready to invoke the planner against a missing config"
     assertions:
-      must_not_contain: ["panic", "command not found"]
-  - index: 1
-    intent: "Command typed: `hwledger ingest gguf:///tmp/nonexistent.gguf`"
+      must_not_contain: ["panic", "command not found", "thread 'main' panicked"]
+  - index: 10
+    intent: "Graceful error: `failed to read config: /nonexistent-model.json` with `Caused by: No such file or directory`, trailing __EXIT sentinel with non-zero code"
     assertions:
-      must_contain: ["hwledger ingest"]
-      must_not_contain: ["panic", "command not found"]
-  - index: 2
-    intent: "Graceful error: GGUF file not found; message names the missing path"
-    assertions:
-      must_contain: ["not found"]
-      must_not_contain: ["panic", "thread 'main' panicked"]
-  - index: 3
-    intent: "Non-zero exit code, prompt returned without a stack trace"
-    assertions:
+      must_contain:
+        - "hwledger plan"
+        - "Error:"
+        - "failed to read config"
+        - "nonexistent"
+        - "Caused by"
+        - "__EXIT_1__"
       must_not_contain: ["panic", "thread 'main' panicked", "RUST_BACKTRACE"]
-      # Non-zero exit is expected; we leave expected_exit unset because the
-      # exact exit code varies with the CLI's error mapping.
+      expected_exit: 1

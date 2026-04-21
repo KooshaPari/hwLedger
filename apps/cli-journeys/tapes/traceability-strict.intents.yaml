@@ -1,17 +1,20 @@
+# Per-frame intent narration for the traceability-strict journey.
+# Strict mode fails on incomplete impl coverage, so the final sentinel is
+# `__EXIT_1__`. The intent is to prove the CI gate actually blocks regressions.
 journey: traceability-strict
+traces_to: ["FR-TRACE-003", "FR-TRACE-004"]
 steps:
   - index: 0
-    intent: "Command typed: `cargo run -q -p hwledger-traceability --` (default, non-strict)"
+    intent: "Terminal prompt ready to invoke hwledger-traceability twice (non-strict then --strict)"
     assertions:
-      must_not_contain: ["unexpected argument", "command not found", "panic"]
-  - index: 1
-    intent: "Report prints with exit code 0 even though some FRs are missing impl rows"
-    assertions:
-      must_not_contain: ["unexpected argument", "command not found", "panic"]
+      must_not_contain: ["unexpected argument", "command not found", "panic", "thread 'main' panicked"]
   - index: 2
-    intent: "Command typed: `cargo run -q -p hwledger-traceability -- --strict` — strict mode fails, listing FRs with missing implementation and exiting non-zero"
+    intent: "Strict mode output listing FRs with missing impl (FR-FLEET, FR-UI, FR-UX-VERIFY, FR-TRACE, NFR); trailing __EXIT_1__ sentinel proving the gate exits non-zero"
     assertions:
-      # `error:` is acceptable here because strict mode legitimately prints
-      # errors about missing implementations. We still guard against clap /
-      # panic crashes.
-      must_not_contain: ["unexpected argument", "command not found", "thread 'main' panicked"]
+      must_contain:
+        - "NFR-"
+        - "missing imp"
+        - "VERIFY"
+        - "__EXIT_1__"
+      must_not_contain: ["unexpected argument", "command not found", "panic", "thread 'main' panicked"]
+      expected_exit: 1

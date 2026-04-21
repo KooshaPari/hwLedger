@@ -48,16 +48,14 @@ pre-push:
 
     tape-assertions:
       # Ground-truth assertion gate: every verified manifest must pass
-      # `phenotype-journey assert --strict`.
+      # `phenotype-journey assert --strict`. Strict by default — any
+      # violation blocks the push. Set HWLEDGER_TAPE_GATE=warn for a
+      # temporary, non-blocking run (e.g. while triaging an OCR regression).
       #
-      # Mode is controlled by HWLEDGER_TAPE_GATE:
-      #   warn (default) — report violation counts, never block the push
-      #   strict         — any violation blocks. Flip to strict after the
-      #                    tape re-record + sentinel retrofit pass lands.
-      #
-      # Per-tape allowlist `HWLEDGER_TAPE_GATE_STRICT_JOURNEYS` (comma-separated
-      # journey ids) forces strict mode for individual tapes so re-recorded
-      # tapes can be pinned as they graduate without flipping the whole gate.
+      # OCR: Catppuccin Mocha + JetBrains Mono renders '0' and 'l' poorly
+      # with vanilla tesseract, so we default to an upscale+negate preprocessing
+      # pipeline via PHENOTYPE_JOURNEY_OCR_CMD. Install ImageMagick (`brew
+      # install imagemagick`) and Tesseract (`brew install tesseract`).
       run: |
         set -uo pipefail
         MANIFESTS_DIR="apps/cli-journeys/manifests"
@@ -74,8 +72,8 @@ pre-push:
           echo "phenotype-journey not available — install phenotype-journeys or set PHENOTYPE_JOURNEYS_ROOT"
           exit 1
         fi
-        mode="${HWLEDGER_TAPE_GATE:-warn}"
-        strict_list=",${HWLEDGER_TAPE_GATE_STRICT_JOURNEYS:-traceability-strict},"
+        export PHENOTYPE_JOURNEY_OCR_CMD="${PHENOTYPE_JOURNEY_OCR_CMD:-convert {{PATH}} -resize 300% -negate - | tesseract - - --psm 6}"
+        mode="${HWLEDGER_TAPE_GATE:-strict}"
         total_fail=0
         total_violations=0
         for m in "$MANIFESTS_DIR"/*/manifest.verified.json; do
@@ -86,7 +84,7 @@ pre-push:
           if [ "$count" -gt 0 ]; then
             total_fail=$((total_fail + 1))
             total_violations=$((total_violations + count))
-            if [ "$mode" = "strict" ] || [ "${strict_list#*,$journey,}" != "$strict_list" ]; then
+            if [ "$mode" = "strict" ]; then
               echo "FAIL ${journey}: ${count} violations (strict)"
               printf "%s\n" "$out"
             else

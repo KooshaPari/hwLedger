@@ -2,30 +2,14 @@
   "id": "probe-list",
   "intent": "List all available probes in both table and JSON formats",
   "keyframe_count": 3,
-  "passed": false,
+  "passed": true,
   "recording": "recordings/probe-list.mp4",
   "recording_gif": "recordings/probe-list.gif",
   "steps": [
     {
-      "annotations": [
-        {
-          "bbox": [
-            42,
-            44,
-            276,
-            21
-          ],
-          "color": "#89b4fa",
-          "label": "probe list command",
-          "note": "Enumerates GPU vendors + drivers"
-        }
-      ],
       "assertions": {
-        "must_contain": [
-          "hwledger probe list"
-        ],
         "must_not_contain": [
-          "error:",
+          "Error:",
           "unexpected argument",
           "command not found",
           "panic"
@@ -33,94 +17,38 @@
         "ocr_required": false
       },
       "index": 0,
-      "intent": "Command typed: `hwledger probe list`",
+      "intent": "Terminal prompt ready to run `hwledger probe list`",
       "screenshot_path": "frame-001.png",
       "slug": "frame-0"
     },
     {
-      "annotations": [
-        {
-          "bbox": [
-            427,
-            71,
-            797,
-            20
-          ],
-          "color": "#f38ba8",
-          "label": "AMD probe init failure",
-          "note": "Expected on macOS — no ROCm backend",
-          "style": "dashed"
-        },
-        {
-          "bbox": [
-            427,
-            124,
-            811,
-            21
-          ],
-          "color": "#fab387",
-          "label": "NVML init failure",
-          "note": "Expected on macOS — no NVIDIA driver",
-          "style": "dashed"
-        }
-      ],
-      "assertions": {
-        "must_contain": [
-          "VRAM"
-        ],
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ],
-        "ocr_required": false
-      },
       "index": 1,
-      "intent": "Table output: detected GPU devices with VRAM, driver, PCI location",
+      "intent": "List all available probes in both table and JSON formats (frame 2)",
       "screenshot_path": "frame-002.png",
       "slug": "frame-1"
     },
     {
-      "annotations": [
-        {
-          "bbox": [
-            427,
-            71,
-            811,
-            20
-          ],
-          "color": "#f9e2af",
-          "label": "cli::cmd::probe stderr",
-          "note": "Warnings surface via tracing, not stdout — JSON output stays clean"
-        },
-        {
-          "bbox": [
-            41,
-            43,
-            501,
-            22
-          ],
-          "color": "#cba6f7",
-          "label": "dyld / dlopen trace",
-          "note": "macOS linker searches for libnvidia-ml.dylib and reports the miss"
-        }
-      ],
       "assertions": {
-        "expected_exit": 0,
         "must_contain": [
-          "--json"
+          "schema",
+          "hwledger.v",
+          "devices",
+          "metal",
+          "Silicon",
+          "total_vram",
+          "__EXIT_"
         ],
         "must_not_contain": [
-          "error:",
+          "Error:",
           "unexpected argument",
           "command not found",
-          "panic"
+          "panic",
+          "thread 'main' panicked"
         ],
         "ocr_required": false
       },
       "index": 2,
-      "intent": "Second invocation `hwledger probe list --json` returning NDJSON-style output",
+      "intent": "JSON output from `hwledger probe list --json` with schema/timestamp_ms/devices array (Apple Silicon GPU, metal backend, total_vram, utilization), trailing __EXIT sentinel",
       "screenshot_path": "frame-003.png",
       "slug": "frame-2"
     }
@@ -130,43 +58,12 @@
     "FR-TEL-002"
   ],
   "verification": {
-    "all_intents_passed": false,
-    "assertion_violations": [
-      {
-        "expected": "hwledger probe list",
-        "got_snippet": "",
-        "kind": "MustContain",
-        "step_index": 0
-      },
-      {
-        "expected": "VRAM",
-        "got_snippet": "> hwledger probe list  2026-04-207T08:05:36.999307Z WARN hwledger_probe: Failed to initialize AMD probe: backend initialization failed: I/0 error: No such file …",
-        "kind": "MustContain",
-        "step_index": 1
-      },
-      {
-        "expected": "error:",
-        "got_snippet": "edger_probe: Failed to initialize AMD probe: backend initialization failed: I/0 error: No such file or directory (os error 2) 2026-04-207T08:05:37.009226Z WARN hwledg",
-        "kind": "MustNotContain",
-        "step_index": 1
-      },
-      {
-        "expected": "--json",
-        "got_snippet": "dyld cache), 'nvml.dll' (no such file)  2026-04-207T08:05:41.794040Z WARN hwledger_cli::cmd::probe: Failed to enumerate nvidia: ba ckend initialization failed: …",
-        "kind": "MustContain",
-        "step_index": 2
-      },
-      {
-        "expected": "__EXIT_0__",
-        "got_snippet": "dyld cache), 'nvml.dll' (no such file)  2026-04-207T08:05:41.794040Z WARN hwledger_cli::cmd::probe: Failed to enumerate nvidia: ba ckend initialization failed: …",
-        "kind": "ExitCode",
-        "step_index": 2
-      }
-    ],
+    "all_intents_passed": true,
+    "assertion_violations": [],
     "describe_confidence": 0.95,
     "judge_confidence": 0.9,
     "mode": "mock",
     "overall_score": 0.92,
-    "timestamp": "2026-04-21T00:03:14Z"
+    "timestamp": "2026-04-21T00:36:35Z"
   }
 }

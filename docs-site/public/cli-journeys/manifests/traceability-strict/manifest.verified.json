@@ -11,43 +11,48 @@
         "must_not_contain": [
           "unexpected argument",
           "command not found",
-          "panic"
+          "panic",
+          "thread 'main' panicked"
         ],
         "ocr_required": false
       },
       "index": 0,
-      "intent": "Command typed: `cargo run -q -p hwledger-traceability --` (default, non-strict)",
+      "intent": "Terminal prompt ready to invoke hwledger-traceability twice (non-strict then --strict)",
       "screenshot_path": "frame-001.png",
       "slug": "frame-0"
     },
     {
-      "assertions": {
-        "must_not_contain": [
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ],
-        "ocr_required": false
-      },
       "index": 1,
-      "intent": "Report prints with exit code 0 even though some FRs are missing impl rows",
+      "intent": "Show strict mode enforcement with passing and failing traceability checks (frame 2)",
       "screenshot_path": "frame-002.png",
       "slug": "frame-1"
     },
     {
       "assertions": {
+        "expected_exit": 1,
+        "must_contain": [
+          "NFR-",
+          "missing imp",
+          "VERIFY",
+          "__EXIT_1__"
+        ],
         "must_not_contain": [
           "unexpected argument",
           "command not found",
+          "panic",
           "thread 'main' panicked"
         ],
         "ocr_required": false
       },
       "index": 2,
-      "intent": "Command typed: `cargo run -q -p hwledger-traceability -- --strict` — strict mode fails, listing FRs with missing implementation and exiting non-zero",
+      "intent": "Strict mode output listing FRs with missing impl (FR-FLEET, FR-UI, FR-UX-VERIFY, FR-TRACE, NFR); trailing __EXIT_1__ sentinel proving the gate exits non-zero",
       "screenshot_path": "frame-003.png",
       "slug": "frame-2"
     }
+  ],
+  "traces_to": [
+    "FR-TRACE-003",
+    "FR-TRACE-004"
   ],
   "verification": {
     "all_intents_passed": true,
@@ -56,6 +61,6 @@
     "judge_confidence": 0.9,
     "mode": "mock",
     "overall_score": 0.92,
-    "timestamp": "2026-04-21T00:03:32Z"
+    "timestamp": "2026-04-21T00:36:50Z"
   }
 }

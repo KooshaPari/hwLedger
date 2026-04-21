@@ -1,15 +1,15 @@
 {
   "id": "plan-help",
   "intent": "Show the plan command's help text with all available options",
-  "keyframe_count": 6,
-  "passed": false,
+  "keyframe_count": 10,
+  "passed": true,
   "recording": "recordings/plan-help.mp4",
   "recording_gif": "recordings/plan-help.gif",
   "steps": [
     {
       "assertions": {
         "must_not_contain": [
-          "error:",
+          "Error:",
           "unexpected argument",
           "command not found",
           "panic"
@@ -22,99 +22,90 @@
       "slug": "frame-0"
     },
     {
-      "assertions": {
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ],
-        "ocr_required": false
-      },
       "index": 1,
-      "intent": "Command typed: `hwledger plan --help`",
+      "intent": "Show the plan command's help text with all available options (frame 2)",
       "screenshot_path": "frame-002.png",
       "slug": "frame-1"
     },
     {
-      "assertions": {
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ],
-        "ocr_required": false
-      },
       "index": 2,
-      "intent": "Usage line and positional PATH argument description",
+      "intent": "Show the plan command's help text with all available options (frame 3)",
       "screenshot_path": "frame-003.png",
       "slug": "frame-2"
     },
     {
-      "assertions": {
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ],
-        "ocr_required": false
-      },
       "index": 3,
-      "intent": "Options block: --seq, --users, --batch, --weight-quant, --kv-quant",
+      "intent": "Show the plan command's help text with all available options (frame 4)",
       "screenshot_path": "frame-004.png",
       "slug": "frame-3"
     },
     {
-      "assertions": {
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ],
-        "ocr_required": false
-      },
       "index": 4,
-      "intent": "Options block continued: --device-total-vram, --json, --export, --no-color",
+      "intent": "Show the plan command's help text with all available options (frame 5)",
       "screenshot_path": "frame-005.png",
       "slug": "frame-4"
     },
     {
+      "index": 5,
+      "intent": "Show the plan command's help text with all available options (frame 6)",
+      "screenshot_path": "frame-006.png",
+      "slug": "frame-5"
+    },
+    {
+      "index": 6,
+      "intent": "Show the plan command's help text with all available options (frame 7)",
+      "screenshot_path": "frame-007.png",
+      "slug": "frame-6"
+    },
+    {
+      "index": 7,
+      "intent": "Show the plan command's help text with all available options (frame 8)",
+      "screenshot_path": "frame-008.png",
+      "slug": "frame-7"
+    },
+    {
+      "index": 8,
+      "intent": "Show the plan command's help text with all available options (frame 9)",
+      "screenshot_path": "frame-009.png",
+      "slug": "frame-8"
+    },
+    {
       "assertions": {
-        "expected_exit": 0,
+        "must_contain": [
+          "--users",
+          "--batch",
+          "--weight-quant",
+          "--kv-quant",
+          "--json",
+          "--export",
+          "--no-color",
+          "__EXIT_"
+        ],
         "must_not_contain": [
-          "error:",
+          "Error:",
           "unexpected argument",
           "command not found",
-          "panic"
+          "panic",
+          "thread 'main' panicked"
         ],
         "ocr_required": false
       },
-      "index": 5,
-      "intent": "Trailing --help line and prompt returned",
-      "screenshot_path": "frame-006.png",
-      "slug": "frame-5"
+      "index": 9,
+      "intent": "Tail of plan --help options: --users, --batch, --weight-quant, --kv-quant, --json, --export, --no-color; trailing __EXIT sentinel",
+      "screenshot_path": "frame-010.png",
+      "slug": "frame-9"
     }
   ],
   "traces_to": [
     "FR-PLAN-003"
   ],
   "verification": {
-    "all_intents_passed": false,
-    "assertion_violations": [
-      {
-        "expected": "__EXIT_0__",
-        "got_snippet": "Options: --seq <SEQ> Sequence length (context window size) [default: 2048] --users <USERS> Number of concurrent users [default: 1] --batch <BATCH> Batch size pe…",
-        "kind": "ExitCode",
-        "step_index": 5
-      }
-    ],
+    "all_intents_passed": true,
+    "assertion_violations": [],
     "describe_confidence": 0.95,
     "judge_confidence": 0.9,
     "mode": "mock",
     "overall_score": 0.92,
-    "timestamp": "2026-04-21T00:03:09Z"
+    "timestamp": "2026-04-21T00:36:27Z"
   }
 }

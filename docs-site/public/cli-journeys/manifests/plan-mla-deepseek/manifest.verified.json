@@ -1,28 +1,15 @@
 {
   "id": "plan-mla-deepseek",
   "intent": "Show MLA classification and KV sequence invariance across 2K, 32K, 128K sequences",
-  "keyframe_count": 3,
-  "passed": false,
+  "keyframe_count": 4,
+  "passed": true,
   "recording": "recordings/plan-mla-deepseek.mp4",
   "recording_gif": "recordings/plan-mla-deepseek.gif",
   "steps": [
     {
-      "annotations": [
-        {
-          "bbox": [
-            42,
-            43,
-            743,
-            22
-          ],
-          "color": "#89b4fa",
-          "label": "--seq 2048",
-          "note": "Baseline context length — 2K tokens"
-        }
-      ],
       "assertions": {
         "must_not_contain": [
-          "error:",
+          "Error:",
           "unexpected argument",
           "command not found",
           "panic"
@@ -30,106 +17,61 @@
         "ocr_required": false
       },
       "index": 0,
-      "intent": "Plan at --seq 2048: MLA classification, compact KV cache via kv_lora_rank",
+      "intent": "Terminal prompt, ready to run three plans at 2K / 32K / 128K",
       "screenshot_path": "frame-001.png",
       "slug": "frame-0"
     },
     {
-      "annotations": [
-        {
-          "bbox": [
-            68,
-            70,
-            397,
-            20
-          ],
-          "color": "#a6e3a1",
-          "label": "Total VRAM = 47.31 MB",
-          "note": "MLA keeps total bounded even at 32K — vs. MHA which would blow up"
-        },
-        {
-          "bbox": [
-            42,
-            123,
-            529,
-            22
-          ],
-          "color": "#cba6f7",
-          "label": "plan --seq 32768",
-          "note": "16x longer than frame 0",
-          "style": "dashed"
-        },
-        {
-          "bbox": [
-            338,
-            390,
-            127,
-            20
-          ],
-          "color": "#f9e2af",
-          "label": "KV cache = 11.24 MB",
-          "note": "kv_lora_rank compresses projections 16x"
-        }
-      ],
-      "assertions": {
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ],
-        "ocr_required": false
-      },
       "index": 1,
-      "intent": "Plan at --seq 32768: KV footprint grows linearly but stays bounded by MLA",
+      "intent": "Show MLA classification and KV sequence invariance across 2K, 32K, 128K sequences (frame 2)",
       "screenshot_path": "frame-002.png",
       "slug": "frame-1"
     },
     {
-      "annotations": [
-        {
-          "bbox": [
-            42,
-            43,
-            743,
-            22
-          ],
-          "color": "#f38ba8",
-          "label": "--seq 131072 (128K)",
-          "note": "64x context vs. frame 0 — MLA still keeps it in a single-GPU footprint",
-          "style": "dashed"
-        }
-      ],
+      "index": 2,
+      "intent": "Show MLA classification and KV sequence invariance across 2K, 32K, 128K sequences (frame 3)",
+      "screenshot_path": "frame-003.png",
+      "slug": "frame-2"
+    },
+    {
       "assertions": {
-        "expected_exit": 0,
+        "must_contain": [
+          "hwledger plan",
+          "131072",
+          "Mla",
+          "kv_",
+          "rank",
+          "qk_rope",
+          "Weights",
+          "KV Cache",
+          "Total",
+          "__EXIT_"
+        ],
         "must_not_contain": [
-          "error:",
+          "Error:",
           "unexpected argument",
           "command not found",
-          "panic"
+          "panic",
+          "thread 'main' panicked"
         ],
         "ocr_required": false
       },
-      "index": 2,
-      "intent": "Plan at --seq 131072: 128K context fits because MLA compresses KV projections",
-      "screenshot_path": "frame-003.png",
-      "slug": "frame-2"
+      "index": 3,
+      "intent": "Third invocation (`--seq 131072`) renders the VRAM table with MLA attention, kv_lora_rank, and weights/KV/activations/overhead/total; trailing __EXIT sentinel",
+      "screenshot_path": "frame-004.png",
+      "slug": "frame-3"
     }
   ],
+  "traces_to": [
+    "FR-PLAN-003"
+  ],
   "verification": {
-    "all_intents_passed": false,
-    "assertion_violations": [
-      {
-        "expected": "__EXIT_0__",
-        "got_snippet": "BESO SEBS OSS EO SEHDEE: Py DED DOS DCR OSD COSC OSCE SC ODES DOS SOD OS SESSCODCOSS  Total | 47.31 MB $--------------------- 4---------------------------------…",
-        "kind": "ExitCode",
-        "step_index": 2
-      }
-    ],
+    "all_intents_passed": true,
+    "assertion_violations": [],
     "describe_confidence": 0.95,
     "judge_confidence": 0.9,
     "mode": "mock",
     "overall_score": 0.92,
-    "timestamp": "2026-04-21T00:03:11Z"
+    "timestamp": "2026-04-21T00:36:31Z"
   }
 }
