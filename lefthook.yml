@@ -28,10 +28,22 @@ pre-commit:
 
     trufflehog:
       run: |
-        if command -v trufflehog >/dev/null 2>&1; then
-          trufflehog git file://. --since-commit HEAD --only-verified --fail
-        else
+        if ! command -v trufflehog >/dev/null 2>&1; then
           echo "trufflehog not installed; skipping. brew install trufflesecurity/trufflehog/trufflehog"
+          exit 0
+        fi
+        # Trufflehog's git driver can't open a worktree's `.git` file
+        # (gitdir indirection errors with "not a directory"). In that case
+        # scan the staged filesystem diff instead; on the canonical checkout
+        # keep the original git-aware mode.
+        if [ -f .git ]; then
+          files=$(git diff --cached --name-only --diff-filter=ACM)
+          if [ -z "$files" ]; then
+            echo "no staged files to scan"; exit 0
+          fi
+          echo "$files" | xargs -I{} trufflehog filesystem --only-verified --fail {} || exit 1
+        else
+          trufflehog git file://. --since-commit HEAD --only-verified --fail
         fi
 
 pre-push:

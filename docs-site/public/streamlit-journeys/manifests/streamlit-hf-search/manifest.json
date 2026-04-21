@@ -4,6 +4,7 @@
   "intent": "Load the HF Search page, browse the 2025-2026 quick picks, type a query, pick filters, and hand off a selected model to the Planner.",
   "recording": "recordings/streamlit-hf-search.mp4",
   "recording_gif": "recordings/streamlit-hf-search.gif",
+  "recording_rich": "recordings/streamlit-hf-search/streamlit-hf-search.rich.mp4",
   "keyframe_count": 5,
   "passed": true,
   "steps": [

@@ -5,6 +5,7 @@
   "passed": true,
   "recording": "recordings/streamlit-hf-search/streamlit-hf-search.mp4",
   "recording_gif": "recordings/streamlit-hf-search/streamlit-hf-search.gif",
+  "recording_rich": "recordings/streamlit-hf-search/streamlit-hf-search.rich.mp4",
   "steps": [
     {
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: landing)",
