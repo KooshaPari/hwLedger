@@ -139,11 +139,7 @@ fn project_annotations(yaml_path: &Path, manifests: &[PathBuf]) -> anyhow::Resul
 }
 
 /// Run annotate step only (requires manifest with annotations already populated).
-fn annotate_only(
-    manifest: &Path,
-    keyframes: &Path,
-    remotion_root: &Path,
-) -> anyhow::Result<()> {
+fn annotate_only(manifest: &Path, keyframes: &Path, remotion_root: &Path) -> anyhow::Result<()> {
     // Build a minimal RenderPlan to reuse annotate() helper.
     let manifest_abs = std::fs::canonicalize(manifest)?;
     let keyframes_abs = std::fs::canonicalize(keyframes)?;
