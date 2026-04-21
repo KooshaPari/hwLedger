@@ -59,6 +59,11 @@ final class AppState {
     /// HF repo-id pre-filled from the HF Search screen into Planner.
     var pendingPlannerRepoId: String?
 
+    /// Planner resolver input — bound to the combobox TextField. Driven
+    /// through `HwLedger.resolveModel` with a 400ms debounce.
+    /// Traces to: FR-HF-001, FR-PLAN-003
+    var modelInput: String = ""
+
     /// Baseline/candidate preselected from HF Search → What-If.
     var whatIfBaseline: ModelCard?
     var whatIfCandidate: ModelCard?

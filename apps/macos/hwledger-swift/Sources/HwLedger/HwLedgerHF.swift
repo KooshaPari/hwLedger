@@ -237,6 +237,37 @@ public struct Prediction: Codable {
     }
 }
 
+// MARK: - Resolver (Planner model input)
+
+/// Result of resolving a user-supplied Planner model input string through
+/// `hwledger_resolve_model`. Mirrors the four JSON shapes that the Rust
+/// resolver emits.
+///
+/// Traces to: FR-HF-001, FR-PLAN-003
+public enum ResolvedModelSource: Equatable {
+    case hfRepo(repoId: String, revision: String?)
+    case goldenFixture(path: URL)
+    case localConfig(path: URL)
+    case ambiguous(hint: String, candidates: [ModelCard])
+
+    /// Human-readable identifier for a resolved (non-ambiguous) source.
+    /// Returns `nil` for `.ambiguous`.
+    public var resolvedId: String? {
+        switch self {
+        case let .hfRepo(repoId, _): return repoId
+        case let .goldenFixture(path): return path.lastPathComponent
+        case let .localConfig(path): return path.lastPathComponent
+        case .ambiguous: return nil
+        }
+    }
+
+    /// Whether this resolution is unambiguous (safe to proceed to Plan).
+    public var isResolved: Bool {
+        if case .ambiguous = self { return false }
+        return true
+    }
+}
+
 // MARK: - Workload Inputs
 
 public struct WhatIfWorkload: Codable {
@@ -325,6 +356,95 @@ extension HwLedger {
         }
     }
 
+    /// Resolve a Planner model input string (free text, `org/repo`, HF URL,
+    /// `gold:<name>`, or absolute `.json` path) into a structured source.
+    ///
+    /// Calls `hwledger_resolve_model` on the Rust FFI and decodes the JSON
+    /// response. When `token` is non-nil the resolver will use it as the HF
+    /// bearer token for the ambiguous-search fallback.
+    ///
+    /// Traces to: FR-HF-001, FR-PLAN-003
+    public static func resolveModel(input: String, token: String? = nil) async throws -> ResolvedModelSource {
+        let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            throw HwLedgerError.invalidInput("resolve input must not be empty")
+        }
+
+        return try await Task.detached(priority: .userInitiated) { () -> ResolvedModelSource in
+            let inputCStr = strdup(trimmed)
+            defer { free(inputCStr) }
+            let tokenCStr: UnsafeMutablePointer<Int8>? = token.flatMap { strdup($0) }
+            defer { if let t = tokenCStr { free(t) } }
+
+            guard let ptr = hwledger_resolve_model(inputCStr, tokenCStr) else {
+                throw HwLedgerError.runtimeError("hwledger_resolve_model returned null")
+            }
+            defer { hwledger_hf_free_string(ptr) }
+
+            let json = String(cString: ptr)
+            return try HwLedger.decodeResolvedModel(json: json)
+        }.value
+    }
+
+    /// Decode a raw JSON payload as returned by `hwledger_resolve_model`.
+    /// Separated from the async call so unit tests can cover the four-variant
+    /// wire contract without invoking the FFI.
+    public static func decodeResolvedModel(json: String) throws -> ResolvedModelSource {
+        guard let data = json.data(using: .utf8) else {
+            throw HwLedgerError.invalidData("resolve_model payload is not UTF-8")
+        }
+        guard let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw HwLedgerError.invalidData("resolve_model payload is not a JSON object")
+        }
+
+        // `error_json` returns `{"error": "..."}` on failure — surface it.
+        if let err = obj["error"] as? String {
+            throw HwLedgerError.runtimeError("resolve_model: \(err)")
+        }
+
+        guard let kind = obj["kind"] as? String else {
+            throw HwLedgerError.invalidData("resolve_model payload missing \"kind\"")
+        }
+
+        switch kind {
+        case "hf_repo":
+            guard let repoId = obj["repo_id"] as? String else {
+                throw HwLedgerError.invalidData("hf_repo missing repo_id")
+            }
+            let revision = obj["revision"] as? String
+            return .hfRepo(repoId: repoId, revision: revision)
+
+        case "golden_fixture":
+            guard let path = obj["path"] as? String else {
+                throw HwLedgerError.invalidData("golden_fixture missing path")
+            }
+            return .goldenFixture(path: URL(fileURLWithPath: path))
+
+        case "local_config":
+            guard let path = obj["path"] as? String else {
+                throw HwLedgerError.invalidData("local_config missing path")
+            }
+            return .localConfig(path: URL(fileURLWithPath: path))
+
+        case "ambiguous":
+            let hint = (obj["hint"] as? String) ?? ""
+            let candidatesRaw = obj["candidates"] ?? []
+            let candidatesData = try JSONSerialization.data(withJSONObject: candidatesRaw)
+            let candidates: [ModelCard]
+            do {
+                candidates = try JSONDecoder().decode([ModelCard].self, from: candidatesData)
+            } catch {
+                // Rust `HfModelSummary` may use a slightly different key shape;
+                // be lenient rather than failing the resolution entirely.
+                candidates = []
+            }
+            return .ambiguous(hint: hint, candidates: candidates)
+
+        default:
+            throw HwLedgerError.invalidData("resolve_model unknown kind: \(kind)")
+        }
+    }
+
     /// Decode a raw JSON payload as returned by `hwledger_predict`.
     public static func decodePrediction(json: String) throws -> Prediction {
         guard let data = json.data(using: .utf8) else {
@@ -338,3 +458,14 @@ extension HwLedger {
         }
     }
 }
+
+// MARK: - Resolver C FFI Declarations
+
+@_silgen_name("hwledger_resolve_model")
+internal func hwledger_resolve_model(
+    _ input: UnsafePointer<Int8>?,
+    _ token: UnsafePointer<Int8>?
+) -> UnsafeMutablePointer<Int8>?
+
+@_silgen_name("hwledger_hf_free_string")
+internal func hwledger_hf_free_string(_ ptr: UnsafeMutablePointer<Int8>?)
