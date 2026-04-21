@@ -207,13 +207,13 @@ fn main() -> anyhow::Result<()> {
             output,
             scene_spec,
             voiceover,
-        }) => run_single(journey, manifest, keyframes, remotion_root, output, scene_spec, voiceover),
+        }) => {
+            run_single(journey, manifest, keyframes, remotion_root, output, scene_spec, voiceover)
+        }
         Some(Cmd::Annotate { manifest, keyframes, remotion_root }) => {
             annotate_only(&manifest, &keyframes, &remotion_root)
         }
-        Some(Cmd::ProjectAnnotations { yaml, manifests }) => {
-            project_annotations(&yaml, &manifests)
-        }
+        Some(Cmd::ProjectAnnotations { yaml, manifests }) => project_annotations(&yaml, &manifests),
         None => {
             let journey = cli.journey.ok_or_else(|| {
                 anyhow::anyhow!(
