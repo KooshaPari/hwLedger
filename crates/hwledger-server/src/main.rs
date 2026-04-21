@@ -33,6 +33,17 @@ struct Args {
     /// Bootstrap token for agent registration
     #[arg(long, default_value = "dev-bootstrap-token")]
     bootstrap_token: String,
+
+    /// Disable TLS and serve plaintext HTTP. For local/dev use only.
+    /// Equivalent to clearing `require_admin_cert`; refuses to run in release
+    /// builds unless `--dev` is also passed.
+    #[arg(long)]
+    plain_http: bool,
+
+    /// Development-mode shortcut: implies `--plain-http` and relaxes the
+    /// admin-cert requirement in release builds. Never use in production.
+    #[arg(long)]
+    dev: bool,
 }
 
 #[tokio::main]
@@ -46,13 +57,25 @@ async fn main() -> Result<()> {
 
     let args = Args::parse();
 
+    // Dev/plain-http override: debug builds default to plaintext; release
+    // builds require mTLS unless --dev (or --plain-http in debug) is set.
+    let plain_http = args.plain_http || args.dev;
+    let require_admin_cert = if plain_http {
+        if cfg!(not(debug_assertions)) && !args.dev {
+            anyhow::bail!("--plain-http requires --dev in release builds");
+        }
+        false
+    } else {
+        cfg!(not(debug_assertions))
+    };
+
     let config = ServerConfig {
         bind: SocketAddr::from(([127, 0, 0, 1], args.port)),
         db_path: args.db,
         ca_cert_path: args.ca_cert,
         ca_key_path: args.ca_key,
         bootstrap_tokens: vec![args.bootstrap_token],
-        require_admin_cert: cfg!(not(debug_assertions)),
+        require_admin_cert,
     };
 
     tracing::info!("Starting hwledger-server v{}", env!("CARGO_PKG_VERSION"));
