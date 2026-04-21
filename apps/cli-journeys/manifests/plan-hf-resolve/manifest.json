@@ -1,0 +1,35 @@
+{
+  "id": "plan-hf-resolve",
+  "intent": "Plan via HF resolver: bare repo id, full HF URL, and gold: fixture shortcut",
+  "recording": "recordings/plan-hf-resolve.mp4",
+  "recording_gif": "recordings/plan-hf-resolve.gif",
+  "keyframe_count": 4,
+  "passed": true,
+  "steps": [
+    {
+      "index": 0,
+      "slug": "frame-0",
+      "intent": "Terminal at prompt, ready to invoke the planner via the HF resolver",
+      "screenshot_path": "frame-001.png"
+    },
+    {
+      "index": 1,
+      "slug": "frame-1",
+      "intent": "First invocation resolves a bare HF repo id (deepseek-ai/DeepSeek-V3) and renders the VRAM table with MLA attention at 4K seq",
+      "screenshot_path": "frame-002.png"
+    },
+    {
+      "index": 2,
+      "slug": "frame-2",
+      "intent": "Second invocation resolves a full HF URL (https://huggingface.co/meta-llama/Llama-3-70B) at 8K seq; table shows GQA/MHA architecture kind + VRAM breakdown",
+      "screenshot_path": "frame-003.png"
+    },
+    {
+      "index": 3,
+      "slug": "frame-3",
+      "intent": "Third invocation uses the gold:deepseek-v3 fixture shortcut at 32K seq; MLA attention + VRAM breakdown + __EXIT_0__ sentinel",
+      "screenshot_path": "frame-004.png"
+    }
+  ],
+  "traces_to": ["FR-HF-001"]
+}

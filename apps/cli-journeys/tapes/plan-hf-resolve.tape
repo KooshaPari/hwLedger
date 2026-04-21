@@ -21,15 +21,15 @@ Sleep 1500ms
 Type "hwledger plan deepseek-ai/DeepSeek-V3 --seq 4K"
 Sleep 600ms
 Enter
-Sleep 3500ms
+Sleep 4500ms
 
-Type "hwledger plan https://huggingface.co/meta-llama/Llama-3-70B --seq 8K"
+Type "hwledger plan https://huggingface.co/mistralai/Mistral-7B-v0.1 --seq 4K"
 Sleep 600ms
 Enter
-Sleep 3500ms
+Sleep 4500ms
 
 Type `hwledger plan gold:deepseek-v3 --seq 32K; echo "__EXIT_$?__"`
 Sleep 600ms
 Enter
-Sleep 3500ms
+Sleep 4500ms
 Sleep 2000ms

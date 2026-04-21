@@ -1,19 +1,215 @@
 {
   "id": "plan-hf-resolve",
   "intent": "Plan via HF resolver: bare repo id, full HF URL, and gold: fixture shortcut",
+  "keyframe_count": 4,
+  "passed": false,
   "recording": "recordings/plan-hf-resolve.mp4",
   "recording_gif": "recordings/plan-hf-resolve.gif",
-  "keyframe_count": 0,
-  "steps": [],
-  "traces_to": ["FR-HF-001"],
-  "passed": true,
+  "steps": [
+    {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
+      "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-0)",
+      "index": 0,
+      "intent": "Terminal at prompt, ready to invoke the planner via the HF resolver",
+      "screenshot_path": "frame-001.png",
+      "slug": "frame-0"
+    },
+    {
+      "assertions": {
+        "must_contain": [
+          "hwledger plan",
+          "DeepSeek-V3",
+          "Mla",
+          "Attention Kind",
+          "Weights",
+          "KV Cache",
+          "Total"
+        ],
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "panic",
+          "thread 'main' panicked"
+        ],
+        "ocr_required": false
+      },
+      "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
+      "index": 1,
+      "intent": "First invocation resolves a bare HF repo id (`deepseek-ai/DeepSeek-V3`) and renders the VRAM table with MLA attention",
+      "screenshot_path": "frame-002.png",
+      "slug": "frame-1"
+    },
+    {
+      "assertions": {
+        "must_contain": [
+          "hwledger plan",
+          "Attention Kind",
+          "Weights",
+          "KV Cache",
+          "Total"
+        ],
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "panic",
+          "thread 'main' panicked"
+        ],
+        "ocr_required": false
+      },
+      "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-2)",
+      "index": 2,
+      "intent": "Planner output from the first invocation is fully rendered and the second invocation resolves a full HF URL (`https://huggingface.co/mistralai/Mistral-7B-v0.1`)",
+      "screenshot_path": "frame-003.png",
+      "slug": "frame-2"
+    },
+    {
+      "assertions": {
+        "expected_exit": 0,
+        "must_contain": [
+          "hwledger plan",
+          "gold:deepseek-v3",
+          "Mla",
+          "Attention Kind",
+          "Weights",
+          "KV Cache",
+          "Total"
+        ],
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "panic",
+          "thread 'main' panicked"
+        ],
+        "ocr_required": false
+      },
+      "blind_description": "Shell session showing a command header and a paragraph of structured stdout. (frame slug: frame-3)",
+      "index": 3,
+      "intent": "Third invocation uses the `gold:deepseek-v3` fixture shortcut at 32K seq; MLA attention + VRAM breakdown + __EXIT_0__ sentinel",
+      "screenshot_path": "frame-004.png",
+      "slug": "frame-3"
+    }
+  ],
+  "traces_to": [
+    "FR-HF-001"
+  ],
   "verification": {
-    "timestamp": "2026-04-19T00:00:00Z",
-    "mode": "pending-record",
+    "all_intents_passed": false,
+    "assertion_violations": [
+      {
+        "expected": "Mla",
+        "got_snippet": "> hwledger plan deepseek-ai/DeepSeek-V3 --seq 4K reins arene ares ee  Property  ",
+        "kind": "MustContain",
+        "step_index": 1
+      },
+      {
+        "expected": "Attention Kind",
+        "got_snippet": "> hwledger plan deepseek-ai/DeepSeek-V3 --seq 4K reins arene ares ee  Property  ",
+        "kind": "MustContain",
+        "step_index": 1
+      },
+      {
+        "expected": "Weights",
+        "got_snippet": "> hwledger plan deepseek-ai/DeepSeek-V3 --seq 4K reins arene ares ee  Property  ",
+        "kind": "MustContain",
+        "step_index": 1
+      },
+      {
+        "expected": "KV Cache",
+        "got_snippet": "> hwledger plan deepseek-ai/DeepSeek-V3 --seq 4K reins arene ares ee  Property  ",
+        "kind": "MustContain",
+        "step_index": 1
+      },
+      {
+        "expected": "Total",
+        "got_snippet": "> hwledger plan deepseek-ai/DeepSeek-V3 --seq 4K reins arene ares ee  Property  ",
+        "kind": "MustContain",
+        "step_index": 1
+      },
+      {
+        "expected": "Attention Kind",
+        "got_snippet": "> hwledger plan deepseek-ai/DeepSeek-V3 --seq 4K Fraelcnlibecipemplnneinn nisi  Property  > hwledger plan https://huggingface. co/mistralai/Mistrat- 7B-v0.1 --s…",
+        "kind": "MustContain",
+        "step_index": 2
+      },
+      {
+        "expected": "Weights",
+        "got_snippet": "> hwledger plan deepseek-ai/DeepSeek-V3 --seq 4K Fraelcnlibecipemplnneinn nisi  Property  > hwledger plan https://huggingface. co/mistralai/Mistrat- 7B-v0.1 --s…",
+        "kind": "MustContain",
+        "step_index": 2
+      },
+      {
+        "expected": "KV Cache",
+        "got_snippet": "> hwledger plan deepseek-ai/DeepSeek-V3 --seq 4K Fraelcnlibecipemplnneinn nisi  Property  > hwledger plan https://huggingface. co/mistralai/Mistrat- 7B-v0.1 --s…",
+        "kind": "MustContain",
+        "step_index": 2
+      },
+      {
+        "expected": "Total",
+        "got_snippet": "> hwledger plan deepseek-ai/DeepSeek-V3 --seq 4K Fraelcnlibecipemplnneinn nisi  Property  > hwledger plan https://huggingface. co/mistralai/Mistrat- 7B-v0.1 --s…",
+        "kind": "MustContain",
+        "step_index": 2
+      },
+      {
+        "expected": "hwledger plan",
+        "got_snippet": "ps cos ee saes eesecsseece Property  ee | 37.75 MB Py SO CBOE HOSS OH SO SSO SO HOSE SO ESD ESOS SES SESSES5E556  | 503.32 MB Ghose soma coososn sa sonososonoss…",
+        "kind": "MustContain",
+        "step_index": 3
+      },
+      {
+        "expected": "gold:deepseek-v3",
+        "got_snippet": "ps cos ee saes eesecsseece Property  ee | 37.75 MB Py SO CBOE HOSS OH SO SSO SO HOSE SO ESD ESOS SES SESSES5E556  | 503.32 MB Ghose soma coososn sa sonososonoss…",
+        "kind": "MustContain",
+        "step_index": 3
+      },
+      {
+        "expected": "Mla",
+        "got_snippet": "ps cos ee saes eesecsseece Property  ee | 37.75 MB Py SO CBOE HOSS OH SO SSO SO HOSE SO ESD ESOS SES SESSES5E556  | 503.32 MB Ghose soma coososn sa sonososonoss…",
+        "kind": "MustContain",
+        "step_index": 3
+      },
+      {
+        "expected": "Attention Kind",
+        "got_snippet": "ps cos ee saes eesecsseece Property  ee | 37.75 MB Py SO CBOE HOSS OH SO SSO SO HOSE SO ESD ESOS SES SESSES5E556  | 503.32 MB Ghose soma coososn sa sonososonoss…",
+        "kind": "MustContain",
+        "step_index": 3
+      },
+      {
+        "expected": "Weights",
+        "got_snippet": "ps cos ee saes eesecsseece Property  ee | 37.75 MB Py SO CBOE HOSS OH SO SSO SO HOSE SO ESD ESOS SES SESSES5E556  | 503.32 MB Ghose soma coososn sa sonososonoss…",
+        "kind": "MustContain",
+        "step_index": 3
+      },
+      {
+        "expected": "KV Cache",
+        "got_snippet": "ps cos ee saes eesecsseece Property  ee | 37.75 MB Py SO CBOE HOSS OH SO SSO SO HOSE SO ESD ESOS SES SESSES5E556  | 503.32 MB Ghose soma coososn sa sonososonoss…",
+        "kind": "MustContain",
+        "step_index": 3
+      },
+      {
+        "expected": "Total",
+        "got_snippet": "ps cos ee saes eesecsseece Property  ee | 37.75 MB Py SO CBOE HOSS OH SO SSO SO HOSE SO ESD ESOS SES SESSES5E556  | 503.32 MB Ghose soma coososn sa sonososonoss…",
+        "kind": "MustContain",
+        "step_index": 3
+      },
+      {
+        "expected": "__EXIT_0__",
+        "got_snippet": "ps cos ee saes eesecsseece Property  ee | 37.75 MB Py SO CBOE HOSS OH SO SSO SO HOSE SO ESD ESOS SES SESSES5E556  | 503.32 MB Ghose soma coososn sa sonososonoss…",
+        "kind": "ExitCode",
+        "step_index": 3
+      }
+    ],
+    "describe_confidence": 0.95,
+    "judge_confidence": 0.9,
+    "mode": "mock",
     "overall_score": 0.92,
-    "describe_confidence": 0.90,
-    "judge_confidence": 0.90,
-    "all_intents_passed": true,
-    "assertion_violations": []
+    "timestamp": "2026-04-21T04:23:37Z"
   }
 }
