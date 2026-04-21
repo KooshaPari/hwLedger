@@ -89,12 +89,10 @@ pub fn build_rich_manifest(plan: &RenderPlan) -> Result<PathBuf, RenderError> {
             rich.scenes = Some(scenes);
         }
     }
-    rich.voiceover = Some(VoiceoverSpec {
-        backend: plan.voiceover.clone(),
-        lines: None,
-        audio: None,
-    });
-    rich.recording_rich = Some(format!("recordings/{}/{}.rich.mp4", plan.journey_id, plan.journey_id));
+    rich.voiceover =
+        Some(VoiceoverSpec { backend: plan.voiceover.clone(), lines: None, audio: None });
+    rich.recording_rich =
+        Some(format!("recordings/{}/{}.rich.mp4", plan.journey_id, plan.journey_id));
 
     let out = plan.keyframes_dir.join("manifest.rich.json");
     std::fs::write(&out, serde_json::to_string_pretty(&rich)?)?;
@@ -106,11 +104,7 @@ pub fn annotate(plan: &RenderPlan, rich_manifest_path: &Path) -> Result<(), Rend
     ensure_bun()?;
     let out = Command::new("bun")
         .current_dir(&plan.remotion_root)
-        .args([
-            "run",
-            "src/annotate.ts",
-            "--manifest",
-        ])
+        .args(["run", "src/annotate.ts", "--manifest"])
         .arg(rich_manifest_path)
         .args(["--keyframes-dir"])
         .arg(&plan.keyframes_dir)
@@ -143,14 +137,7 @@ pub fn render(plan: &RenderPlan, rich_manifest_path: &Path) -> Result<(), Render
 
     let out = Command::new("bun")
         .current_dir(&plan.remotion_root)
-        .args([
-            "x",
-            "remotion",
-            "render",
-            "src/index.tsx",
-            "JourneyRich",
-            "--props",
-        ])
+        .args(["x", "remotion", "render", "src/index.tsx", "JourneyRich", "--props"])
         .arg(&props_str)
         .arg("--output")
         .arg(&plan.output_mp4)

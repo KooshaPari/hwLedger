@@ -9,7 +9,7 @@ use hwledger_journey_render::{run, RenderPlan};
 #[command(
     name = "hwledger-journey-render",
     about = "Render an enriched (rich) MP4 for a CLI journey via Remotion.",
-    version,
+    version
 )]
 struct Cli {
     /// Journey id (e.g. "plan-deepseek").
@@ -49,13 +49,8 @@ fn main() -> anyhow::Result<()> {
         )
         .init();
     let cli = Cli::parse();
-    let mut plan = RenderPlan::new(
-        cli.journey,
-        cli.manifest,
-        cli.keyframes,
-        cli.remotion_root,
-        cli.output,
-    );
+    let mut plan =
+        RenderPlan::new(cli.journey, cli.manifest, cli.keyframes, cli.remotion_root, cli.output);
     plan.scene_spec = cli.scene_spec;
     plan.voiceover = cli.voiceover;
     let out = run(&plan)?;
