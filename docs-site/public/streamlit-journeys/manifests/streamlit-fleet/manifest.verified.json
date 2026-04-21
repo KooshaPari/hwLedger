@@ -5,6 +5,9 @@
   "passed": true,
   "recording": "recordings/streamlit-fleet/streamlit-fleet.mp4",
   "recording_gif": "recordings/streamlit-fleet/streamlit-fleet.gif",
+  "recording_rich": "recordings/streamlit-fleet/streamlit-fleet.rich.mp4",
+  "recording_rich_manifest_sha256": "b8801c19d1ab9e28823fceffa0c514076701feb0efdaae5390dc2a5d5d69f36c",
+  "recording_rich_sha256": "14a329b63509495371ab434c2eaf6c4b1db940d38adadc71df28e71e1754061a",
   "steps": [
     {
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: landing)",

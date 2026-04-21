@@ -6,6 +6,8 @@
   "recording": "recordings/streamlit-hf-search/streamlit-hf-search.mp4",
   "recording_gif": "recordings/streamlit-hf-search/streamlit-hf-search.gif",
   "recording_rich": "recordings/streamlit-hf-search/streamlit-hf-search.rich.mp4",
+  "recording_rich_manifest_sha256": "f987ec89545347ebaa140d5fd47359bf4c12ad81239358522bad8388c5fceefe",
+  "recording_rich_sha256": "fef3c3c7c92174d835fe13bcf127a99a9c0b2019c4769ad5575e40d90eb8352e",
   "steps": [
     {
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: landing)",
