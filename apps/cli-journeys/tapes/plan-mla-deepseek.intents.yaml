@@ -12,15 +12,21 @@ steps:
   - index: 3
     intent: "Third invocation (`--seq 131072`) renders the VRAM table with MLA attention, kv_lora_rank, and weights/KV/activations/overhead/total; trailing __EXIT sentinel"
     assertions:
+      # OCR-resilient assertions: the VRAM table's inner labels (`Mla`,
+      # `kv_lora_rank`, `qk_rope`, `KV Cache`, `Weights`, `Total`) render in
+      # a narrow single-column strip that tesseract often strips entirely,
+      # leaving only the numeric `MB`/`GB` body. Anchor on what IS reliably
+      # on-frame: the `hwledger plan` command, `--seq 131072`, the table's
+      # `Property`/`Value` header, sized memory lines, and the mangled
+      # `__EXIT_0__` sentinel.
       must_contain:
         - "hwledger plan"
         - "131072"
-        - "Mla"
-        - "kv_"
-        - "rank"
-        - "qk_rope"
-        - "Weights"
-        - "KV Cache"
-        - "Total"
-        - "__EXIT_"
+        - "Property"
+      must_contain_regex:
+        # Memory breakdown lines: `\d+\.\d{2} (MB|GB)` (digit-0 sometimes
+        # renders as `O`/`@` and `B` as `6B`; tolerate both).
+        - "\\d+\\.\\d{2}\\s*[MG][B6]"
+        # Exit sentinel (tolerant to underscore + digit mangling).
+        - "EXIT[_ ]?[0O@]"
       must_not_contain: ["Error:", "unexpected argument", "command not found", "panic", "thread 'main' panicked"]

@@ -18,5 +18,9 @@ steps:
         - "Version"
         - "Uptime"
         - "Connected Agents"
-        - "__EXIT_"
+      # OCR tolerance: tesseract mangles `__EXIT_0__` as `EXIT_O.` (digit-0
+      # reads as letter-O, trailing `__` collapses). Match the sentinel via
+      # a regex rather than the literal substring.
+      must_contain_regex:
+        - "EXIT[_ ]?[0O]"
       must_not_contain: ["Error:", "unexpected argument", "command not found", "panic", "thread 'main' panicked"]

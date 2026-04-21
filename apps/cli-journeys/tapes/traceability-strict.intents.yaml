@@ -15,6 +15,10 @@ steps:
         - "NFR-"
         - "missing imp"
         - "VERIFY"
-        - "__EXIT_1__"
+      # OCR tolerance: tesseract renders `__EXIT_1__` as `—EXIT_1__` (em-dash
+      # and/or collapsed underscores). Match via regex; `expected_exit: 1`
+      # below enforces the sentinel-on-last-frame rule separately.
+      must_contain_regex:
+        - "EXIT[_ ]?1"
       must_not_contain: ["unexpected argument", "command not found", "panic", "thread 'main' panicked"]
       expected_exit: 1

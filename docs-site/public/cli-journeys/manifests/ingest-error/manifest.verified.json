@@ -120,18 +120,12 @@
         "got_snippet": "> hwledger plan /nonexistent-model.json; echo \"__EXIT_$?__\" Error: failed to read config: /nonexistent-model.json  Caused by:  No such file or directory (os err…",
         "kind": "MustContain",
         "step_index": 10
-      },
-      {
-        "expected": "__EXIT_1__",
-        "got_snippet": "> hwledger plan /nonexistent-model.json; echo \"__EXIT_$?__\" Error: failed to read config: /nonexistent-model.json  Caused by:  No such file or directory (os err…",
-        "kind": "ExitCode",
-        "step_index": 10
       }
     ],
     "describe_confidence": 0.95,
     "judge_confidence": 0.9,
     "mode": "mock",
     "overall_score": 0.92,
-    "timestamp": "2026-04-21T04:23:30Z"
+    "timestamp": "2026-04-21T08:21:20Z"
   }
 }
