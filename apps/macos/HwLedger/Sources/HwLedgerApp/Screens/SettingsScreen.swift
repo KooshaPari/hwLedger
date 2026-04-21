@@ -394,7 +394,7 @@ struct SettingsScreen: View {
     /// Mint a self-signed PEM via `openssl req -x509` (always present on macOS).
     /// This is a pragmatic replacement for a dedicated FFI symbol and produces
     /// a real cert that the journey + downstream tools can consume.
-    static func mintSelfSignedPem(cn: String) -> Result<String, Error> {
+    nonisolated static func mintSelfSignedPem(cn: String) -> Result<String, Error> {
         let tmp = FileManager.default.temporaryDirectory
             .appendingPathComponent("hwledger-mtls-\(UUID().uuidString)")
         do {

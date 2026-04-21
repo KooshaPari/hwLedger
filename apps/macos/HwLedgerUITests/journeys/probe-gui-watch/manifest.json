@@ -1,0 +1,7 @@
+{
+  "id": "probe-gui-watch",
+  "passed": false,
+  "pending_record": true,
+  "reason": "Screen Recording + Accessibility permission must be granted to Terminal/Xcode. Then re-run: cd apps/macos/HwLedgerUITests && swift test --filter probe_gui_watch",
+  "steps": []
+}
