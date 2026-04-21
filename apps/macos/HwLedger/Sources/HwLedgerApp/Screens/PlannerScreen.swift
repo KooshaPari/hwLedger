@@ -2,7 +2,13 @@ import SwiftUI
 import HwLedger
 
 struct PlannerScreen: View {
-    @State private var seqLen: Double = 4096
+    // Log-space bounds: 2^7 (128) → 10M. UI stores log10 value for smooth
+    // mapping from the underlying Slider's linear 0…1 domain.
+    // Traces to: FR-PLAN-003
+    static let seqMinTokens: Double = 128
+    static let seqMaxTokens: Double = 10_000_000
+
+    @State private var seqLogValue: Double = log10(4096.0)
     @State private var concurrentUsers: Double = 2
     @State private var batchSize: Double = 1
     @State private var kvQuant: KvQuantization = .fp16
@@ -10,6 +16,24 @@ struct PlannerScreen: View {
     @State private var plannerResult: PlannerResult?
     @State private var layerContributions: [UInt64] = []
     @State private var error: String?
+    /// Effective model max context window in tokens. `nil` = unknown (full 10M range).
+    @State private var modelMaxContext: UInt32?
+
+    /// Current sequence length derived from the log-scale slider, clamped
+    /// to `modelMaxContext` when known.
+    private var seqLen: UInt64 {
+        let raw = pow(10.0, seqLogValue)
+        let clamped = min(raw, Double(modelMaxContext ?? UInt32.max))
+        return UInt64(clamped.rounded())
+    }
+
+    /// Upper bound for the log slider in log10 space.
+    private var seqLogUpperBound: Double {
+        if let cap = modelMaxContext, cap > 0 {
+            return log10(Double(cap))
+        }
+        return log10(Self.seqMaxTokens)
+    }
 
     private let testConfig = """
     {
@@ -36,7 +60,7 @@ struct PlannerScreen: View {
                     }
                     .accessibilityIdentifier("custom-json-label")
 
-                    sliderSection(label: "Sequence Length", value: $seqLen, range: 512...8192)
+                    seqLengthSliderSection()
                     sliderSection(label: "Concurrent Users", value: $concurrentUsers, range: 1...16)
                     sliderSection(label: "Batch Size", value: $batchSize, range: 1...8)
 
@@ -64,11 +88,59 @@ struct PlannerScreen: View {
             Spacer()
         }
         .padding()
-        .onChange(of: seqLen) { _, _ in updatePlan() }
+        .onChange(of: seqLogValue) { _, _ in updatePlan() }
         .onChange(of: concurrentUsers) { _, _ in updatePlan() }
         .onChange(of: batchSize) { _, _ in updatePlan() }
         .task {
+            resolveModelMaxContext()
             updatePlan()
+        }
+    }
+
+    private func seqLengthSliderSection() -> some View {
+        // Log-transform pattern: bind Slider to log10(tokens); derive display
+        // value via `pow(10, logVal)`. Cap upper bound at `modelMaxContext`.
+        // Traces to: FR-PLAN-003
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("Sequence Length")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                Spacer()
+                Text(TokensFormatter.format(seqLen))
+                    .monospacedDigit()
+                    .font(.caption)
+            }
+            Slider(
+                value: $seqLogValue,
+                in: log10(Self.seqMinTokens)...seqLogUpperBound
+            )
+            .accessibilityIdentifier("seq-len-slider")
+
+            if let cap = modelMaxContext {
+                Text("Max context: \(TokensFormatter.format(UInt64(cap)))")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .accessibilityIdentifier("seq-len-max-badge")
+            } else if seqLen > 131_072 {
+                Text("No model resolved — most runtimes cap at 128K.")
+                    .font(.caption2)
+                    .foregroundColor(.orange)
+            }
+        }
+    }
+
+    /// Resolve the declared max-context window from the active config and
+    /// clamp the log slider value into the allowed range.
+    private func resolveModelMaxContext() {
+        if let cap = HwLedger.modelMaxContext(configJson: testConfig), cap > 0 {
+            modelMaxContext = cap
+            let ceilingLog = log10(Double(cap))
+            if seqLogValue > ceilingLog {
+                seqLogValue = ceilingLog
+            }
+        } else {
+            modelMaxContext = nil
         }
     }
 
@@ -223,7 +295,7 @@ struct PlannerScreen: View {
         do {
             plannerResult = try HwLedger.plan(
                 configJson: testConfig,
-                seqLen: UInt64(seqLen),
+                seqLen: seqLen,
                 concurrentUsers: UInt32(concurrentUsers),
                 batchSize: UInt32(batchSize),
                 kvQuantization: kvQuant,
@@ -232,7 +304,7 @@ struct PlannerScreen: View {
 
             layerContributions = try HwLedger.planLayers(
                 configJson: testConfig,
-                seqLen: UInt64(seqLen),
+                seqLen: seqLen,
                 kvQuantization: kvQuant
             )
 

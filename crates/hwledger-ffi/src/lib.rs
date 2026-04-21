@@ -517,6 +517,31 @@ pub extern "C" fn hwledger_core_version() -> *const c_char {
     c"0.0.1".as_ptr()
 }
 
+/// Return the effective max context length for a model config.
+///
+/// Reads `max_position_embeddings`, `rope_scaling`, `sliding_window`, and
+/// `model_max_length` from the provided HuggingFace-style config JSON.
+/// Returns `0` when the model is unbounded (pure SSM / Mamba) or when the
+/// config is unparseable / missing any positional bound. Callers treat `0`
+/// as "unknown → allow full slider range".
+///
+/// Traces to: FR-PLAN-003
+///
+/// # Safety
+/// `config_json` must be a valid NUL-terminated UTF-8 C string, or NULL.
+/// NULL input returns `0`.
+#[no_mangle]
+pub unsafe extern "C" fn hwledger_model_max_context(config_json: *const c_char) -> u32 {
+    if config_json.is_null() {
+        return 0;
+    }
+    let cstr = match CStr::from_ptr(config_json).to_str() {
+        Ok(s) => s,
+        Err(_) => return 0,
+    };
+    hwledger_ingest::config::parse_max_context(cstr).unwrap_or(0)
+}
+
 // ============================================================================
 // Prediction buffet (hwledger-predict)
 // Traces to: FR-PREDICT-001

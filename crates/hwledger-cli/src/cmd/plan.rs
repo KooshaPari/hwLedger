@@ -10,6 +10,7 @@ use hwledger_arch::{classify, Config as ArchConfig};
 use hwledger_core::math::{
     KvFormula, KvQuant as CoreKvQuant, PlannerSnapshot, WeightQuant as CoreWeightQuant,
 };
+use hwledger_ingest::config::{fmt_token_count, parse_max_context, parse_token_count};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
@@ -21,8 +22,9 @@ pub struct PlanArgs {
     #[arg(value_name = "PATH")]
     config_path: PathBuf,
 
-    /// Sequence length (context window size).
-    #[arg(long, default_value = "2048")]
+    /// Sequence length (context window size). Accepts integer or `K`/`M`/`G`
+    /// suffixes, e.g. `--seq 128K`, `--seq 1M`, `--seq 4096`.
+    #[arg(long, default_value = "2048", value_parser = parse_seq_len)]
     seq: u64,
 
     /// Number of concurrent users.
@@ -116,6 +118,10 @@ impl KvQuant {
             KvQuant::ThreeBit => "3bit",
         }
     }
+}
+
+fn parse_seq_len(s: &str) -> Result<u64, String> {
+    parse_token_count(s)
 }
 
 fn parse_weight_quant(s: &str) -> Result<WeightQuant, String> {
@@ -245,6 +251,20 @@ pub fn run(args: PlanArgs) -> Result<()> {
         .with_context(|| format!("failed to read config: {}", args.config_path.display()))?;
 
     let arch_cfg = ArchConfig::from_json(&config_json).context("failed to parse config.json")?;
+
+    // Enforce model's declared max context window when known.
+    // Traces to: FR-PLAN-003
+    if let Some(model_max) = parse_max_context(&config_json) {
+        if args.seq > model_max as u64 {
+            let model_label = arch_cfg.model_type.clone().unwrap_or_else(|| "model".to_string());
+            anyhow::bail!(
+                "{} supports up to {}; requested {}",
+                model_label,
+                fmt_token_count(model_max as u64),
+                fmt_token_count(args.seq),
+            );
+        }
+    }
 
     // Classify architecture
     let attention_kind = classify(&arch_cfg).context("failed to classify architecture")?;

@@ -223,6 +223,20 @@ public struct HwLedger {
         return String(cString: versionPtr)
     }
 
+    /// Return the effective max context length for the given model config.
+    ///
+    /// Returns `nil` when the config is unparseable or the model is effectively
+    /// unbounded (pure SSM / Mamba).
+    ///
+    /// Traces to: FR-PLAN-003
+    public static func modelMaxContext(configJson: String) -> UInt32? {
+        let configJsonCStr = UnsafeMutablePointer<Int8>(
+            mutating: (configJson as NSString).utf8String!
+        )
+        let value = hwledger_model_max_context(configJsonCStr)
+        return value == 0 ? nil : value
+    }
+
     /// Plan memory requirements for a model.
     ///
     /// - Parameters:
@@ -450,6 +464,50 @@ public struct MlxHandle {
     }
 }
 
+// MARK: - Token Formatting & Log-Scale Slider Helpers
+
+/// Format a token count using `K`/`M` suffixes — `4096` → `"4K"`, `1_048_576` → `"1M"`.
+///
+/// Traces to: FR-PLAN-003
+public enum TokensFormatter {
+    public static func format(_ value: UInt64) -> String {
+        let mega: UInt64 = 1 << 20
+        let kilo: UInt64 = 1 << 10
+        if value >= mega && value % mega == 0 {
+            return "\(value / mega)M"
+        }
+        if value >= mega {
+            return String(format: "%.1fM", Double(value) / Double(mega))
+        }
+        if value >= kilo && value % kilo == 0 {
+            return "\(value / kilo)K"
+        }
+        if value >= kilo {
+            return String(format: "%.1fK", Double(value) / Double(kilo))
+        }
+        return "\(value)"
+    }
+}
+
+/// Log-scale slider helpers for sequence-length UIs. Sliders are bound to
+/// `log10(tokens)` so that visual distance tracks order-of-magnitude.
+///
+/// Traces to: FR-PLAN-003
+public enum LogSlider {
+    /// Convert a raw token count into its log-space slider value.
+    public static func encode(tokens: UInt64) -> Double {
+        log10(Double(max(tokens, 1)))
+    }
+
+    /// Convert a log-space slider value back into a token count, clamped into
+    /// the inclusive range `[lowerTokens, upperTokens]`.
+    public static func decode(logValue: Double, lowerTokens: UInt64, upperTokens: UInt64) -> UInt64 {
+        let raw = pow(10.0, logValue)
+        let clamped = min(max(raw, Double(lowerTokens)), Double(upperTokens))
+        return UInt64(clamped.rounded())
+    }
+}
+
 // MARK: - C FFI Declarations
 //
 // These are the raw C declarations imported from libhwledger_ffi.
@@ -481,6 +539,9 @@ internal func hwledger_probe_sample_free(_ sample: UnsafeMutablePointer<hwledger
 
 @_silgen_name("hwledger_core_version")
 internal func hwledger_core_version() -> UnsafePointer<Int8>
+
+@_silgen_name("hwledger_model_max_context")
+internal func hwledger_model_max_context(_ configJson: UnsafeMutablePointer<Int8>?) -> UInt32
 
 @_silgen_name("hwledger_mlx_spawn")
 internal func hwledger_mlx_spawn(_ pythonPath: UnsafeMutablePointer<Int8>?, _ omlxModule: UnsafeMutablePointer<Int8>?) -> UnsafeMutableRawPointer?

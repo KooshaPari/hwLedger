@@ -8,8 +8,9 @@ import json
 import streamlit as st
 import plotly.graph_objects as go
 from pathlib import Path
-from lib.ffi import plan, plan_layers, export_vllm, export_llama_cpp, export_mlx, is_available, PlanResult, predict, predict_available
+from lib.ffi import plan, plan_layers, export_vllm, export_llama_cpp, export_mlx, is_available, PlanResult, predict, predict_available, model_max_context
 from lib.charts import stacked_bar_chart, gauge_chart
+from lib.tokens import LOG_TICKS, fmt_tokens, ticks_up_to
 
 
 st.set_page_config(page_title="Planner - hwLedger", layout="wide")
@@ -51,17 +52,45 @@ with st.sidebar:
         help="Pre-configured model from tests/golden/",
     )
 
+    # Resolve model max context BEFORE building the slider so options are bounded.
+    # Traces to: FR-PLAN-003
+    _fixture_path_preview = golden_dir / f"{selected_fixture}.json"
+    try:
+        with open(_fixture_path_preview) as _f:
+            _preview_config_str = json.dumps(json.load(_f))
+        _model_max_ctx = model_max_context(_preview_config_str) or 0
+    except Exception:
+        _preview_config_str = None
+        _model_max_ctx = 0
+
+    if _model_max_ctx > 0:
+        st.markdown(
+            f"<div style='display:inline-block;padding:4px 10px;border-radius:6px;"
+            f"background:#7c3aed;color:white;font-weight:600;"
+            f"font-family:ui-monospace,monospace;font-size:12px;'>"
+            f"Max context: {_model_max_ctx:,} ({selected_fixture})</div>",
+            unsafe_allow_html=True,
+        )
+
     st.markdown("---")
     st.subheader("Runtime Config")
 
-    seq_len = st.slider(
+    # Log-spaced sequence-length slider. Capped at resolved model max when known;
+    # otherwise exposes the full 128 → 10M range.
+    _available_ticks = ticks_up_to(_model_max_ctx if _model_max_ctx > 0 else None)
+    _default_seq = 4096 if 4096 in _available_ticks else _available_ticks[0]
+    seq_len = st.select_slider(
         "Sequence Length (tokens)",
-        min_value=128,
-        max_value=32768,
-        value=4096,
-        step=256,
-        help="Context window size",
+        options=_available_ticks,
+        value=_default_seq,
+        format_func=fmt_tokens,
+        help="Log-scale context window size (128 → 10M). Capped at the model's declared max when known.",
     )
+    if _model_max_ctx == 0 and seq_len > 131_072:
+        st.warning(
+            f"Requesting {fmt_tokens(seq_len)} without a resolved model — most deployed "
+            "models cap at 128K. Pick a long-context model or expect failure at runtime."
+        )
 
     concurrent_users = st.slider(
         "Concurrent Users",

@@ -6,6 +6,7 @@
 //! and local model catalogs (Ollama, LM Studio, MLX). Each adapter returns a common
 //! [`IngestResult`] with parsed model metadata and architecture classification.
 
+pub mod config;
 pub mod gguf;
 pub mod safetensors;
 

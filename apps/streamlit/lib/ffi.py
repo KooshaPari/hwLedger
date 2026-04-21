@@ -338,6 +338,25 @@ class Telemetry:
 # High-Level API
 # =============================================================================
 
+def model_max_context(config_json: str) -> Optional[int]:
+    """
+    Return the effective max context length for a model config, or None when
+    unbounded / unknown. Wraps `hwledger_model_max_context`.
+
+    Traces to: FR-PLAN-003
+    """
+    if lib is None:
+        return None
+    try:
+        lib.hwledger_model_max_context.argtypes = [ctypes.c_char_p]
+        lib.hwledger_model_max_context.restype = ctypes.c_uint32
+    except AttributeError:
+        # Older FFI build without the symbol — treat as unknown.
+        return None
+    value = lib.hwledger_model_max_context(config_json.encode("utf-8"))
+    return int(value) if value and value > 0 else None
+
+
 def plan(
     config_json: str,
     seq_len: int,
