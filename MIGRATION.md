@@ -1,45 +1,63 @@
 # Migration: journey harness → `phenotype-journeys`
 
-The hwLedger journey harness is being extracted into the reusable package
+The hwLedger journey harness has been extracted into the reusable package
 [`phenotype-journeys`](../phenotype-journeys) so every Phenotype project
-inherits the capability. **This file documents the swap plan; no migration
-has been executed yet.**
+inherits the capability. **Status: consumer side is DONE; registry
+publish is PENDING a GitHub PAT with `write:packages` scope.**
 
-## What moves
+## What moved
 
-| Today (hwLedger-local)                                              | After migration                              |
+| Was (hwLedger-local)                                                | Now                                          |
 | ------------------------------------------------------------------- | -------------------------------------------- |
 | `apps/cli-journeys/scripts/verify-manifests.sh`                     | `phenotype-journey verify <manifest.json>`   |
 | `apps/cli-journeys/scripts/mock-anthropic-server.py`                | Built-in mock mode in `phenotype-journey-core` |
 | `apps/cli-journeys/manifests/*/manifest.json` (schema shape)        | `phenotype-journeys/schema/manifest.schema.json` (canonical) |
 | `docs-site/.vitepress/theme/components/JourneyViewer.vue`           | `@phenotype/journey-viewer` → `JourneyViewer` |
+| `docs-site/.vitepress/theme/components/KeyframeGallery.vue`         | `@phenotype/journey-viewer` → `KeyframeGallery` |
+| `docs-site/.vitepress/theme/components/KeyframeLightbox.vue`        | `@phenotype/journey-viewer` → `KeyframeLightbox` |
 | `docs-site/.vitepress/theme/components/RecordingEmbed.vue`          | `@phenotype/journey-viewer` → `RecordingEmbed` |
 | `crates/hwledger-gui-recorder/` (Playwright-equivalent for macOS)   | Remains hwLedger-specific; emits conformant manifests consumed by `phenotype-journey verify`. |
 
-## Steps (not yet executed)
+## Executed steps
 
-1. **Vendor the CLI:** add `phenotype-journey` as a Cargo workspace path-dep
-   or install via `cargo install --path ../phenotype-journeys/bin/phenotype-journey`.
-2. **Swap the verify script:** replace the body of
-   `apps/cli-journeys/scripts/verify-manifests.sh` with a single
-   `phenotype-journey verify` loop, or delete the script and call the CLI
-   from CI directly.
-3. **Swap docs components:**
-   - `bun add @phenotype/journey-viewer` in `docs-site/`.
-   - In `docs-site/.vitepress/theme/index.ts`, register the components from
-     the package instead of the local `theme/components/*.vue`.
-   - Delete `JourneyViewer.vue` and `RecordingEmbed.vue` from the local
-     theme once the MDX embeds switch over.
-4. **Schema-validate existing manifests:** run
-   `phenotype-journey validate apps/cli-journeys/manifests/*/manifest.json`
-   and fix any drift from the canonical schema.
-5. **Wire acceptance:** make CI fail for any user-facing spec that lacks a
-   passing verified manifest — see `phenotype-journeys/README.md`
-   "Acceptance criteria".
+1. **Vendored the CLI** — `cargo install --path bin/phenotype-journey --root ~/.local`
+   installs a global `phenotype-journey` binary. All scripts
+   (`lefthook.yml`, `apps/cli-journeys/scripts/*`, `docs-site/scripts/*`,
+   `docs-site/package.json`) now prefer `command -v phenotype-journey`
+   and only fall back to `cargo run --manifest-path ${PHENOTYPE_JOURNEYS_ROOT}/Cargo.toml`
+   if the binary is not installed.
+2. **Swapped docs components** — `docs-site/package.json` now depends on
+   `@phenotype/journey-viewer@^0.1.0`. Pending registry publish, the
+   dependency resolves to
+   `file:../vendor/phenotype-journeys/phenotype-journey-viewer-0.1.0.tgz`.
+   `docs-site/.vitepress/theme/index.ts` imports `JourneyViewer`,
+   `KeyframeGallery`, `KeyframeLightbox`, and `RecordingEmbed` from the
+   package. The four local Vue files
+   (`docs-site/.vitepress/theme/components/{JourneyViewer,KeyframeGallery,KeyframeLightbox,RecordingEmbed}.vue`)
+   were **deleted** (1,302 LOC of vendored Vue removed).
+3. **Published (pending)** — `@phenotype/journey-viewer@0.1.0` and
+   `@phenotype/journey-playwright@0.1.0` are packed and vendored at
+   `vendor/phenotype-journeys/*.tgz`. When a PAT with `write:packages`
+   becomes available, follow `phenotype-journeys/npm/PUBLISHING.md` to
+   push to `npm.pkg.github.com`, then change the tarball dep to
+   `"@phenotype/journey-viewer": "^0.1.0"` and commit `docs-site/.npmrc`
+   (already present) unchanged.
+4. **Schema validation** — existing manifests already pass
+   `phenotype-journey check-verified` (see `bun run check:verified`).
+5. **Acceptance gate** — `pre-push` in `lefthook.yml` invokes
+   `phenotype-journey check-verified` across `docs-site/public/` and
+   `apps/`, blocking any push that lacks a `manifest.verified.json`.
 
-## Not in scope for this migration
+## Still in hwLedger (not in scope)
 
-- The XCUITest recorder in `apps/macos/HwLedgerUITests/` stays put; it just
-  needs to emit a manifest matching `schema/manifest.schema.json` so the
-  shared `phenotype-journey verify` can consume it.
+- `JourneyStep.vue` and `JudgeScore.vue` remain local — the Phenotype
+  package does re-export them for convenience but hwLedger uses the
+  local copies for hwLedger-specific judge semantics.
+- The XCUITest recorder in `apps/macos/HwLedgerUITests/` stays put; it
+  emits manifests matching `schema/manifest.schema.json`.
 - The `hwledger-gui-recorder` crate stays hwLedger-specific for now.
+
+## Commits
+
+- phenotype-journeys: pending (see PR/commit list)
+- hwLedger: pending (see PR/commit list)

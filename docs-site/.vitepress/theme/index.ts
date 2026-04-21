@@ -2,11 +2,13 @@ import { h } from 'vue'
 import type { Theme } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
 import './custom.css'
-import JourneyViewer from './components/JourneyViewer.vue'
-import KeyframeGallery from './components/KeyframeGallery.vue'
+import {
+  JourneyViewer,
+  KeyframeGallery,
+  RecordingEmbed,
+} from '@phenotype/journey-viewer'
 import JourneyStep from './components/JourneyStep.vue'
 import JudgeScore from './components/JudgeScore.vue'
-import RecordingEmbed from './components/RecordingEmbed.vue'
 
 export default {
   extends: DefaultTheme,
