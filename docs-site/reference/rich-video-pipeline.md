@@ -64,12 +64,37 @@ Same semantics as the legacy flag-only invocation (`--journey ... --manifest ...
 The per-step duration can be overridden via a `scenes[]` sidecar in the
 enriched manifest (`durationFrames`).
 
-## Annotate step
+## Annotate step (baked flow)
 
-`src/annotate.ts` composites `steps[].annotations` (bbox/label/colour)
-onto each keyframe PNG via `sharp`, writing
-`<frame>.annotated.png` next to the source. The composition prefers
-`<name>.annotated.png` over `<name>.png` when present.
+1. **Project annotations.** The bbox registry lives in
+   [`phenotype-journeys/data/shot-annotations.yaml`](https://github.com/KooshaPari/phenotype-journeys/blob/main/data/shot-annotations.yaml)
+   keyed by `<journey_id>.<frame_index>` (1-based, matching the
+   `frame-NNN.png` suffix). The Rust CLI projects these entries onto
+   `steps[].annotations` in every matching `manifest.verified.json`:
+
+   ```bash
+   hwledger-journey-render project-annotations \
+     --yaml /path/to/phenotype-journeys/data/shot-annotations.yaml \
+     --manifest apps/cli-journeys/manifests/<id>/manifest.verified.json \
+     --manifest docs-site/public/cli-journeys/manifests/<id>/manifest.verified.json
+   ```
+
+2. **Bake keyframes.** `src/annotate.ts` (invoked via the `annotate`
+   subcommand, or automatically by `one`/`all` when the manifest has
+   annotations) composites `steps[].annotations` onto each keyframe PNG
+   via `sharp`, writing `<frame>.annotated.png` next to the source.
+
+3. **Bake into the rich video.** The Remotion `FrameStill` prefers
+   `<name>.annotated.png` over `<name>.png`, so bboxes render directly
+   into the MP4 bitstream — no runtime SVG overlay required.
+
+4. **Viewer toggle.** `@phenotype/journey-viewer` ≥0.1.0 respects the
+   same baked PNG. The lightbox toolbar shows an
+   "Annotations baked: on/off" toggle (persisted to
+   `localStorage['phenotype-journey:annotations-baked-on']`, default on)
+   that swaps between the baked PNG (with the live SVG overlay hidden)
+   and the raw PNG + live SVG overlay. Gallery thumbnails follow the
+   same preference.
 
 If no `annotations[]` are set on any step, annotate is a no-op and
 returns success — this is the normal state for journeys that haven't
@@ -82,11 +107,28 @@ Two backends:
 | Backend  | Behaviour                                                                 |
 |----------|---------------------------------------------------------------------------|
 | `silent` | default; no `<Audio>` track                                                |
-| `piper`  | synthesise per-step WAV via [`piper`](https://github.com/rhasspy/piper); mix into Remotion as `<Audio src=...>` |
+| `piper`  | synthesise per-step WAV via [`piper-tts`](https://github.com/OHF-Voice/piper1-gpl) (`pip install piper-tts`); concatenate with `ffmpeg`; mix into Remotion as `<Audio src={staticFile(...)} />` |
 
-Piper must be on `PATH`. If missing, the pipeline falls through to
-silent with a warning log (`voiceover=piper requested but piper not
-found; continuing silent`) — this is a soft failure, not a hard one.
+`synthesise_voiceover_piper()` writes per-step WAVs under
+`tools/journey-remotion/public/audio/<journey>/` (transient), then
+concatenates them into `public/audio/<journey>.voiceover.wav` and sets
+`manifest.voiceover.audio = "audio/<journey>.voiceover.wav"` on the
+rich manifest. The composition sees `voiceover.backend === "piper"` and
+mounts an `<Audio>` element.
+
+The authoritative WAV is also dropped at `recordings/<journey>.voiceover.wav`
+next to the rich MP4, and recorded on the canonical
+`manifest.verified.json` as `recording_audio_voiceover` so downstream
+tooling can play or re-mix it without reaching into the Remotion working
+directory.
+
+**Voice model:** `en_US-lessac-medium` by default; override via
+`HWLEDGER_PIPER_VOICE=/path/to/voice.onnx`.
+
+If Piper is not installed the `--voiceover piper` branch hard-fails
+(no silent fallback) — you want to know that the audio track you
+asked for didn't materialise, not discover it in a play-through.
+Omit the flag (or pass `--voiceover silent`) to stay silent.
 
 ## Idempotency / canonicalisation
 

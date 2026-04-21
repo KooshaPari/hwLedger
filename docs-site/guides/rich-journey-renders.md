@@ -77,24 +77,54 @@ Drag scene boundaries, tweak callouts, re-render from the UI.
 
 If a manifest has `steps[].annotations` (bbox + label — see [the manifest schema](https://github.com/KooshaPari/phenotype-journeys/blob/main/schema/manifest.schema.json)), the pipeline runs `src/annotate.ts` under [sharp](https://sharp.pixelplumbing.com/) before rendering, composites SVG overlays on each PNG, and writes `<frame>.annotated.png` next to the source. The rich render automatically picks up the annotated PNG when `annotated_keyframes` lists it.
 
-## Voiceover (optional, opt-in)
+## Voiceover (Piper TTS)
 
 The pipeline supports two backends:
 
 - **`silent`** (default) — no audio.
-- **`piper`** — local neural TTS. Install via:
+- **`piper`** — local neural TTS, enabled for three exemplars today
+  (`plan-deepseek`, `probe-list`, `streamlit-hf-search`).
 
-  ```bash
-  # macOS
-  brew install piper
+Install with:
 
-  # Linux
-  curl -L https://github.com/rhasspy/piper/releases/latest/download/piper_linux_x86_64.tar.gz | tar xz
-  ```
+```bash
+pip install piper-tts   # or: pipx install piper-tts
 
-  Then pass `--voiceover piper` to the Rust CLI; the pipeline will invoke `piper --model en_US-ryan-high.onnx` per scene line and route the resulting WAV into the Remotion `<Audio>` track.
+# Voice model (en_US-lessac-medium ~60MB):
+mkdir -p ~/.cache/piper/voices
+curl -L -o ~/.cache/piper/voices/en_US-lessac-medium.onnx \
+  https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx
+curl -L -o ~/.cache/piper/voices/en_US-lessac-medium.onnx.json \
+  https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json
+```
 
-If Piper is not on PATH the pipeline stays silent — it does **not** fail — and the enriched manifest records `voiceover: "silent"` so this is visible in the artefact trail.
+Then pass `--voiceover piper` (subcommand `one` or `all`) to the Rust CLI.
+`synthesise_voiceover_piper()` generates one WAV per step (intro + each
+`step.description` / `blind_description` / `intent`), concatenates them via
+`ffmpeg`, and sets `manifest.voiceover.audio = "audio/<journey>.voiceover.wav"`
+so the Remotion composition picks it up via
+`<Audio src={staticFile(...)} />`.
+
+Override the voice model via `HWLEDGER_PIPER_VOICE=/path/to/voice.onnx`.
+
+### Current state (2026-04-19 exemplars)
+
+Three journeys have baked audio tracks checked in:
+
+| Journey                | Duration | Streams                       |
+| ---------------------- | -------- | ----------------------------- |
+| `plan-deepseek`        | 12.00s   | `video=h264`, `audio=aac`     |
+| `probe-list`           | 12.00s   | `video=h264`, `audio=aac`     |
+| `streamlit-hf-search`  | 18.00s   | `video=h264`, `audio=aac`     |
+
+Verified via `ffprobe -v error -show_streams <rich.mp4>`. Every rich MP4
+with a voiceover has exactly one audio stream (mono, 22050 Hz → AAC).
+The raw WAV lives at `recordings/<id>.voiceover.wav` and the manifest
+records it as `recording_audio_voiceover`.
+
+If Piper is unavailable on a host, pass `--voiceover silent` (or omit the
+flag) — the pipeline stays silent, does **not** fail, and the manifest
+records `voiceover.backend = "silent"` so the artefact trail stays honest.
 
 ## Self-hosted CI
 
