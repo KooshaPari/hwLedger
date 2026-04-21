@@ -123,6 +123,7 @@ hwledger-server = { path = "crates/hwledger-server" }
 hwledger-ffi = { path = "crates/hwledger-ffi" }
 hwledger-predict = { path = "crates/hwledger-predict" }
 hwledger-hf-client = { path = "crates/hwledger-hf-client" }
+hwledger-attest = { path = "crates/hwledger-attest" }
 
 # phenotype-shared reuse (ADR-0005). Pulled from KooshaPari/PhenoKits via git
 # so CI builds reproducibly without the parent repos workspace. Locked to `main`
