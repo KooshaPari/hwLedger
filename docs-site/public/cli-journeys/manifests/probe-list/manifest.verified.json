@@ -5,11 +5,6 @@
   "passed": false,
   "recording": "recordings/probe-list.mp4",
   "recording_gif": "recordings/probe-list.gif",
-<<<<<<< Updated upstream
-=======
-  "keyframe_count": 3,
-  "passed": false,
->>>>>>> Stashed changes
   "steps": [
     {
       "assertions": {
@@ -23,50 +18,16 @@
       },
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-0)",
       "index": 0,
-<<<<<<< Updated upstream
       "intent": "Terminal prompt ready to run `hwledger probe list`",
       "screenshot_path": "frame-001.png",
       "slug": "frame-0"
-=======
-      "slug": "frame-0",
-      "intent": "Command typed: `hwledger probe list`",
-      "screenshot_path": "frame-001.png",
-      "assertions": {
-        "must_contain": [
-          "hwledger probe list"
-        ],
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ]
-      }
->>>>>>> Stashed changes
     },
     {
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
-<<<<<<< Updated upstream
       "intent": "List all available probes in both table and JSON formats (frame 2)",
       "screenshot_path": "frame-002.png",
       "slug": "frame-1"
-=======
-      "slug": "frame-1",
-      "intent": "Table output: detected GPU devices with VRAM, driver, PCI location",
-      "screenshot_path": "frame-002.png",
-      "assertions": {
-        "must_contain": [
-          "VRAM"
-        ],
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ]
-      }
->>>>>>> Stashed changes
     },
     {
       "assertions": {
@@ -90,27 +51,9 @@
       },
       "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-2)",
       "index": 2,
-<<<<<<< Updated upstream
       "intent": "JSON output from `hwledger probe list --json` with schema/timestamp_ms/devices array (Apple Silicon GPU, metal backend, total_vram, utilization), trailing __EXIT sentinel",
       "screenshot_path": "frame-003.png",
       "slug": "frame-2"
-=======
-      "slug": "frame-2",
-      "intent": "Second invocation `hwledger probe list --json` returning NDJSON-style output",
-      "screenshot_path": "frame-003.png",
-      "assertions": {
-        "must_contain": [
-          "--json"
-        ],
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ],
-        "expected_exit": 0
-      }
->>>>>>> Stashed changes
     }
   ],
   "traces_to": [
@@ -118,7 +61,6 @@
     "FR-TEL-002"
   ],
   "verification": {
-<<<<<<< Updated upstream
     "all_intents_passed": false,
     "assertion_violations": [
       {
@@ -141,45 +83,3 @@
     "timestamp": "2026-04-21T04:23:40Z"
   }
 }
-=======
-    "timestamp": "2026-04-20T09:42:44Z",
-    "mode": "mock",
-    "overall_score": 0.92,
-    "describe_confidence": 0.95,
-    "judge_confidence": 0.90,
-    "all_intents_passed": false,
-    "assertion_violations": [
-      {
-        "step_index": 0,
-        "kind": "MustContain",
-        "expected": "hwledger probe list",
-        "got_snippet": ""
-      },
-      {
-        "step_index": 1,
-        "kind": "MustContain",
-        "expected": "VRAM",
-        "got_snippet": "> hwledger probe list  2026-04-207T08:05:36.999307Z WARN hwledger_probe: Failed to initialize AMD probe: backend initialization failed: I/0 error: No such file …"
-      },
-      {
-        "step_index": 1,
-        "kind": "MustNotContain",
-        "expected": "error:",
-        "got_snippet": "edger_probe: Failed to initialize AMD probe: backend initialization failed: I/0 error: No such file or directory (os error 2) 2026-04-207T08:05:37.009226Z WARN hwledg"
-      },
-      {
-        "step_index": 2,
-        "kind": "MustContain",
-        "expected": "--json",
-        "got_snippet": "dyld cache), 'nvml.dll' (no such file)  2026-04-207T08:05:41.794040Z WARN hwledger_cli::cmd::probe: Failed to enumerate nvidia: ba ckend initialization failed: …"
-      },
-      {
-        "step_index": 2,
-        "kind": "ExitCode",
-        "expected": "__EXIT_0__",
-        "got_snippet": "dyld cache), 'nvml.dll' (no such file)  2026-04-207T08:05:41.794040Z WARN hwledger_cli::cmd::probe: Failed to enumerate nvidia: ba ckend initialization failed: …"
-      }
-    ]
-  }
-}
->>>>>>> Stashed changes

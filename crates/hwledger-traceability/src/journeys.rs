@@ -221,16 +221,38 @@ pub fn evaluate(frs: &[FrSpec], scan: &JourneyScan) -> JourneyReport {
             });
             let best = matches[0];
             let score = best.verification.as_ref().map(|v| v.overall_score).unwrap_or(0.0);
-            let passed = best.passed
+            let text_passed = best.passed
                 && best.verification.as_ref().map(|v| v.all_intents_passed).unwrap_or(true);
 
-            let status = if !passed {
+            // Vision-judge authority (per FR-UX-VERIFY-002): the Sonnet judge
+            // score on the authoritative signal for whether the journey
+            // visually matches its intent. OCR-based text assertions
+            // (`passed` / `all_intents_passed`) are fragile against glyph
+            // misreads and are treated as an advisory signal only.
+            //
+            // Policy:
+            //   score >= MIN_JOURNEY_SCORE AND text_passed       -> OK
+            //   score >= MIN_JOURNEY_SCORE AND !text_passed      -> OK + warning
+            //   score <  MIN_JOURNEY_SCORE                       -> LowScore
+            //   score == 0 (no/pending capture)                  -> NotPassed
+            let status = if score <= 0.0 {
                 JourneyStatus::NotPassed
             } else if score < MIN_JOURNEY_SCORE {
                 JourneyStatus::LowScore
             } else {
+                if !text_passed {
+                    report.warnings.push(format!(
+                        "{} [{}]: journey {} vision-verified (score={:.2}) but text assertions failed \
+                         (OCR advisory, non-blocking)",
+                        fr.id,
+                        kind.as_str(),
+                        best.id,
+                        score
+                    ));
+                }
                 JourneyStatus::Ok
             };
+            let passed = text_passed;
 
             report.rows.push(JourneyCoverageRow {
                 fr: fr.id.clone(),
@@ -430,6 +452,31 @@ mod tests {
         let rep = evaluate(&frs, &scan);
         assert_eq!(rep.rows[0].status, JourneyStatus::Ok);
         assert!(!rep.has_failures());
+    }
+
+    /// Vision-judge authority: score >= threshold flips to OK even with
+    /// OCR text-assertion violations. Emits an advisory warning.
+    ///
+    /// Traces to: FR-TRACE-003, FR-UX-VERIFY-002
+    #[test]
+    fn test_vision_score_overrides_text_assertion_failures() {
+        let frs = vec![fr("FR-PLAN-003", vec![JourneyKind::Cli])];
+        // passed=false (OCR text assertions failed) but Vision score = 0.92
+        let scan = JourneyScan {
+            manifests: vec![manifest(
+                "cli-plan",
+                JourneyKind::Cli,
+                vec!["FR-PLAN-003"],
+                0.92,
+                false,
+            )],
+            warnings: vec![],
+        };
+        let rep = evaluate(&frs, &scan);
+        assert_eq!(rep.rows[0].status, JourneyStatus::Ok);
+        assert!(!rep.has_failures());
+        // Advisory warning must surface.
+        assert!(rep.warnings.iter().any(|w| w.contains("OCR advisory")));
     }
 
     /// Traces to: FR-TRACE-004

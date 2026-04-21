@@ -5,11 +5,6 @@
   "passed": false,
   "recording": "recordings/ingest-error.mp4",
   "recording_gif": "recordings/ingest-error.gif",
-<<<<<<< Updated upstream
-=======
-  "keyframe_count": 4,
-  "passed": false,
->>>>>>> Stashed changes
   "steps": [
     {
       "assertions": {
@@ -22,70 +17,27 @@
       },
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-0)",
       "index": 0,
-<<<<<<< Updated upstream
       "intent": "Terminal prompt ready to invoke the planner against a missing config",
       "screenshot_path": "frame-001.png",
       "slug": "frame-0"
-=======
-      "slug": "frame-0",
-      "intent": "Terminal prompt ready to invoke ingest",
-      "screenshot_path": "frame-001.png",
-      "assertions": {
-        "must_not_contain": [
-          "panic",
-          "command not found"
-        ]
-      }
->>>>>>> Stashed changes
     },
     {
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
-<<<<<<< Updated upstream
       "intent": "Show graceful error handling when a model file doesn't exist (frame 2)",
       "screenshot_path": "frame-002.png",
       "slug": "frame-1"
-=======
-      "slug": "frame-1",
-      "intent": "Command typed: `hwledger ingest gguf:///tmp/nonexistent.gguf`",
-      "screenshot_path": "frame-002.png",
-      "assertions": {
-        "must_contain": [
-          "hwledger ingest"
-        ],
-        "must_not_contain": [
-          "panic",
-          "command not found"
-        ]
-      }
->>>>>>> Stashed changes
     },
     {
       "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-2)",
       "index": 2,
-<<<<<<< Updated upstream
       "intent": "Show graceful error handling when a model file doesn't exist (frame 3)",
       "screenshot_path": "frame-003.png",
       "slug": "frame-2"
-=======
-      "slug": "frame-2",
-      "intent": "Graceful error: GGUF file not found; message names the missing path",
-      "screenshot_path": "frame-003.png",
-      "assertions": {
-        "must_contain": [
-          "not found"
-        ],
-        "must_not_contain": [
-          "panic",
-          "thread 'main' panicked"
-        ]
-      }
->>>>>>> Stashed changes
     },
     {
       "blind_description": "Shell session showing a command header and a paragraph of structured stdout. (frame slug: frame-3)",
       "index": 3,
-<<<<<<< Updated upstream
       "intent": "Show graceful error handling when a model file doesn't exist (frame 4)",
       "screenshot_path": "frame-004.png",
       "slug": "frame-3"
@@ -143,17 +95,10 @@
           "Caused by",
           "__EXIT_1__"
         ],
-=======
-      "slug": "frame-3",
-      "intent": "Non-zero exit code, prompt returned without a stack trace",
-      "screenshot_path": "frame-004.png",
-      "assertions": {
->>>>>>> Stashed changes
         "must_not_contain": [
           "panic",
           "thread 'main' panicked",
           "RUST_BACKTRACE"
-<<<<<<< Updated upstream
         ],
         "ocr_required": false
       },
@@ -162,17 +107,12 @@
       "intent": "Graceful error: `failed to read config: /nonexistent-model.json` with `Caused by: No such file or directory`, trailing __EXIT sentinel with non-zero code",
       "screenshot_path": "frame-011.png",
       "slug": "frame-10"
-=======
-        ]
-      }
->>>>>>> Stashed changes
     }
   ],
   "traces_to": [
     "FR-PLAN-001"
   ],
   "verification": {
-<<<<<<< Updated upstream
     "all_intents_passed": false,
     "assertion_violations": [
       {
@@ -195,27 +135,3 @@
     "timestamp": "2026-04-21T04:23:30Z"
   }
 }
-=======
-    "timestamp": "2026-04-20T09:42:31Z",
-    "mode": "mock",
-    "overall_score": 0.92,
-    "describe_confidence": 0.95,
-    "judge_confidence": 0.90,
-    "all_intents_passed": false,
-    "assertion_violations": [
-      {
-        "step_index": 1,
-        "kind": "MustContain",
-        "expected": "hwledger ingest",
-        "got_snippet": "> hi "
-      },
-      {
-        "step_index": 2,
-        "kind": "MustContain",
-        "expected": "not found",
-        "got_snippet": "> hwledger ingesff "
-      }
-    ]
-  }
-}
->>>>>>> Stashed changes

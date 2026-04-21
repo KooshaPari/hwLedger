@@ -1,5 +1,7 @@
 import SwiftUI
 import AppKit
+import CryptoKit
+import HwLedger
 
 struct SettingsScreen: View {
     @Environment(AppState.self) var appState
@@ -10,6 +12,10 @@ struct SettingsScreen: View {
     @State private var testConnectionStatus: String?
     @State private var errorMessage: String?
     @State private var showHfTokenField: Bool = false
+
+    // System Info: live power readout (M1 IOReport backend).
+    @State private var powerReadout: String = "—"
+    private let powerTimer = Timer.publish(every: 2.0, on: .main, in: .common).autoconnect()
 
     // mTLS admin cert state
     @State private var mtlsCn: String = "streamlit-client"
@@ -44,10 +50,25 @@ struct SettingsScreen: View {
                                 .fontWeight(.semibold)
                                 .font(.caption)
                         }
+                        // FR-TEL-004 polish: surface live power draw from
+                        // the first enumerated device (M1 IOReport backend).
+                        HStack {
+                            Text("Power")
+                                .foregroundColor(.secondary)
+                                .font(.caption)
+                            Spacer()
+                            Text(powerReadout)
+                                .monospacedDigit()
+                                .fontWeight(.semibold)
+                                .font(.caption)
+                                .accessibilityIdentifier("settings-system-power")
+                        }
                     }
                     .padding(12)
                     .background(Color.gray.opacity(0.05))
                     .cornerRadius(6)
+                    .onAppear { refreshPowerReadout() }
+                    .onReceive(powerTimer) { _ in refreshPowerReadout() }
 
                     Divider()
 
@@ -304,11 +325,77 @@ struct SettingsScreen: View {
 
     // MARK: - mTLS admin cert
 
+    /// Discover the ed25519 key-id used by the attestation system
+    /// (`crates/hwledger-attest`). Returns the filename stem of the first
+    /// `.pub` key in `$HWLEDGER_ATTEST_KEY_DIR` (or `~/.hwledger/attest-keys`),
+    /// preferring `default.pub` if present, plus a short SHA-256 fingerprint
+    /// of the key material for on-screen identification. `nil` if no key
+    /// has been generated yet.
+    private static func attestKeyInfo() -> (id: String, fingerprint: String)? {
+        let fm = FileManager.default
+        let envDir = ProcessInfo.processInfo.environment["HWLEDGER_ATTEST_KEY_DIR"]
+        let baseDir: URL
+        if let envDir, !envDir.isEmpty {
+            baseDir = URL(fileURLWithPath: envDir, isDirectory: true)
+        } else {
+            baseDir = fm.homeDirectoryForCurrentUser
+                .appendingPathComponent(".hwledger", isDirectory: true)
+                .appendingPathComponent("attest-keys", isDirectory: true)
+        }
+        guard let entries = try? fm.contentsOfDirectory(
+            at: baseDir,
+            includingPropertiesForKeys: nil,
+            options: [.skipsHiddenFiles]
+        ) else {
+            return nil
+        }
+        let pubs = entries.filter { $0.pathExtension == "pub" }
+        guard !pubs.isEmpty else { return nil }
+        let chosen = pubs.first(where: { $0.deletingPathExtension().lastPathComponent == "default" })
+            ?? pubs.sorted(by: { $0.lastPathComponent < $1.lastPathComponent })[0]
+        let keyId = chosen.deletingPathExtension().lastPathComponent
+        let fp: String
+        if let data = try? Data(contentsOf: chosen) {
+            // Short fingerprint: first 12 hex chars of SHA-256 over the raw key bytes.
+            let digest = SHA256.hash(data: data)
+            let hex = digest.map { String(format: "%02x", $0) }.joined()
+            fp = String(hex.prefix(12))
+        } else {
+            fp = "unreadable"
+        }
+        return (keyId, fp)
+    }
+
+    @ViewBuilder
+    private var attestKeyIdRow: some View {
+        let info = Self.attestKeyInfo()
+        HStack {
+            Text("Attestation key id")
+                .font(.caption)
+                .fontWeight(.semibold)
+            Spacer()
+            if let info {
+                Text("\(info.id)  ·  \(info.fingerprint)")
+                    .font(.system(.caption, design: .monospaced))
+                    .foregroundColor(.secondary)
+                    .textSelection(.enabled)
+                    .accessibilityIdentifier("settings-mtls-attest-keyid")
+            } else {
+                Text("not generated")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .accessibilityIdentifier("settings-mtls-attest-keyid")
+            }
+        }
+    }
+
     private var mtlsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             sectionHeader("mTLS client certificate")
 
             VStack(alignment: .leading, spacing: 10) {
+                attestKeyIdRow
+
                 Text("Common name (CN)").font(.caption).fontWeight(.semibold)
                 TextField("streamlit-client", text: $mtlsCn)
                     .textFieldStyle(.roundedBorder).font(.caption)
@@ -446,6 +533,25 @@ struct SettingsScreen: View {
             } catch {
                 testConnectionStatus = "Failed (unreachable)"
             }
+        }
+    }
+
+    // MARK: - Power readout (FR-TEL-004 polish)
+
+    private func refreshPowerReadout() {
+        guard let device = appState.devices.first else {
+            powerReadout = "—"
+            return
+        }
+        do {
+            let sample = try HwLedger.sample(deviceId: device.id, backend: device.backend)
+            if sample.powerWatts.isFinite && sample.powerWatts > 0 {
+                powerReadout = String(format: "%.2f W", sample.powerWatts)
+            } else {
+                powerReadout = "unsupported"
+            }
+        } catch {
+            powerReadout = "unavailable"
         }
     }
 }

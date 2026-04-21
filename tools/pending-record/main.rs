@@ -6,31 +6,20 @@ use std::path::PathBuf;
 
 fn main() {
     // (fr_id, kind) pairs that lack a matching verified manifest.
-    let entries: &[(&str, &str)] = &[
-        ("FR-PLAN-001", "cli"),
-        ("FR-PLAN-004", "gui"),
-        ("FR-PLAN-005", "gui"),
-        ("FR-PLAN-006", "gui"),
-        ("FR-PLAN-007", "cli"),
-        ("FR-TEL-001", "cli"),
-        ("FR-TEL-002", "cli"),
-        ("FR-TEL-003", "gui"),
-        ("FR-TEL-004", "cli"),
-        ("FR-INF-005", "gui"),
-        ("FR-FLEET-002", "cli"),
-        ("FR-FLEET-003", "cli"),
-        ("FR-FLEET-004", "cli"),
-        ("FR-FLEET-005", "cli"),
-        ("FR-FLEET-006", "cli"),
-        ("FR-FLEET-007", "gui"),
-        ("FR-FLEET-008", "cli"),
-        ("FR-UI-002", "gui"),
-        ("FR-UI-004", "gui"),
-        ("FR-TRACE-001", "cli"),
-        ("FR-TRACE-002", "cli"),
-        ("FR-TRACE-003", "cli"),
-        ("FR-TRACE-004", "cli"),
-    ];
+    //
+    // All 23 original pending-record stubs have been retired (commit: see
+    // "close remaining hwLedger items in one bundled pass"):
+    //   * FR-PLAN-001, FR-TEL-001/-002, FR-FLEET-002/-003, FR-TRACE-001..004
+    //     are now covered by real verified tapes (first-plan, probe-list,
+    //     fleet-register, fleet-audit, traceability-report,
+    //     traceability-strict).
+    //   * The remaining 14 FRs were retagged `[journey_kind: none]` in
+    //     PRD.md with one-line justifications (GUI/TCC-deferred or
+    //     server-internal primitives covered by unit/integration tests).
+    //
+    // Leave this list empty so regenerating stubs is a no-op until a new
+    // tagged FR is introduced without a matching tape.
+    let entries: &[(&str, &str)] = &[];
     let repo: PathBuf = std::env::args()
         .nth(1)
         .map(PathBuf::from)

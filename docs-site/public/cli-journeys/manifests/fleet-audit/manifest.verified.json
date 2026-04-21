@@ -5,11 +5,6 @@
   "passed": false,
   "recording": "recordings/fleet-audit.mp4",
   "recording_gif": "recordings/fleet-audit.gif",
-<<<<<<< Updated upstream
-=======
-  "keyframe_count": 6,
-  "passed": false,
->>>>>>> Stashed changes
   "steps": [
     {
       "assertions": {
@@ -25,107 +20,39 @@
       "index": 0,
       "intent": "Terminal prompt (audit-backed server running in background)",
       "screenshot_path": "frame-001.png",
-<<<<<<< Updated upstream
       "slug": "frame-0"
-=======
-      "assertions": {
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ]
-      }
->>>>>>> Stashed changes
     },
     {
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
-<<<<<<< Updated upstream
       "intent": "Audit the fleet with a 3-agent limit to see agent metadata and status (frame 2)",
       "screenshot_path": "frame-002.png",
       "slug": "frame-1"
-=======
-      "slug": "frame-1",
-      "intent": "Command typed: `hwledger fleet audit --server http://localhost:8080 --limit 3`",
-      "screenshot_path": "frame-002.png",
-      "assertions": {
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ]
-      }
->>>>>>> Stashed changes
     },
     {
       "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-2)",
       "index": 2,
-<<<<<<< Updated upstream
       "intent": "Audit the fleet with a 3-agent limit to see agent metadata and status (frame 3)",
       "screenshot_path": "frame-003.png",
       "slug": "frame-2"
-=======
-      "slug": "frame-2",
-      "intent": "Audit log header printed with column titles",
-      "screenshot_path": "frame-003.png",
-      "assertions": {
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ]
-      }
->>>>>>> Stashed changes
     },
     {
       "blind_description": "Shell session showing a command header and a paragraph of structured stdout. (frame slug: frame-3)",
       "index": 3,
-<<<<<<< Updated upstream
       "intent": "Audit the fleet with a 3-agent limit to see agent metadata and status (frame 4)",
       "screenshot_path": "frame-004.png",
       "slug": "frame-3"
-=======
-      "slug": "frame-3",
-      "intent": "First audit entry: timestamp, actor, action, subject",
-      "screenshot_path": "frame-004.png",
-      "assertions": {
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ]
-      }
->>>>>>> Stashed changes
     },
     {
       "blind_description": "Terminal window with a list-style summary and no visible error indicator. (frame slug: frame-4)",
       "index": 4,
-<<<<<<< Updated upstream
       "intent": "Audit the fleet with a 3-agent limit to see agent metadata and status (frame 5)",
       "screenshot_path": "frame-005.png",
       "slug": "frame-4"
-=======
-      "slug": "frame-4",
-      "intent": "Remaining two entries up to --limit 3 ceiling",
-      "screenshot_path": "frame-005.png",
-      "assertions": {
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ]
-      }
->>>>>>> Stashed changes
     },
     {
       "blind_description": "Shell prompt displaying the result of a subcommand — multi-line text output. (frame slug: frame-5)",
       "index": 5,
-<<<<<<< Updated upstream
       "intent": "Audit the fleet with a 3-agent limit to see agent metadata and status (frame 6)",
       "screenshot_path": "frame-006.png",
       "slug": "frame-5"
@@ -162,20 +89,6 @@
       "intent": "Audit table with agent events (inference_start, inference_end, probe_telemetry), agent IDs, and telemetry details; trailing __EXIT sentinel",
       "screenshot_path": "frame-008.png",
       "slug": "frame-7"
-=======
-      "slug": "frame-5",
-      "intent": "Prompt returned; background server torn down silently",
-      "screenshot_path": "frame-006.png",
-      "assertions": {
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ],
-        "expected_exit": 0
-      }
->>>>>>> Stashed changes
     }
   ],
   "traces_to": [
@@ -183,7 +96,6 @@
     "FR-FLEET-003"
   ],
   "verification": {
-<<<<<<< Updated upstream
     "all_intents_passed": false,
     "assertion_violations": [
       {
@@ -209,82 +121,6 @@
     "judge_confidence": 0.9,
     "mode": "mock",
     "overall_score": 0.92,
-    "timestamp": "2026-04-21T01:02:47Z"
-=======
-    "timestamp": "2026-04-20T09:42:27Z",
-    "mode": "mock",
-    "overall_score": 0.92,
-    "describe_confidence": 0.95,
-    "judge_confidence": 0.90,
-    "all_intents_passed": false,
-    "assertion_violations": [
-      {
-        "step_index": 0,
-        "kind": "MustNotContain",
-        "expected": "command not found",
-        "got_snippet": "server --port 8080 --db /tmp/hwl-audit.db & [1] 60891  > bash: hwledger-server: command not found  sleep 1  [1]+ Exit 127  hwledger-server --port 8080 --db /tmp/hwl-audit.db ot "
-      },
-      {
-        "step_index": 1,
-        "kind": "MustNotContain",
-        "expected": "command not found",
-        "got_snippet": "server --port 8080 --db /tmp/hwl-audit.db & [1] 60891  > bash: hwledger-server: command not found  sleep 1  [1]+ Exit 127  hwledger-server --port 8080 --db /tmp/hwl-audit.db > h"
-      },
-      {
-        "step_index": 2,
-        "kind": "MustNotContain",
-        "expected": "command not found",
-        "got_snippet": "server --port 8080 --db /tmp/hwl-audit.db & [1] 60891  > bash: hwledger-server: command not found sleep 1 [1]+ Exit 127  hwledger-server --port 8080 --db /tmp/hwl-audit.db > hwl"
-      },
-      {
-        "step_index": 3,
-        "kind": "MustNotContain",
-        "expected": "command not found",
-        "got_snippet": "server --port 8080 --db /tmp/hwl-audit.db & [1] 60891  > bash: hwledger-server: command not found sleep 1 [1]+ Exit 127  hwledger-server --port 8080 --db /tmp/hwl-audit.db > hwl"
-      },
-      {
-        "step_index": 4,
-        "kind": "MustNotContain",
-        "expected": "error:",
-        "got_snippet": "7 hwledger-server --port 8080 --db /tmp/hwl-audit.db  > hwledger fleet audit \\\\ error: unexpected argument '\\' found  Usage: hwledger fleet audit [OPTIONS] --server <"
-      },
-      {
-        "step_index": 4,
-        "kind": "MustNotContain",
-        "expected": "unexpected argument",
-        "got_snippet": "ger-server --port 8080 --db /tmp/hwl-audit.db  > hwledger fleet audit \\\\ error: unexpected argument '\\' found  Usage: hwledger fleet audit [OPTIONS] --server <SERVER>  For more in"
-      },
-      {
-        "step_index": 4,
-        "kind": "MustNotContain",
-        "expected": "command not found",
-        "got_snippet": "erver --port 8080 --db /tmp/hwl-audit.db &  [1] 60891  > bash: hwledger-server: command not found  sleep 1  [1]+ Exit 127 hwledger-server --port 8080 --db /tmp/hwl-audit.db  > h"
-      },
-      {
-        "step_index": 5,
-        "kind": "MustNotContain",
-        "expected": "error:",
-        "got_snippet": "7 hwledger-server --port 8080 --db /tmp/hwl-audit.db  > hwledger fleet audit \\\\ error: unexpected argument '\\' found  Usage: hwledger fleet audit [OPTIONS] --server <"
-      },
-      {
-        "step_index": 5,
-        "kind": "MustNotContain",
-        "expected": "unexpected argument",
-        "got_snippet": "ger-server --port 8080 --db /tmp/hwl-audit.db  > hwledger fleet audit \\\\ error: unexpected argument '\\' found  Usage: hwledger fleet audit [OPTIONS] --server <SERVER>  For more in"
-      },
-      {
-        "step_index": 5,
-        "kind": "MustNotContain",
-        "expected": "command not found",
-        "got_snippet": "erver --port 8080 --db /tmp/hwl-audit.db &  [1] 60891  > bash: hwledger-server: command not found  sleep 1  [1]+ Exit 127 hwledger-server --port 8080 --db /tmp/hwl-audit.db  > h"
-      },
-      {
-        "step_index": 5,
-        "kind": "ExitCode",
-        "expected": "__EXIT_0__",
-        "got_snippet": "> hwledger-server --port 8080 --db /tmp/hwl-audit.db &  [1] 60891  > bash: hwledger-server: command not found  sleep 1  [1]+ Exit 127 hwledger-server --port 808…"
-      }
-    ]
->>>>>>> Stashed changes
+    "timestamp": "2026-04-21T04:23:27Z"
   }
 }

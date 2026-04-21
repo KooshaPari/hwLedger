@@ -1,9 +1,0 @@
-{
-  "id": "pending-cli-fr-plan-007",
-  "intent": "PENDING RECORD — blackbox tape not yet captured for FR-PLAN-007 (cli).",
-  "keyframe_count": 0,
-  "passed": false,
-  "recording": null,
-  "steps": [],
-  "traces_to": ["FR-PLAN-007"]
-}

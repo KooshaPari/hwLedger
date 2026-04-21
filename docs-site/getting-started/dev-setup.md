@@ -40,6 +40,37 @@ Status:
 cargo run -p hwledger-dev-harness -- status
 ```
 
+The `status` subcommand reads `~/.hwledger/dev-harness.pid` and prints a
+per-service row. When no services have been started you see:
+
+```
+no services recorded (pid file: /Users/you/.hwledger/dev-harness.pid)
+```
+
+When services are up, the output is a six-column table. Here is what
+each column reports and which endpoint it probes:
+
+| Column    | Source                              | What it means |
+|-----------|-------------------------------------|---------------|
+| `SERVICE` | `ServiceRecord.name`                | Logical service name (`server`, `docs-site`, `streamlit`). |
+| `PID`     | `ServiceRecord.pid`                 | OS process id of the detached child. |
+| `PORT`    | `ServiceRecord.port` (`-` if n/a)   | TCP port bound by the service, or `-` for port-less services. |
+| `PROC`    | `hwledger_dev_harness::pid_alive`   | `up` (green) if `kill -0 PID` succeeds, `down` (red) otherwise. |
+| `HEALTH`  | `probe_health(name, port)`          | Per-service HTTP probe — see the endpoint table below. |
+| `LOG`     | `ServiceRecord.log_path`            | Absolute path to the tail-able log file. |
+
+Per-service health endpoints probed by `status`:
+
+| Service     | Probe URL                                | OK when                    |
+|-------------|------------------------------------------|----------------------------|
+| `server`    | `http://127.0.0.1:<port>/v1/health`      | HTTP 2xx/3xx within 800 ms |
+| `streamlit` | `http://127.0.0.1:<port>/_stcore/health` | HTTP 2xx/3xx within 800 ms |
+| `docs-site` | `http://127.0.0.1:<port>/`               | HTTP 2xx/3xx within 800 ms |
+| *other*     | `http://127.0.0.1:<port>/`               | HTTP 2xx/3xx within 800 ms |
+
+Each cell colourises the outcome: `ok 200` (green), `warn 503` (yellow),
+or `unreachable` (red) — useful at a glance inside a multi-agent TUI.
+
 ## Sample combined log
 
 ```

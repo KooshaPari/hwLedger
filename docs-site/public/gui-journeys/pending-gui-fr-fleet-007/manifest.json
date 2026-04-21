@@ -1,9 +1,0 @@
-{
-  "id": "pending-gui-fr-fleet-007",
-  "intent": "PENDING RECORD — blackbox tape not yet captured for FR-FLEET-007 (gui).",
-  "keyframe_count": 0,
-  "passed": false,
-  "recording": null,
-  "steps": [],
-  "traces_to": ["FR-FLEET-007"]
-}

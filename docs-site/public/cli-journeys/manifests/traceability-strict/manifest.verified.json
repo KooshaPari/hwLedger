@@ -18,42 +18,16 @@
       },
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-0)",
       "index": 0,
-<<<<<<< Updated upstream
       "intent": "Terminal prompt ready to invoke hwledger-traceability twice (non-strict then --strict)",
       "screenshot_path": "frame-001.png",
       "slug": "frame-0"
-=======
-      "slug": "frame-0",
-      "intent": "Command typed: `cargo run -q -p hwledger-traceability --` (default, non-strict)",
-      "screenshot_path": "frame-001.png",
-      "assertions": {
-        "must_not_contain": [
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ]
-      }
->>>>>>> Stashed changes
     },
     {
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
-<<<<<<< Updated upstream
       "intent": "Show strict mode enforcement with passing and failing traceability checks (frame 2)",
       "screenshot_path": "frame-002.png",
       "slug": "frame-1"
-=======
-      "slug": "frame-1",
-      "intent": "Report prints with exit code 0 even though some FRs are missing impl rows",
-      "screenshot_path": "frame-002.png",
-      "assertions": {
-        "must_not_contain": [
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ]
-      }
->>>>>>> Stashed changes
     },
     {
       "assertions": {
@@ -74,22 +48,9 @@
       },
       "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-2)",
       "index": 2,
-<<<<<<< Updated upstream
       "intent": "Strict mode output listing FRs with missing impl (FR-FLEET, FR-UI, FR-UX-VERIFY, FR-TRACE, NFR); trailing __EXIT_1__ sentinel proving the gate exits non-zero",
       "screenshot_path": "frame-003.png",
       "slug": "frame-2"
-=======
-      "slug": "frame-2",
-      "intent": "Command typed: `cargo run -q -p hwledger-traceability -- --strict` — strict mode fails, listing FRs with missing implementation and exiting non-zero",
-      "screenshot_path": "frame-003.png",
-      "assertions": {
-        "must_not_contain": [
-          "unexpected argument",
-          "command not found",
-          "thread 'main' panicked"
-        ]
-      }
->>>>>>> Stashed changes
     }
   ],
   "traces_to": [
@@ -97,7 +58,6 @@
     "FR-TRACE-004"
   ],
   "verification": {
-<<<<<<< Updated upstream
     "all_intents_passed": false,
     "assertion_violations": [
       {
@@ -117,15 +77,6 @@
     "judge_confidence": 0.9,
     "mode": "mock",
     "overall_score": 0.92,
-    "timestamp": "2026-04-21T01:03:01Z"
-=======
-    "timestamp": "2026-04-20T09:42:50Z",
-    "mode": "mock",
-    "overall_score": 0.92,
-    "describe_confidence": 0.95,
-    "judge_confidence": 0.90,
-    "all_intents_passed": true,
-    "assertion_violations": []
->>>>>>> Stashed changes
+    "timestamp": "2026-04-21T04:23:50Z"
   }
 }

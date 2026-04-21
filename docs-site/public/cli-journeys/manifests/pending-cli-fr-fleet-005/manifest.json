@@ -1,9 +1,0 @@
-{
-  "id": "pending-cli-fr-fleet-005",
-  "intent": "PENDING RECORD — blackbox tape not yet captured for FR-FLEET-005 (cli).",
-  "keyframe_count": 0,
-  "passed": false,
-  "recording": null,
-  "steps": [],
-  "traces_to": ["FR-FLEET-005"]
-}
