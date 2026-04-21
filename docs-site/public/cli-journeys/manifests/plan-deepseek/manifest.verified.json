@@ -2,7 +2,7 @@
   "id": "plan-deepseek",
   "intent": "Plan with Deepseek at 2K seq, then at 32K to show KV growth under scaling",
   "keyframe_count": 3,
-  "passed": true,
+  "passed": false,
   "recording": "recordings/plan-deepseek.mp4",
   "recording_gif": "recordings/plan-deepseek.gif",
   "steps": [
@@ -16,12 +16,14 @@
         ],
         "ocr_required": false
       },
+      "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-0)",
       "index": 0,
       "intent": "Terminal at prompt, ready to run planner",
       "screenshot_path": "frame-001.png",
       "slug": "frame-0"
     },
     {
+      "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
       "intent": "Plan with Deepseek at 2K seq, then at 32K to show KV growth under scaling (frame 2)",
       "screenshot_path": "frame-002.png",
@@ -51,6 +53,7 @@
         ],
         "ocr_required": false
       },
+      "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-2)",
       "index": 2,
       "intent": "Second invocation (`--seq 32768 --users 2`) renders the VRAM table with MLA attention, weights/KV/activations/overhead/total rows; trailing __EXIT sentinel",
       "screenshot_path": "frame-003.png",
@@ -61,12 +64,67 @@
     "FR-PLAN-003"
   ],
   "verification": {
-    "all_intents_passed": true,
-    "assertion_violations": [],
+    "all_intents_passed": false,
+    "assertion_violations": [
+      {
+        "expected": "Attention Kind",
+        "got_snippet": "@eocuossoceccpesocsoas > hwledger plan tests/ pone oe eee eeee eens Property  fpocososscecessessssesss EXIT_0__  | 49.79 MB  poe golden/deepseek-v3.json --seq 3…",
+        "kind": "MustContain",
+        "step_index": 2
+      },
+      {
+        "expected": "Mla",
+        "got_snippet": "@eocuossoceccpesocsoas > hwledger plan tests/ pone oe eee eeee eens Property  fpocososscecessessssesss EXIT_0__  | 49.79 MB  poe golden/deepseek-v3.json --seq 3…",
+        "kind": "MustContain",
+        "step_index": 2
+      },
+      {
+        "expected": "kv_",
+        "got_snippet": "@eocuossoceccpesocsoas > hwledger plan tests/ pone oe eee eeee eens Property  fpocososscecessessssesss EXIT_0__  | 49.79 MB  poe golden/deepseek-v3.json --seq 3…",
+        "kind": "MustContain",
+        "step_index": 2
+      },
+      {
+        "expected": "rank",
+        "got_snippet": "@eocuossoceccpesocsoas > hwledger plan tests/ pone oe eee eeee eens Property  fpocososscecessessssesss EXIT_0__  | 49.79 MB  poe golden/deepseek-v3.json --seq 3…",
+        "kind": "MustContain",
+        "step_index": 2
+      },
+      {
+        "expected": "qk_rope",
+        "got_snippet": "@eocuossoceccpesocsoas > hwledger plan tests/ pone oe eee eeee eens Property  fpocososscecessessssesss EXIT_0__  | 49.79 MB  poe golden/deepseek-v3.json --seq 3…",
+        "kind": "MustContain",
+        "step_index": 2
+      },
+      {
+        "expected": "Weights",
+        "got_snippet": "@eocuossoceccpesocsoas > hwledger plan tests/ pone oe eee eeee eens Property  fpocososscecessessssesss EXIT_0__  | 49.79 MB  poe golden/deepseek-v3.json --seq 3…",
+        "kind": "MustContain",
+        "step_index": 2
+      },
+      {
+        "expected": "KV Cache",
+        "got_snippet": "@eocuossoceccpesocsoas > hwledger plan tests/ pone oe eee eeee eens Property  fpocososscecessessssesss EXIT_0__  | 49.79 MB  poe golden/deepseek-v3.json --seq 3…",
+        "kind": "MustContain",
+        "step_index": 2
+      },
+      {
+        "expected": "Total",
+        "got_snippet": "@eocuossoceccpesocsoas > hwledger plan tests/ pone oe eee eeee eens Property  fpocososscecessessssesss EXIT_0__  | 49.79 MB  poe golden/deepseek-v3.json --seq 3…",
+        "kind": "MustContain",
+        "step_index": 2
+      },
+      {
+        "expected": "__EXIT_",
+        "got_snippet": "@eocuossoceccpesocsoas > hwledger plan tests/ pone oe eee eeee eens Property  fpocososscecessessssesss EXIT_0__  | 49.79 MB  poe golden/deepseek-v3.json --seq 3…",
+        "kind": "MustContain",
+        "step_index": 2
+      }
+    ],
     "describe_confidence": 0.95,
     "judge_confidence": 0.9,
     "mode": "mock",
     "overall_score": 0.92,
-    "timestamp": "2026-04-21T00:36:23Z"
+    "timestamp": "2026-04-21T01:02:52Z"
   }
 }

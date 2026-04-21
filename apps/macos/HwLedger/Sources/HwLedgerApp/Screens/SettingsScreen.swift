@@ -120,6 +120,7 @@ struct SettingsScreen: View {
                             SecureField("HF token (stored in Keychain)", text: $hfTokenInput)
                                 .textFieldStyle(.roundedBorder)
                                 .font(.caption)
+                                .accessibilityIdentifier("settings-hf-token-field")
 
                             Button(action: { saveHfToken() }) {
                                 HStack {
@@ -129,6 +130,37 @@ struct SettingsScreen: View {
                                 .font(.caption)
                             }
                             .buttonStyle(.bordered)
+                            .accessibilityIdentifier("settings-hf-token-save")
+                        }
+                    }
+                    .padding(12)
+                    .background(Color.gray.opacity(0.05))
+                    .cornerRadius(6)
+
+                    Divider()
+
+                    sectionHeader("Caches")
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            Text("HuggingFace cache")
+                                .font(.caption)
+                            Spacer()
+                            Button("Clear HF cache") {
+                                appState.clearHfCache()
+                            }
+                            .font(.caption)
+                            .accessibilityIdentifier("settings-clear-hf-cache")
+                        }
+                        HStack {
+                            Text("Predictor benchmarks cache")
+                                .font(.caption)
+                            Spacer()
+                            Button("Clear predictor cache") {
+                                appState.clearPredictorCache()
+                            }
+                            .font(.caption)
+                            .accessibilityIdentifier("settings-clear-predictor-cache")
                         }
                     }
                     .padding(12)

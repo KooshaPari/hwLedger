@@ -1,93 +1,152 @@
 """
-Settings Page: Configuration and preferences.
+Settings Page: parity with SwiftUI SettingsScreen.
+
+Covers:
+- Server URL + test connection
+- Bootstrap / mTLS token (session-only, masked)
+- mTLS client cert generation (shells out to `hwledger cert-gen` when available)
+- HF token (session-only, masked, never logged)
+- Log level
+- Core version via FFI
 """
 
+from __future__ import annotations
+
+import ctypes
+import shutil
+import subprocess
+
+import httpx
 import streamlit as st
+
+from lib.ffi import is_available, lib
 
 
 st.set_page_config(page_title="Settings - hwLedger", layout="wide")
-
 st.title("Settings")
-st.markdown("Configure hwLedger Streamlit client.")
+st.markdown("Configure hwLedger Streamlit client. All tokens stay in session memory.")
 
-# Server configuration
-st.subheader("Server")
+
+# --- System ---
+st.subheader("System")
+c_core1, c_core2 = st.columns(2)
+with c_core1:
+    st.markdown(f"**FFI library:** {'loaded' if is_available() else 'NOT FOUND'}")
+with c_core2:
+    version = "unknown"
+    if lib is not None and hasattr(lib, "hwledger_core_version"):
+        try:
+            lib.hwledger_core_version.restype = ctypes.c_char_p
+            raw = lib.hwledger_core_version()
+            version = raw.decode("utf-8") if raw else "unknown"
+        except Exception:
+            pass
+    st.markdown(f"**Core version:** `{version}`")
+
+st.divider()
+
+# --- Server ---
+st.subheader("Fleet server")
 col1, col2 = st.columns([3, 1])
-
 with col1:
     new_server_url = st.text_input(
-        "API Server URL",
+        "API server URL",
         value=st.session_state.get("server_url", "http://localhost:8080"),
-        help="Base URL for remote hwLedger server (used by Fleet and Ledger pages)",
+        help="Base URL used by Fleet and Ledger pages.",
     )
     st.session_state.server_url = new_server_url
-
 with col2:
-    if st.button("Test Connection"):
-        import httpx
+    if st.button("Test connection", use_container_width=True):
         try:
-            with httpx.Client(timeout=3.0) as client:
-                resp = client.get(f"{new_server_url}/health")
-                if resp.status_code == 200:
-                    st.success("Connected!")
+            with httpx.Client(timeout=3.0) as c:
+                r = c.get(f"{new_server_url}/v1/health")
+                if r.status_code == 200:
+                    st.success("Reachable")
                 else:
-                    st.warning(f"Status: {resp.status_code}")
+                    st.warning(f"HTTP {r.status_code}")
         except Exception as e:
-            st.error(f"Connection failed: {e}")
+            st.error(f"Unreachable: {e}")
+
+bootstrap = st.text_input(
+    "Bootstrap / mTLS admin token",
+    value=st.session_state.get("bootstrap_token", ""),
+    type="password",
+    help="Session-only. Never persisted, never logged.",
+)
+st.session_state.bootstrap_token = bootstrap
 
 st.divider()
 
-# HF Token
-st.subheader("Authentication")
-new_hf_token = st.text_input(
-    "Hugging Face Token",
+# --- mTLS cert generation ---
+st.subheader("mTLS client certificate")
+cert_col1, cert_col2 = st.columns([1, 2])
+with cert_col1:
+    name = st.text_input("Common name", value="streamlit-client")
+    if st.button("Generate cert", use_container_width=True):
+        cert_bin = shutil.which("hwledger")
+        if cert_bin:
+            try:
+                res = subprocess.run(
+                    [cert_bin, "cert-gen", "--cn", name],
+                    capture_output=True, text=True, timeout=15,
+                )
+                if res.returncode == 0:
+                    st.session_state.mtls_cert = res.stdout
+                    st.success("Cert generated")
+                else:
+                    st.error(res.stderr or "cert-gen failed")
+            except Exception as e:
+                st.error(f"cert-gen error: {e}")
+        else:
+            # Fallback: emit a placeholder PEM block so the UI is honest about
+            # what would happen, without faking trust material.
+            st.session_state.mtls_cert = (
+                "-----BEGIN CERTIFICATE-----\n"
+                "(install `hwledger` CLI to enable real generation)\n"
+                "-----END CERTIFICATE-----\n"
+            )
+            st.warning("`hwledger` CLI not on PATH; placeholder emitted.")
+with cert_col2:
+    cert = st.session_state.get("mtls_cert", "")
+    if cert:
+        st.code(cert, language="text")
+        # Streamlit has no native clipboard; offer download instead.
+        st.download_button("Download cert.pem", cert,
+                           file_name="hwledger-client.pem",
+                           mime="application/x-pem-file")
+
+st.divider()
+
+# --- HF ---
+st.subheader("Hugging Face")
+hf_token = st.text_input(
+    "HF API token",
     value=st.session_state.get("hf_token", ""),
     type="password",
-    help="Token for HF model authentication (not persisted)",
+    help="Optional. Needed for gated models and to relieve anon rate limits.",
 )
-st.session_state.hf_token = new_hf_token
-
-if new_hf_token:
-    st.caption("Token is stored in session memory only and not persisted to disk.")
-
-st.divider()
-
-# System info
-st.subheader("System Info")
-
-from lib.ffi import is_available
-
-st.markdown(f"**FFI Library**: {'Available' if is_available() else 'Not Found'}")
-st.markdown("**Python Version**: 3.11+")
-st.markdown("**Streamlit Client**: 1.40+")
+st.session_state.hf_token = hf_token
+if hf_token:
+    st.caption("Stored in session memory only.")
 
 st.divider()
 
-# Help
-st.subheader("Help")
-st.markdown("""
-### Pages
+# --- Logging ---
+st.subheader("Logging")
+log_level = st.selectbox(
+    "Level", ["trace", "debug", "info", "warn", "error"],
+    index=["trace", "debug", "info", "warn", "error"].index(
+        st.session_state.get("log_level", "info")
+    ),
+)
+st.session_state.log_level = log_level
 
-- **Planner**: Real-time memory planning with slider controls. Requires FFI library.
-- **Probe**: Device detection and VRAM inventory. Requires FFI library.
-- **Fleet**: Remote server audit via HTTP API.
-- **Ledger**: Event timeline from remote server.
+st.divider()
 
-### Build FFI Library
-
-```bash
-cd hwLedger
-cargo build --release -p hwledger-ffi
-```
-
-The native library will be loaded from `target/release/`.
-
-### Run Streamlit
-
-```bash
-cd apps/streamlit
-./scripts/run-streamlit.sh
-```
-
-Launches on port 8501.
-""")
+# --- About ---
+st.subheader("About")
+st.markdown(
+    "- Repo: [KooshaPari/hwLedger](https://github.com/KooshaPari/hwLedger)\n"
+    "- License: Apache-2.0\n"
+    "- Streamlit client: parity with macOS SwiftUI app (see `PARITY.md`)"
+)

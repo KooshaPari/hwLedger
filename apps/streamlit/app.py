@@ -66,14 +66,22 @@ with st.sidebar:
 st.title("hwLedger")
 st.markdown("Real-time GPU memory planning and fleet audit for LLM inference.")
 
-# Navigation
+# Navigation — mirrors the SwiftUI sidebar order, with the three net-new
+# pages (HF Search, What-If, Export) appended.
 pages = {
-    "Planner": "pages/01_Planner.py",
-    "Probe": "pages/02_Probe.py",
-    "Fleet": "pages/03_Fleet.py",
-    "Ledger": "pages/04_Ledger.py",
-    "Settings": "pages/05_Settings.py",
+    "Planner":    "pages/01_Planner.py",
+    "Probe":      "pages/02_Probe.py",
+    "Fleet":      "pages/03_Fleet.py",
+    "Ledger":     "pages/04_Ledger.py",
+    "Settings":   "pages/05_Settings.py",
+    "HF Search":  "pages/06_HF_Search.py",
+    "What-If":    "pages/07_WhatIf.py",
+    "Export":     "pages/08_Export.py",
 }
 
 # Multipage routing is handled by Streamlit's built-in Pages directory structure
 st.info("Use the sidebar to navigate to different tools.")
+st.caption(
+    "Parity map: `apps/streamlit/PARITY.md` — tracks feature gaps between "
+    "this client and the macOS SwiftUI desktop app."
+)

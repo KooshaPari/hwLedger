@@ -13,6 +13,7 @@ struct ContentView: View {
             List(Screen.allCases, selection: $state.selectedScreen) { screen in
                 Label(screen.rawValue, systemImage: iconForScreen(screen))
                     .tag(screen)
+                    .accessibilityIdentifier(sidebarIdentifier(for: screen))
             }
             .navigationTitle("hwLedger")
             .listStyle(.sidebar)
@@ -29,6 +30,10 @@ struct ContentView: View {
             LibraryScreen()
         case .planner:
             PlannerScreen()
+        case .hfSearch:
+            HfSearchScreen()
+        case .whatIf:
+            WhatIfScreen()
         case .fleet:
             FleetScreen()
         case .run:
@@ -46,6 +51,10 @@ struct ContentView: View {
             return "books"
         case .planner:
             return "chart.xyaxis.circle"
+        case .hfSearch:
+            return "magnifyingglass"
+        case .whatIf:
+            return "arrow.triangle.branch"
         case .fleet:
             return "server.rack"
         case .run:
@@ -54,6 +63,19 @@ struct ContentView: View {
             return "list.clipboard"
         case .settings:
             return "gear"
+        }
+    }
+
+    private func sidebarIdentifier(for screen: Screen) -> String {
+        switch screen {
+        case .library: return "sidebar-library"
+        case .planner: return "sidebar-planner"
+        case .hfSearch: return "sidebar-hf-search"
+        case .whatIf: return "sidebar-what-if"
+        case .fleet: return "sidebar-fleet"
+        case .run: return "sidebar-run"
+        case .ledger: return "sidebar-ledger"
+        case .settings: return "sidebar-settings"
         }
     }
 }

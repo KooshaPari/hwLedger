@@ -2,7 +2,7 @@
   "id": "first-plan",
   "intent": "Run your first plan with colored output showing token distribution for 4 users",
   "keyframe_count": 14,
-  "passed": true,
+  "passed": false,
   "recording": "recordings/first-plan.mp4",
   "recording_gif": "recordings/first-plan.gif",
   "steps": [
@@ -16,78 +16,91 @@
         ],
         "ocr_required": false
       },
+      "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-0)",
       "index": 0,
       "intent": "Terminal prompt, ready to run the planner",
       "screenshot_path": "frame-001.png",
       "slug": "frame-0"
     },
     {
+      "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
       "intent": "Run your first plan with colored output showing token distribution for 4 users (frame 2)",
       "screenshot_path": "frame-002.png",
       "slug": "frame-1"
     },
     {
+      "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-2)",
       "index": 2,
       "intent": "Run your first plan with colored output showing token distribution for 4 users (frame 3)",
       "screenshot_path": "frame-003.png",
       "slug": "frame-2"
     },
     {
+      "blind_description": "Shell session showing a command header and a paragraph of structured stdout. (frame slug: frame-3)",
       "index": 3,
       "intent": "Run your first plan with colored output showing token distribution for 4 users (frame 4)",
       "screenshot_path": "frame-004.png",
       "slug": "frame-3"
     },
     {
+      "blind_description": "Terminal window with a list-style summary and no visible error indicator. (frame slug: frame-4)",
       "index": 4,
       "intent": "Run your first plan with colored output showing token distribution for 4 users (frame 5)",
       "screenshot_path": "frame-005.png",
       "slug": "frame-4"
     },
     {
+      "blind_description": "Shell prompt displaying the result of a subcommand — multi-line text output. (frame slug: frame-5)",
       "index": 5,
       "intent": "Run your first plan with colored output showing token distribution for 4 users (frame 6)",
       "screenshot_path": "frame-006.png",
       "slug": "frame-5"
     },
     {
+      "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-6)",
       "index": 6,
       "intent": "Run your first plan with colored output showing token distribution for 4 users (frame 7)",
       "screenshot_path": "frame-007.png",
       "slug": "frame-6"
     },
     {
+      "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-7)",
       "index": 7,
       "intent": "Run your first plan with colored output showing token distribution for 4 users (frame 8)",
       "screenshot_path": "frame-008.png",
       "slug": "frame-7"
     },
     {
+      "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-8)",
       "index": 8,
       "intent": "Run your first plan with colored output showing token distribution for 4 users (frame 9)",
       "screenshot_path": "frame-009.png",
       "slug": "frame-8"
     },
     {
+      "blind_description": "Shell session showing a command header and a paragraph of structured stdout. (frame slug: frame-9)",
       "index": 9,
       "intent": "Run your first plan with colored output showing token distribution for 4 users (frame 10)",
       "screenshot_path": "frame-010.png",
       "slug": "frame-9"
     },
     {
+      "blind_description": "Terminal window with a list-style summary and no visible error indicator. (frame slug: frame-10)",
       "index": 10,
       "intent": "Run your first plan with colored output showing token distribution for 4 users (frame 11)",
       "screenshot_path": "frame-011.png",
       "slug": "frame-10"
     },
     {
+      "blind_description": "Shell prompt displaying the result of a subcommand — multi-line text output. (frame slug: frame-11)",
       "index": 11,
       "intent": "Run your first plan with colored output showing token distribution for 4 users (frame 12)",
       "screenshot_path": "frame-012.png",
       "slug": "frame-11"
     },
     {
+      "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-12)",
       "index": 12,
       "intent": "Run your first plan with colored output showing token distribution for 4 users (frame 13)",
       "screenshot_path": "frame-013.png",
@@ -113,6 +126,7 @@
         ],
         "ocr_required": false
       },
+      "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-13)",
       "index": 13,
       "intent": "Full VRAM breakdown table: Llama 70B GQA attention, weights/KV/activations/overhead totals, plus the __EXIT sentinel line",
       "screenshot_path": "frame-014.png",
@@ -124,12 +138,55 @@
     "FR-PLAN-003"
   ],
   "verification": {
-    "all_intents_passed": true,
-    "assertion_violations": [],
+    "all_intents_passed": false,
+    "assertion_violations": [
+      {
+        "expected": "Attention Kind",
+        "got_snippet": "Pe ea Oe ES SESE SSS 505556 Property  ",
+        "kind": "MustContain",
+        "step_index": 13
+      },
+      {
+        "expected": "Gqa",
+        "got_snippet": "Pe ea Oe ES SESE SSS 505556 Property  ",
+        "kind": "MustContain",
+        "step_index": 13
+      },
+      {
+        "expected": "Parameters",
+        "got_snippet": "Pe ea Oe ES SESE SSS 505556 Property  ",
+        "kind": "MustContain",
+        "step_index": 13
+      },
+      {
+        "expected": "Weights",
+        "got_snippet": "Pe ea Oe ES SESE SSS 505556 Property  ",
+        "kind": "MustContain",
+        "step_index": 13
+      },
+      {
+        "expected": "KV Cache",
+        "got_snippet": "Pe ea Oe ES SESE SSS 505556 Property  ",
+        "kind": "MustContain",
+        "step_index": 13
+      },
+      {
+        "expected": "Total",
+        "got_snippet": "Pe ea Oe ES SESE SSS 505556 Property  ",
+        "kind": "MustContain",
+        "step_index": 13
+      },
+      {
+        "expected": "__EXIT_",
+        "got_snippet": "Pe ea Oe ES SESE SSS 505556 Property  ",
+        "kind": "MustContain",
+        "step_index": 13
+      }
+    ],
     "describe_confidence": 0.95,
     "judge_confidence": 0.9,
     "mode": "mock",
     "overall_score": 0.92,
-    "timestamp": "2026-04-21T00:35:59Z"
+    "timestamp": "2026-04-21T01:02:46Z"
   }
 }

@@ -22,10 +22,48 @@ A browser-accessible web UI for hwLedger GPU memory planning and fleet audit.
 
 ```bash
 cd apps/streamlit
-./scripts/run-streamlit.sh
+./run.sh          # port 8511, Rust dev harness when available
 ```
 
-Opens browser to `http://localhost:8501` automatically.
+Opens the app at `http://localhost:8511`. The legacy `./scripts/run-streamlit.sh`
+entry point still works and binds to 8501.
+
+## Hot reload
+
+Streamlit itself reloads on every Python file save — no restart needed for
+`pages/*.py`, `lib/*.py`, or `app.py` edits.
+
+**FFI hot reload** is handled by a purpose-built Rust harness:
+
+```bash
+# One-time build:
+cargo build --release -p hwledger-devtools
+
+# Then the run.sh default picks it up automatically:
+./run.sh
+```
+
+The harness (`crates/hwledger-devtools/src/streamlit_dev.rs`) uses the
+`notify` crate to watch `target/release/libhwledger_ffi.{dylib,so}` and
+restarts Streamlit on change, so a `cargo build -p hwledger-ffi` in another
+terminal is immediately picked up by the Python `ctypes` bindings without
+manual intervention. Per the project scripting policy the watcher is a Rust
+binary, not `watchdog.py`.
+
+## Page map
+
+| Page | Source | Parity with macOS |
+|------|--------|-------------------|
+| Planner | FFI `hwledger_plan` + `hwledger_plan_layer_contributions` | ≥ PlannerScreen.swift (heatmap palette + attention badge) |
+| Probe | FFI `hwledger_probe_sample` live loop (1 Hz) | ≥ FleetScreen telemetry row |
+| Fleet | `/v1/agents` + Plotly node map + SSH probe | covers FleetMapScreen |
+| Ledger | `/v1/audit` + verify + retention + timeline | ≥ LedgerScreen.swift |
+| Settings | core version + server + HF + mTLS gen + log level | = SettingsScreen.swift |
+| HF Search | FFI `hwledger_hf_search` + quick picks + rate-limit banner | NEW |
+| What-If | FFI `hwledger_predict_whatif` (mock fallback) + citations | NEW |
+| Export | FFI `hwledger_plan` + vLLM/llama.cpp/MLX emitters | carved out from Planner |
+
+See [`PARITY.md`](./PARITY.md) for the complete gap audit.
 
 ## FFI Binding
 

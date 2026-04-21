@@ -5,6 +5,8 @@ import Security
 enum Screen: String, CaseIterable, Identifiable {
     case library = "Library"
     case planner = "Planner"
+    case hfSearch = "HF Search"
+    case whatIf = "What-If"
     case fleet = "Fleet"
     case run = "Run"
     case ledger = "Ledger"
@@ -53,6 +55,13 @@ final class AppState {
 
     // HuggingFace integration
     private(set) var hfTokenSet: Bool = false
+
+    /// HF repo-id pre-filled from the HF Search screen into Planner.
+    var pendingPlannerRepoId: String?
+
+    /// Baseline/candidate preselected from HF Search → What-If.
+    var whatIfBaseline: ModelCard?
+    var whatIfCandidate: ModelCard?
 
     // Logging
     var logLevel: String {
@@ -134,6 +143,40 @@ final class AppState {
         }
 
         return String(data: data, encoding: .utf8)
+    }
+
+    // MARK: - Cache management
+
+    /// Clear the on-disk HF client cache (model cards, config.json blobs).
+    /// Best-effort: logs any IO error into `errorMessage` but does not throw.
+    func clearHfCache() {
+        let fm = FileManager.default
+        let root = (fm.urls(for: .cachesDirectory, in: .userDomainMask).first)?
+            .appendingPathComponent("hwledger/hf")
+        guard let dir = root else { return }
+        do {
+            if fm.fileExists(atPath: dir.path) {
+                try fm.removeItem(at: dir)
+            }
+        } catch {
+            errorMessage = "Failed to clear HF cache: \(error)"
+        }
+    }
+
+    /// Clear the predictor benchmarks cache (papers-with-code / citations
+    /// responses, local prediction memos).
+    func clearPredictorCache() {
+        let fm = FileManager.default
+        let root = (fm.urls(for: .cachesDirectory, in: .userDomainMask).first)?
+            .appendingPathComponent("hwledger/predict")
+        guard let dir = root else { return }
+        do {
+            if fm.fileExists(atPath: dir.path) {
+                try fm.removeItem(at: dir)
+            }
+        } catch {
+            errorMessage = "Failed to clear predictor cache: \(error)"
+        }
     }
 
     // MARK: - Library Models

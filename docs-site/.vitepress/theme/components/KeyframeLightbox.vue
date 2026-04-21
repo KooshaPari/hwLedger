@@ -69,7 +69,14 @@
           </div>
 
           <div class="kf-caption">
-            <div class="kf-caption-text">{{ currentFrame.caption || '—' }}</div>
+            <div class="kf-caption-row">
+              <span class="kf-caption-label kf-caption-label-intent">Intent</span>
+              <span class="kf-caption-text">{{ currentFrame.caption || '—' }}</span>
+            </div>
+            <div class="kf-caption-row kf-caption-row-blind">
+              <span class="kf-caption-label kf-caption-label-blind">Blind</span>
+              <span class="kf-caption-text kf-caption-text-blind">{{ currentFrame.blind_description || '—' }}</span>
+            </div>
             <div class="kf-meta">frame {{ index + 1 }} / {{ frames.length }} · {{ journeyId }}</div>
           </div>
 
@@ -121,6 +128,7 @@ interface Annotation {
 interface Frame {
   path: string
   caption: string
+  blind_description?: string | null
   annotations?: Annotation[] | null
 }
 
@@ -154,7 +162,7 @@ try {
   if (stored === '0') showAnnotations.value = false
 } catch {}
 
-const currentFrame = computed(() => props.frames[props.index] || { path: '', caption: '', annotations: [] })
+const currentFrame = computed<Frame>(() => props.frames[props.index] || { path: '', caption: '', blind_description: null, annotations: [] })
 const annotations = computed<Annotation[]>(() => currentFrame.value.annotations || [])
 
 function paletteFor(a: Annotation, i: number): string {
@@ -317,11 +325,41 @@ watch(() => props.index, () => {
 
 .kf-caption {
   color: #cdd6f4;
-  text-align: center;
+  text-align: left;
   max-width: 80vw;
   font-size: 14px;
-  line-height: 1.4;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
+.kf-caption-row {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+.kf-caption-row-blind { opacity: 0.88; }
+.kf-caption-label {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.kf-caption-label-intent {
+  color: #89b4fa;
+  background: rgba(137, 180, 250, 0.14);
+}
+.kf-caption-label-blind {
+  color: #a6adc8;
+  background: rgba(205, 214, 244, 0.06);
+  border: 1px dashed rgba(205, 214, 244, 0.22);
+}
+.kf-caption-text { flex: 1 1 auto; }
+.kf-caption-text-blind { color: #a6adc8; font-style: italic; }
 .kf-meta {
   margin-top: 4px;
   color: #a6adc8;

@@ -2,7 +2,7 @@
   "id": "fleet-audit",
   "intent": "Audit the fleet with a 3-agent limit to see agent metadata and status",
   "keyframe_count": 8,
-  "passed": true,
+  "passed": false,
   "recording": "recordings/fleet-audit.mp4",
   "recording_gif": "recordings/fleet-audit.gif",
   "steps": [
@@ -16,42 +16,49 @@
         ],
         "ocr_required": false
       },
+      "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-0)",
       "index": 0,
       "intent": "Terminal prompt (audit-backed server running in background)",
       "screenshot_path": "frame-001.png",
       "slug": "frame-0"
     },
     {
+      "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
       "intent": "Audit the fleet with a 3-agent limit to see agent metadata and status (frame 2)",
       "screenshot_path": "frame-002.png",
       "slug": "frame-1"
     },
     {
+      "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-2)",
       "index": 2,
       "intent": "Audit the fleet with a 3-agent limit to see agent metadata and status (frame 3)",
       "screenshot_path": "frame-003.png",
       "slug": "frame-2"
     },
     {
+      "blind_description": "Shell session showing a command header and a paragraph of structured stdout. (frame slug: frame-3)",
       "index": 3,
       "intent": "Audit the fleet with a 3-agent limit to see agent metadata and status (frame 4)",
       "screenshot_path": "frame-004.png",
       "slug": "frame-3"
     },
     {
+      "blind_description": "Terminal window with a list-style summary and no visible error indicator. (frame slug: frame-4)",
       "index": 4,
       "intent": "Audit the fleet with a 3-agent limit to see agent metadata and status (frame 5)",
       "screenshot_path": "frame-005.png",
       "slug": "frame-4"
     },
     {
+      "blind_description": "Shell prompt displaying the result of a subcommand — multi-line text output. (frame slug: frame-5)",
       "index": 5,
       "intent": "Audit the fleet with a 3-agent limit to see agent metadata and status (frame 6)",
       "screenshot_path": "frame-006.png",
       "slug": "frame-5"
     },
     {
+      "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-6)",
       "index": 6,
       "intent": "Audit the fleet with a 3-agent limit to see agent metadata and status (frame 7)",
       "screenshot_path": "frame-007.png",
@@ -77,6 +84,7 @@
         ],
         "ocr_required": false
       },
+      "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-7)",
       "index": 7,
       "intent": "Audit table with agent events (inference_start, inference_end, probe_telemetry), agent IDs, and telemetry details; trailing __EXIT sentinel",
       "screenshot_path": "frame-008.png",
@@ -88,12 +96,31 @@
     "FR-FLEET-003"
   ],
   "verification": {
-    "all_intents_passed": true,
-    "assertion_violations": [],
+    "all_intents_passed": false,
+    "assertion_violations": [
+      {
+        "expected": "hwledger fleet audit",
+        "got_snippet": "| Agent . Event  $S===  | agent-001 | inference_end [Jose oqesaacass  | agent-002 | probe_telemetry  ",
+        "kind": "MustContain",
+        "step_index": 7
+      },
+      {
+        "expected": "Details",
+        "got_snippet": "| Agent . Event  $S===  | agent-001 | inference_end [Jose oqesaacass  | agent-002 | probe_telemetry  ",
+        "kind": "MustContain",
+        "step_index": 7
+      },
+      {
+        "expected": "__EXIT_",
+        "got_snippet": "| Agent . Event  $S===  | agent-001 | inference_end [Jose oqesaacass  | agent-002 | probe_telemetry  ",
+        "kind": "MustContain",
+        "step_index": 7
+      }
+    ],
     "describe_confidence": 0.95,
     "judge_confidence": 0.9,
     "mode": "mock",
     "overall_score": 0.92,
-    "timestamp": "2026-04-21T00:36:05Z"
+    "timestamp": "2026-04-21T01:02:47Z"
   }
 }

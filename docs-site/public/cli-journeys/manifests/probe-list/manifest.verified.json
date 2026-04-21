@@ -2,7 +2,7 @@
   "id": "probe-list",
   "intent": "List all available probes in both table and JSON formats",
   "keyframe_count": 3,
-  "passed": true,
+  "passed": false,
   "recording": "recordings/probe-list.mp4",
   "recording_gif": "recordings/probe-list.gif",
   "steps": [
@@ -16,12 +16,14 @@
         ],
         "ocr_required": false
       },
+      "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-0)",
       "index": 0,
       "intent": "Terminal prompt ready to run `hwledger probe list`",
       "screenshot_path": "frame-001.png",
       "slug": "frame-0"
     },
     {
+      "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
       "intent": "List all available probes in both table and JSON formats (frame 2)",
       "screenshot_path": "frame-002.png",
@@ -47,6 +49,7 @@
         ],
         "ocr_required": false
       },
+      "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-2)",
       "index": 2,
       "intent": "JSON output from `hwledger probe list --json` with schema/timestamp_ms/devices array (Apple Silicon GPU, metal backend, total_vram, utilization), trailing __EXIT sentinel",
       "screenshot_path": "frame-003.png",
@@ -58,12 +61,25 @@
     "FR-TEL-002"
   ],
   "verification": {
-    "all_intents_passed": true,
-    "assertion_violations": [],
+    "all_intents_passed": false,
+    "assertion_violations": [
+      {
+        "expected": "total_vram",
+        "got_snippet": "2026-04-21T00:04:00.797391Z WARN hwledger_cli::cmd::probe: Failed to enumerate nvidia: ba ckend initialization failed: NVML initialization failed: a libloading …",
+        "kind": "MustContain",
+        "step_index": 2
+      },
+      {
+        "expected": "__EXIT_",
+        "got_snippet": "2026-04-21T00:04:00.797391Z WARN hwledger_cli::cmd::probe: Failed to enumerate nvidia: ba ckend initialization failed: NVML initialization failed: a libloading …",
+        "kind": "MustContain",
+        "step_index": 2
+      }
+    ],
     "describe_confidence": 0.95,
     "judge_confidence": 0.9,
     "mode": "mock",
     "overall_score": 0.92,
-    "timestamp": "2026-04-21T00:36:35Z"
+    "timestamp": "2026-04-21T01:02:55Z"
   }
 }

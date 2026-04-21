@@ -2,7 +2,7 @@
   "id": "traceability-strict",
   "intent": "Show strict mode enforcement with passing and failing traceability checks",
   "keyframe_count": 3,
-  "passed": true,
+  "passed": false,
   "recording": "recordings/traceability-strict.mp4",
   "recording_gif": "recordings/traceability-strict.gif",
   "steps": [
@@ -16,12 +16,14 @@
         ],
         "ocr_required": false
       },
+      "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-0)",
       "index": 0,
       "intent": "Terminal prompt ready to invoke hwledger-traceability twice (non-strict then --strict)",
       "screenshot_path": "frame-001.png",
       "slug": "frame-0"
     },
     {
+      "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
       "intent": "Show strict mode enforcement with passing and failing traceability checks (frame 2)",
       "screenshot_path": "frame-002.png",
@@ -44,6 +46,7 @@
         ],
         "ocr_required": false
       },
+      "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-2)",
       "index": 2,
       "intent": "Strict mode output listing FRs with missing impl (FR-FLEET, FR-UI, FR-UX-VERIFY, FR-TRACE, NFR); trailing __EXIT_1__ sentinel proving the gate exits non-zero",
       "screenshot_path": "frame-003.png",
@@ -55,12 +58,25 @@
     "FR-TRACE-004"
   ],
   "verification": {
-    "all_intents_passed": true,
-    "assertion_violations": [],
+    "all_intents_passed": false,
+    "assertion_violations": [
+      {
+        "expected": "__EXIT_1__",
+        "got_snippet": "FR-TRACE-002 [PART] (T:5 1:0 D:5) FR-TRACE-004 [PART] (T:5 I:@ D:5)  ## Journey coverage  | FR | kind | journey id | score | passed | status lee oe eee oll or| …",
+        "kind": "MustContain",
+        "step_index": 2
+      },
+      {
+        "expected": "__EXIT_1__",
+        "got_snippet": "FR-TRACE-002 [PART] (T:5 1:0 D:5) FR-TRACE-004 [PART] (T:5 I:@ D:5)  ## Journey coverage  | FR | kind | journey id | score | passed | status lee oe eee oll or| …",
+        "kind": "ExitCode",
+        "step_index": 2
+      }
+    ],
     "describe_confidence": 0.95,
     "judge_confidence": 0.9,
     "mode": "mock",
     "overall_score": 0.92,
-    "timestamp": "2026-04-21T00:36:50Z"
+    "timestamp": "2026-04-21T01:03:01Z"
   }
 }

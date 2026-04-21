@@ -37,6 +37,27 @@ pre-commit:
 pre-push:
   parallel: false
   commands:
+    unverified-manifests:
+      # Hard gate: every manifest.json under docs-site/public/ and apps/ MUST
+      # have a sibling manifest.verified.json. Prevents the docs site from
+      # ever rendering "No verified manifest yet — this journey ran but hasn't
+      # been blackbox-verified". ALWAYS strict — never gated by
+      # HWLEDGER_TAPE_GATE. If this fails, run:
+      #   phenotype-journey verify --manifests-dir <dir> --tapes-dir <...>
+      # to regenerate the missing manifest.verified.json files.
+      run: |
+        set -euo pipefail
+        PHENOTYPE_JOURNEYS_ROOT="${PHENOTYPE_JOURNEYS_ROOT:-/Users/kooshapari/CodeProjects/Phenotype/repos/phenotype-journeys}"
+        if command -v phenotype-journey >/dev/null 2>&1; then
+          BIN="phenotype-journey"
+        elif [ -f "${PHENOTYPE_JOURNEYS_ROOT}/Cargo.toml" ]; then
+          BIN="cargo run --quiet --manifest-path ${PHENOTYPE_JOURNEYS_ROOT}/Cargo.toml --bin phenotype-journey --"
+        else
+          echo "phenotype-journey not available — install phenotype-journeys or set PHENOTYPE_JOURNEYS_ROOT"
+          exit 1
+        fi
+        ${BIN} check-verified --root docs-site/public --root apps
+
     workspace-verify:
       run: |
         set -euo pipefail

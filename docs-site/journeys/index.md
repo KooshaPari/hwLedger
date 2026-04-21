@@ -18,6 +18,8 @@ Real-pixel Playwright recordings of the Streamlit web client. Each spec boots St
 | [Probe — device inventory](./streamlit-probe.md) | GPU enumeration via FFI in the browser |
 | [Fleet — offline fail-loudly](./streamlit-fleet.md) | Connect-error UX; no silent fallback (NFR-007) |
 | [Exports — vLLM / llama.cpp / MLX](./streamlit-exports.md) | One-click deploy configs from any plan |
+| [HF Search — anon + handoff](./streamlit-hf-search.md) | Anonymous HF Hub search, quick picks, Planner handoff |
+| [What-If — technique sweep](./streamlit-what-if.md) | Baseline vs candidate under INT4/KV-FP8/LoRA/REAP/… |
 
 Recorded and verified via `apps/streamlit/journeys/scripts/record-all.sh` + `verify-manifests.sh`.
 

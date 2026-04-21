@@ -15,18 +15,21 @@
         ],
         "ocr_required": false
       },
+      "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-0)",
       "index": 0,
       "intent": "Terminal prompt, ready to run hwledger-traceability",
       "screenshot_path": "frame-001.png",
       "slug": "frame-0"
     },
     {
+      "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
       "intent": "Generate a markdown traceability report with coverage data and inspect the output (frame 2)",
       "screenshot_path": "frame-002.png",
       "slug": "frame-1"
     },
     {
+      "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-2)",
       "index": 2,
       "intent": "Generate a markdown traceability report with coverage data and inspect the output (frame 3)",
       "screenshot_path": "frame-003.png",
@@ -51,6 +54,7 @@
         ],
         "ocr_required": false
       },
+      "blind_description": "Shell session showing a command header and a paragraph of structured stdout. (frame slug: frame-3)",
       "index": 3,
       "intent": "Markdown report preview + FR grep count: tabular rows show FR-PLAN-00x, FR-TEL-00x, FR-INF-00x, FR-FLEET-00x with PART status; trailing __EXIT sentinel",
       "screenshot_path": "frame-004.png",
@@ -69,6 +73,6 @@
     "judge_confidence": 0.9,
     "mode": "mock",
     "overall_score": 0.92,
-    "timestamp": "2026-04-21T00:36:44Z"
+    "timestamp": "2026-04-21T01:02:59Z"
   }
 }

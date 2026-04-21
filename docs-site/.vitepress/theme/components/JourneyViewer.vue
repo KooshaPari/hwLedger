@@ -84,7 +84,7 @@ interface Manifest {
   intent: string
   pass: boolean
   recording: boolean
-  keyframes?: Array<{ path: string; caption: string; annotations?: Annotation[] | null }>
+  keyframes?: Array<{ path: string; caption: string; blind_description?: string | null; annotations?: Annotation[] | null }>
   steps?: Array<{
     index?: number
     slug: string
@@ -92,6 +92,7 @@ interface Manifest {
     screenshot?: string
     screenshot_path?: string
     description?: string
+    blind_description?: string
     judge_score?: number
     annotations?: Annotation[] | null
   }>
@@ -121,7 +122,11 @@ const enrichedKeyframes = computed(() => {
   if (m.keyframes && m.keyframes.length) {
     return m.keyframes.map((kf, i) => {
       const step = steps[i]
-      return { ...kf, annotations: kf.annotations ?? step?.annotations ?? null }
+      return {
+        ...kf,
+        annotations: kf.annotations ?? step?.annotations ?? null,
+        blind_description: kf.blind_description ?? step?.blind_description ?? null,
+      }
     })
   }
   // Derive from steps[]: path = "<dir>/<screenshot_path>" relative to the
@@ -133,6 +138,7 @@ const enrichedKeyframes = computed(() => {
     .map((s) => ({
       path: `${manifestUrlBase.value}/keyframes/${id}/${s.screenshot_path || s.screenshot}`,
       caption: s.intent,
+      blind_description: s.blind_description ?? null,
       annotations: s.annotations ?? null,
     }))
 })
