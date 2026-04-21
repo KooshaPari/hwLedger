@@ -20,7 +20,12 @@ let package = Package(
         .target(
             name: "HwLedger",
             dependencies: ["HwLedgerCore"],
-            path: "Sources"
+            path: "Sources",
+            linkerSettings: [
+                .linkedFramework("IOKit"),
+                .linkedFramework("CoreFoundation"),
+                .linkedLibrary("IOReport"),
+            ]
         ),
         .testTarget(
             name: "HwLedgerTests",
