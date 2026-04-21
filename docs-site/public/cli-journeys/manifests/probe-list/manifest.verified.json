@@ -5,6 +5,7 @@
   "passed": true,
   "recording": "recordings/probe-list.mp4",
   "recording_gif": "recordings/probe-list.gif",
+  "recording_rich": "recordings/probe-list/probe-list.rich.mp4",
   "steps": [
     {
       "assertions": {

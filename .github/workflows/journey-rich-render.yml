@@ -1,0 +1,67 @@
+# Self-hosted rich-journey renders.
+#
+# Runs on a self-hosted Linux runner only — hosted macOS/Windows runners are
+# skipped per the Phenotype-wide GitHub Actions billing policy (see CLAUDE.md
+# -> "GitHub Actions Billing Constraint"). This is an acceptance gate for
+# rich renders, not a publish step.
+name: journey-rich-render
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'tools/journey-remotion/**'
+      - 'crates/hwledger-journey-render/**'
+      - 'apps/cli-journeys/**/scene-spec.json'
+      - 'apps/streamlit/journeys/**/scene-spec.json'
+
+jobs:
+  render:
+    # Self-hosted only. The Phenotype org does not run hosted runners.
+    runs-on: [self-hosted, linux]
+    if: contains(github.event.pull_request.labels.*.name, 'rich-render') || github.event_name == 'workflow_dispatch'
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Remotion deps
+        working-directory: tools/journey-remotion
+        run: bun install --frozen-lockfile
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: cargo-${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
+
+      - name: Build the render CLI
+        run: cargo build --release -p hwledger-journey-render
+
+      - name: Render plan-deepseek
+        run: |
+          ./target/release/hwledger-journey-render \
+            --journey plan-deepseek \
+            --manifest apps/cli-journeys/manifests/plan-deepseek/manifest.json \
+            --keyframes apps/cli-journeys/keyframes/plan-deepseek \
+            --remotion-root tools/journey-remotion \
+            --output out/plan-deepseek.rich.mp4
+
+      - name: Upload MP4 artefacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: rich-renders
+          path: out/*.rich.mp4
+          if-no-files-found: error
+          retention-days: 14
