@@ -5,6 +5,9 @@
   "passed": true,
   "recording": "recordings/fleet-audit.mp4",
   "recording_gif": "recordings/fleet-audit.gif",
+  "recording_rich": "recordings/fleet-audit/fleet-audit.rich.mp4",
+  "recording_rich_manifest_sha256": "36031674514f522cdf610ac747f23bf37c12fdc63a96c6609cd5106c0b60ba8b",
+  "recording_rich_sha256": "9c5b80ca16f5327f678f82acb5508293c6f80479a5355f4519dd11f1b1c428f0",
   "steps": [
     {
       "assertions": {

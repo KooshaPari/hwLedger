@@ -5,24 +5,76 @@ use std::path::{Path, PathBuf};
 
 use clap::{Parser, Subcommand};
 use hwledger_journey_render::{
-    annotate as run_annotate, build_rich_manifest, run, Annotation, RenderPlan,
+    annotate as run_annotate, batch, build_rich_manifest, run, Annotation, RenderPlan,
 };
 
 #[derive(Parser, Debug)]
 #[command(
     name = "hwledger-journey-render",
-    about = "Project annotations, render annotated keyframes, and enrich journey MP4s via Remotion.",
+    about = "Render enriched (rich) MP4s for hwLedger journeys via Remotion.",
     version
 )]
 struct Cli {
     #[command(subcommand)]
-    cmd: Cmd,
+    cmd: Option<Cmd>,
+
+    /// (legacy single-journey mode) journey id.
+    #[arg(long, global = false)]
+    journey: Option<String>,
+    #[arg(long)]
+    manifest: Option<PathBuf>,
+    #[arg(long)]
+    keyframes: Option<PathBuf>,
+    #[arg(long)]
+    remotion_root: Option<PathBuf>,
+    #[arg(long)]
+    output: Option<PathBuf>,
+    #[arg(long)]
+    scene_spec: Option<PathBuf>,
+    #[arg(long, default_value = "silent")]
+    voiceover: String,
 }
 
 #[derive(Subcommand, Debug)]
 enum Cmd {
-    /// End-to-end render (project annotations + annotate keyframes + render rich MP4).
-    Render(RenderArgs),
+    /// Batch-render every `manifest.verified.json` under <root>. Idempotent —
+    /// journeys whose manifest hash already matches their
+    /// `recording_rich_manifest_sha256` are skipped.
+    All {
+        /// Root directory under which to find manifests (e.g. `docs-site/public`).
+        root: PathBuf,
+
+        /// Remotion project root (defaults to `<repo>/tools/journey-remotion`).
+        #[arg(long)]
+        remotion_root: Option<PathBuf>,
+
+        /// Force re-render even if manifest hash matches.
+        #[arg(long)]
+        force: bool,
+
+        /// Voiceover backend ("silent" or "piper").
+        #[arg(long, default_value = "silent")]
+        voiceover: String,
+    },
+
+    /// Single journey (same as the legacy flag-only invocation).
+    One {
+        #[arg(long)]
+        journey: String,
+        #[arg(long)]
+        manifest: PathBuf,
+        #[arg(long)]
+        keyframes: PathBuf,
+        #[arg(long)]
+        remotion_root: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+        #[arg(long)]
+        scene_spec: Option<PathBuf>,
+        #[arg(long, default_value = "silent")]
+        voiceover: String,
+    },
+
     /// Annotate keyframes for an already-projected manifest (no MP4 render).
     Annotate {
         /// Manifest file (manifest.verified.json) with steps[].annotations already populated.
@@ -34,6 +86,7 @@ enum Cmd {
         #[arg(long)]
         remotion_root: PathBuf,
     },
+
     /// Project annotations from a shot-annotations.yaml into one or more manifests.
     ProjectAnnotations {
         /// Path to shot-annotations.yaml.
@@ -44,37 +97,6 @@ enum Cmd {
         #[arg(long = "manifest", num_args = 1..)]
         manifests: Vec<PathBuf>,
     },
-}
-
-#[derive(clap::Args, Debug)]
-struct RenderArgs {
-    /// Journey id (e.g. "plan-deepseek").
-    #[arg(long)]
-    journey: String,
-
-    /// Canonical manifest.json (or manifest.verified.json) from phenotype-journeys.
-    #[arg(long)]
-    manifest: PathBuf,
-
-    /// Directory of keyframe PNGs (frame-001.png, ...).
-    #[arg(long)]
-    keyframes: PathBuf,
-
-    /// Remotion project root (tools/journey-remotion).
-    #[arg(long)]
-    remotion_root: PathBuf,
-
-    /// Output MP4 path.
-    #[arg(long)]
-    output: PathBuf,
-
-    /// Optional scene-spec sidecar JSON.
-    #[arg(long)]
-    scene_spec: Option<PathBuf>,
-
-    /// Voiceover backend ("silent" | "piper"). Default "silent".
-    #[arg(long, default_value = "silent")]
-    voiceover: String,
 }
 
 type YamlAnnotations = BTreeMap<String, BTreeMap<u32, Vec<YamlAnnotation>>>;
@@ -137,9 +159,7 @@ fn project_annotations(yaml_path: &Path, manifests: &[PathBuf]) -> anyhow::Resul
     Ok(())
 }
 
-/// Run annotate step only (requires manifest with annotations already populated).
 fn annotate_only(manifest: &Path, keyframes: &Path, remotion_root: &Path) -> anyhow::Result<()> {
-    // Build a minimal RenderPlan to reuse annotate() helper.
     let manifest_abs = std::fs::canonicalize(manifest)?;
     let keyframes_abs = std::fs::canonicalize(keyframes)?;
     let remotion_abs = std::fs::canonicalize(remotion_root)?;
@@ -152,8 +172,6 @@ fn annotate_only(manifest: &Path, keyframes: &Path, remotion_root: &Path) -> any
         scene_spec: None,
         voiceover: "silent".to_string(),
     };
-    // annotate.ts expects a RichManifest shape — the real manifest already has steps[]; write
-    // a rich-shaped copy next to keyframes_dir so annotate.ts can read it.
     let rich_path = build_rich_manifest(&plan)?;
     run_annotate(&plan, &rich_path)?;
     println!("annotated keyframes written for {}", plan.journey_id);
@@ -166,25 +184,6 @@ fn read_id(manifest: &Path) -> anyhow::Result<String> {
     Ok(v.get("id").and_then(|s| s.as_str()).unwrap_or("unknown").to_string())
 }
 
-fn do_render(args: RenderArgs) -> anyhow::Result<()> {
-    let manifest_abs = std::fs::canonicalize(&args.manifest)?;
-    let keyframes_abs = std::fs::canonicalize(&args.keyframes)?;
-    let remotion_abs = std::fs::canonicalize(&args.remotion_root)?;
-    // Output may not yet exist; canonicalize parent.
-    let output_abs = if args.output.is_absolute() {
-        args.output.clone()
-    } else {
-        std::env::current_dir()?.join(&args.output)
-    };
-    let mut plan =
-        RenderPlan::new(args.journey, manifest_abs, keyframes_abs, remotion_abs, output_abs);
-    plan.scene_spec = args.scene_spec;
-    plan.voiceover = args.voiceover;
-    let out = run(&plan)?;
-    println!("{}", out.display());
-    Ok(())
-}
-
 fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt()
         .with_env_filter(
@@ -193,11 +192,84 @@ fn main() -> anyhow::Result<()> {
         )
         .init();
     let cli = Cli::parse();
+
     match cli.cmd {
-        Cmd::Render(args) => do_render(args),
-        Cmd::Annotate { manifest, keyframes, remotion_root } => {
+        Some(Cmd::All { root, remotion_root, force, voiceover }) => {
+            let remotion_root = remotion_root.unwrap_or_else(default_remotion_root);
+            batch::render_all(&root, &remotion_root, force, &voiceover)?;
+            Ok(())
+        }
+        Some(Cmd::One {
+            journey,
+            manifest,
+            keyframes,
+            remotion_root,
+            output,
+            scene_spec,
+            voiceover,
+        }) => run_single(journey, manifest, keyframes, remotion_root, output, scene_spec, voiceover),
+        Some(Cmd::Annotate { manifest, keyframes, remotion_root }) => {
             annotate_only(&manifest, &keyframes, &remotion_root)
         }
-        Cmd::ProjectAnnotations { yaml, manifests } => project_annotations(&yaml, &manifests),
+        Some(Cmd::ProjectAnnotations { yaml, manifests }) => {
+            project_annotations(&yaml, &manifests)
+        }
+        None => {
+            let journey = cli.journey.ok_or_else(|| {
+                anyhow::anyhow!(
+                    "either use subcommand (`all`/`one`/`annotate`/`project-annotations`) or provide legacy flags"
+                )
+            })?;
+            let manifest = cli.manifest.ok_or_else(|| anyhow::anyhow!("--manifest required"))?;
+            let keyframes = cli.keyframes.ok_or_else(|| anyhow::anyhow!("--keyframes required"))?;
+            let remotion_root =
+                cli.remotion_root.ok_or_else(|| anyhow::anyhow!("--remotion-root required"))?;
+            let output = cli.output.ok_or_else(|| anyhow::anyhow!("--output required"))?;
+            run_single(
+                journey,
+                manifest,
+                keyframes,
+                remotion_root,
+                output,
+                cli.scene_spec,
+                cli.voiceover,
+            )
+        }
     }
+}
+
+fn run_single(
+    journey: String,
+    manifest: PathBuf,
+    keyframes: PathBuf,
+    remotion_root: PathBuf,
+    output: PathBuf,
+    scene_spec: Option<PathBuf>,
+    voiceover: String,
+) -> anyhow::Result<()> {
+    let manifest_abs = std::fs::canonicalize(&manifest).unwrap_or(manifest);
+    let keyframes_abs = std::fs::canonicalize(&keyframes).unwrap_or(keyframes);
+    let remotion_abs = std::fs::canonicalize(&remotion_root).unwrap_or(remotion_root);
+    let output_abs =
+        if output.is_absolute() { output.clone() } else { std::env::current_dir()?.join(&output) };
+    let mut plan = RenderPlan::new(journey, manifest_abs, keyframes_abs, remotion_abs, output_abs);
+    plan.scene_spec = scene_spec;
+    plan.voiceover = voiceover;
+    let out = run(&plan)?;
+    println!("{}", out.display());
+    Ok(())
+}
+
+fn default_remotion_root() -> PathBuf {
+    let mut cur = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+    for _ in 0..6 {
+        let cand = cur.join("tools").join("journey-remotion");
+        if cand.exists() {
+            return cand;
+        }
+        if !cur.pop() {
+            break;
+        }
+    }
+    PathBuf::from("tools/journey-remotion")
 }

@@ -5,6 +5,9 @@
   "passed": false,
   "recording": "recordings/first-plan.mp4",
   "recording_gif": "recordings/first-plan.gif",
+  "recording_rich": "recordings/first-plan/first-plan.rich.mp4",
+  "recording_rich_manifest_sha256": "4ead154ab244e585d6f1a2d66db5d8a148b0485b3d868d9b80264577b0cfd13f",
+  "recording_rich_sha256": "48853971f6787ade342ddcf11e92ae11b1cfcec35b80d9889985fdd735110f4f",
   "steps": [
     {
       "assertions": {

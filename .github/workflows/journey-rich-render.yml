@@ -7,11 +7,16 @@
 name: journey-rich-render
 
 on:
+  # Nightly: 10:00 UTC = 03:00 PT. Re-renders any journey whose manifest
+  # hash has drifted from its stored recording_rich_manifest_sha256.
+  schedule:
+    - cron: '0 10 * * *'
   workflow_dispatch:
   pull_request:
     paths:
       - 'tools/journey-remotion/**'
       - 'crates/hwledger-journey-render/**'
+      - 'docs-site/public/**/manifest.verified.json'
       - 'apps/cli-journeys/**/scene-spec.json'
       - 'apps/streamlit/journeys/**/scene-spec.json'
 
@@ -19,11 +24,17 @@ jobs:
   render:
     # Self-hosted only. The Phenotype org does not run hosted runners.
     runs-on: [self-hosted, linux]
-    if: contains(github.event.pull_request.labels.*.name, 'rich-render') || github.event_name == 'workflow_dispatch'
-    timeout-minutes: 30
+    if: |
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.pull_request.labels.*.name, 'rich-render')
+    timeout-minutes: 60
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
 
       - name: Install bun
         uses: oven-sh/setup-bun@v2
@@ -49,19 +60,42 @@ jobs:
       - name: Build the render CLI
         run: cargo build --release -p hwledger-journey-render
 
-      - name: Render plan-deepseek
+      - name: Batch-render every journey under docs-site/public
+        # Idempotent: unchanged manifests are skipped via SHA-256 match.
         run: |
-          ./target/release/hwledger-journey-render \
-            --journey plan-deepseek \
-            --manifest apps/cli-journeys/manifests/plan-deepseek/manifest.json \
-            --keyframes apps/cli-journeys/keyframes/plan-deepseek \
-            --remotion-root tools/journey-remotion \
-            --output out/plan-deepseek.rich.mp4
+          ./target/release/hwledger-journey-render all docs-site/public
 
-      - name: Upload MP4 artefacts
+      - name: Detect changes
+        id: changes
+        run: |
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload MP4 artefacts (always)
         uses: actions/upload-artifact@v4
         with:
           name: rich-renders
-          path: out/*.rich.mp4
+          path: docs-site/public/**/*.rich.mp4
           if-no-files-found: error
           retention-days: 14
+
+      # On a scheduled (nightly) run, if any manifest hash changed we open
+      # a PR back to main. On pull_request triggers we leave changes in
+      # place and let the reviewer commit.
+      - name: Open PR with drift
+        if: github.event_name == 'schedule' && steps.changes.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore(journeys): nightly rich-render refresh"
+          branch: automated/rich-render-refresh
+          title: "Nightly rich-render refresh"
+          body: |
+            Automated nightly re-render of hwLedger journeys via
+            `hwledger-journey-render all docs-site/public`.
+
+            One or more `manifest.verified.json` files have drifted from
+            their stored `recording_rich_manifest_sha256`; the
+            corresponding rich MP4s have been regenerated.

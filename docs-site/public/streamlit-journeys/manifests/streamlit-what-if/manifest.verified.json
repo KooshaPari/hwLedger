@@ -5,6 +5,9 @@
   "passed": true,
   "recording": "recordings/streamlit-what-if/streamlit-what-if.mp4",
   "recording_gif": "recordings/streamlit-what-if/streamlit-what-if.gif",
+  "recording_rich": "recordings/streamlit-what-if/streamlit-what-if.rich.mp4",
+  "recording_rich_manifest_sha256": "3e129bb5c2ed407b90e4f101e9da2a63cf43b929394c8eb11a6effde9e80311c",
+  "recording_rich_sha256": "6652b5d46405c574c6cc4102e2f0a5bbfe4c6d84806275a3f67f47e506414cd5",
   "steps": [
     {
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: landing)",

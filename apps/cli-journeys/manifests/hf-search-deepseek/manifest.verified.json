@@ -1,19 +1,25 @@
 {
   "id": "hf-search-deepseek",
   "intent": "Search Hugging Face for DeepSeek and plan the top model",
+  "keyframe_count": 0,
+  "passed": true,
   "recording": "recordings/hf-search-deepseek.mp4",
   "recording_gif": "recordings/hf-search-deepseek.gif",
-  "keyframe_count": 0,
+  "recording_rich": "recordings/hf-search-deepseek/hf-search-deepseek.rich.mp4",
+  "recording_rich_manifest_sha256": "c1ec3b13bc403323e12aabd147b835879f3a1862dda491f867f24e149f821efb",
+  "recording_rich_sha256": "3ad3b1f1f756f8d94c56bc966199979b5689e382f0fc8f797588907d7ab716c1",
   "steps": [],
-  "traces_to": ["FR-HF-001", "FR-PLAN-003"],
-  "passed": true,
+  "traces_to": [
+    "FR-HF-001",
+    "FR-PLAN-003"
+  ],
   "verification": {
-    "timestamp": "2026-04-21T01:00:00Z",
+    "all_intents_passed": true,
+    "assertion_violations": [],
+    "describe_confidence": 0.9,
+    "judge_confidence": 0.9,
     "mode": "pending-record",
     "overall_score": 0.92,
-    "describe_confidence": 0.90,
-    "judge_confidence": 0.90,
-    "all_intents_passed": true,
-    "assertion_violations": []
+    "timestamp": "2026-04-21T01:00:00Z"
   }
 }

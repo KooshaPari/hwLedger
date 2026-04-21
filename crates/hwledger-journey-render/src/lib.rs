@@ -16,6 +16,7 @@ use std::process::Command;
 
 use serde::{Deserialize, Serialize};
 
+pub mod batch;
 pub mod manifest;
 
 pub use manifest::{Annotation, JourneyStep, RichManifest, SceneSpec, VoiceoverSpec};

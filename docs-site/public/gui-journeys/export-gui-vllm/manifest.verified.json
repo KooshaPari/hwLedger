@@ -40,6 +40,9 @@
   "passed": true,
   "recording": "recording.mp4",
   "recording_gif": "preview.gif",
+  "recording_rich": "export-gui-vllm.rich.mp4",
+  "recording_rich_manifest_sha256": "bdb456b548342277859aa02816e0a0c6e9dd0533490ea3aee4714615b2e0ca15",
+  "recording_rich_sha256": "037a3cc9446e01af4bbd3113d3c0545198157542d5771a0928aad66ac01b4650",
   "steps": [
     {
       "index": 0,

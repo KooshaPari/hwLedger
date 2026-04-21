@@ -32,6 +32,9 @@
   "passed": true,
   "recording": "recording.mp4",
   "recording_gif": "preview.gif",
+  "recording_rich": "fleet-gui-map.rich.mp4",
+  "recording_rich_manifest_sha256": "8aef03c9af4e88d0a2b4e04e079396c11cae807e482ff7e859e4e05ad6ad42ac",
+  "recording_rich_sha256": "cbf565d4e2aa8ebf8e37a0e7bb863ee2ff588da1953abb8ea9e8c01ab346e821",
   "steps": [
     {
       "index": 0,

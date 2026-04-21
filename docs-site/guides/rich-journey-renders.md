@@ -20,16 +20,49 @@ A rich MP4 is roughly **3–5 MB for 10–15 s at 1280×800**, rendered in **~7�
 # 1. One-time deps (node_modules + chromium).
 cd tools/journey-remotion
 bun install
+cd -
 
-# 2. Invoke the Rust wrapper end-to-end (build rich manifest ->
-#    annotate keyframes -> render MP4).
-cargo run -p hwledger-journey-render --bin hwledger-journey-render -- \
+# 2a. Batch-render every manifest under a root (idempotent — skips
+#     journeys whose manifest hash matches the stored
+#     recording_rich_manifest_sha256).
+cargo run -p hwledger-journey-render --release -- \
+  all docs-site/public
+
+# 2b. Or render a single journey.
+cargo run -p hwledger-journey-render --release -- \
+  one \
   --journey plan-deepseek \
-  --manifest apps/cli-journeys/manifests/plan-deepseek/manifest.json \
-  --keyframes apps/cli-journeys/keyframes/plan-deepseek \
-  --remotion-root tools/journey-remotion \
-  --output docs-site/public/cli-journeys/recordings/plan-deepseek/plan-deepseek.rich.mp4
+  --manifest "$(pwd)/docs-site/public/cli-journeys/manifests/plan-deepseek/manifest.verified.json" \
+  --keyframes "$(pwd)/docs-site/public/cli-journeys/keyframes/plan-deepseek" \
+  --remotion-root "$(pwd)/tools/journey-remotion" \
+  --output "$(pwd)/docs-site/public/cli-journeys/recordings/plan-deepseek/plan-deepseek.rich.mp4"
 ```
+
+> **Always pass absolute paths** to `one`. The Remotion subprocess runs
+> with `current_dir = remotion-root`, so relative paths resolve against
+> the wrong directory and the MP4 lands nested under the Remotion tree.
+> The `all` subcommand canonicalises paths automatically.
+
+### How to add a new journey
+
+1. **Tape file** — author the driver in `apps/*-journeys/` (a `.tape`
+   for VHS, a Playwright script for Streamlit, or a SwiftUI record for
+   GUI). It must emit a raw MP4 and a `keyframes/<id>/frame-NNN.png`
+   directory.
+2. **record-all** — run the family's `record-all.sh` (CLI or Streamlit)
+   or the GUI recorder. Output lands under
+   `docs-site/public/<family>-journeys/...`.
+3. **Verify** — `phenotype-journey check-verified` emits
+   `manifest.verified.json` alongside `manifest.json`.
+4. **Enrich** — `cargo run -p hwledger-journey-render --release --
+   all docs-site/public`. The new journey is picked up automatically,
+   rendered, and patched with `recording_rich` +
+   `recording_rich_sha256` + `recording_rich_manifest_sha256`.
+5. **Docs embed** — the journey-viewer page finds the rich MP4 via
+   `manifest.recording_rich`; no MDX changes are needed. If you want
+   the rich render inline in a narrative page, use
+   `<Shot manifest="…" variant="rich"/>` (see
+   `visual-walkthrough-plan-deepseek.md`).
 
 ### Authoring in the Remotion Studio
 

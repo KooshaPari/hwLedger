@@ -6,6 +6,8 @@
   "recording": "recordings/probe-list.mp4",
   "recording_gif": "recordings/probe-list.gif",
   "recording_rich": "recordings/probe-list/probe-list.rich.mp4",
+  "recording_rich_manifest_sha256": "01125a85fa38ed1d62526d06c6b2ebd3665b756662d2ed322639fb0f3d4540ec",
+  "recording_rich_sha256": "c2c356dfb42039b94bd2c005ef654dcc72260c6fe44d2ef704eedc4203ce2ea3",
   "steps": [
     {
       "assertions": {
