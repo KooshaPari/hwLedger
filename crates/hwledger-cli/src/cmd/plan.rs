@@ -11,16 +11,25 @@ use hwledger_core::math::{
     KvFormula, KvQuant as CoreKvQuant, PlannerSnapshot, WeightQuant as CoreWeightQuant,
 };
 use hwledger_ingest::config::{fmt_token_count, parse_max_context, parse_token_count};
+use hwledger_ingest::resolver::{resolve, ModelSource, ResolveError};
 use serde::{Deserialize, Serialize};
 use std::fs;
-use std::path::PathBuf;
 
 /// Plan GPU memory allocation for model inference.
+///
+/// The positional argument accepts four input styles, unified via
+/// `hwledger_ingest::resolver::resolve`:
+///
+///   * path to an HF-style `config.json` — legacy default
+///   * `org/repo` HuggingFace model id — fetches config.json and plans
+///   * `https://huggingface.co/<org>/<repo>[/tree/<rev>]` URL
+///   * `gold:<name>` shortcut for `tests/golden/<name>.json`
+///   * free text — routed through HF search; picks the top hit
 #[derive(Parser)]
 pub struct PlanArgs {
-    /// Path to HuggingFace config.json or JSON config file.
-    #[arg(value_name = "PATH")]
-    config_path: PathBuf,
+    /// Model reference: file path, HF repo-id, HF URL, or `gold:<name>`.
+    #[arg(value_name = "MODEL")]
+    config_path: String,
 
     /// Sequence length (context window size). Accepts integer or `K`/`M`/`G`
     /// suffixes, e.g. `--seq 128K`, `--seq 1M`, `--seq 4096`.
@@ -246,9 +255,10 @@ pub fn print_plan_result(result: &PlanResult) -> Result<()> {
 }
 
 pub fn run(args: PlanArgs) -> Result<()> {
-    // Load config
-    let config_json = fs::read_to_string(&args.config_path)
-        .with_context(|| format!("failed to read config: {}", args.config_path.display()))?;
+    // Resolve input through the unified model resolver. Accepts a file path,
+    // `gold:<name>` shortcut, HF URL, `org/name` repo-id, or free text.
+    // Traces to: FR-HF-001, FR-PLAN-003
+    let config_json = load_config_json(&args.config_path)?;
 
     let arch_cfg = ArchConfig::from_json(&config_json).context("failed to parse config.json")?;
 
@@ -364,6 +374,69 @@ pub fn run(args: PlanArgs) -> Result<()> {
     }
 
     Ok(())
+}
+
+/// Resolve a planner input string (path / repo-id / HF URL / `gold:<name>` /
+/// free text) into a raw `config.json` payload.
+///
+/// * [`ModelSource::LocalConfig`] / [`ModelSource::GoldenFixture`] read the
+///   file directly.
+/// * [`ModelSource::HfRepo`] hits the Hugging Face Hub via `HfClient`.
+/// * [`ResolveError::AmbiguousQuery`] routes to HF search (best match by
+///   downloads); errors loudly if the search returns no hits — per the
+///   "fail clearly" policy, we refuse to silently plan nothing.
+fn load_config_json(input: &str) -> Result<String> {
+    match resolve(input) {
+        Ok(ModelSource::LocalConfig(path)) | Ok(ModelSource::GoldenFixture(path)) => {
+            fs::read_to_string(&path)
+                .with_context(|| format!("failed to read config: {}", path.display()))
+        }
+        Ok(ModelSource::HfRepo { repo_id, revision }) => {
+            fetch_hf_config(&repo_id, revision.as_deref())
+        }
+        Err(ResolveError::AmbiguousQuery { hint }) => {
+            eprintln!("resolver: ambiguous query '{}' — searching HF Hub…", hint);
+            let repo_id = top_hf_match(&hint)?;
+            eprintln!("resolver: selected '{}' (top HF match)", repo_id);
+            fetch_hf_config(&repo_id, None)
+        }
+        Err(e) => Err(anyhow::anyhow!(e.to_string())),
+    }
+}
+
+/// Fetch `config.json` for an HF repo via `hwledger-hf-client`.
+fn fetch_hf_config(repo_id: &str, revision: Option<&str>) -> Result<String> {
+    use hwledger_hf_client::HfClient;
+    let client = HfClient::new(std::env::var("HF_TOKEN").ok());
+    let rt = tokio::runtime::Runtime::new().context("failed to create tokio runtime")?;
+    let value = rt
+        .block_on(client.fetch_config(repo_id, revision))
+        .map_err(|e| anyhow::anyhow!("HF fetch_config({}): {}", repo_id, e))?;
+    Ok(serde_json::to_string(&value)?)
+}
+
+/// Return the top-ranked HF repo id for a free-text query. Errors when the
+/// search returns zero hits rather than guessing.
+fn top_hf_match(query: &str) -> Result<String> {
+    use hwledger_hf_client::{HfClient, SearchQuery, SortKey};
+    let client = HfClient::new(std::env::var("HF_TOKEN").ok());
+    let q = SearchQuery {
+        text: Some(query.to_string()),
+        tags: vec![],
+        library: None,
+        sort: SortKey::Downloads,
+        limit: 5,
+        min_downloads: None,
+        author: None,
+        pipeline_tag: None,
+    };
+    let rt = tokio::runtime::Runtime::new().context("failed to create tokio runtime")?;
+    let results = rt.block_on(client.search_models(&q)).map_err(|e| anyhow::anyhow!(e))?;
+    results
+        .into_iter()
+        .next()
+        .map(|m| m.id)
+        .context(format!("HF search returned no results for '{}'", query))
 }
 
 fn estimate_params(cfg: &ArchConfig) -> u32 {

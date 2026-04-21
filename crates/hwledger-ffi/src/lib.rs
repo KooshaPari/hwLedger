@@ -950,6 +950,95 @@ pub unsafe extern "C" fn hwledger_hf_search(
     }
 }
 
+/// Resolve a user-supplied Planner input string into a structured source.
+///
+/// Accepts one of four input styles:
+///   1. Free text — returns `{"kind":"ambiguous","hint":"..."}` plus a
+///      `candidates[]` list populated from the HF search API (anonymous or
+///      using `token` when provided).
+///   2. `org/name` repo id — `{"kind":"hf_repo","repo_id":"...","revision":null}`.
+///   3. HF URL — same shape; `revision` set when the URL had a `/tree/<rev>`
+///      fragment that wasn't `main`.
+///   4. `gold:<name>` — `{"kind":"golden_fixture","path":"/abs/path.json"}`.
+///
+/// Absolute `.json` paths map to `{"kind":"local_config","path":"..."}`.
+///
+/// The returned C string is malloc'd by Rust; callers must free via
+/// [`hwledger_hf_free_string`].
+///
+/// Traces to: FR-HF-001, FR-PLAN-003
+///
+/// # Safety
+/// `input` must be a valid null-terminated UTF-8 string. `token` may be null
+/// or a valid null-terminated UTF-8 string (used only when the resolver falls
+/// back to HF search for ambiguous free text).
+#[no_mangle]
+pub unsafe extern "C" fn hwledger_resolve_model(
+    input: *const c_char,
+    token: *const c_char,
+) -> *mut c_char {
+    if input.is_null() {
+        return error_json("input must not be null");
+    }
+    let raw = CStr::from_ptr(input).to_string_lossy().to_string();
+
+    match hwledger_ingest::resolver::resolve(&raw) {
+        Ok(hwledger_ingest::resolver::ModelSource::GoldenFixture(path)) => into_c_string(
+            serde_json::json!({
+                "kind": "golden_fixture",
+                "path": path.to_string_lossy(),
+            })
+            .to_string(),
+        ),
+        Ok(hwledger_ingest::resolver::ModelSource::HfRepo { repo_id, revision }) => into_c_string(
+            serde_json::json!({
+                "kind": "hf_repo",
+                "repo_id": repo_id,
+                "revision": revision,
+            })
+            .to_string(),
+        ),
+        Ok(hwledger_ingest::resolver::ModelSource::LocalConfig(path)) => into_c_string(
+            serde_json::json!({
+                "kind": "local_config",
+                "path": path.to_string_lossy(),
+            })
+            .to_string(),
+        ),
+        Err(hwledger_ingest::resolver::ResolveError::AmbiguousQuery { hint }) => {
+            // Fall back to HF search for candidate models. Best-effort —
+            // network failure yields an empty candidates list rather than an
+            // error, so the UI can still render the "Ambiguous" chip.
+            let token = c_str_to_opt_string(token);
+            let client = HfClient::new(token);
+            let q = HfSearchQuery {
+                text: Some(hint.clone()),
+                tags: vec![],
+                library: None,
+                sort: HfSortKey::Downloads,
+                limit: 10,
+                min_downloads: None,
+                author: None,
+                pipeline_tag: None,
+            };
+            let candidates =
+                match tokio::runtime::Builder::new_current_thread().enable_all().build() {
+                    Ok(rt) => rt.block_on(client.search_models(&q)).unwrap_or_default(),
+                    Err(_) => Vec::new(),
+                };
+            into_c_string(
+                serde_json::json!({
+                    "kind": "ambiguous",
+                    "hint": hint,
+                    "candidates": candidates,
+                })
+                .to_string(),
+            )
+        }
+        Err(e) => error_json(&e.to_string()),
+    }
+}
+
 /// Plan directly from a Hugging Face repo id. Fetches `config.json` and runs
 /// the memory planner.
 ///

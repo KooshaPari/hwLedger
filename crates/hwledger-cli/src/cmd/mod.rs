@@ -6,4 +6,5 @@ pub mod ingest;
 pub mod plan;
 pub mod predict;
 pub mod probe;
+pub mod resolve;
 pub mod search;

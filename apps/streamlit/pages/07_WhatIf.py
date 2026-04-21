@@ -35,11 +35,92 @@ st.markdown(
 )
 
 status = backend_status()
-if not status.ffi_predict:
-    st.info(
-        "Sibling `hwledger_predict_whatif` FFI symbol is not yet exported; "
-        "showing deterministic-mock deltas with real published citations."
-    )
+
+# Dismissible mock banner with "why" expander + "Try live FFI" button.
+if "whatif_banner_dismissed" not in st.session_state:
+    st.session_state.whatif_banner_dismissed = False
+if "whatif_ffi_probe" not in st.session_state:
+    st.session_state.whatif_ffi_probe = None  # None | "ok" | error string
+
+if not status.ffi_predict and not st.session_state.whatif_banner_dismissed:
+    banner = st.container()
+    with banner:
+        bcol1, bcol2, bcol3 = st.columns([5, 2, 1])
+        with bcol1:
+            st.info(
+                "Using deterministic-mock predictions. The sibling "
+                "`hwledger_predict_whatif` FFI symbol is not currently "
+                "exported by `libhwledger_ffi`; citations and deltas shown "
+                "below come from published multipliers, not the live crate."
+            )
+        with bcol2:
+            if st.button("Try live FFI", use_container_width=True, key="whatif_try_ffi"):
+                # Attempt to dlopen / probe the symbol.
+                try:
+                    import ctypes
+                    from lib.ffi import lib as _ffi_lib  # type: ignore
+                    if _ffi_lib is None:
+                        raise RuntimeError(
+                            "libhwledger_ffi is not loaded. "
+                            "Build it with `cargo build --release -p hwledger-ffi`."
+                        )
+                    sym_names = [
+                        "hwledger_predict_whatif",
+                        "hwledger_predict",
+                    ]
+                    found = None
+                    last_err = None
+                    for name in sym_names:
+                        try:
+                            fn = getattr(_ffi_lib, name)
+                            # Ensure it looks like a real extern C function.
+                            if isinstance(fn, ctypes._CFuncPtr) or callable(fn):
+                                found = name
+                                break
+                        except AttributeError as e:
+                            last_err = e
+                    if found:
+                        st.session_state.whatif_ffi_probe = f"ok:{found}"
+                    else:
+                        raise AttributeError(
+                            f"symbol not exported (tried {sym_names}): {last_err}"
+                        )
+                except Exception as e:
+                    st.session_state.whatif_ffi_probe = (
+                        f"{type(e).__name__}: {e}"
+                    )
+                st.rerun()
+        with bcol3:
+            if st.button("Dismiss", use_container_width=True, key="whatif_dismiss"):
+                st.session_state.whatif_banner_dismissed = True
+                st.rerun()
+
+        probe = st.session_state.whatif_ffi_probe
+        if probe:
+            if probe.startswith("ok:"):
+                st.success(f"Live FFI available via symbol `{probe[3:]}`.")
+            else:
+                st.error(f"Live FFI dlopen failed — exact error:\n\n`{probe}`")
+
+        with st.expander("Why am I seeing mocks?"):
+            st.markdown(
+                "- The Streamlit app loads `libhwledger_ffi` via `ctypes` at "
+                "import time (see `apps/streamlit/lib/ffi.py`).\n"
+                "- The sibling **predict** crate (`crates/hwledger-predict`) "
+                "exports `hwledger_predict`/`hwledger_predict_whatif` behind a "
+                "feature that has not been wired into the default FFI build.\n"
+                "- Until the symbol is present, this page falls back to a "
+                "deterministic-mock that applies published technique "
+                "multipliers (GPTQ, KIVI, LoRA, REAP, FlashAttn-3…) and "
+                "shows the real citations.\n"
+                "- To switch to live:\n"
+                "    1. `cargo build --release -p hwledger-ffi "
+                "--features predict`\n"
+                "    2. Confirm `nm target/release/libhwledger_ffi.{so,dylib} "
+                "| grep predict` shows the exported symbol.\n"
+                "    3. Restart Streamlit and click **Try live FFI** to "
+                "verify the dlopen."
+            )
 
 
 # --- Baseline ---

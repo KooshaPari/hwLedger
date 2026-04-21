@@ -492,6 +492,177 @@ pub async fn placement_suggestions(
     Ok(Json(suggestions))
 }
 
+/// Deregister an agent: removes it from the DB and appends an audit event.
+/// Traces to: FR-FLEET-001, FR-FLEET-006
+pub async fn deregister_agent(
+    State(state): State<Arc<AppState>>,
+    Path(agent_id): Path<Uuid>,
+) -> Result<StatusCode, ServerError> {
+    let result = sqlx::query("DELETE FROM agents WHERE id = ?")
+        .bind(agent_id.to_string())
+        .execute(&state.db)
+        .await?;
+
+    if result.rows_affected() == 0 {
+        return Err(ServerError::Validation { reason: format!("agent {} not found", agent_id) });
+    }
+
+    // Best-effort audit record
+    let _ = state
+        .audit_log
+        .append(hwledger_ledger::HwLedgerEvent::SecurityEvent {
+            kind: "agent_deregistered".to_string(),
+            actor: None,
+            detail: format!("agent_id={}", agent_id),
+        })
+        .await;
+
+    Ok(StatusCode::NO_CONTENT)
+}
+
+/// Trigger an SSH probe for a known agent.
+/// The Streamlit UI hits this to re-run device detection on a registered host.
+/// For MVP this appends an audit event and returns a queued receipt; the real
+/// SSH exec path is owned by `ssh::probe_host` (fleet-ssh-exec-v1).
+/// Traces to: FR-FLEET-003, FR-FLEET-006
+pub async fn trigger_agent_probe(
+    State(state): State<Arc<AppState>>,
+    Path(agent_id): Path<Uuid>,
+) -> Result<Json<serde_json::Value>, ServerError> {
+    // Confirm the agent exists.
+    let hostname: Option<(String,)> = sqlx::query_as("SELECT hostname FROM agents WHERE id = ?")
+        .bind(agent_id.to_string())
+        .fetch_optional(&state.db)
+        .await?;
+
+    let hostname = hostname
+        .ok_or_else(|| ServerError::Validation { reason: format!("agent {} not found", agent_id) })?
+        .0;
+
+    let receipt = state
+        .audit_log
+        .append(hwledger_ledger::HwLedgerEvent::SecurityEvent {
+            kind: "ssh_probe_triggered".to_string(),
+            actor: None,
+            detail: format!("agent_id={} hostname={}", agent_id, hostname),
+        })
+        .await
+        .map_err(|e| ServerError::Internal { reason: e.to_string() })?;
+
+    Ok(Json(json!({
+        "queued": true,
+        "agent_id": agent_id.to_string(),
+        "hostname": hostname,
+        "audit_seq": receipt.seq,
+    })))
+}
+
+/// List audit events, newest-first, with optional type filter.
+/// Query params: `limit` (default 100, max 1000), `type` (event kind filter).
+/// Traces to: FR-FLEET-006
+pub async fn audit_list(
+    State(state): State<Arc<AppState>>,
+    axum::extract::Query(params): axum::extract::Query<HashMap<String, String>>,
+) -> Result<Json<serde_json::Value>, ServerError> {
+    let limit: usize =
+        params.get("limit").and_then(|s| s.parse().ok()).unwrap_or(100usize).min(1000);
+
+    let type_filter = params.get("type").cloned();
+
+    // Fetch more than requested so filters still return `limit` items where possible.
+    let raw_cap = if type_filter.is_some() { limit.saturating_mul(8).max(200) } else { limit };
+
+    let entries = state
+        .audit_log
+        .history(raw_cap)
+        .await
+        .map_err(|e| ServerError::Internal { reason: e.to_string() })?;
+
+    let mut out: Vec<serde_json::Value> = Vec::with_capacity(limit);
+    // Newest first
+    for entry in entries.into_iter().rev() {
+        let kind = entry.event.kind();
+        if let Some(t) = &type_filter {
+            if kind != t.as_str() {
+                continue;
+            }
+        }
+        out.push(json!({
+            "seq": entry.seq,
+            "hash": entry.hash,
+            "previous_hash": entry.previous_hash,
+            "appended_at_ms": entry.appended_at_ms,
+            "event_type": kind,
+            "actor": "system",
+            "event": entry.event,
+        }));
+        if out.len() >= limit {
+            break;
+        }
+    }
+
+    Ok(Json(json!({
+        "events": out,
+        "count": out.len(),
+        "limit": limit,
+        "type_filter": type_filter,
+    })))
+}
+
+/// Verify the audit hash chain; returns validity + first broken seq if any.
+/// Traces to: FR-FLEET-006
+pub async fn audit_verify_chain(
+    State(state): State<Arc<AppState>>,
+) -> Result<Json<serde_json::Value>, ServerError> {
+    let history = state
+        .audit_log
+        .history(usize::MAX)
+        .await
+        .map_err(|e| ServerError::Internal { reason: e.to_string() })?;
+
+    let (valid, broken_at_seq, head_hash) = match state.audit_log.verify_chain().await {
+        Ok(true) => (true, None, history.last().map(|e| e.hash.clone())),
+        Ok(false) => {
+            // The ledger reports false — locate first broken link by walking prev_hash.
+            let mut broken: Option<u64> = None;
+            for pair in history.windows(2) {
+                if pair[1].previous_hash != pair[0].hash {
+                    broken = Some(pair[1].seq);
+                    break;
+                }
+            }
+            (false, broken, history.last().map(|e| e.hash.clone()))
+        }
+        Err(_) => {
+            // Treat verification error as broken chain at the first inconsistency we can find.
+            let mut broken: Option<u64> = history.first().map(|e| e.seq);
+            for pair in history.windows(2) {
+                if pair[1].previous_hash != pair[0].hash {
+                    broken = Some(pair[1].seq);
+                    break;
+                }
+            }
+            (false, broken, history.last().map(|e| e.hash.clone()))
+        }
+    };
+
+    Ok(Json(json!({
+        "is_valid": valid,
+        "valid": valid,
+        "broken_at_seq": broken_at_seq,
+        "head_hash": head_hash,
+        "event_count": history.len(),
+    })))
+}
+
+/// Return the server's current retention policy.
+/// Traces to: FR-FLEET-006
+pub async fn audit_policy(
+    State(state): State<Arc<AppState>>,
+) -> Json<hwledger_ledger::RetentionPolicy> {
+    Json(state.retention_policy.clone())
+}
+
 /// Placement candidate combining agent or rental offering with computed scores.
 #[derive(Debug, Clone, Serialize)]
 pub struct PlacementCandidate {

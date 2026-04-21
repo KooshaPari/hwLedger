@@ -130,7 +130,14 @@ mod common {
             require_admin_cert: false,
         };
 
-        let state = Arc::new(AppState { db, ca, config, rentals_catalog: RwLock::new(None) });
+        let state = Arc::new(AppState {
+            db,
+            ca,
+            config,
+            rentals_catalog: RwLock::new(None),
+            audit_log: hwledger_ledger::AuditLog::new_in_memory(),
+            retention_policy: hwledger_ledger::RetentionPolicy::default(),
+        });
 
         Ok(state)
     }
@@ -148,6 +155,11 @@ mod common {
             .route("/v1/fleet/tailscale", get(routes::tailscale_peers))
             .route("/v1/fleet/rentals", get(routes::get_rentals))
             .route("/v1/fleet/placement", get(routes::placement_suggestions))
+            .route("/v1/agents/:agent_id", axum::routing::delete(routes::deregister_agent))
+            .route("/v1/agents/:agent_id/probe", post(routes::trigger_agent_probe))
+            .route("/v1/audit", get(routes::audit_list))
+            .route("/v1/audit/verify-chain", get(routes::audit_verify_chain))
+            .route("/v1/audit/policy", get(routes::audit_policy))
             .route("/v1/health", get(routes::health))
             .layer(DefaultBodyLimit::max(10 * 1024 * 1024))
             .with_state(state)

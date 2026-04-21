@@ -6,7 +6,7 @@ use crate::output;
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use comfy_table::Table;
-use hwledger_probe::GpuProbe;
+use hwledger_probe::{GpuProbe, ProbeError};
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
@@ -44,6 +44,29 @@ pub struct WatchArgs {
     json: bool,
 }
 
+/// A single metric: either a numeric value or a human-readable
+/// "Not supported on <chip>" marker. Serialised to JSON as either `"45.2"`
+/// or `{"unsupported": "Not supported on Apple M1 Pro"}` so downstream
+/// consumers can distinguish an honest-zero from an unsupported chip.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum Metric<T> {
+    Value(T),
+    Unsupported { unsupported: String },
+}
+
+impl<T> Metric<T> {
+    fn from_result(res: Result<T, ProbeError>) -> Self {
+        match res {
+            Ok(v) => Metric::Value(v),
+            Err(ProbeError::UnsupportedMetric { chip, metric, .. }) => Metric::Unsupported {
+                unsupported: format!("Not supported on {} ({})", chip, metric),
+            },
+            Err(e) => Metric::Unsupported { unsupported: format!("error: {}", e) },
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeviceSnapshot {
     pub id: u32,
@@ -51,10 +74,10 @@ pub struct DeviceSnapshot {
     pub name: String,
     pub uuid: Option<String>,
     pub total_vram: String,
-    pub free_vram: String,
-    pub utilization: f32,
-    pub temperature: f32,
-    pub power: f32,
+    pub free_vram: Metric<String>,
+    pub utilization: Metric<f32>,
+    pub temperature: Metric<f32>,
+    pub power: Metric<f32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -179,10 +202,10 @@ fn snapshot_device(
     probe: &dyn GpuProbe,
     device: &hwledger_probe::Device,
 ) -> Result<DeviceSnapshot> {
-    let free_vram = probe.free_vram(device.id).unwrap_or(0);
-    let utilization = probe.utilization(device.id).unwrap_or(0.0);
-    let temperature = probe.temperature(device.id).unwrap_or(0.0);
-    let power = probe.power_draw(device.id).unwrap_or(0.0);
+    let free_vram = Metric::from_result(probe.free_vram(device.id).map(output::format_bytes));
+    let utilization = Metric::from_result(probe.utilization(device.id));
+    let temperature = Metric::from_result(probe.temperature(device.id));
+    let power = Metric::from_result(probe.power_draw(device.id));
 
     Ok(DeviceSnapshot {
         id: device.id,
@@ -190,7 +213,7 @@ fn snapshot_device(
         name: device.name.clone(),
         uuid: device.uuid.clone(),
         total_vram: output::format_bytes(device.total_vram),
-        free_vram: output::format_bytes(free_vram),
+        free_vram,
         utilization,
         temperature,
         power,
@@ -215,16 +238,41 @@ fn print_device_table(devices: &[DeviceSnapshot]) -> Result<()> {
         "Power W",
     ]);
 
+    fn render_str(m: &Metric<String>) -> String {
+        match m {
+            Metric::Value(s) => s.clone(),
+            Metric::Unsupported { unsupported } => unsupported.clone(),
+        }
+    }
+    fn render_pct(m: &Metric<f32>) -> String {
+        match m {
+            Metric::Value(v) => crate::output::format_percent(*v),
+            Metric::Unsupported { unsupported } => unsupported.clone(),
+        }
+    }
+    fn render_temp(m: &Metric<f32>) -> String {
+        match m {
+            Metric::Value(v) => crate::output::format_temp(*v),
+            Metric::Unsupported { unsupported } => unsupported.clone(),
+        }
+    }
+    fn render_power(m: &Metric<f32>) -> String {
+        match m {
+            Metric::Value(v) => crate::output::format_power(*v),
+            Metric::Unsupported { unsupported } => unsupported.clone(),
+        }
+    }
+
     for dev in devices {
         table.add_row(vec![
             dev.id.to_string(),
             dev.backend.clone(),
             dev.name.clone(),
             dev.total_vram.clone(),
-            dev.free_vram.clone(),
-            crate::output::format_percent(dev.utilization),
-            crate::output::format_temp(dev.temperature),
-            crate::output::format_power(dev.power),
+            render_str(&dev.free_vram),
+            render_pct(&dev.utilization),
+            render_temp(&dev.temperature),
+            render_power(&dev.power),
         ]);
     }
 

@@ -58,6 +58,10 @@ enum Commands {
     /// Predict the impact of swapping from a baseline config to a candidate (what-if).
     Predict(cmd::predict::PredictArgs),
 
+    /// Resolve a Planner input string (file path, HF repo-id, HF URL,
+    /// `gold:<name>`, or free text) into a structured model source.
+    Resolve(cmd::resolve::ResolveArgs),
+
     /// Display version information.
     Version,
 
@@ -85,6 +89,7 @@ fn main() -> Result<()> {
         Commands::Fleet(subcommand) => cmd::fleet::run(subcommand),
         Commands::Search(subcommand) => cmd::search::run(subcommand),
         Commands::Predict(args) => cmd::predict::run(args),
+        Commands::Resolve(args) => cmd::resolve::run(args),
         Commands::Version => {
             println!("hwledger-cli v{}", VERSION);
             Ok(())

@@ -66,6 +66,16 @@ pub enum ProbeError {
     /// I/O error from shell-out or system call.
     #[error("I/O error: {0}")]
     Io(#[from] std::io::Error),
+
+    /// A telemetry metric is not exposed by the kernel on this chip / OS build.
+    ///
+    /// Returned (primarily by the Apple Silicon / IOKit backend) when the
+    /// expected key is missing from the `PerformanceStatistics` dictionary
+    /// or when no HID temperature sensor reports the GPU die. Surfaced to
+    /// the UI layer so it can render "Not supported on <chip>" inline
+    /// instead of a silent dash.
+    #[error("{metric} not supported on {chip} (macOS {macos_version})")]
+    UnsupportedMetric { chip: String, macos_version: String, metric: String },
 }
 
 /// Trait for querying GPU device telemetry across multiple backends.

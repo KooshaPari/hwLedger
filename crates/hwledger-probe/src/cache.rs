@@ -121,19 +121,23 @@ impl<P: GpuProbe> GpuProbe for CachedProbe<P> {
     }
 
     fn free_vram(&self, device_id: u32) -> Result<u64, ProbeError> {
-        Ok(self.snapshot(device_id)?.free_vram_bytes)
+        // Pass through to the inner probe so per-metric `UnsupportedMetric`
+        // errors are not swallowed by sibling metrics. Caching is handled
+        // explicitly by callers that need a coherent snapshot via
+        // [`CachedProbe::snapshot`].
+        self.inner.free_vram(device_id)
     }
 
     fn utilization(&self, device_id: u32) -> Result<f32, ProbeError> {
-        Ok(self.snapshot(device_id)?.util_percent)
+        self.inner.utilization(device_id)
     }
 
     fn temperature(&self, device_id: u32) -> Result<f32, ProbeError> {
-        Ok(self.snapshot(device_id)?.temperature_c)
+        self.inner.temperature(device_id)
     }
 
     fn power_draw(&self, device_id: u32) -> Result<f32, ProbeError> {
-        Ok(self.snapshot(device_id)?.power_watts)
+        self.inner.power_draw(device_id)
     }
 
     fn process_vram(&self, device_id: u32, pid: u32) -> Result<u64, ProbeError> {
@@ -204,8 +208,10 @@ mod tests {
     }
 
     /// Traces to: FR-TEL-002
+    /// `snapshot()` coalesces the four metric reads into one wall-clock sample
+    /// and dedupes inner calls within the TTL.
     #[test]
-    fn cache_hits_within_ttl_dedupe_inner_calls() {
+    fn snapshot_caches_within_ttl_dedupe_inner_calls() {
         let free_calls = Arc::new(AtomicU32::new(0));
         let util_calls = Arc::new(AtomicU32::new(0));
         let inner =
@@ -213,29 +219,25 @@ mod tests {
         let cached = CachedProbe::with_ttl(inner, Duration::from_secs(60));
 
         for _ in 0..5 {
-            let _ = cached.free_vram(0).unwrap();
-            let _ = cached.utilization(0).unwrap();
-            let _ = cached.temperature(0).unwrap();
-            let _ = cached.power_draw(0).unwrap();
+            let _ = cached.snapshot(0).unwrap();
         }
 
-        // One snapshot populated the cache; the remaining 4 rounds hit the cache.
         assert_eq!(free_calls.load(Ordering::SeqCst), 1, "free_vram should be sampled once");
         assert_eq!(util_calls.load(Ordering::SeqCst), 1, "utilization should be sampled once");
     }
 
     /// Traces to: FR-TEL-002
     #[test]
-    fn cache_miss_after_ttl_resamples() {
+    fn snapshot_miss_after_ttl_resamples() {
         let free_calls = Arc::new(AtomicU32::new(0));
         let util_calls = Arc::new(AtomicU32::new(0));
         let inner =
             CountingProbe { free_calls: free_calls.clone(), util_calls: util_calls.clone() };
         let cached = CachedProbe::with_ttl(inner, Duration::from_millis(10));
 
-        let _ = cached.free_vram(0).unwrap();
+        let _ = cached.snapshot(0).unwrap();
         sleep(Duration::from_millis(25));
-        let _ = cached.free_vram(0).unwrap();
+        let _ = cached.snapshot(0).unwrap();
 
         assert_eq!(free_calls.load(Ordering::SeqCst), 2, "expired cache should re-sample");
     }
@@ -248,9 +250,9 @@ mod tests {
         let inner = CountingProbe { free_calls: free_calls.clone(), util_calls };
         let cached = CachedProbe::with_ttl(inner, Duration::from_secs(60));
 
-        let _ = cached.free_vram(0).unwrap();
+        let _ = cached.snapshot(0).unwrap();
         cached.invalidate(0);
-        let _ = cached.free_vram(0).unwrap();
+        let _ = cached.snapshot(0).unwrap();
 
         assert_eq!(free_calls.load(Ordering::SeqCst), 2, "invalidated cache should re-sample");
     }
@@ -263,15 +265,62 @@ mod tests {
         let inner = CountingProbe { free_calls: free_calls.clone(), util_calls };
         let cached = CachedProbe::with_ttl(inner, Duration::from_secs(60));
 
-        let _ = cached.free_vram(0).unwrap();
-        let _ = cached.free_vram(1).unwrap();
-        let _ = cached.free_vram(0).unwrap();
-        let _ = cached.free_vram(1).unwrap();
+        let _ = cached.snapshot(0).unwrap();
+        let _ = cached.snapshot(1).unwrap();
+        let _ = cached.snapshot(0).unwrap();
+        let _ = cached.snapshot(1).unwrap();
 
         assert_eq!(
             free_calls.load(Ordering::SeqCst),
             2,
             "each device cached separately; one sample each"
         );
+    }
+
+    /// Traces to: FR-TEL-002
+    /// An `UnsupportedMetric` from one field must not poison peers when
+    /// callers use the trait methods — they delegate to the inner probe.
+    #[test]
+    fn unsupported_metric_does_not_poison_peers() {
+        use crate::ProbeError;
+
+        struct PartialProbe;
+        impl GpuProbe for PartialProbe {
+            fn backend_name(&self) -> &'static str {
+                "partial"
+            }
+            fn enumerate(&self) -> Result<Vec<Device>, ProbeError> {
+                Ok(vec![])
+            }
+            fn total_vram(&self, _: u32) -> Result<u64, ProbeError> {
+                Ok(100)
+            }
+            fn free_vram(&self, _: u32) -> Result<u64, ProbeError> {
+                Ok(50)
+            }
+            fn utilization(&self, _: u32) -> Result<f32, ProbeError> {
+                Ok(42.0)
+            }
+            fn temperature(&self, _: u32) -> Result<f32, ProbeError> {
+                Ok(55.0)
+            }
+            fn power_draw(&self, _: u32) -> Result<f32, ProbeError> {
+                Err(ProbeError::UnsupportedMetric {
+                    chip: "M1".into(),
+                    macos_version: "26".into(),
+                    metric: "Total Power".into(),
+                })
+            }
+            fn process_vram(&self, _: u32, _: u32) -> Result<u64, ProbeError> {
+                Ok(0)
+            }
+        }
+        let cached = CachedProbe::new(PartialProbe);
+        assert_eq!(cached.utilization(0).unwrap(), 42.0);
+        assert_eq!(cached.temperature(0).unwrap(), 55.0);
+        assert!(matches!(
+            cached.power_draw(0),
+            Err(ProbeError::UnsupportedMetric { .. })
+        ));
     }
 }

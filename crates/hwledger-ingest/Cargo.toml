@@ -15,6 +15,7 @@ serde_json.workspace = true
 safetensors.workspace = true
 memmap2 = "0.9"
 byteorder = "1"
+regex.workspace = true
 hwledger-arch = { path = "../hwledger-arch" }
 hwledger-core = { path = "../hwledger-core" }
 

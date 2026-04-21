@@ -8,6 +8,7 @@
 
 pub mod config;
 pub mod gguf;
+pub mod resolver;
 pub mod safetensors;
 
 #[cfg(feature = "hf")]
