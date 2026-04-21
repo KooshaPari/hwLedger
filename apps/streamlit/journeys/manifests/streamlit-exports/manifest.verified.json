@@ -3,8 +3,8 @@
   "intent": "From the Planner page, click each export button in turn and capture the generated deployment config for vLLM, llama.cpp, and MLX.",
   "keyframe_count": 5,
   "passed": true,
-  "recording": "recordings/streamlit-exports.mp4",
-  "recording_gif": "recordings/streamlit-exports.gif",
+  "recording": "recordings/streamlit-exports/streamlit-exports.mp4",
+  "recording_gif": "recordings/streamlit-exports/streamlit-exports.gif",
   "steps": [
     {
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: planner-ready)",

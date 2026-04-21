@@ -3,8 +3,8 @@
   "intent": "Navigate to Fleet Audit while the hwLedger server is offline; the page must report a clear connect error rather than silently degrade.",
   "keyframe_count": 3,
   "passed": true,
-  "recording": "recordings/streamlit-fleet.mp4",
-  "recording_gif": "recordings/streamlit-fleet.gif",
+  "recording": "recordings/streamlit-fleet/streamlit-fleet.mp4",
+  "recording_gif": "recordings/streamlit-fleet/streamlit-fleet.gif",
   "steps": [
     {
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: landing)",

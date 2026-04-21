@@ -1,6 +1,8 @@
 {
   "id": "planner-gui-launch",
-  "traces_to": ["FR-UI-001"],
+  "traces_to": [
+    "FR-UI-001"
+  ],
   "title": "SwiftUI planner launch",
   "intent": "GUI planner launch and seq-len slider adjustment",
   "passed": true,
@@ -11,5 +13,7 @@
     "describe_confidence": 0.93,
     "judge_confidence": 0.88,
     "all_intents_passed": true
-  }
+  },
+  "recording": "recording.mp4",
+  "recording_gif": "preview.gif"
 }

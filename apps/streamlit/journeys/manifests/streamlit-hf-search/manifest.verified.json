@@ -3,8 +3,8 @@
   "intent": "Load the HF Search page, browse the 2025-2026 quick picks, type a query, pick filters, and hand off a selected model to the Planner.",
   "keyframe_count": 5,
   "passed": true,
-  "recording": "recordings/streamlit-hf-search.mp4",
-  "recording_gif": "recordings/streamlit-hf-search.gif",
+  "recording": "recordings/streamlit-hf-search/streamlit-hf-search.mp4",
+  "recording_gif": "recordings/streamlit-hf-search/streamlit-hf-search.gif",
   "steps": [
     {
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: landing)",

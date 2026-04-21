@@ -3,8 +3,8 @@
   "intent": "Visit the Probe page to enumerate GPUs detected by the FFI shim and inspect their backend + VRAM.",
   "keyframe_count": 3,
   "passed": true,
-  "recording": "recordings/streamlit-probe.mp4",
-  "recording_gif": "recordings/streamlit-probe.gif",
+  "recording": "recordings/streamlit-probe/streamlit-probe.mp4",
+  "recording_gif": "recordings/streamlit-probe/streamlit-probe.gif",
   "steps": [
     {
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: landing)",

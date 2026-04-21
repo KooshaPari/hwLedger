@@ -3,8 +3,8 @@
   "intent": "Load the DeepSeek-V3 golden fixture, sweep sequence length from 2K to 32K, and watch the KV cache bar dominate the stacked VRAM chart.",
   "keyframe_count": 5,
   "passed": true,
-  "recording": "recordings/streamlit-planner.mp4",
-  "recording_gif": "recordings/streamlit-planner.gif",
+  "recording": "recordings/streamlit-planner/streamlit-planner.mp4",
+  "recording_gif": "recordings/streamlit-planner/streamlit-planner.gif",
   "steps": [
     {
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: landing)",
