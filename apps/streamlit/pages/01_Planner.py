@@ -8,7 +8,11 @@ import json
 import streamlit as st
 import plotly.graph_objects as go
 from pathlib import Path
-from lib.ffi import plan, plan_layers, export_vllm, export_llama_cpp, export_mlx, is_available, PlanResult, predict, predict_available, model_max_context
+from lib.ffi import (
+    plan, plan_layers, export_vllm, export_llama_cpp, export_mlx,
+    is_available, PlanResult, predict, predict_available, model_max_context,
+    resolve_model, resolve_available,
+)
 from lib.charts import stacked_bar_chart, gauge_chart
 from lib.tokens import LOG_TICKS, fmt_tokens, ticks_up_to
 

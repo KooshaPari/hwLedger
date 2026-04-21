@@ -695,3 +695,47 @@ def predict_available() -> bool:
     if lib is None:
         return False
     return hasattr(lib, "hwledger_predict")
+
+
+def resolve_model(input_text: str, token: Optional[str] = None) -> Optional[dict]:
+    """
+    Resolve a Planner input string (HF repo-id, HF URL, `gold:<name>`, path,
+    or free text) into a structured model source via `hwledger_resolve_model`.
+
+    Returns a dict in one of four shapes:
+      - `{"kind": "hf_repo", "repo_id": "...", "revision": null}`
+      - `{"kind": "golden_fixture", "path": "/abs/path.json"}`
+      - `{"kind": "local_config", "path": "/abs/path.json"}`
+      - `{"kind": "ambiguous", "hint": "...", "candidates": [...]}`
+
+    Returns None when the FFI library is missing or too old to expose the
+    symbol. On parse failure returns `{"error": "..."}`.
+
+    Traces to: FR-HF-001, FR-PLAN-003
+    """
+    if lib is None:
+        return None
+    try:
+        lib.hwledger_resolve_model.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+        lib.hwledger_resolve_model.restype = ctypes.c_void_p
+        lib.hwledger_hf_free_string.argtypes = [ctypes.c_void_p]
+        lib.hwledger_hf_free_string.restype = None
+    except AttributeError:
+        return None
+    token_bytes = token.encode("utf-8") if token else None
+    ptr = lib.hwledger_resolve_model(input_text.encode("utf-8"), token_bytes)
+    if not ptr:
+        return None
+    raw = ctypes.string_at(ptr).decode("utf-8", errors="replace")
+    lib.hwledger_hf_free_string(ptr)
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        return {"error": raw}
+
+
+def resolve_available() -> bool:
+    """Check whether `hwledger_resolve_model` is present in the loaded library."""
+    if lib is None:
+        return False
+    return hasattr(lib, "hwledger_resolve_model")

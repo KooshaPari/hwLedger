@@ -121,12 +121,27 @@ for dev in devices:
         with col1:
             st.metric("VRAM", f"{used:.1f}/{total:.1f} GB")
             st.progress(min(1.0, max(0.0, used / total if total else 0)))
+        # Sentinel values: the Rust FFI writes f32::NAN for UnsupportedMetric
+        # readings, and negative for hard errors. The IOKit backend surfaces
+        # `ProbeError::UnsupportedMetric { chip, macos_version, metric }` which
+        # we render inline as "Not supported on <chip>" per FR-TEL-002.
+        def _fmt(v: float, unit: str) -> str:
+            import math
+
+            if latest is None:
+                return "—"
+            if v is None or (isinstance(v, float) and math.isnan(v)):
+                return f"Not supported on {dev.name}"
+            if v < 0:
+                return "error"
+            return f"{v:.0f}{unit}"
+
         with col2:
-            st.metric("Util", f"{latest.util_percent:.0f}%" if latest else "—")
+            st.metric("Util", _fmt(latest.util_percent if latest else None, "%"))
         with col3:
-            st.metric("Temp", f"{latest.temperature_c:.0f}°C" if latest else "—")
+            st.metric("Temp", _fmt(latest.temperature_c if latest else None, "°C"))
         with col4:
-            st.metric("Power", f"{latest.power_watts:.0f} W" if latest else "—")
+            st.metric("Power", _fmt(latest.power_watts if latest else None, " W"))
 
         if len(buf) >= 2:
             spc1, spc2 = st.columns(2)

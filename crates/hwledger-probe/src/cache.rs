@@ -318,9 +318,6 @@ mod tests {
         let cached = CachedProbe::new(PartialProbe);
         assert_eq!(cached.utilization(0).unwrap(), 42.0);
         assert_eq!(cached.temperature(0).unwrap(), 55.0);
-        assert!(matches!(
-            cached.power_draw(0),
-            Err(ProbeError::UnsupportedMetric { .. })
-        ));
+        assert!(matches!(cached.power_draw(0), Err(ProbeError::UnsupportedMetric { .. })));
     }
 }
