@@ -1,19 +1,22 @@
 {
   "id": "planner-gui-launch",
+  "intent": "GUI planner launch and seq-len slider adjustment",
+  "passed": true,
+  "recording": "recording.mp4",
+  "recording_gif": "preview.gif",
+  "recording_rich": "planner-gui-launch.rich.mp4",
+  "recording_rich_manifest_sha256": "e0630c56f53239d7b023a5c01ff12fb474505c5244516ccb366c82134fd5af64",
+  "recording_rich_sha256": "85205830449a18885d764018d3ffd58e2c3196c73d75cccfd6122643375306c4",
+  "title": "SwiftUI planner launch",
   "traces_to": [
     "FR-UI-001"
   ],
-  "title": "SwiftUI planner launch",
-  "intent": "GUI planner launch and seq-len slider adjustment",
-  "passed": true,
   "verification": {
-    "timestamp": "2026-04-19T07:30:00Z",
-    "mode": "mock",
-    "overall_score": 0.9,
+    "all_intents_passed": true,
     "describe_confidence": 0.93,
     "judge_confidence": 0.88,
-    "all_intents_passed": true
-  },
-  "recording": "recording.mp4",
-  "recording_gif": "preview.gif"
+    "mode": "mock",
+    "overall_score": 0.9,
+    "timestamp": "2026-04-19T07:30:00Z"
+  }
 }

@@ -36,6 +36,9 @@
   "passed": true,
   "recording": "recording.mp4",
   "recording_gif": "preview.gif",
+  "recording_rich": "settings-gui-mtls.rich.mp4",
+  "recording_rich_manifest_sha256": "ed4240ac39c1ecbe8ecdc00ec9f72bd94ec2918f96b035a5f63eaa4b89ac62a8",
+  "recording_rich_sha256": "e81fc7f3a510f66809ec90e481409117d68318d30c9390d4490b55ec94241797",
   "steps": [
     {
       "index": 0,

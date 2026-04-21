@@ -32,6 +32,9 @@
   "passed": true,
   "recording": "recording.mp4",
   "recording_gif": "preview.gif",
+  "recording_rich": "probe-gui-watch.rich.mp4",
+  "recording_rich_manifest_sha256": "8bc506472bbd20c7f7604018b601cd66d73792c2bdd969676b2818bdcce6b2e6",
+  "recording_rich_sha256": "f748c2a0d8359f437708ac740993755def8266e843c9c7f5fce6baaae733ecdb",
   "steps": [
     {
       "index": 0,
