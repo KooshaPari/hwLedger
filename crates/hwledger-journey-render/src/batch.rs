@@ -182,6 +182,15 @@ pub fn render_all(
     force: bool,
     voiceover: &str,
 ) -> Result<(), anyhow::Error> {
+    // Canonicalise to absolute: subprocess cwd=remotion_root requires all
+    // other paths to be absolute so they resolve correctly.
+    let root = std::fs::canonicalize(root)
+        .map_err(|e| anyhow::anyhow!("canonicalize root {}: {e}", root.display()))?;
+    let remotion_root = std::fs::canonicalize(remotion_root).map_err(|e| {
+        anyhow::anyhow!("canonicalize remotion_root {}: {e}", remotion_root.display())
+    })?;
+    let root = &root;
+    let remotion_root = &remotion_root;
     let mut manifests: Vec<PathBuf> = Vec::new();
     for entry in WalkDir::new(root).into_iter().filter_map(|e| e.ok()) {
         if entry.file_name() == "manifest.verified.json" {
@@ -252,8 +261,23 @@ pub fn render_all(
         match run(&plan) {
             Ok(_) => {
                 let dt = t0.elapsed();
+                if !resolved.output_mp4.exists() {
+                    let msg = format!(
+                        "render returned Ok but output missing: {}",
+                        resolved.output_mp4.display()
+                    );
+                    eprintln!("[FAIL] {:<28} {}", resolved.journey_id, msg);
+                    failed.push((resolved.journey_id.clone(), msg));
+                    continue;
+                }
                 let rich_sha = sha256_file(&resolved.output_mp4).unwrap_or_default();
                 let size = std::fs::metadata(&resolved.output_mp4).map(|m| m.len()).unwrap_or(0);
+                if size == 0 {
+                    let msg = "output file is empty".to_string();
+                    eprintln!("[FAIL] {:<28} {}", resolved.journey_id, msg);
+                    failed.push((resolved.journey_id.clone(), msg));
+                    continue;
+                }
                 let rel = recording_rich_relpath(&resolved);
                 if let Err(e) = write_manifest_enrichment(
                     &resolved.manifest_path,
