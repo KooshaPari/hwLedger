@@ -318,3 +318,9 @@ Total KV Cache: 5.3 GB | Weights: 6.5 TB | Unified Memory: 5.3 GB + 6.5 TB
 - [Mamba: Linear-Time Sequence Modeling with Selective State Spaces](https://arxiv.org/abs/2312.00752) (Dec 2023)
 - [GQA: Training Generalized Multi-Query Transformers](https://arxiv.org/abs/2305.13245) (May 2023)
 - [Efficient Streaming Language Models with Attention Sinks](https://arxiv.org/abs/2309.17453) (Sep 2023)
+
+## See also
+
+- [Research — VRAM scaling, weights vs KV](/research/imports-2026-04/vram-scaling) — hybrid-attention caveats and concurrency scaling
+- [Research — Speculative decoding](/research/imports-2026-04/speculative-decoding) — KV sharing prerequisites
+- [Research — AR vs diffusion](/research/imports-2026-04/ar-vs-diffusion) — why diffusion needs its own `AttentionKind`

@@ -144,3 +144,9 @@ Lower score = better. Server picks top 3 instances, user selects region interact
 - [Fleet Agent: Deployment](/fleet/agent)
 - [Placement Algorithm](/fleet/placement) (coming soon)
 - [Cost Estimation](/reference/config)
+
+## See also
+
+- [Research — Self-host vs subscription cost](/research/imports-2026-04/self-host-vs-api-cost) — GPU-hour conversion and break-even math
+- [Research — Hetzner auction](/research/imports-2026-04/hetzner-auction) — bare-metal upgrade envelope
+- [Research — VPS options](/research/imports-2026-04/vps-options) — non-GPU infra tier

@@ -12,13 +12,6 @@ function buildResearchSidebar() {
     .filter(f => f.endsWith('.md') && f !== 'index.md')
     .sort()
 
-  if (files.length === 0) {
-    // Fallback to static list if no files found
-    return [
-      { text: 'Research Index', link: '/research/' }
-    ]
-  }
-
   const items = files.map(filename => {
     const filepath = join(researchDir, filename)
     const content = readFileSync(filepath, 'utf-8')
@@ -31,10 +24,39 @@ function buildResearchSidebar() {
     }
   })
 
-  return [
+  // Also include imports-2026-04 as a collapsible sub-group
+  const importsDir = join(researchDir, 'imports-2026-04')
+  let importsGroup: any = null
+  try {
+    const importFiles = readdirSync(importsDir)
+      .filter(f => f.endsWith('.md'))
+      .sort()
+    const importItems = importFiles.map(filename => {
+      const filepath = join(importsDir, filename)
+      const content = readFileSync(filepath, 'utf-8')
+      const { data } = matter(content)
+      const slug = filename.replace('.md', '')
+      return {
+        text: (data.title as string) || slug,
+        link: `/research/imports-2026-04/${slug}`
+      }
+    })
+    if (importItems.length > 0) {
+      importsGroup = {
+        text: 'Imported 2026-04',
+        collapsed: true,
+        items: importItems
+      }
+    }
+  } catch {
+    // directory missing — skip
+  }
+
+  const base = [
     { text: 'Research Index', link: '/research/' },
     ...items
   ]
+  return importsGroup ? [...base, importsGroup] : base
 }
 
 // Auto-generate sidebar for /architecture/adrs/ by reading frontmatter from architecture/adrs/*.md
@@ -142,6 +164,7 @@ export default withMermaid(defineConfig({
       ],
 
       '/research/': buildResearchSidebar(),
+      '/research/imports-2026-04/': buildResearchSidebar(),
 
       '/journeys/': [
         { text: 'Overview', link: '/journeys/' },

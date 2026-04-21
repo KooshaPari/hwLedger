@@ -48,6 +48,22 @@ Archived research briefs from the Haiku research swarm that informed hwLedger's 
 
 ---
 
+## Imported 2026-04
+
+Distilled from a ChatGPT research dump + the `llm_rnd_handoff` bundle. Source transcripts have been removed after distillation; provenance is captured in each brief's frontmatter.
+
+- [VRAM scaling — weights, KV cache, concurrency](/research/imports-2026-04/vram-scaling) — HF "VRAM" is weights-fit, not serving. Hybrid-attention changes KV math.
+- [Speculative decoding and API-level draft-verify](/research/imports-2026-04/speculative-decoding) — TiDAR, quant/MoE caveats, what you can't fake.
+- [Latent MAS vs Text MAS](/research/imports-2026-04/latent-vs-text-mas) — 50–80% fewer tokens, 3–7× speedup via hidden-state passing.
+- [Self-host vs subscription cost](/research/imports-2026-04/self-host-vs-api-cost) — GPU-hour conversion; break-even at ~8 h/day.
+- [Autoregressive vs diffusion LMs](/research/imports-2026-04/ar-vs-diffusion) — why black-box APIs can't project diffusion.
+- [VPS options for self-hosted workloads](/research/imports-2026-04/vps-options) — Contabo / Hetzner / OVH tiers for 64 GB bare metal.
+- [Hetzner auction upgrade envelope](/research/imports-2026-04/hetzner-auction) — what you can and can't upgrade post-purchase.
+- [RL and fine-tuning over black-box APIs](/research/imports-2026-04/rl-finetuning) — RFT vs agent-policy RL, what's actually possible.
+- [OSS LLM architectures + monthly compute plan](/research/imports-2026-04/architectures-and-compute-plan) — R&D theses, model bands, experiment matrix.
+
+---
+
 ## Key Findings Summary
 
 1. **oMlx fork is the right choice**: HTTP sidecar over Python direct call avoids build complexity.
