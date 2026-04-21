@@ -17,7 +17,8 @@ Output "apps/cli-journeys/recordings/plan-help.gif"
 Output "apps/cli-journeys/recordings/plan-help.mp4"
 
 Sleep 1500ms
-Type "hwledger plan --help"
+Type `hwledger plan --help; echo "__EXIT_$?__"`
 Sleep 600ms
 Enter
-Sleep 2500ms
+Sleep 3500ms
+Sleep 2000ms

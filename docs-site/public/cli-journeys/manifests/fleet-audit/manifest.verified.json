@@ -1,54 +1,207 @@
 {
   "id": "fleet-audit",
   "intent": "Audit the fleet with a 3-agent limit to see agent metadata and status",
+  "keyframe_count": 6,
+  "passed": false,
   "recording": "recordings/fleet-audit.mp4",
   "recording_gif": "recordings/fleet-audit.gif",
-  "keyframe_count": 6,
-  "passed": true,
   "steps": [
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 0,
-      "slug": "frame-0",
       "intent": "Terminal prompt (audit-backed server running in background)",
-      "screenshot_path": "frame-001.png"
+      "screenshot_path": "frame-001.png",
+      "slug": "frame-0"
     },
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 1,
-      "slug": "frame-1",
       "intent": "Command typed: `hwledger fleet audit --server http://localhost:8080 --limit 3`",
-      "screenshot_path": "frame-002.png"
+      "screenshot_path": "frame-002.png",
+      "slug": "frame-1"
     },
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 2,
-      "slug": "frame-2",
       "intent": "Audit log header printed with column titles",
-      "screenshot_path": "frame-003.png"
+      "screenshot_path": "frame-003.png",
+      "slug": "frame-2"
     },
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 3,
-      "slug": "frame-3",
       "intent": "First audit entry: timestamp, actor, action, subject",
-      "screenshot_path": "frame-004.png"
+      "screenshot_path": "frame-004.png",
+      "slug": "frame-3"
     },
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 4,
-      "slug": "frame-4",
       "intent": "Remaining two entries up to --limit 3 ceiling",
-      "screenshot_path": "frame-005.png"
+      "screenshot_path": "frame-005.png",
+      "slug": "frame-4"
     },
     {
+      "assertions": {
+        "expected_exit": 0,
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 5,
-      "slug": "frame-5",
       "intent": "Prompt returned; background server torn down silently",
-      "screenshot_path": "frame-006.png"
+      "screenshot_path": "frame-006.png",
+      "slug": "frame-5"
     }
   ],
   "verification": {
-    "timestamp": "2026-04-20T08:28:47Z",
+    "all_intents_passed": false,
+    "assertion_violations": [
+      {
+        "expected": "command not found",
+        "got_snippet": "server --port 8080 --db /tmp/hwl-audit.db & [1] 60891  > bash: hwledger-server: command not found  sleep 1  [1]+ Exit 127  hwledger-server --port 8080 --db /tmp/hwl-audit.db ot ",
+        "kind": "MustNotContain",
+        "step_index": 0
+      },
+      {
+        "expected": "error:",
+        "got_snippet": "7 hwledger-server --port 8080 --db /tmp/hwl-audit.db  > hwledger fleet audit \\\\ error: unexpected argument '\\' found  Usage: hwledger fleet audit [OPTIONS] --server <",
+        "kind": "MustNotContain",
+        "step_index": 1
+      },
+      {
+        "expected": "unexpected argument",
+        "got_snippet": "ger-server --port 8080 --db /tmp/hwl-audit.db  > hwledger fleet audit \\\\ error: unexpected argument '\\' found  Usage: hwledger fleet audit [OPTIONS] --server <SERVER>  For more in",
+        "kind": "MustNotContain",
+        "step_index": 1
+      },
+      {
+        "expected": "command not found",
+        "got_snippet": "erver --port 8080 --db /tmp/hwl-audit.db &  [1] 60891  > bash: hwledger-server: command not found  sleep 1  [1]+ Exit 127 hwledger-server --port 8080 --db /tmp/hwl-audit.db  > h",
+        "kind": "MustNotContain",
+        "step_index": 1
+      },
+      {
+        "expected": "error:",
+        "got_snippet": "2: 2026-04-19T12: 2026-04-19T12:  sleep 1  31: EW 31: 31: 31:  > hwledger fleet error: unexpected argument '\\' found  43.932540Z 43.932549Z 43.932559Z 43.9327962Z 43.",
+        "kind": "MustNotContain",
+        "step_index": 2
+      },
+      {
+        "expected": "unexpected argument",
+        "got_snippet": "-04-19T12: 2026-04-19T12:  sleep 1  31: EW 31: 31: 31:  > hwledger fleet error: unexpected argument '\\' found  43.932540Z 43.932549Z 43.932559Z 43.9327962Z 43.933014Z  audit \\\\  I",
+        "kind": "MustNotContain",
+        "step_index": 2
+      },
+      {
+        "expected": "error:",
+        "got_snippet": "2: 2026-04-19T12: 2026-04-19T12:  sleep 1  31: EW 31: 31: 31:  > hwledger fleet error: unexpected argument '\\' found  43.932540Z 43.932549Z 43.932559Z 43.9327962Z 43.",
+        "kind": "MustNotContain",
+        "step_index": 3
+      },
+      {
+        "expected": "unexpected argument",
+        "got_snippet": "-04-19T12: 2026-04-19T12:  sleep 1  31: EW 31: 31: 31:  > hwledger fleet error: unexpected argument '\\' found  43.932540Z 43.932549Z 43.932559Z 43.9327962Z 43.933014Z  audit \\\\  I",
+        "kind": "MustNotContain",
+        "step_index": 3
+      },
+      {
+        "expected": "command not found",
+        "got_snippet": "more information, try  =-help'.  > _--server http://localhost: 8080 \\\\  server: command not found ",
+        "kind": "MustNotContain",
+        "step_index": 3
+      },
+      {
+        "expected": "error:",
+        "got_snippet": "2: 2026-04-19T12: 2026-04-19T12:  sleep 1  31: EW 31: 31: 31:  > hwledger fleet error: unexpected argument '\\' found  43. 43. 43. 43. 43.  9325402 9325492 932559Z 932",
+        "kind": "MustNotContain",
+        "step_index": 4
+      },
+      {
+        "expected": "unexpected argument",
+        "got_snippet": "-04-19T12: 2026-04-19T12:  sleep 1  31: EW 31: 31: 31:  > hwledger fleet error: unexpected argument '\\' found  43. 43. 43. 43. 43.  9325402 9325492 932559Z 9327962 9330142  audit ",
+        "kind": "MustNotContain",
+        "step_index": 4
+      },
+      {
+        "expected": "command not found",
+        "got_snippet": "e information, try  =-help'.  > server http://localhost:8080 \\\\ bash: --server: command not found  > --Limit 3 bash >  --limit: command not found ",
+        "kind": "MustNotContain",
+        "step_index": 4
+      },
+      {
+        "expected": "error:",
+        "got_snippet": "2: 2026-04-19T12: 2026-04-19T12:  sleep 1  31: EW 31: 31: 31:  > hwledger fleet error: unexpected argument '\\' found  43. 43. 43. 43. 43.  9325402 9325492 932559Z 932",
+        "kind": "MustNotContain",
+        "step_index": 5
+      },
+      {
+        "expected": "unexpected argument",
+        "got_snippet": "-04-19T12: 2026-04-19T12:  sleep 1  31: EW 31: 31: 31:  > hwledger fleet error: unexpected argument '\\' found  43. 43. 43. 43. 43.  9325402 9325492 932559Z 9327962 9330142  audit ",
+        "kind": "MustNotContain",
+        "step_index": 5
+      },
+      {
+        "expected": "command not found",
+        "got_snippet": "e information, try  =-help'.  > server http://localhost:8080 \\\\ bash: --server: command not found  > --Limit 3 bash 5  --limit: command not found ",
+        "kind": "MustNotContain",
+        "step_index": 5
+      },
+      {
+        "expected": "__EXIT_0__",
+        "got_snippet": "> hwledger-server --port 8080 --db /tmp/hwl-audit.db &  (1] 47565  > 2026-04-19T12:31:43.930381Z 2026-04-19T12: 2026-04-19T12: 2026-04-19T12: 2026-04-19T12: 202…",
+        "kind": "ExitCode",
+        "step_index": 5
+      }
+    ],
+    "describe_confidence": 0.95,
+    "judge_confidence": 0.9,
     "mode": "mock",
     "overall_score": 0.92,
-    "describe_confidence": 0.95,
-    "judge_confidence": 0.90,
-    "all_intents_passed": true
+    "timestamp": "2026-04-21T00:02:39Z"
   }
 }

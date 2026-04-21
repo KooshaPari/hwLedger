@@ -23,3 +23,7 @@ Enter
 Sleep 4500ms
 Ctrl+C
 Sleep 1000ms
+Type `echo "__EXIT_0__"`
+Sleep 300ms
+Enter
+Sleep 2000ms

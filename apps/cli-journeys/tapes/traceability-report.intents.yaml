@@ -9,12 +9,35 @@ steps:
     assertions:
       must_contain: ["cargo run", "hwledger-traceability"]
       must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
+    annotations:
+      - bbox: [42, 43, 1076, 22]
+        label: "hwledger-traceability invocation"
+        color: "#89b4fa"
+        note: "Cross-dimensional FR/test/ADR traceability generator"
+      - bbox: [41, 70, 343, 21]
+        label: "PRD parser"
+        color: "#a6e3a1"
+        note: "First-pass FR extraction from PRD.md"
+      - bbox: [42, 96, 396, 22]
+        label: "43 FR/NFR specs"
+        color: "#f9e2af"
+        note: "Functional + non-functional requirement count"
   - index: 2
     intent: "Cargo compiles and launches the traceability tool"
     assertions:
       # This is the frame that previously showed `error: unexpected argument`.
       # These assertions are the regression gate.
       must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
+    annotations:
+      - bbox: [68, 70, 343, 20]
+        label: "FR | Tests | Source | ADRs"
+        color: "#89b4fa"
+        note: "Cross-dimensional matrix header — four traceability axes"
+      - bbox: [285, 123, 153, 20]
+        label: "0 tests / 0 ADRs"
+        color: "#f38ba8"
+        note: "Row with zero coverage — candidate for remediation"
+        style: dashed
   - index: 3
     intent: "Cross-Dimensional Traceability Report header printed"
     assertions:

@@ -22,7 +22,8 @@ Sleep 600ms
 Enter
 Sleep 3000ms
 
-Type "cargo run -q -p hwledger-traceability -- --strict"
+Type `cargo run -q -p hwledger-traceability -- --strict; echo "__EXIT_$?__"`
 Sleep 600ms
 Enter
-Sleep 3500ms
+Sleep 4500ms
+Sleep 2000ms

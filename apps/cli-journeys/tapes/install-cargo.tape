@@ -17,17 +17,18 @@ Output "apps/cli-journeys/recordings/install-cargo.gif"
 Output "apps/cli-journeys/recordings/install-cargo.mp4"
 
 Sleep 1500ms
-Type "cargo install --path crates/hwledger-cli --root /tmp/hwl-install"
+Type "cargo install --path crates/hwledger-cli --root /tmp/hwl-install --force --quiet"
 Sleep 600ms
 Enter
-Sleep 3500ms
+Sleep 5000ms
 
 Type "/tmp/hwl-install/bin/hwledger-cli --version"
 Sleep 600ms
 Enter
 Sleep 1500ms
 
-Type "/tmp/hwl-install/bin/hwledger-cli --help"
+Type `/tmp/hwl-install/bin/hwledger-cli --help; echo "__EXIT_$?__"`
 Sleep 600ms
 Enter
-Sleep 2500ms
+Sleep 3500ms
+Sleep 2000ms

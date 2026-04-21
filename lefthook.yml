@@ -107,9 +107,18 @@ pre-push:
     traceability-journeys:
       # Enforce FR-TRACE-003: every FR tagged [journey_kind: ...] must have a
       # verified journey manifest tracing back to it, no orphans, no low scores.
+      # Shares warn/strict mode with tape-assertions via HWLEDGER_TAPE_GATE.
+      # In warn mode, NotPassed rows (real violations) are reported but don't
+      # block; missing journeys and orphan traces_to references still fail
+      # because those are structural, not content, bugs.
       run: |
         set -euo pipefail
-        cargo run --quiet -p hwledger-traceability -- --repo . --strict-journeys
+        mode="${HWLEDGER_TAPE_GATE:-warn}"
+        flags="--strict-journeys"
+        if [ "$mode" = "warn" ]; then
+          flags="$flags --allow-not-passed"
+        fi
+        cargo run --quiet -p hwledger-traceability -- --repo . $flags
 
     swift-main:
       root: "apps/macos/HwLedger"

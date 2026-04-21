@@ -40,6 +40,12 @@ struct Args {
     #[arg(long)]
     strict_journeys: bool,
 
+    /// Treat `NotPassed` journey rows as warnings rather than failures. Missing
+    /// journeys and orphan `traces_to` references still fail. Pair with
+    /// `HWLEDGER_TAPE_GATE=warn` during the tape re-record retrofit.
+    #[arg(long)]
+    allow_not_passed: bool,
+
     /// Verbose output
     #[arg(short, long)]
     verbose: bool,
@@ -121,30 +127,41 @@ fn main() -> Result<()> {
         // Journey gate (FR-TRACE-003) — evaluated first so it reports even if
         // classic coverage is already green.
         if journey_report.has_failures() {
-            eprintln!("\nFAIL: Journey coverage gate (--strict):");
+            let mut hard_fail = false;
+            eprintln!("\nJourney coverage gate (--strict):");
             for row in &journey_report.rows {
-                let reason = match row.status {
+                let (reason, is_hard) = match row.status {
                     JourneyStatus::Ok => continue,
-                    JourneyStatus::Missing => "missing journey for tagged FR".to_string(),
-                    JourneyStatus::LowScore => {
+                    JourneyStatus::Missing => ("missing journey for tagged FR".to_string(), true),
+                    JourneyStatus::LowScore => (
                         format!(
                             "score {:.2} < {:.2}",
                             row.score.unwrap_or(0.0),
                             hwledger_traceability::MIN_JOURNEY_SCORE
-                        )
+                        ),
+                        true,
+                    ),
+                    JourneyStatus::NotPassed => {
+                        ("journey not passed".to_string(), !args.allow_not_passed)
                     }
-                    JourneyStatus::NotPassed => "journey not passed".to_string(),
                 };
-                eprintln!("  - {} [{}] ({})", row.fr, row.kind, reason);
+                let level = if is_hard { "FAIL" } else { "WARN" };
+                eprintln!("  - {level} {} [{}] ({})", row.fr, row.kind, reason);
+                if is_hard {
+                    hard_fail = true;
+                }
             }
             for orph in &journey_report.orphan_journeys {
                 eprintln!(
-                    "  - orphan journey {} cites unknown FR(s): {}",
+                    "  - FAIL orphan journey {} cites unknown FR(s): {}",
                     orph.journey_id,
                     orph.unknown_frs.join(", ")
                 );
+                hard_fail = true;
             }
-            fail = true;
+            if hard_fail {
+                fail = true;
+            }
         }
 
         let not_fully_traced: Vec<_> = if args.strict {

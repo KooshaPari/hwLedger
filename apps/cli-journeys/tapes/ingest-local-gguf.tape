@@ -17,7 +17,8 @@ Output "apps/cli-journeys/recordings/ingest-local-gguf.gif"
 Output "apps/cli-journeys/recordings/ingest-local-gguf.mp4"
 
 Sleep 1500ms
-Type "hwledger ingest gguf://tests/golden/fixtures/tiny.gguf --json"
+Type `hwledger ingest gguf://tests/golden/fixtures/tiny.gguf --json; echo "__EXIT_$?__"`
 Sleep 600ms
 Enter
-Sleep 2500ms
+Sleep 3500ms
+Sleep 2000ms

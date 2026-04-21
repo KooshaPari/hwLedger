@@ -22,7 +22,8 @@ Sleep 600ms
 Enter
 Sleep 2500ms
 
-Type "hwledger plan tests/golden/deepseek-v3.json --seq 32768 --users 2"
+Type `hwledger plan tests/golden/deepseek-v3.json --seq 32768 --users 2; echo "__EXIT_$?__"`
 Sleep 600ms
 Enter
-Sleep 2500ms
+Sleep 3500ms
+Sleep 2000ms

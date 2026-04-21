@@ -36,10 +36,11 @@ Type "  --server http://localhost:8080 \\"
 Sleep 600ms
 Enter
 Sleep 600ms
-Type "  --limit 3"
+Type `  --limit 3; echo "__EXIT_$?__"`
 Sleep 600ms
 Enter
-Sleep 2500ms
+Sleep 3500ms
+Sleep 2000ms
 
 Hide
 Type "kill %1; rm -f /tmp/hwl-audit.db"

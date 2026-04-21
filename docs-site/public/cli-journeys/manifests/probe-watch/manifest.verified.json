@@ -1,58 +1,138 @@
 {
   "id": "probe-watch",
   "intent": "Watch probe metrics update in real time with 1-second refresh intervals",
+  "keyframe_count": 6,
+  "passed": false,
   "recording": "recordings/probe-watch.mp4",
   "recording_gif": "recordings/probe-watch.gif",
-  "keyframe_count": 6,
-  "passed": true,
   "steps": [
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 0,
-      "slug": "frame-0",
       "intent": "Terminal prompt",
-      "screenshot_path": "frame-001.png"
+      "screenshot_path": "frame-001.png",
+      "slug": "frame-0"
     },
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 1,
-      "slug": "frame-1",
       "intent": "Command typed: `hwledger probe watch --interval 1s --json`",
-      "screenshot_path": "frame-002.png"
+      "screenshot_path": "frame-002.png",
+      "slug": "frame-1"
     },
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 2,
-      "slug": "frame-2",
       "intent": "First NDJSON sample printed with timestamp and GPU utilization",
-      "screenshot_path": "frame-003.png"
+      "screenshot_path": "frame-003.png",
+      "slug": "frame-2"
     },
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 3,
-      "slug": "frame-3",
       "intent": "Second sample one second later showing delta in memory / util",
-      "screenshot_path": "frame-004.png"
+      "screenshot_path": "frame-004.png",
+      "slug": "frame-3"
     },
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 4,
-      "slug": "frame-4",
       "intent": "Third sample confirming the streaming cadence",
-      "screenshot_path": "frame-005.png"
+      "screenshot_path": "frame-005.png",
+      "slug": "frame-4"
     },
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 5,
-      "slug": "frame-5",
       "intent": "Ctrl+C received; watcher exits cleanly and returns prompt",
-      "screenshot_path": "frame-006.png"
+      "screenshot_path": "frame-006.png",
+      "slug": "frame-5"
     }
   ],
-  "verification": {
-    "timestamp": "2026-04-20T08:28:47Z",
-    "mode": "mock",
-    "overall_score": 0.92,
-    "describe_confidence": 0.95,
-    "judge_confidence": 0.90,
-    "all_intents_passed": true
-  },
   "traces_to": [
     "FR-TEL-001",
     "FR-TEL-002"
-  ]
+  ],
+  "verification": {
+    "all_intents_passed": false,
+    "assertion_violations": [
+      {
+        "expected": "error:",
+        "got_snippet": "edger_probe: Failed to initialize AMD probe: backend initialization failed: I/0 error: No such file or directory (os error 2) 2026-04-207T08:06:02.475149Z WARN hwledg",
+        "kind": "MustNotContain",
+        "step_index": 1
+      },
+      {
+        "expected": "error:",
+        "got_snippet": "dger_probe: Failed to initialize AMD probe: backend initialization failed: I/ 0 error: No such file or directory (os error 2)  2026-04-19T12:33:24.270108Z WARN hwledg",
+        "kind": "MustNotContain",
+        "step_index": 2
+      },
+      {
+        "expected": "error:",
+        "got_snippet": "ger_probe: Failed to initialize AMD probe: backend initialization failed: I/  0 error: No such file or directory (os error 2)  2026-04-19T12:33:24.270108Z WARN hwledg",
+        "kind": "MustNotContain",
+        "step_index": 3
+      },
+      {
+        "expected": "error:",
+        "got_snippet": "ger_probe: Failed to initialize AMD probe: backend initialization failed: I/  0 error: No such file or directory (os error 2)  2026-04-19T12:33:24.270108Z WARN hwledg",
+        "kind": "MustNotContain",
+        "step_index": 4
+      }
+    ],
+    "describe_confidence": 0.95,
+    "judge_confidence": 0.9,
+    "mode": "mock",
+    "overall_score": 0.92,
+    "timestamp": "2026-04-21T00:03:26Z"
+  }
 }

@@ -120,6 +120,44 @@ Each journey is a JSON manifest with:
 }
 ```
 
+## Annotations
+
+Keyframes support optional bounding-box annotations that highlight regions of interest — CLI flags, architecture detection lines, VRAM numbers, stderr warnings — to give readers a visual legend over the terminal output.
+
+**Interacting with annotations:**
+
+- Click any keyframe thumbnail to open a full-resolution **lightbox**.
+- Low-opacity boxes render over the thumbnail. In the lightbox, solid boxes appear with colored label pills; hover a box or a pill to highlight the pair.
+- Toggle annotations on/off with the toolbar button (persisted via `localStorage`).
+- `Copy JSON` dumps the current frame's annotations as JSON — useful for VLM data-labeling pipelines.
+- Keyboard: **Esc** closes, **←/→** step through frames.
+
+**Authoring annotations (two paths):**
+
+1. **Hand-curated** — add an `annotations:` list under a step in the journey's `*.intents.yaml`:
+
+   ```yaml
+   steps:
+     - index: 3
+       intent: "Architecture detection line: MLA with kv_lora_rank=512"
+       annotations:
+         - bbox: [120, 340, 180, 28]
+           label: "MLA"
+           note: "Multi-Head Latent Attention — auto-detected from config"
+           color: "#f38ba8"
+   ```
+
+   `phenotype-journey verify` overlays these into `manifest.verified.json` alongside intent text and assertions.
+
+2. **Auto-generated** — `phenotype-journey annotate <manifest> [--provider tesseract] [--ocr-words] [--to yaml|manifest|stdout]` runs tesseract in TSV mode and emits one annotation per detected text line (or per-word with `--ocr-words`). A `vlm` provider stub is reserved for future Anthropic-vision calls.
+
+Seeded journeys with curated annotations:
+
+- [plan-deepseek](./cli-plan-deepseek.md) — MLA detection + KV cache highlighting
+- [probe-list](./cli-probe-list.md) — AMD/NVML init warnings called out
+- traceability-report — coverage matrix + zero-coverage rows
+- plan-mla-deepseek — seq-length scaling legend
+
 ## Contributing Journeys
 
 If you'd like to contribute a journey:

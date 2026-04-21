@@ -1,51 +1,216 @@
 {
   "id": "plan-deepseek",
   "intent": "Plan with Deepseek at 2K seq, then at 32K to show KV growth under scaling",
+  "keyframe_count": 5,
+  "passed": false,
   "recording": "recordings/plan-deepseek.mp4",
   "recording_gif": "recordings/plan-deepseek.gif",
-  "keyframe_count": 5,
-  "passed": true,
   "steps": [
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 0,
-      "slug": "frame-0",
       "intent": "Terminal at prompt, ready to run planner",
-      "screenshot_path": "frame-001.png"
+      "screenshot_path": "frame-001.png",
+      "slug": "frame-0"
     },
     {
+      "annotations": [
+        {
+          "bbox": [
+            42,
+            43,
+            876,
+            22
+          ],
+          "color": "#89b4fa",
+          "label": "hwledger plan invocation",
+          "note": "Full planner invocation: deepseek-v3 at 2K seq, 2 users"
+        }
+      ],
+      "assertions": {
+        "must_contain": [
+          "hwledger plan",
+          "deepseek-v3"
+        ],
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 1,
-      "slug": "frame-1",
       "intent": "Command typed: `hwledger plan tests/golden/deepseek-v3.json --seq 2048 --users 2`",
-      "screenshot_path": "frame-002.png"
+      "screenshot_path": "frame-002.png",
+      "slug": "frame-1"
     },
     {
+      "assertions": {
+        "must_contain": [
+          "MLA",
+          "kv_lora_rank"
+        ],
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 2,
-      "slug": "frame-2",
       "intent": "Architecture detection line: MLA with kv_lora_rank=512",
-      "screenshot_path": "frame-003.png"
+      "screenshot_path": "frame-003.png",
+      "slug": "frame-2"
     },
     {
+      "annotations": [
+        {
+          "bbox": [
+            32,
+            90,
+            142,
+            13
+          ],
+          "color": "#f38ba8",
+          "label": "Attention Kind = MLA",
+          "note": "Multi-Head Latent Attention auto-detected from config"
+        },
+        {
+          "bbox": [
+            32,
+            206,
+            191,
+            18
+          ],
+          "color": "#a6e3a1",
+          "label": "Weights (quantized)",
+          "note": "Active parameters × bits-per-weight (MoE sparsity accounted)"
+        },
+        {
+          "bbox": [
+            33,
+            241,
+            80,
+            37
+          ],
+          "color": "#f9e2af",
+          "label": "KV Cache",
+          "note": "Latent-projected KV at 2K context — compact via kv_lora_rank=512"
+        }
+      ],
+      "assertions": {
+        "must_contain": [
+          "VRAM"
+        ],
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 3,
-      "slug": "frame-3",
       "intent": "VRAM breakdown: weights, KV cache, activations at 2K sequence",
-      "screenshot_path": "frame-004.png"
+      "screenshot_path": "frame-004.png",
+      "slug": "frame-3"
     },
     {
+      "annotations": [
+        {
+          "bbox": [
+            432,
+            12,
+            152,
+            29
+          ],
+          "color": "#cba6f7",
+          "label": "--seq 32768",
+          "note": "16x longer context vs. frame 3",
+          "style": "dashed"
+        },
+        {
+          "bbox": [
+            33,
+            241,
+            80,
+            37
+          ],
+          "color": "#f9e2af",
+          "label": "KV Cache growth",
+          "note": "Linear growth from 2K → 32K, bounded by MLA compression"
+        }
+      ],
+      "assertions": {
+        "expected_exit": 0,
+        "must_contain": [
+          "32768"
+        ],
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 4,
-      "slug": "frame-4",
       "intent": "Second invocation at --seq 32768 showing KV growth under longer context",
-      "screenshot_path": "frame-005.png"
+      "screenshot_path": "frame-005.png",
+      "slug": "frame-4"
     }
   ],
-  "verification": {
-    "timestamp": "2026-04-20T08:28:47Z",
-    "mode": "mock",
-    "overall_score": 0.92,
-    "describe_confidence": 0.95,
-    "judge_confidence": 0.90,
-    "all_intents_passed": true
-  },
   "traces_to": [
     "FR-PLAN-003"
-  ]
+  ],
+  "verification": {
+    "all_intents_passed": false,
+    "assertion_violations": [
+      {
+        "expected": "MLA",
+        "got_snippet": "BESO SEBS OSS EO SEHDEE: Py DED DOS DCR OSD COSC OSCE SC ODES DOS SOD OS SESSCODCOSS  Total | 49.79 MB $--------------------- $---------------------------------…",
+        "kind": "MustContain",
+        "step_index": 2
+      },
+      {
+        "expected": "kv_lora_rank",
+        "got_snippet": "BESO SEBS OSS EO SEHDEE: Py DED DOS DCR OSD COSC OSCE SC ODES DOS SOD OS SESSCODCOSS  Total | 49.79 MB $--------------------- $---------------------------------…",
+        "kind": "MustContain",
+        "step_index": 2
+      },
+      {
+        "expected": "VRAM",
+        "got_snippet": "> hwledger plan tests/go  Attention Kind  Paaciare  ---------------------4-.  Weights (quantized)  (sy Cache  Iden/deepseek-v3. json —-seq 2048  —users 2  a  + …",
+        "kind": "MustContain",
+        "step_index": 3
+      },
+      {
+        "expected": "32768",
+        "got_snippet": "> hwledger plan tests/go  Attention Kind  Paaciare  Eee  Weights (quantized)  (sy Cache  Iden/deepseek-v3. json —-seq 2048  —users 2  a  +  Mla { kvlora_rank: 5…",
+        "kind": "MustContain",
+        "step_index": 4
+      },
+      {
+        "expected": "__EXIT_0__",
+        "got_snippet": "> hwledger plan tests/go  Attention Kind  Paaciare  Eee  Weights (quantized)  (sy Cache  Iden/deepseek-v3. json —-seq 2048  —users 2  a  +  Mla { kvlora_rank: 5…",
+        "kind": "ExitCode",
+        "step_index": 4
+      }
+    ],
+    "describe_confidence": 0.95,
+    "judge_confidence": 0.9,
+    "mode": "mock",
+    "overall_score": 0.92,
+    "timestamp": "2026-04-21T00:03:03Z"
+  }
 }

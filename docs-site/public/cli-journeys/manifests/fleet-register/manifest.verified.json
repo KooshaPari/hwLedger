@@ -1,72 +1,312 @@
 {
   "id": "fleet-register",
   "intent": "Register a new agent with the fleet, then verify it appears in fleet status",
+  "keyframe_count": 9,
+  "passed": false,
   "recording": "recordings/fleet-register.mp4",
   "recording_gif": "recordings/fleet-register.gif",
-  "keyframe_count": 9,
-  "passed": true,
   "steps": [
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 0,
-      "slug": "frame-0",
       "intent": "Terminal prompt (server launched silently in the background)",
-      "screenshot_path": "frame-001.png"
+      "screenshot_path": "frame-001.png",
+      "slug": "frame-0"
     },
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 1,
-      "slug": "frame-1",
       "intent": "Command typed: `hwledger fleet register --server http://localhost:8080`",
-      "screenshot_path": "frame-002.png"
+      "screenshot_path": "frame-002.png",
+      "slug": "frame-1"
     },
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 2,
-      "slug": "frame-2",
       "intent": "Continuation: `--token dev-bootstrap-token --hostname demo-laptop`",
-      "screenshot_path": "frame-003.png"
+      "screenshot_path": "frame-003.png",
+      "slug": "frame-2"
     },
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 3,
-      "slug": "frame-3",
       "intent": "Registration submitted; server responds with agent id",
-      "screenshot_path": "frame-004.png"
+      "screenshot_path": "frame-004.png",
+      "slug": "frame-3"
     },
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 4,
-      "slug": "frame-4",
       "intent": "Confirmation line showing registered agent UUID and fingerprint",
-      "screenshot_path": "frame-005.png"
+      "screenshot_path": "frame-005.png",
+      "slug": "frame-4"
     },
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 5,
-      "slug": "frame-5",
       "intent": "Follow-up: `hwledger fleet status --server ... --token ...`",
-      "screenshot_path": "frame-006.png"
+      "screenshot_path": "frame-006.png",
+      "slug": "frame-5"
     },
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 6,
-      "slug": "frame-6",
       "intent": "Status table listing the just-registered agent with hostname demo-laptop",
-      "screenshot_path": "frame-007.png"
+      "screenshot_path": "frame-007.png",
+      "slug": "frame-6"
     },
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 7,
-      "slug": "frame-7",
       "intent": "Agent row shows online status and last-heartbeat column",
-      "screenshot_path": "frame-008.png"
+      "screenshot_path": "frame-008.png",
+      "slug": "frame-7"
     },
     {
+      "assertions": {
+        "expected_exit": 0,
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 8,
-      "slug": "frame-8",
       "intent": "Prompt returned after server is shut down",
-      "screenshot_path": "frame-009.png"
+      "screenshot_path": "frame-009.png",
+      "slug": "frame-8"
     }
   ],
   "verification": {
-    "timestamp": "2026-04-20T08:28:47Z",
+    "all_intents_passed": false,
+    "assertion_violations": [
+      {
+        "expected": "command not found",
+        "got_snippet": "server --port 8080 --db /tmp/hwl-fleet.db & [1] 61003  > bash: hwledger-server: command not found  sleep 1  [1]+ Exit 127  hwledger-server --port 8080 --db /tmp/hwl-fleet.db ot ",
+        "kind": "MustNotContain",
+        "step_index": 0
+      },
+      {
+        "expected": "error:",
+        "got_snippet": "wledger-server --port 8080 --db /tmp/hwl-fleet.db  > hwledger fleet register \\\\ error: unexpected argument '\\' found  Usage: hwledger fleet register [OPTIONS] --serve",
+        "kind": "MustNotContain",
+        "step_index": 1
+      },
+      {
+        "expected": "unexpected argument",
+        "got_snippet": "-server --port 8080 --db /tmp/hwl-fleet.db  > hwledger fleet register \\\\ error: unexpected argument '\\' found  Usage: hwledger fleet register [OPTIONS] --server <SERVER> --token <",
+        "kind": "MustNotContain",
+        "step_index": 1
+      },
+      {
+        "expected": "command not found",
+        "got_snippet": "erver --port 8080 --db /tmp/hwl-fleet.db &  [1] 61003  > bash: hwledger-server: command not found  sleep 1  [1]+ Exit 127 hwledger-server --port 8080 --db /tmp/hwl-fleet.db  > h",
+        "kind": "MustNotContain",
+        "step_index": 1
+      },
+      {
+        "expected": "error:",
+        "got_snippet": "wledger-server --port 8080 --db /tmp/hwl-fleet.db  > hwledger fleet register \\\\ error: unexpected argument '\\' found  Usage: hwledger fleet register [OPTIONS] --serve",
+        "kind": "MustNotContain",
+        "step_index": 2
+      },
+      {
+        "expected": "unexpected argument",
+        "got_snippet": "-server --port 8080 --db /tmp/hwl-fleet.db  > hwledger fleet register \\\\ error: unexpected argument '\\' found  Usage: hwledger fleet register [OPTIONS] --server <SERVER> --token <",
+        "kind": "MustNotContain",
+        "step_index": 2
+      },
+      {
+        "expected": "command not found",
+        "got_snippet": "erver --port 8080 --db /tmp/hwl-fleet.db &  [1] 61003  > bash: hwledger-server: command not found  sleep 1  [1]+ Exit 127 hwledger-server --port 8080 --db /tmp/hwl-fleet.db  > h",
+        "kind": "MustNotContain",
+        "step_index": 2
+      },
+      {
+        "expected": "error:",
+        "got_snippet": "error: unexpected argument '\\' found  Usage: hwledger fleet register [OPTIONS] --serve",
+        "kind": "MustNotContain",
+        "step_index": 3
+      },
+      {
+        "expected": "unexpected argument",
+        "got_snippet": "error: unexpected argument '\\' found  Usage: hwledger fleet register [OPTIONS] --server <SERVER> --token <",
+        "kind": "MustNotContain",
+        "step_index": 3
+      },
+      {
+        "expected": "command not found",
+        "got_snippet": "more information, try '--help'.  > --server http://localhost:8080 \\\\  --server: command not found  token dev-bootstrap-token \\\\  --token: command not found  hostname demo-laptop",
+        "kind": "MustNotContain",
+        "step_index": 3
+      },
+      {
+        "expected": "error:",
+        "got_snippet": "ized  hwledger_server: Server listening on 127.0.0.1:6443 (plain HTTP for MVP)  error: unexpected argument '\\' found  Usage: hwledger fleet register [OPTIONS] --serve",
+        "kind": "MustNotContain",
+        "step_index": 4
+      },
+      {
+        "expected": "unexpected argument",
+        "got_snippet": "wledger_server: Server listening on 127.0.0.1:6443 (plain HTTP for MVP)  error: unexpected argument '\\' found  Usage: hwledger fleet register [OPTIONS] --server <SERVER> --token <",
+        "kind": "MustNotContain",
+        "step_index": 4
+      },
+      {
+        "expected": "command not found",
+        "got_snippet": "formation, try  =-help'.  > _--server http://localhost: 8080 \\\\ bash: --server: command not found >  =-token dev-bootstrap-tokff ",
+        "kind": "MustNotContain",
+        "step_index": 4
+      },
+      {
+        "expected": "error:",
+        "got_snippet": "ized  hwledger_server: Server listening on 127.0.0.1:6443 (plain HTTP for MVP)  error: unexpected argument '\\' found  Usage: hwledger fleet register [OPTIONS] --serve",
+        "kind": "MustNotContain",
+        "step_index": 5
+      },
+      {
+        "expected": "unexpected argument",
+        "got_snippet": "wledger_server: Server listening on 127.0.0.1:6443 (plain HTTP for MVP)  error: unexpected argument '\\' found  Usage: hwledger fleet register [OPTIONS] --server <SERVER> --token <",
+        "kind": "MustNotContain",
+        "step_index": 5
+      },
+      {
+        "expected": "command not found",
+        "got_snippet": "e information, try  =-help'.  > server http://localhost:8080 \\\\ bash: --server: command not found  > =-token dev-bootstrap-token \\\\  bash: --token: command not found  >  --hosi ",
+        "kind": "MustNotContain",
+        "step_index": 5
+      },
+      {
+        "expected": "error:",
+        "got_snippet": "ized  hwledger_server: Server listening on 127.0.0.1:6443 (plain HTTP for MVP)  error: unexpected argument '\\' found  Usage: hwledger fleet register [OPTIONS] --serve",
+        "kind": "MustNotContain",
+        "step_index": 6
+      },
+      {
+        "expected": "unexpected argument",
+        "got_snippet": "wledger_server: Server listening on 127.0.0.1:6443 (plain HTTP for MVP)  error: unexpected argument '\\' found  Usage: hwledger fleet register [OPTIONS] --server <SERVER> --token <",
+        "kind": "MustNotContain",
+        "step_index": 6
+      },
+      {
+        "expected": "command not found",
+        "got_snippet": "e information, try  =-help'.  > server http://localhost:8080 \\\\ bash: --server: command not found  > =-token dev-bootstrap-token \\\\  bash: --token: command not found > =-hostnam",
+        "kind": "MustNotContain",
+        "step_index": 6
+      },
+      {
+        "expected": "error:",
+        "got_snippet": "ized  hwledger_server: Server listening on 127.0.0.1:6443 (plain HTTP for MVP)  error: unexpected argument '\\' found  Usage: hwledger fleet register [OPTIONS] --serve",
+        "kind": "MustNotContain",
+        "step_index": 7
+      },
+      {
+        "expected": "unexpected argument",
+        "got_snippet": "wledger_server: Server listening on 127.0.0.1:6443 (plain HTTP for MVP)  error: unexpected argument '\\' found  Usage: hwledger fleet register [OPTIONS] --server <SERVER> --token <",
+        "kind": "MustNotContain",
+        "step_index": 7
+      },
+      {
+        "expected": "command not found",
+        "got_snippet": "e information, try  =-help'.  > server http://localhost:8080 \\\\ bash: --server: command not found  > =-token dev-bootstrap-token \\\\ =-token: command not found hostname demo-lapt",
+        "kind": "MustNotContain",
+        "step_index": 7
+      },
+      {
+        "expected": "error:",
+        "got_snippet": "ized  hwledger_server: Server listening on 127.0.0.1:6443 (plain HTTP for MVP)  error: unexpected argument '\\' found  Usage: hwledger fleet register [OPTIONS] --serve",
+        "kind": "MustNotContain",
+        "step_index": 8
+      },
+      {
+        "expected": "unexpected argument",
+        "got_snippet": "wledger_server: Server listening on 127.0.0.1:6443 (plain HTTP for MVP)  error: unexpected argument '\\' found  Usage: hwledger fleet register [OPTIONS] --server <SERVER> --token <",
+        "kind": "MustNotContain",
+        "step_index": 8
+      },
+      {
+        "expected": "command not found",
+        "got_snippet": "e information, try  =-help'.  > server http://localhost:8080 \\\\ bash: --server: command not found  > =-token dev-bootstrap-token \\\\ =-token: command not found hostname demo-lapt",
+        "kind": "MustNotContain",
+        "step_index": 8
+      },
+      {
+        "expected": "__EXIT_0__",
+        "got_snippet": "> hwledger-server --port 8080 --db /tmp/hwl-fleet.db &  (1] 47680  > 2026-04-19T12: 32:04. 281633Z 704. 04. 704. 104. 04.  2026-04-19T12:32 2026-04-19T12: 32: 2…",
+        "kind": "ExitCode",
+        "step_index": 8
+      }
+    ],
+    "describe_confidence": 0.95,
+    "judge_confidence": 0.9,
     "mode": "mock",
     "overall_score": 0.92,
-    "describe_confidence": 0.95,
-    "judge_confidence": 0.90,
-    "all_intents_passed": true
+    "timestamp": "2026-04-21T00:02:47Z"
   }
 }

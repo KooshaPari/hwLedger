@@ -6,14 +6,40 @@ steps:
     assertions:
       must_contain: ["hwledger probe list"]
       must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
+    annotations:
+      - bbox: [42, 44, 276, 21]
+        label: "probe list command"
+        color: "#89b4fa"
+        note: "Enumerates GPU vendors + drivers"
+        kind: region
   - index: 1
     intent: "Table output: detected GPU devices with VRAM, driver, PCI location"
     assertions:
       must_contain: ["VRAM"]
       must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
+    annotations:
+      - bbox: [427, 71, 797, 20]
+        label: "AMD probe init failure"
+        color: "#f38ba8"
+        note: "Expected on macOS — no ROCm backend"
+        style: dashed
+      - bbox: [427, 124, 811, 21]
+        label: "NVML init failure"
+        color: "#fab387"
+        note: "Expected on macOS — no NVIDIA driver"
+        style: dashed
   - index: 2
     intent: "Second invocation `hwledger probe list --json` returning NDJSON-style output"
     assertions:
       must_contain: ["--json"]
       must_not_contain: ["error:", "unexpected argument", "command not found", "panic"]
       expected_exit: 0
+    annotations:
+      - bbox: [427, 71, 811, 20]
+        label: "cli::cmd::probe stderr"
+        color: "#f9e2af"
+        note: "Warnings surface via tracing, not stdout — JSON output stays clean"
+      - bbox: [41, 43, 501, 22]
+        label: "dyld / dlopen trace"
+        color: "#cba6f7"
+        note: "macOS linker searches for libnvidia-ml.dylib and reports the miss"

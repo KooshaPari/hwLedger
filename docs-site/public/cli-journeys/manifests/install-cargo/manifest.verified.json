@@ -1,72 +1,162 @@
 {
   "id": "install-cargo",
   "intent": "Install hwledger from source with cargo, then verify version and help",
+  "keyframe_count": 9,
+  "passed": false,
   "recording": "recordings/install-cargo.mp4",
   "recording_gif": "recordings/install-cargo.gif",
-  "keyframe_count": 9,
-  "passed": true,
   "steps": [
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 0,
-      "slug": "frame-0",
       "intent": "Terminal prompt",
-      "screenshot_path": "frame-001.png"
+      "screenshot_path": "frame-001.png",
+      "slug": "frame-0"
     },
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 1,
-      "slug": "frame-1",
       "intent": "Command typed: `cargo install --path crates/hwledger-cli --root /tmp/hwl-install`",
-      "screenshot_path": "frame-002.png"
+      "screenshot_path": "frame-002.png",
+      "slug": "frame-1"
     },
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 2,
-      "slug": "frame-2",
       "intent": "Cargo compiling hwledger-cli dependencies",
-      "screenshot_path": "frame-003.png"
+      "screenshot_path": "frame-003.png",
+      "slug": "frame-2"
     },
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 3,
-      "slug": "frame-3",
       "intent": "Cargo linking final hwledger-cli binary",
-      "screenshot_path": "frame-004.png"
+      "screenshot_path": "frame-004.png",
+      "slug": "frame-3"
     },
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 4,
-      "slug": "frame-4",
       "intent": "Install success line: binary placed under /tmp/hwl-install/bin/",
-      "screenshot_path": "frame-005.png"
+      "screenshot_path": "frame-005.png",
+      "slug": "frame-4"
     },
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 5,
-      "slug": "frame-5",
       "intent": "`hwledger-cli --version` prints semver and build metadata",
-      "screenshot_path": "frame-006.png"
+      "screenshot_path": "frame-006.png",
+      "slug": "frame-5"
     },
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 6,
-      "slug": "frame-6",
       "intent": "`hwledger-cli --help` prints subcommand summary",
-      "screenshot_path": "frame-007.png"
+      "screenshot_path": "frame-007.png",
+      "slug": "frame-6"
     },
     {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 7,
-      "slug": "frame-7",
       "intent": "Subcommands visible: plan, ingest, probe, fleet, version, completions",
-      "screenshot_path": "frame-008.png"
+      "screenshot_path": "frame-008.png",
+      "slug": "frame-7"
     },
     {
+      "assertions": {
+        "expected_exit": 0,
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
       "index": 8,
-      "slug": "frame-8",
       "intent": "Prompt returned, ready for next command",
-      "screenshot_path": "frame-009.png"
+      "screenshot_path": "frame-009.png",
+      "slug": "frame-8"
     }
   ],
   "verification": {
-    "timestamp": "2026-04-20T08:28:47Z",
+    "all_intents_passed": false,
+    "assertion_violations": [
+      {
+        "expected": "__EXIT_0__",
+        "got_snippet": "> cargo install --path crates/hwledger-cli --root /tmp/hwl-install  Installing Updating Locking Adding Adding Adding Adding Adding Adding Compiling Compiling Co…",
+        "kind": "ExitCode",
+        "step_index": 8
+      }
+    ],
+    "describe_confidence": 0.95,
+    "judge_confidence": 0.9,
     "mode": "mock",
     "overall_score": 0.92,
-    "describe_confidence": 0.95,
-    "judge_confidence": 0.90,
-    "all_intents_passed": true
+    "timestamp": "2026-04-21T00:03:01Z"
   }
 }

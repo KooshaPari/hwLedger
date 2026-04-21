@@ -45,10 +45,11 @@ Sleep 600ms
 Enter
 Sleep 2500ms
 
-Type "hwledger fleet status --server http://localhost:8080 --token dev-bootstrap-token"
+Type `hwledger fleet status --server http://localhost:8080 --token dev-bootstrap-token; echo "__EXIT_$?__"`
 Sleep 600ms
 Enter
-Sleep 2500ms
+Sleep 3500ms
+Sleep 2000ms
 
 Hide
 Type "kill %1; rm -f /tmp/hwl-fleet.db"

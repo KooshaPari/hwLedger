@@ -1,45 +1,94 @@
 {
   "id": "ingest-error",
   "intent": "Show graceful error handling when a model file doesn't exist",
+  "keyframe_count": 4,
+  "passed": false,
   "recording": "recordings/ingest-error.mp4",
   "recording_gif": "recordings/ingest-error.gif",
-  "keyframe_count": 4,
-  "passed": true,
   "steps": [
     {
+      "assertions": {
+        "must_not_contain": [
+          "panic",
+          "command not found"
+        ],
+        "ocr_required": false
+      },
       "index": 0,
-      "slug": "frame-0",
       "intent": "Terminal prompt ready to invoke ingest",
-      "screenshot_path": "frame-001.png"
+      "screenshot_path": "frame-001.png",
+      "slug": "frame-0"
     },
     {
+      "assertions": {
+        "must_contain": [
+          "hwledger ingest"
+        ],
+        "must_not_contain": [
+          "panic",
+          "command not found"
+        ],
+        "ocr_required": false
+      },
       "index": 1,
-      "slug": "frame-1",
       "intent": "Command typed: `hwledger ingest gguf:///tmp/nonexistent.gguf`",
-      "screenshot_path": "frame-002.png"
+      "screenshot_path": "frame-002.png",
+      "slug": "frame-1"
     },
     {
+      "assertions": {
+        "must_contain": [
+          "not found"
+        ],
+        "must_not_contain": [
+          "panic",
+          "thread 'main' panicked"
+        ],
+        "ocr_required": false
+      },
       "index": 2,
-      "slug": "frame-2",
       "intent": "Graceful error: GGUF file not found; message names the missing path",
-      "screenshot_path": "frame-003.png"
+      "screenshot_path": "frame-003.png",
+      "slug": "frame-2"
     },
     {
+      "assertions": {
+        "must_not_contain": [
+          "panic",
+          "thread 'main' panicked",
+          "RUST_BACKTRACE"
+        ],
+        "ocr_required": false
+      },
       "index": 3,
-      "slug": "frame-3",
       "intent": "Non-zero exit code, prompt returned without a stack trace",
-      "screenshot_path": "frame-004.png"
+      "screenshot_path": "frame-004.png",
+      "slug": "frame-3"
     }
   ],
-  "verification": {
-    "timestamp": "2026-04-20T08:28:47Z",
-    "mode": "mock",
-    "overall_score": 0.92,
-    "describe_confidence": 0.95,
-    "judge_confidence": 0.90,
-    "all_intents_passed": true
-  },
   "traces_to": [
     "FR-PLAN-001"
-  ]
+  ],
+  "verification": {
+    "all_intents_passed": false,
+    "assertion_violations": [
+      {
+        "expected": "hwledger ingest",
+        "got_snippet": "32, num_attention_head  ",
+        "kind": "MustContain",
+        "step_index": 1
+      },
+      {
+        "expected": "not found",
+        "got_snippet": "> hwledger ingest gguf:///tmp/nonexistent.gguf  a  Propert:  Location  Model Type  Attention Kind  ee  +. Mha { num. layer: : 32, num_attention_| nat : 32, head…",
+        "kind": "MustContain",
+        "step_index": 2
+      }
+    ],
+    "describe_confidence": 0.95,
+    "judge_confidence": 0.9,
+    "mode": "mock",
+    "overall_score": 0.92,
+    "timestamp": "2026-04-21T00:02:48Z"
+  }
 }

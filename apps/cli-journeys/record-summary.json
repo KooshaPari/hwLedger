@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-04-20T08:00:15Z\",
+  "timestamp": "2026-04-20T23:56:33Z\",
   "vhs_version": "0.11.0\",
   "cli_binary": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/target/release/hwledger\",
   "tapes": [
@@ -8,117 +8,117 @@
       "status": "passed",
       "exit_code": 0,
       "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/first-plan.gif",
-      "gif_size_bytes": 106445,
+      "gif_size_bytes": 0,
       "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/first-plan.mp4",
-      "mp4_size_bytes": 99738
+      "mp4_size_bytes": 112257
     },
     {
       "name": "fleet-audit",
       "status": "passed",
       "exit_code": 0,
       "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/fleet-audit.gif",
-      "gif_size_bytes": 106343,
+      "gif_size_bytes": 368503,
       "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/fleet-audit.mp4",
-      "mp4_size_bytes": 119947
+      "mp4_size_bytes": 330587
     },
     {
       "name": "fleet-register",
       "status": "passed",
       "exit_code": 0,
       "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/fleet-register.gif",
-      "gif_size_bytes": 294611,
+      "gif_size_bytes": 895699,
       "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/fleet-register.mp4",
-      "mp4_size_bytes": 301336
+      "mp4_size_bytes": 718155
     },
     {
       "name": "ingest-error",
       "status": "passed",
       "exit_code": 0,
       "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/ingest-error.gif",
-      "gif_size_bytes": 103101,
+      "gif_size_bytes": 117912,
       "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/ingest-error.mp4",
-      "mp4_size_bytes": 100528
+      "mp4_size_bytes": 113206
     },
     {
       "name": "ingest-local-gguf",
       "status": "passed",
       "exit_code": 0,
       "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/ingest-local-gguf.gif",
-      "gif_size_bytes": 95202,
+      "gif_size_bytes": 110043,
       "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/ingest-local-gguf.mp4",
-      "mp4_size_bytes": 71995
+      "mp4_size_bytes": 85409
     },
     {
       "name": "install-cargo",
       "status": "passed",
       "exit_code": 0,
       "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/install-cargo.gif",
-      "gif_size_bytes": 252127,
+      "gif_size_bytes": 236895,
       "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/install-cargo.mp4",
-      "mp4_size_bytes": 366244
+      "mp4_size_bytes": 192057
     },
     {
       "name": "plan-deepseek",
       "status": "passed",
       "exit_code": 0,
       "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/plan-deepseek.gif",
-      "gif_size_bytes": 239596,
+      "gif_size_bytes": 224003,
       "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/plan-deepseek.mp4",
-      "mp4_size_bytes": 196025
+      "mp4_size_bytes": 244005
     },
     {
       "name": "plan-help",
       "status": "passed",
       "exit_code": 0,
       "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/plan-help.gif",
-      "gif_size_bytes": 161776,
+      "gif_size_bytes": 167137,
       "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/plan-help.mp4",
-      "mp4_size_bytes": 109668
+      "mp4_size_bytes": 113285
     },
     {
       "name": "plan-mla-deepseek",
       "status": "passed",
       "exit_code": 0,
       "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/plan-mla-deepseek.gif",
-      "gif_size_bytes": 275501,
+      "gif_size_bytes": 374704,
       "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/plan-mla-deepseek.mp4",
-      "mp4_size_bytes": 213006
+      "mp4_size_bytes": 349706
     },
     {
       "name": "probe-list",
       "status": "passed",
       "exit_code": 0,
       "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/probe-list.gif",
-      "gif_size_bytes": 319447,
+      "gif_size_bytes": 362652,
       "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/probe-list.mp4",
-      "mp4_size_bytes": 221650
+      "mp4_size_bytes": 235310
     },
     {
       "name": "probe-watch",
       "status": "passed",
       "exit_code": 0,
       "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/probe-watch.gif",
-      "gif_size_bytes": 2551188,
+      "gif_size_bytes": 2251422,
       "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/probe-watch.mp4",
-      "mp4_size_bytes": 649137
+      "mp4_size_bytes": 737995
     },
     {
       "name": "traceability-report",
       "status": "passed",
       "exit_code": 0,
       "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/traceability-report.gif",
-      "gif_size_bytes": 102645,
+      "gif_size_bytes": 423826,
       "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/traceability-report.mp4",
-      "mp4_size_bytes": 97414
+      "mp4_size_bytes": 257020
     },
     {
       "name": "traceability-strict",
       "status": "passed",
       "exit_code": 0,
       "gif_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/traceability-strict.gif",
-      "gif_size_bytes": 241744,
+      "gif_size_bytes": 179935,
       "mp4_path": "/Users/kooshapari/CodeProjects/Phenotype/repos/hwLedger/apps/cli-journeys/recordings/traceability-strict.mp4",
-      "mp4_size_bytes": 152849
+      "mp4_size_bytes": 128114
     }
   ],
   "total_tapes": 13,

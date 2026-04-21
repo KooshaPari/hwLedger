@@ -17,7 +17,8 @@ Output "apps/cli-journeys/recordings/ingest-error.gif"
 Output "apps/cli-journeys/recordings/ingest-error.mp4"
 
 Sleep 1500ms
-Type "hwledger ingest gguf:///tmp/nonexistent.gguf"
+Type `hwledger ingest gguf:///tmp/nonexistent.gguf; echo "__EXIT_$?__"`
 Sleep 600ms
 Enter
-Sleep 2500ms
+Sleep 3500ms
+Sleep 2000ms

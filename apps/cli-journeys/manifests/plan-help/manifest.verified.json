@@ -1,86 +1,12 @@
 {
   "id": "plan-help",
   "intent": "Show the plan command's help text with all available options",
-  "recording": "recordings/plan-help.mp4",
-  "recording_gif": "recordings/plan-help.gif",
   "keyframe_count": 6,
   "passed": false,
+  "recording": "recordings/plan-help.mp4",
+  "recording_gif": "recordings/plan-help.gif",
   "steps": [
     {
-      "index": 0,
-      "slug": "frame-0",
-      "intent": "Terminal prompt awaiting command",
-      "screenshot_path": "frame-001.png",
-      "assertions": {
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ]
-      }
-    },
-    {
-      "index": 1,
-      "slug": "frame-1",
-      "intent": "Command typed: `hwledger plan --help`",
-      "screenshot_path": "frame-002.png",
-      "assertions": {
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ]
-      }
-    },
-    {
-      "index": 2,
-      "slug": "frame-2",
-      "intent": "Usage line and positional PATH argument description",
-      "screenshot_path": "frame-003.png",
-      "assertions": {
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ]
-      }
-    },
-    {
-      "index": 3,
-      "slug": "frame-3",
-      "intent": "Options block: --seq, --users, --batch, --weight-quant, --kv-quant",
-      "screenshot_path": "frame-004.png",
-      "assertions": {
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ]
-      }
-    },
-    {
-      "index": 4,
-      "slug": "frame-4",
-      "intent": "Options block continued: --device-total-vram, --json, --export, --no-color",
-      "screenshot_path": "frame-005.png",
-      "assertions": {
-        "must_not_contain": [
-          "error:",
-          "unexpected argument",
-          "command not found",
-          "panic"
-        ]
-      }
-    },
-    {
-      "index": 5,
-      "slug": "frame-5",
-      "intent": "Trailing --help line and prompt returned",
-      "screenshot_path": "frame-006.png",
       "assertions": {
         "must_not_contain": [
           "error:",
@@ -88,27 +14,107 @@
           "command not found",
           "panic"
         ],
-        "expected_exit": 0
-      }
+        "ocr_required": false
+      },
+      "index": 0,
+      "intent": "Terminal prompt awaiting command",
+      "screenshot_path": "frame-001.png",
+      "slug": "frame-0"
+    },
+    {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
+      "index": 1,
+      "intent": "Command typed: `hwledger plan --help`",
+      "screenshot_path": "frame-002.png",
+      "slug": "frame-1"
+    },
+    {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
+      "index": 2,
+      "intent": "Usage line and positional PATH argument description",
+      "screenshot_path": "frame-003.png",
+      "slug": "frame-2"
+    },
+    {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
+      "index": 3,
+      "intent": "Options block: --seq, --users, --batch, --weight-quant, --kv-quant",
+      "screenshot_path": "frame-004.png",
+      "slug": "frame-3"
+    },
+    {
+      "assertions": {
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
+      "index": 4,
+      "intent": "Options block continued: --device-total-vram, --json, --export, --no-color",
+      "screenshot_path": "frame-005.png",
+      "slug": "frame-4"
+    },
+    {
+      "assertions": {
+        "expected_exit": 0,
+        "must_not_contain": [
+          "error:",
+          "unexpected argument",
+          "command not found",
+          "panic"
+        ],
+        "ocr_required": false
+      },
+      "index": 5,
+      "intent": "Trailing --help line and prompt returned",
+      "screenshot_path": "frame-006.png",
+      "slug": "frame-5"
     }
   ],
   "traces_to": [
     "FR-PLAN-003"
   ],
   "verification": {
-    "timestamp": "2026-04-20T09:42:39Z",
-    "mode": "mock",
-    "overall_score": 0.92,
-    "describe_confidence": 0.95,
-    "judge_confidence": 0.90,
     "all_intents_passed": false,
     "assertion_violations": [
       {
-        "step_index": 5,
-        "kind": "ExitCode",
         "expected": "__EXIT_0__",
-        "got_snippet": "Sequence Length (context window size) [default: 2048] --users <USERS> Number of concurrent users [default: 1] --batch <BATCH> Batch size per iteration [default:…"
+        "got_snippet": "Options: --seq <SEQ> Sequence length (context window size) [default: 2048] --users <USERS> Number of concurrent users [default: 1] --batch <BATCH> Batch size pe…",
+        "kind": "ExitCode",
+        "step_index": 5
       }
-    ]
+    ],
+    "describe_confidence": 0.95,
+    "judge_confidence": 0.9,
+    "mode": "mock",
+    "overall_score": 0.92,
+    "timestamp": "2026-04-21T00:03:09Z"
   }
 }

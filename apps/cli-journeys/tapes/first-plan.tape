@@ -17,7 +17,8 @@ Output "apps/cli-journeys/recordings/first-plan.gif"
 Output "apps/cli-journeys/recordings/first-plan.mp4"
 
 Sleep 1500ms
-Type "hwledger plan tests/golden/llama3-70b.json --seq 4096 --users 4"
+Type `hwledger plan tests/golden/llama3-70b.json --seq 4096 --users 4; echo "__EXIT_$?__"`
 Sleep 600ms
 Enter
-Sleep 2500ms
+Sleep 4000ms
+Sleep 2000ms

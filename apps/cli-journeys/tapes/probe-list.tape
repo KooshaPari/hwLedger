@@ -22,7 +22,8 @@ Sleep 600ms
 Enter
 Sleep 2000ms
 
-Type "hwledger probe list --json"
+Type `hwledger probe list --json; echo "__EXIT_$?__"`
 Sleep 600ms
 Enter
-Sleep 2500ms
+Sleep 3500ms
+Sleep 2000ms

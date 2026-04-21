@@ -6,10 +6,11 @@
         {{ manifest.intent || 'Journey demonstration' }}
       </div>
 
-      <div v-if="manifest.recording" class="journey-section">
+      <div v-if="enrichedKeyframes.length" class="journey-section">
         <KeyframeGallery
-          :keyframes="manifest.keyframes || []"
+          :keyframes="enrichedKeyframes"
           :title="manifest.title"
+          :journey-id="manifest.id || manifest.title || ''"
         />
       </div>
 
@@ -64,22 +65,35 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import KeyframeGallery from './KeyframeGallery.vue'
 import JourneyStep from './JourneyStep.vue'
 
+interface Annotation {
+  bbox: [number, number, number, number]
+  label: string
+  color?: string | null
+  style?: 'solid' | 'dashed'
+  note?: string | null
+  kind?: 'region' | 'pointer' | 'highlight'
+}
+
 interface Manifest {
+  id?: string
   title: string
   intent: string
   pass: boolean
   recording: boolean
-  keyframes?: Array<{ path: string; caption: string }>
+  keyframes?: Array<{ path: string; caption: string; annotations?: Annotation[] | null }>
   steps?: Array<{
+    index?: number
     slug: string
     intent: string
     screenshot?: string
+    screenshot_path?: string
     description?: string
     judge_score?: number
+    annotations?: Annotation[] | null
   }>
   error?: string
 }
@@ -90,6 +104,46 @@ const props = defineProps<{
 
 const manifest = ref<Manifest | null>(null)
 
+/**
+ * Merge `steps[].annotations` onto `keyframes[i]` by position (best-effort).
+ * Legacy hwLedger manifests have separate `keyframes` + `steps` arrays —
+ * we pair them by caption frame-number or by array index fallback.
+ */
+/**
+ * Synthesize keyframes from either a top-level `keyframes[]` array (legacy
+ * hwLedger manifests) or from `steps[]` (canonical phenotype-journeys format
+ * that only tracks `screenshot_path` per step).
+ */
+const enrichedKeyframes = computed(() => {
+  const m = manifest.value
+  if (!m) return []
+  const steps = m.steps || []
+  if (m.keyframes && m.keyframes.length) {
+    return m.keyframes.map((kf, i) => {
+      const step = steps[i]
+      return { ...kf, annotations: kf.annotations ?? step?.annotations ?? null }
+    })
+  }
+  // Derive from steps[]: path = "<dir>/<screenshot_path>" relative to the
+  // manifest URL's directory (public/cli-journeys/keyframes/<id>/).
+  if (!manifestUrlBase.value) return []
+  const id = m.id || m.title || ''
+  return steps
+    .filter((s) => s.screenshot_path || s.screenshot)
+    .map((s) => ({
+      path: `${manifestUrlBase.value}/keyframes/${id}/${s.screenshot_path || s.screenshot}`,
+      caption: s.intent,
+      annotations: s.annotations ?? null,
+    }))
+})
+
+/**
+ * Base URL for resolving keyframe paths. For a manifest loaded from
+ * `/cli-journeys/manifests/plan-deepseek/manifest.verified.json`, this
+ * returns `/cli-journeys`.
+ */
+const manifestUrlBase = ref<string>('')
+
 onMounted(async () => {
   if (!props.manifest) {
     return
@@ -98,8 +152,13 @@ onMounted(async () => {
   if (typeof props.manifest === 'object') {
     manifest.value = props.manifest as Manifest
   } else if (typeof props.manifest === 'string') {
+    // Derive base dir: `/cli-journeys/manifests/<id>/manifest.verified.json`
+    // -> `/cli-journeys`.
+    const url = props.manifest
+    const m = url.match(/^(.*?)\/manifests\/[^/]+\/manifest(\.verified)?\.json$/)
+    manifestUrlBase.value = m ? m[1] : url.replace(/\/[^/]+$/, '')
     try {
-      const response = await fetch(props.manifest)
+      const response = await fetch(url)
       manifest.value = await response.json()
     } catch (error) {
       console.error('Failed to load journey manifest:', error)

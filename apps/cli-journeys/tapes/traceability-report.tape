@@ -27,7 +27,8 @@ Sleep 600ms
 Enter
 Sleep 3000ms
 
-Type "grep -c '^| FR-' /tmp/trace.md"
+Type `grep -c '^| FR-' /tmp/trace.md; echo "__EXIT_$?__"`
 Sleep 600ms
 Enter
+Sleep 3000ms
 Sleep 2000ms

@@ -1,139 +1,186 @@
 <template>
   <div class="keyframe-gallery">
-    <div class="keyframe-carousel">
-      <img
-        v-if="currentKeyframe"
-        :src="currentKeyframe.path"
-        :alt="currentKeyframe.caption"
-        class="keyframe-image"
-      />
-      <div class="carousel-controls">
-        <button class="carousel-btn" @click="previousFrame" :disabled="currentIndex === 0">
-          Previous
-        </button>
-        <span class="carousel-counter">
-          {{ currentIndex + 1 }} / {{ keyframes.length }}
-        </span>
-        <button class="carousel-btn" @click="nextFrame" :disabled="currentIndex === keyframes.length - 1">
-          Next
-        </button>
-      </div>
+    <div v-if="keyframes.length" class="keyframe-grid">
+      <button
+        v-for="(kf, i) in keyframes"
+        :key="i"
+        ref="thumbEls"
+        class="keyframe-card"
+        :aria-label="`Open frame ${i + 1}: ${kf.caption}`"
+        @click="openAt(i)"
+      >
+        <div class="keyframe-thumb-wrap">
+          <img :src="kf.path" :alt="kf.caption" class="keyframe-thumb" @load="onThumbLoad($event, i)" />
+          <svg
+            v-if="(kf.annotations?.length ?? 0) > 0 && natDims[i]"
+            class="keyframe-thumb-annot"
+            :viewBox="`0 0 ${natDims[i].w} ${natDims[i].h}`"
+            preserveAspectRatio="xMidYMid meet"
+          >
+            <rect
+              v-for="(a, j) in kf.annotations"
+              :key="j"
+              :x="a.bbox[0]"
+              :y="a.bbox[1]"
+              :width="a.bbox[2]"
+              :height="a.bbox[3]"
+              :stroke="a.color || paletteColor(j)"
+              :stroke-dasharray="a.style === 'dashed' ? '6 4' : undefined"
+              stroke-width="2"
+              fill="none"
+              opacity="0.4"
+              rx="2"
+            />
+          </svg>
+        </div>
+        <div class="keyframe-card-caption">
+          <span class="keyframe-num">{{ i + 1 }}.</span>
+          <span class="keyframe-text">{{ kf.caption }}</span>
+          <span v-if="(kf.annotations?.length ?? 0) > 0" class="keyframe-badge">
+            {{ kf.annotations!.length }} annot
+          </span>
+        </div>
+      </button>
     </div>
-    <div class="keyframe-caption">
-      {{ currentKeyframe?.caption || 'Keyframe' }}
-    </div>
+    <div v-else class="keyframe-empty">No keyframes.</div>
+
+    <KeyframeLightbox
+      :open="lightboxOpen"
+      :frames="keyframes"
+      :index="lightboxIndex"
+      :journey-id="journeyId"
+      @update:index="lightboxIndex = $event"
+      @close="closeLightbox"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, nextTick } from 'vue'
+import KeyframeLightbox from './KeyframeLightbox.vue'
+
+interface Annotation {
+  bbox: [number, number, number, number]
+  label: string
+  color?: string | null
+  style?: 'solid' | 'dashed'
+  note?: string | null
+  kind?: 'region' | 'pointer' | 'highlight'
+}
 
 interface Keyframe {
   path: string
   caption: string
+  annotations?: Annotation[] | null
 }
 
 const props = withDefaults(
   defineProps<{
     keyframes: Keyframe[]
     title?: string
+    journeyId?: string
   }>(),
-  {
-    keyframes: () => []
-  }
+  { keyframes: () => [], journeyId: '' },
 )
 
-const currentIndex = ref(0)
+const PALETTE = ['#f38ba8','#a6e3a1','#f9e2af','#89b4fa','#cba6f7','#94e2d5','#fab387']
+function paletteColor(i: number) { return PALETTE[i % PALETTE.length] }
 
-const currentKeyframe = computed(() => {
-  return props.keyframes[currentIndex.value]
-})
-
-function nextFrame() {
-  if (currentIndex.value < props.keyframes.length - 1) {
-    currentIndex.value++
-  }
+const natDims = ref<Record<number, { w: number; h: number }>>({})
+function onThumbLoad(ev: Event, i: number) {
+  const img = ev.target as HTMLImageElement
+  natDims.value[i] = { w: img.naturalWidth, h: img.naturalHeight }
 }
 
-function previousFrame() {
-  if (currentIndex.value > 0) {
-    currentIndex.value--
-  }
+const lightboxOpen = ref(false)
+const lightboxIndex = ref(0)
+const lastTrigger = ref<HTMLElement | null>(null)
+const thumbEls = ref<HTMLElement[]>([])
+
+function openAt(i: number) {
+  lastTrigger.value = thumbEls.value[i] ?? null
+  lightboxIndex.value = i
+  lightboxOpen.value = true
+}
+async function closeLightbox() {
+  lightboxOpen.value = false
+  await nextTick()
+  lastTrigger.value?.focus()
 }
 </script>
 
 <style scoped>
-.keyframe-gallery {
-  margin: 20px 0;
+.keyframe-gallery { margin: 20px 0; }
+.keyframe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+.keyframe-card {
+  all: unset;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
   border: 1px solid var(--vp-divider);
   border-radius: 8px;
   overflow: hidden;
+  background: var(--vp-c-bg-soft);
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
 }
-
-.keyframe-carousel {
+.keyframe-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-accent, #89b4fa);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+.keyframe-card:focus-visible {
+  outline: 2px solid var(--color-accent, #89b4fa);
+  outline-offset: 2px;
+}
+.keyframe-thumb-wrap {
   position: relative;
   aspect-ratio: 16 / 9;
-  background-color: var(--vp-c-bg-mute);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: var(--vp-c-bg-mute);
   overflow: hidden;
 }
-
-.keyframe-image {
+.keyframe-thumb {
   width: 100%;
   height: 100%;
   object-fit: contain;
   display: block;
 }
-
-.keyframe-caption {
-  padding: 12px;
-  background-color: var(--vp-c-bg-mute);
+.keyframe-thumb-annot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.keyframe-card-caption {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  padding: 10px 12px;
   font-size: 13px;
   color: var(--vp-c-text-2);
   border-top: 1px solid var(--vp-divider);
+  flex-wrap: wrap;
 }
-
-.carousel-controls {
-  position: absolute;
-  bottom: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 8px;
-  background-color: rgba(0, 0, 0, 0.6);
-  padding: 8px 12px;
-  border-radius: 6px;
-  z-index: 10;
-}
-
-.carousel-btn {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  padding: 4px 8px;
-  cursor: pointer;
+.keyframe-num { font-weight: 600; color: var(--vp-c-text-1); }
+.keyframe-text { flex: 1; }
+.keyframe-badge {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  color: #a6e3a1;
+  background: rgba(166,227,161,0.12);
+  padding: 2px 6px;
   border-radius: 4px;
-  font-size: 12px;
-  transition: all 0.2s ease;
 }
-
-.carousel-btn:hover:not(:disabled) {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.6);
-}
-
-.carousel-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.carousel-counter {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 12px;
-  padding: 0 8px;
-  align-self: center;
-  white-space: nowrap;
+.keyframe-empty {
+  padding: 20px;
+  text-align: center;
+  color: var(--vp-c-text-3);
+  border: 1px dashed var(--vp-divider);
+  border-radius: 8px;
 }
 </style>
