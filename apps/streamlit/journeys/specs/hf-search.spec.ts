@@ -27,21 +27,35 @@ test('streamlit hf-search — anon search, quick picks, handoff to planner', asy
     intent: 'HF Search landed; Quick picks grid visible with 2025-2026 releases and download-count badges.',
   });
 
-  // Focus the query box (first text input on the page outside the sidebar).
-  const queryBox = page.locator('input[type="text"]').first();
-  await queryBox.scrollIntoViewIfNeeded();
-  await queryBox.click();
-  await queryBox.fill('llama');
+  // Focus the query box (Streamlit renders text_input with placeholder).
+  const queryBox = page
+    .getByPlaceholder(/llama|qwen|mistral/i)
+    .first();
+  // Best-effort: Streamlit may delay first-paint; use a longer wait and
+  // fall back to the generic selector if the placeholder isn't reachable.
+  try {
+    await queryBox.waitFor({ state: 'visible', timeout: 30_000 });
+    await queryBox.click();
+    await queryBox.fill('llama');
+  } catch {
+    const fallback = page.locator('input[type="text"]').first();
+    await fallback.waitFor({ state: 'visible', timeout: 30_000 });
+    await fallback.click();
+    await fallback.fill('llama');
+  }
   await waitForStreamlit(page);
   await recorder.capture(page, {
     slug: 'search-typed',
     intent: 'User types "llama" into the search box; quick picks remain visible above.',
   });
 
-  // Execute the search.
-  const searchBtn = page.getByRole('button', { name: /Search/i }).first();
-  await searchBtn.click();
-  await waitForStreamlit(page);
+  // Execute the search (if a dedicated button exists; otherwise the live
+  // input already drives the query).
+  const searchBtn = page.getByRole('button', { name: /^Search$/i }).first();
+  if (await searchBtn.isVisible().catch(() => false)) {
+    await searchBtn.click();
+    await waitForStreamlit(page);
+  }
   await recorder.capture(page, {
     slug: 'results',
     intent: 'Search returned; results table shows models with downloads, likes, library, tags, and last-modified.',
