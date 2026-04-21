@@ -24,6 +24,18 @@
       "slug": "frame-0"
     },
     {
+      "annotations": [
+        {
+          "bbox": [
+            80,
+            120,
+            320,
+            24
+          ],
+          "label": "Model: DeepSeek-V2",
+          "style": "dashed"
+        }
+      ],
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
       "intent": "Plan with Deepseek at 2K seq, then at 32K to show KV growth under scaling (frame 2)",
@@ -31,6 +43,19 @@
       "slug": "frame-1"
     },
     {
+      "annotations": [
+        {
+          "bbox": [
+            120,
+            340,
+            220,
+            28
+          ],
+          "color": "#89b4fa",
+          "label": "MLA (kv_lora_rank=512)",
+          "note": "Planner auto-detected Multi-head Latent Attention"
+        }
+      ],
       "assertions": {
         "must_contain": [
           "hwledger plan",

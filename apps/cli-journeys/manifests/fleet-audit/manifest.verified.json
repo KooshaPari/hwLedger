@@ -23,6 +23,18 @@
       "slug": "frame-0"
     },
     {
+      "annotations": [
+        {
+          "bbox": [
+            60,
+            200,
+            520,
+            28
+          ],
+          "color": "#f38ba8",
+          "label": "attestation hash"
+        }
+      ],
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
       "intent": "Audit the fleet with a 3-agent limit to see agent metadata and status (frame 2)",

@@ -7,6 +7,17 @@
   "recording_gif": "recordings/probe-watch.gif",
   "steps": [
     {
+      "annotations": [
+        {
+          "bbox": [
+            60,
+            80,
+            400,
+            20
+          ],
+          "label": "Live refresh header"
+        }
+      ],
       "assertions": {
         "must_not_contain": [
           "Error:",

@@ -7,6 +7,17 @@
   "recording_gif": "recordings/install-cargo.gif",
   "steps": [
     {
+      "annotations": [
+        {
+          "bbox": [
+            40,
+            40,
+            520,
+            24
+          ],
+          "label": "cargo install hwLedger"
+        }
+      ],
       "assertions": {
         "must_not_contain": [
           "Error:",

@@ -7,6 +7,17 @@
   "recording_gif": "recordings/traceability-report.gif",
   "steps": [
     {
+      "annotations": [
+        {
+          "bbox": [
+            40,
+            40,
+            560,
+            24
+          ],
+          "label": "Total FR coverage"
+        }
+      ],
       "assertions": {
         "must_not_contain": [
           "unexpected argument",

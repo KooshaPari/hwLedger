@@ -66,3 +66,7 @@ apps/**/*.xcodeproj/
 vendor/**/target
 .claude/worktrees/
 *.venv/
+
+# hwledger-journey-render transient artifacts (built per-render)
+apps/*/keyframes/*/manifest.rich.json
+docs-site/public/*/keyframes/*/manifest.rich.json

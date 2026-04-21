@@ -7,6 +7,18 @@
   "recording_gif": "recordings/plan-help.gif",
   "steps": [
     {
+      "annotations": [
+        {
+          "bbox": [
+            40,
+            60,
+            520,
+            20
+          ],
+          "color": "#f9e2af",
+          "label": "Usage line"
+        }
+      ],
       "assertions": {
         "must_not_contain": [
           "Error:",
@@ -44,6 +56,17 @@
       "slug": "frame-3"
     },
     {
+      "annotations": [
+        {
+          "bbox": [
+            60,
+            260,
+            400,
+            20
+          ],
+          "label": "--attention-kind flag"
+        }
+      ],
       "blind_description": "Terminal window with a list-style summary and no visible error indicator. (frame slug: frame-4)",
       "index": 4,
       "intent": "Show the plan command's help text with all available options (frame 5)",

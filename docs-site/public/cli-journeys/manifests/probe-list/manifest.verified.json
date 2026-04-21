@@ -24,6 +24,18 @@
       "slug": "frame-0"
     },
     {
+      "annotations": [
+        {
+          "bbox": [
+            40,
+            120,
+            480,
+            20
+          ],
+          "color": "#cba6f7",
+          "label": "CUDA device 0"
+        }
+      ],
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
       "intent": "List all available probes in both table and JSON formats (frame 2)",

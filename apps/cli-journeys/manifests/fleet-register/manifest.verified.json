@@ -30,6 +30,18 @@
       "slug": "frame-1"
     },
     {
+      "annotations": [
+        {
+          "bbox": [
+            80,
+            160,
+            360,
+            24
+          ],
+          "color": "#a6e3a1",
+          "label": "host entry added"
+        }
+      ],
       "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-2)",
       "index": 2,
       "intent": "Register a new agent with the fleet, then verify it appears in fleet status (frame 3)",

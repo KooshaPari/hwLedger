@@ -7,6 +7,19 @@
   "recording_gif": "recordings/ingest-error.gif",
   "steps": [
     {
+      "annotations": [
+        {
+          "bbox": [
+            60,
+            220,
+            480,
+            32
+          ],
+          "color": "#f38ba8",
+          "label": "error code E-INGEST-02",
+          "style": "dashed"
+        }
+      ],
       "assertions": {
         "must_not_contain": [
           "panic",

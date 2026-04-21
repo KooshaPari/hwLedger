@@ -44,6 +44,18 @@
       "slug": "frame-3"
     },
     {
+      "annotations": [
+        {
+          "bbox": [
+            80,
+            180,
+            400,
+            24
+          ],
+          "color": "#a6e3a1",
+          "label": "VRAM fits"
+        }
+      ],
       "blind_description": "Terminal window with a list-style summary and no visible error indicator. (frame slug: frame-4)",
       "index": 4,
       "intent": "Run your first plan with colored output showing token distribution for 4 users (frame 5)",

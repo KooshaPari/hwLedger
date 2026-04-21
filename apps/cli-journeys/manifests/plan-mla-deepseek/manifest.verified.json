@@ -23,6 +23,18 @@
       "slug": "frame-0"
     },
     {
+      "annotations": [
+        {
+          "bbox": [
+            140,
+            200,
+            260,
+            32
+          ],
+          "color": "#a6e3a1",
+          "label": "Per-layer KV cache (bytes)"
+        }
+      ],
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
       "intent": "Show MLA classification and KV sequence invariance across 2K, 32K, 128K sequences (frame 2)",
