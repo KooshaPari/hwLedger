@@ -19,6 +19,9 @@ hero:
       text: Visual walkthrough
       link: /guides/visual-walkthrough-plan-deepseek
     - theme: alt
+      text: 👂 Taste test — pick the narration voice
+      link: /audio/voice-ab
+    - theme: alt
       text: View Architecture
       link: /architecture/
 
