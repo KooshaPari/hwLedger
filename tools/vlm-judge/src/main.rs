@@ -35,7 +35,9 @@ use walkdir::WalkDir;
 
 mod agreement;
 mod providers;
-use agreement::score as agreement_score;
+use agreement::AgreementBackend;
+#[allow(unused_imports)]
+use agreement::score as agreement_score_jaccard_legacy;
 // `providers` exposes the ADR 0015 v3 subscription-routed / free-router /
 // local-only provider chain (Fireworks, MiniMax, OpenRouter `:free`, MLX,
 // headless Claude Code CLI, headless Codex CLI). It is imported here so the
@@ -190,6 +192,14 @@ struct Cli {
     /// `mlx-community/<name>` (or any other HuggingFace repo mlx-vlm accepts).
     #[arg(long = "mlx-vlm-model", value_name = "ID")]
     mlx_vlm_model: Option<String>,
+
+    /// Intent ↔ blind-description agreement scorer. `auto` (default) prefers
+    /// `siglip` when a keyframe is available and `transformers`+`torch` are
+    /// importable, else `sentence` when `sentence-transformers` is
+    /// importable, else `jaccard`. Mirrors
+    /// `phenotype_journey_core::AgreementBackend`.
+    #[arg(long = "agreement", default_value = "auto", value_name = "BACKEND")]
+    agreement: String,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
@@ -229,13 +239,16 @@ async fn run(cli: Cli) -> Result<()> {
     };
 
     let effective = select_backend(cli.judge).await?;
+    let agreement_backend = AgreementBackend::parse_flag(&cli.agreement)
+        .map_err(|e| anyhow!(e))?;
     eprintln!(
-        "[vlm-judge] backend={} force={} dry_run={} max_cost=${:.2}",
+        "[vlm-judge] backend={} agreement={} force={} dry_run={} max_cost=${:.2}",
         match effective {
             EffectiveBackend::Claude => "claude",
             EffectiveBackend::Mlx => "mlx",
             EffectiveBackend::None => "none",
         },
+        cli.agreement,
         cli.force,
         cli.dry_run,
         cli.max_cost_usd
@@ -452,7 +465,12 @@ async fn run(cli: Cli) -> Result<()> {
                 }
             };
 
-            let report = agreement_score(&intent, &blind);
+            // Dispatch to the configured agreement scorer (SigLIP /
+            // sentence-transformer / Jaccard). Auto was resolved once above
+            // per-CLI invocation; build() picks the concrete scorer with
+            // image availability taken into account.
+            let scorer = agreement_backend.build(image_path.exists());
+            let report = scorer.score(&intent, &blind, Some(&image_path));
             step_obj.insert(
                 "blind_description".into(),
                 serde_json::Value::String(blind.clone()),
@@ -462,6 +480,10 @@ async fn run(cli: Cli) -> Result<()> {
                 serde_json::json!(round_f64(report.overlap, 4)),
             );
             step_obj.insert(
+                "judge_score_raw".into(),
+                serde_json::json!(round_f64(report.raw_score, 4)),
+            );
+            step_obj.insert(
                 "judge_status".into(),
                 serde_json::Value::String(report.status.as_str().into()),
             );
@@ -469,6 +491,16 @@ async fn run(cli: Cli) -> Result<()> {
                 "judge_backend".into(),
                 serde_json::Value::String(backend_used.into()),
             );
+            step_obj.insert(
+                "judge_agreement_backend".into(),
+                serde_json::Value::String(report.backend.clone()),
+            );
+            if let Some(m) = &report.backend_model {
+                step_obj.insert(
+                    "judge_agreement_model".into(),
+                    serde_json::Value::String(m.clone()),
+                );
+            }
             step_obj.insert(
                 "passed".into(),
                 serde_json::Value::Bool(report.status.is_passed()),
