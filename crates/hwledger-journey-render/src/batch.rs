@@ -157,9 +157,9 @@ fn canonical_manifest_hash(path: &Path) -> Result<String, std::io::Error> {
 }
 
 /// Hash only the voiceover-relevant content: the `voiceover` spec itself plus
-/// the per-step text lines that Piper ingests (description > blind_description
-/// > intent, matching `synthesise_voiceover_piper`). A change here implies the
-/// audio track must be re-synthesised, even if the video can be reused.
+/// the per-step text lines that Piper ingests (description, blind_description,
+/// intent — same precedence as `synthesise_voiceover_piper`). A change here
+/// implies the audio track must be re-synthesised even if the video can be reused.
 fn voiceover_hash(path: &Path) -> Result<String, std::io::Error> {
     let raw = std::fs::read(path)?;
     let v: serde_json::Value = serde_json::from_slice(&raw)
@@ -503,10 +503,10 @@ fn cache_silent_copy(rich: &Path, silent: &Path) -> Result<(), std::io::Error> {
         .arg(silent)
         .status()?;
     if !status.success() {
-        return Err(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            format!("ffmpeg silent cache failed for {}", rich.display()),
-        ));
+        return Err(std::io::Error::other(format!(
+            "ffmpeg silent cache failed for {}",
+            rich.display()
+        )));
     }
     Ok(())
 }
