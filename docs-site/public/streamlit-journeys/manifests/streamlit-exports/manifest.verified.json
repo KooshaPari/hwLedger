@@ -4,10 +4,11 @@
   "keyframe_count": 5,
   "passed": true,
   "recording": "recordings/streamlit-exports/streamlit-exports.mp4",
+  "recording_audio_voiceover": "audio/streamlit-exports.voiceover.wav",
   "recording_gif": "recordings/streamlit-exports/streamlit-exports.gif",
   "recording_rich": "recordings/streamlit-exports/streamlit-exports.rich.mp4",
-  "recording_rich_manifest_sha256": "11114a9e6c447051dbf7cbfa64d369c30db69ff4cbfffcd1154dc93de4704b80",
-  "recording_rich_sha256": "2d05547b18c78870eb1074583dabd34dfc2f192ad0357485d5b4e2728a928a07",
+  "recording_rich_manifest_sha256": "ea886bd9f772ce2009380f3538bc4d5688ef6ae51bff7d611ae29b9f95a1b1fd",
+  "recording_rich_sha256": "8bee09b308d0688d69c909f760aecdc7057923ad089d73196d01e4222177e2fc",
   "steps": [
     {
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: planner-ready)",
@@ -19,7 +20,7 @@
     {
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: export-row)",
       "index": 1,
-      "intent": "Export Configuration row in view: three buttons — Export as vLLM, Export as llama.cpp, Export as MLX.",
+      "intent": "Export Configuration row in view: three buttons \u2014 Export as vLLM, Export as llama.cpp, Export as MLX.",
       "screenshot_path": "frame-002.png",
       "slug": "export-row"
     },
@@ -53,5 +54,6 @@
     "mode": "mock",
     "overall_score": 0.92,
     "timestamp": "2026-04-21T04:31:06Z"
-  }
+  },
+  "voiceover_sha256": "0e113d346486c7dae73e432616176d5ae50444210572f8232a2385648c2b005d"
 }

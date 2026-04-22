@@ -34,8 +34,8 @@
   "recording_audio_voiceover": "audio/planner-gui-launch.voiceover.wav",
   "recording_gif": "preview.gif",
   "recording_rich": "planner-gui-launch.rich.mp4",
-  "recording_rich_manifest_sha256": "217e9811c97c4d19c3ba601532e05bf03131bd7fe559f616103df74f766e59d2",
-  "recording_rich_sha256": "16ffba179bf448d0fc7835b1cb4d0bb773a5b36d0d9c91a5199f51eff80e5c03",
+  "recording_rich_manifest_sha256": "9a92db99da6526030abdceec0b8d96573e45f21f4effe8c1b955fd0bfe0e7ff0",
+  "recording_rich_sha256": "b7ab46ae047a2d2f900cd09e226aa393ec3b16528905c9ca2bc44384629b83b6",
   "steps": [
     {
       "annotations": [

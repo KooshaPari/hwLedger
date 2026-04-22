@@ -4,10 +4,11 @@
   "keyframe_count": 4,
   "passed": true,
   "recording": "recordings/plan-mla-deepseek.mp4",
+  "recording_audio_voiceover": "audio/plan-mla-deepseek.voiceover.wav",
   "recording_gif": "recordings/plan-mla-deepseek.gif",
   "recording_rich": "recordings/plan-mla-deepseek/plan-mla-deepseek.rich.mp4",
-  "recording_rich_manifest_sha256": "f80eb9ce8a5fd07d5036b47cc60db59457555e83c3ade560f49c9b5013339c39",
-  "recording_rich_sha256": "3cadc8ddb269901546290587ed3e11804c9843b423272c05e82d2be2b0037b55",
+  "recording_rich_manifest_sha256": "76de3bd8f9b0d17e2f3ddfc50be07355fa5e2b745a2400f7629961b44408ca63",
+  "recording_rich_sha256": "87162064f43a0144005febb4b151044121657c2d335c94a6467df124b139409e",
   "steps": [
     {
       "assertions": {
@@ -89,5 +90,6 @@
     "mode": "mock",
     "overall_score": 0.92,
     "timestamp": "2026-04-21T08:21:26Z"
-  }
+  },
+  "voiceover_sha256": "19a712bd6416c1950ad68831960be24bd78f29c4013e3c01af00d780377499c3"
 }

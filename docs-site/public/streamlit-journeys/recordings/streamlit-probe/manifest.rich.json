@@ -1,0 +1,45 @@
+{
+  "id": "streamlit-probe",
+  "intent": "Visit the Probe page to enumerate GPUs detected by the FFI shim and inspect their backend + VRAM.",
+  "recording": "recordings/streamlit-probe/streamlit-probe.mp4",
+  "recording_gif": "recordings/streamlit-probe/streamlit-probe.gif",
+  "recording_rich": "recordings/streamlit-probe/streamlit-probe.rich.mp4",
+  "keyframe_count": 3,
+  "passed": true,
+  "steps": [
+    {
+      "index": 0,
+      "slug": "landing",
+      "intent": "Probe page loaded; a banner reports whether any GPUs were detected via the hwledger-ffi shim.",
+      "screenshot_path": "frame-001.png",
+      "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: landing)"
+    },
+    {
+      "index": 1,
+      "slug": "device-panel",
+      "intent": "Primary device panel expanded (or warning shown when FFI is unavailable), listing backend and VRAM per device.",
+      "screenshot_path": "frame-002.png",
+      "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: device-panel)"
+    },
+    {
+      "index": 2,
+      "slug": "summary-table",
+      "intent": "Summary dataframe at the bottom: one row per device with ID, name, backend, and VRAM in GB.",
+      "screenshot_path": "frame-003.png",
+      "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: summary-table)"
+    }
+  ],
+  "voiceover": {
+    "backend": "silent"
+  },
+  "verification": {
+    "all_intents_passed": true,
+    "assertion_violations": [],
+    "describe_confidence": 0.95,
+    "judge_confidence": 0.9,
+    "mode": "mock",
+    "overall_score": 0.92,
+    "timestamp": "2026-04-21T04:31:06Z"
+  },
+  "annotated_keyframes": []
+}

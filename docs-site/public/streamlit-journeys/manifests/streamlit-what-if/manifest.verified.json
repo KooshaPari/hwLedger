@@ -4,10 +4,11 @@
   "keyframe_count": 5,
   "passed": true,
   "recording": "recordings/streamlit-what-if/streamlit-what-if.mp4",
+  "recording_audio_voiceover": "audio/streamlit-what-if.voiceover.wav",
   "recording_gif": "recordings/streamlit-what-if/streamlit-what-if.gif",
   "recording_rich": "recordings/streamlit-what-if/streamlit-what-if.rich.mp4",
-  "recording_rich_manifest_sha256": "3e129bb5c2ed407b90e4f101e9da2a63cf43b929394c8eb11a6effde9e80311c",
-  "recording_rich_sha256": "6652b5d46405c574c6cc4102e2f0a5bbfe4c6d84806275a3f67f47e506414cd5",
+  "recording_rich_manifest_sha256": "f7ae8da0cb509d2b359798cf7dcf1e5b1142e11e4b75db9de55b93523fa0cb26",
+  "recording_rich_sha256": "aaa9f38503bdcb5b5082150c123dffa0cafe07f07a5d8638d64c5ccf13070b61",
   "steps": [
     {
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: landing)",
@@ -53,5 +54,6 @@
     "mode": "mock",
     "overall_score": 0.92,
     "timestamp": "2026-04-21T04:31:06Z"
-  }
+  },
+  "voiceover_sha256": "9991e48351b9c17d3574e965a223d312a36629edab761e72d2359c5f8d284909"
 }

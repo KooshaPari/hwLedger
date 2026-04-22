@@ -42,8 +42,8 @@
   "recording_audio_voiceover": "audio/export-gui-vllm.voiceover.wav",
   "recording_gif": "preview.gif",
   "recording_rich": "export-gui-vllm.rich.mp4",
-  "recording_rich_manifest_sha256": "2176d5983b078506007ed431d572b66e17b1077af07ca3bd95d61ec54aa78ffa",
-  "recording_rich_sha256": "037a3cc9446e01af4bbd3113d3c0545198157542d5771a0928aad66ac01b4650",
+  "recording_rich_manifest_sha256": "77290e52fc8418817f0ec11fb762b8e2e150d2025ad4d4736aadc3698385feae",
+  "recording_rich_sha256": "6e74042bce6a201b540cd5a7594028d60ea4462bdd60a9dff9f302d489a82120",
   "steps": [
     {
       "blind_eval": "skip",

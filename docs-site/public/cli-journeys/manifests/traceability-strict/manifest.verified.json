@@ -4,10 +4,11 @@
   "keyframe_count": 3,
   "passed": true,
   "recording": "recordings/traceability-strict.mp4",
+  "recording_audio_voiceover": "audio/traceability-strict.voiceover.wav",
   "recording_gif": "recordings/traceability-strict.gif",
   "recording_rich": "recordings/traceability-strict/traceability-strict.rich.mp4",
-  "recording_rich_manifest_sha256": "58fb33327ba9763a447236fc1bd9c754befaab33ac2fff384fae58d382120dfc",
-  "recording_rich_sha256": "c1287bbec76c9921743d8ee9bddca0ef71803f756f058789f4c9a263550101a9",
+  "recording_rich_manifest_sha256": "bc9e23794f79fd912da337d89c1fb987e8135593d5dad14003cd25dae6ced66e",
+  "recording_rich_sha256": "abd58ba333b456017a8925c715c6388780f0550d392b0fb87ea57fa6265e8d8f",
   "steps": [
     {
       "assertions": {
@@ -70,5 +71,6 @@
     "mode": "mock",
     "overall_score": 0.92,
     "timestamp": "2026-04-21T08:21:33Z"
-  }
+  },
+  "voiceover_sha256": "52075b68c4f2005832026269d6498b279913f5f5a92d2401b9a5b1c2572e8755"
 }

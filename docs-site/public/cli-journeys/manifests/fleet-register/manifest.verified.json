@@ -8,7 +8,7 @@
   "recording_gif": "recordings/fleet-register.gif",
   "recording_rich": "recordings/fleet-register/fleet-register.rich.mp4",
   "recording_rich_manifest_sha256": "de364f6e6b67136fd94e639e0faebe8fc5a2d1456608ee255f58bf5bafa24e9d",
-  "recording_rich_sha256": "78b9472895486e33e25717c78cd9e8ad65f137fc97249afad73800470b1d914b",
+  "recording_rich_sha256": "c583fbbd271f826153f160337a51b65ade14e6f0b56f193ea1cb3c9cf11c41d2",
   "steps": [
     {
       "assertions": {
@@ -67,7 +67,7 @@
       "slug": "frame-4"
     },
     {
-      "blind_description": "Shell prompt displaying the result of a subcommand — multi-line text output. (frame slug: frame-5)",
+      "blind_description": "Shell prompt displaying the result of a subcommand \u2014 multi-line text output. (frame slug: frame-5)",
       "index": 5,
       "intent": "Register a new agent with the fleet, then verify it appears in fleet status (frame 6)",
       "screenshot_path": "frame-006.png",
@@ -130,7 +130,7 @@
         ],
         "ocr_required": false
       },
-      "blind_description": "Shell prompt displaying the result of a subcommand — multi-line text output. (frame slug: frame-11)",
+      "blind_description": "Shell prompt displaying the result of a subcommand \u2014 multi-line text output. (frame slug: frame-11)",
       "index": 11,
       "intent": "Fleet status table reflecting the just-registered agent: Version, Uptime, Connected Agents, Total VRAM; trailing __EXIT sentinel",
       "screenshot_path": "frame-012.png",

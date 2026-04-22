@@ -4,10 +4,11 @@
   "keyframe_count": 3,
   "passed": true,
   "recording": "recordings/probe-watch.mp4",
+  "recording_audio_voiceover": "audio/probe-watch.voiceover.wav",
   "recording_gif": "recordings/probe-watch.gif",
   "recording_rich": "recordings/probe-watch/probe-watch.rich.mp4",
-  "recording_rich_manifest_sha256": "d21ee3b7a0f52290e5528c38e05440f96e577a8f5056309c05002dabc37752ab",
-  "recording_rich_sha256": "398c4f494ff21a64cc92a41c9804fb20a73b34ff9ef1e55819d8b58c5a2a12bd",
+  "recording_rich_manifest_sha256": "84b4858680bb4b93d8a1e554cb0e061b60181d840e0a3c033e53863f3186fcc8",
+  "recording_rich_sha256": "e4655985e789280e5a5ce0681f4c1c78a1f19899815566f3bcd06db2cd4c35c9",
   "steps": [
     {
       "annotations": [
@@ -82,5 +83,6 @@
     "mode": "mock",
     "overall_score": 0.92,
     "timestamp": "2026-04-21T08:21:29Z"
-  }
+  },
+  "voiceover_sha256": "d715c73e792c2e4ce4b5de750d8eff4e4152184c3fb92366e91906ba8956d2ec"
 }

@@ -4,10 +4,11 @@
   "keyframe_count": 3,
   "passed": false,
   "recording": "recordings/plan-deepseek.mp4",
+  "recording_audio_voiceover": "audio/plan-deepseek.voiceover.wav",
   "recording_gif": "recordings/plan-deepseek.gif",
   "recording_rich": "recordings/plan-deepseek/plan-deepseek.rich.mp4",
-  "recording_rich_manifest_sha256": "ca5dd12c7d8e30061cd85385d0b92aa6e68f26f0df7d22890bd0626844316157",
-  "recording_rich_sha256": "ffb2c0b4fc425e8431bfa0c96056a626d77381843f771223ee3d18a03b8fc14f",
+  "recording_rich_manifest_sha256": "5a104a4e571b1f816c2ceeec217b1bcf80351b2163a34b7584324dc510f1e3aa",
+  "recording_rich_sha256": "15275631f98d233943e9a11464a9e6f62cf8f9af12f39edcd13d43d870314554",
   "steps": [
     {
       "assertions": {
@@ -155,5 +156,5 @@
     "overall_score": 0.92,
     "timestamp": "2026-04-21T08:21:23Z"
   },
-  "recording_audio_voiceover": "recordings/plan-deepseek.voiceover.wav"
+  "voiceover_sha256": "9877e4834303f5e037b879c81124b0ff7ddc6ab9aa70e2ebedcce83163677dac"
 }

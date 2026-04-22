@@ -319,7 +319,15 @@ pub fn render_all(
                 let manifest_match = stored_manifest == manifest_hash;
                 let voice_match = stored_voice == voice_hash;
                 let rich_exists = resolved.output_mp4.exists();
-                if manifest_match && voice_match && rich_exists {
+                // Guard against stale "black" cached renders produced before
+                // `stage_keyframes` reliably staged CLI keyframes. A rich MP4
+                // whose mid-frame luma is effectively zero almost always
+                // indicates the keyframe <Img> failed to load at render time,
+                // so we invalidate the cache and force a fresh render even
+                // though the hash matches.
+                let rich_looks_black =
+                    rich_exists && is_rich_mp4_effectively_black(&resolved.output_mp4);
+                if manifest_match && voice_match && rich_exists && !rich_looks_black {
                     println!(
                         "[skip] {:9} {:<28} (video+audio hash match)",
                         format!("{:?}", resolved.family).to_lowercase(),
@@ -327,6 +335,13 @@ pub fn render_all(
                     );
                     skipped += 1;
                     continue;
+                }
+                if rich_looks_black {
+                    eprintln!(
+                        "[stale-black] {:9} {:<28} cached rich mp4 is near-black; re-rendering",
+                        format!("{:?}", resolved.family).to_lowercase(),
+                        resolved.journey_id
+                    );
                 }
                 if manifest_match && rich_exists && !voice_match {
                     audio_only_remix = true;
@@ -521,6 +536,55 @@ fn gui_needs_slideshow(manifest_path: &Path, _resolved: &Resolved) -> bool {
         return true;
     }
     !matches!(ffprobe_duration_seconds(&raw_mp4), Ok(d) if d >= 3.0)
+}
+
+/// Return true when the rich MP4's mid-frame is effectively black.
+///
+/// Heuristic: grab the frame at `duration/2` with ffmpeg, measure the average
+/// Y (luma) via `signalstats` and consider <10/255 black. A healthy rendered
+/// scene — even on a dark terminal background — yields mean luma >= ~25. Any
+/// failure (ffmpeg missing, parse error, ...) returns false so we never
+/// mistakenly invalidate a good cache.
+fn is_rich_mp4_effectively_black(mp4: &Path) -> bool {
+    let Ok(dur) = ffprobe_duration_seconds(mp4) else {
+        return false;
+    };
+    if dur < 0.5 {
+        return false;
+    }
+    let mid = format!("{:.3}", dur / 2.0);
+    let out = std::process::Command::new("ffmpeg")
+        .args(["-v", "error", "-ss", &mid, "-i"])
+        .arg(mp4)
+        .args([
+            "-vframes",
+            "1",
+            "-vf",
+            "signalstats,metadata=print:key=lavfi.signalstats.YAVG",
+            "-f",
+            "null",
+            "-",
+        ])
+        .output();
+    let Ok(out) = out else {
+        return false;
+    };
+    if !out.status.success() {
+        return false;
+    }
+    // ffmpeg writes metadata to stderr ("[Parsed_metadata_1 ...] ... YAVG=12.345")
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    for line in stderr.lines() {
+        if let Some(idx) = line.find("YAVG=") {
+            let tail = &line[idx + 5..];
+            let num: String =
+                tail.chars().take_while(|c| c.is_ascii_digit() || *c == '.').collect();
+            if let Ok(y) = num.parse::<f64>() {
+                return y < 10.0;
+            }
+        }
+    }
+    false
 }
 
 fn ffprobe_duration_seconds(mp4: &Path) -> Result<f64, std::io::Error> {

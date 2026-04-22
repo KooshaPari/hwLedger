@@ -8,7 +8,7 @@
   "recording_gif": "recordings/fleet-audit.gif",
   "recording_rich": "recordings/fleet-audit/fleet-audit.rich.mp4",
   "recording_rich_manifest_sha256": "b0a02578cb841109af1a0bb00b15f1305f84c6ad29c714d56556f5912a35a487",
-  "recording_rich_sha256": "160e32b55a16e4168fdffba6890a4646d2a7554c6f79673982b135cc13eed762",
+  "recording_rich_sha256": "d155f2947944bb284797a79ecda9334bb1f12f1bee7f18e49581de0c68394b2d",
   "steps": [
     {
       "assertions": {
@@ -67,7 +67,7 @@
       "slug": "frame-4"
     },
     {
-      "blind_description": "Shell prompt displaying the result of a subcommand — multi-line text output. (frame slug: frame-5)",
+      "blind_description": "Shell prompt displaying the result of a subcommand \u2014 multi-line text output. (frame slug: frame-5)",
       "index": 5,
       "intent": "Audit the fleet with a 3-agent limit to see agent metadata and status (frame 6)",
       "screenshot_path": "frame-006.png",

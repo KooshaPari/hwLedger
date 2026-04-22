@@ -4,10 +4,11 @@
   "keyframe_count": 4,
   "passed": true,
   "recording": "recordings/traceability-report.mp4",
+  "recording_audio_voiceover": "audio/traceability-report.voiceover.wav",
   "recording_gif": "recordings/traceability-report.gif",
   "recording_rich": "recordings/traceability-report/traceability-report.rich.mp4",
-  "recording_rich_manifest_sha256": "3abf2ea8e2cc92f1ec4b5b89f6a2f896d4427be72086cdd5661c70180cd2ae18",
-  "recording_rich_sha256": "c781d5d419071adfe33fa3077d1b4771b245ca06ec6df7680d51c689ca5d634c",
+  "recording_rich_manifest_sha256": "b06cc05fc850d09450b13ae62d53ceaa17046fb86a214720aa6fefe656f7bb53",
+  "recording_rich_sha256": "6b6c5ba4c8d34b768bdb5ce4199d73e6b2767cf97b5b92f9294811b8d1d1b910",
   "steps": [
     {
       "annotations": [
@@ -88,5 +89,6 @@
     "mode": "mock",
     "overall_score": 0.92,
     "timestamp": "2026-04-21T08:21:31Z"
-  }
+  },
+  "voiceover_sha256": "648440fce7cf360d9caa4f8ea15feea49ab546f5cb610b81d6d756605dcb0fea"
 }

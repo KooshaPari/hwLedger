@@ -4,10 +4,11 @@
   "keyframe_count": 3,
   "passed": true,
   "recording": "recordings/probe-list.mp4",
+  "recording_audio_voiceover": "audio/probe-list.voiceover.wav",
   "recording_gif": "recordings/probe-list.gif",
   "recording_rich": "recordings/probe-list/probe-list.rich.mp4",
-  "recording_rich_manifest_sha256": "01125a85fa38ed1d62526d06c6b2ebd3665b756662d2ed322639fb0f3d4540ec",
-  "recording_rich_sha256": "c2c356dfb42039b94bd2c005ef654dcc72260c6fe44d2ef704eedc4203ce2ea3",
+  "recording_rich_manifest_sha256": "face7b21ce1e05ce52c1ba3914d17adb39f85f9fad2de0b80be95d88b6cd9c1e",
+  "recording_rich_sha256": "c92b801f6b9d0d7ce71b119bed8f5711591b0e685bf51e07363f9937e125ffab",
   "steps": [
     {
       "assertions": {
@@ -82,5 +83,5 @@
     "overall_score": 0.92,
     "timestamp": "2026-04-21T08:21:27Z"
   },
-  "recording_audio_voiceover": "recordings/probe-list.voiceover.wav"
+  "voiceover_sha256": "fa928e0357cf3e0829f25dc088990ef9f3b2e3e9847e49c0a54713ce7f2da55b"
 }

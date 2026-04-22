@@ -34,8 +34,8 @@
   "recording_audio_voiceover": "audio/probe-gui-watch.voiceover.wav",
   "recording_gif": "preview.gif",
   "recording_rich": "probe-gui-watch.rich.mp4",
-  "recording_rich_manifest_sha256": "c1e13ca375344709c4c3e6dc45387c06cb24240e15c1a0ba3b505d19291e184d",
-  "recording_rich_sha256": "f748c2a0d8359f437708ac740993755def8266e843c9c7f5fce6baaae733ecdb",
+  "recording_rich_manifest_sha256": "419b92b54b9ef06f4743e0581b5364ee9e00f7fbf705f6a7be1497345d681aab",
+  "recording_rich_sha256": "f5fd1bb10d2112a1bfdc47274a4047e264402f555c1004dcc6fbd8ee56064bc4",
   "steps": [
     {
       "blind_eval": "skip",

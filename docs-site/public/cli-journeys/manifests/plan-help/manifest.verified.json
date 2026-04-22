@@ -4,10 +4,11 @@
   "keyframe_count": 10,
   "passed": false,
   "recording": "recordings/plan-help.mp4",
+  "recording_audio_voiceover": "audio/plan-help.voiceover.wav",
   "recording_gif": "recordings/plan-help.gif",
   "recording_rich": "recordings/plan-help/plan-help.rich.mp4",
-  "recording_rich_manifest_sha256": "8ee044d203c7f8f98d04bca0f2dbe2669cff0cad603b958ede9ae2ed4ba51eef",
-  "recording_rich_sha256": "b50fe453e08ea49184320323b2cd5a3a9ce8e6fdd1e050ab529315db1abc4a05",
+  "recording_rich_manifest_sha256": "15efe636a5e83d0543616000c1abd5a70d1bc6bd5ccce3adf136d166b5bec2a6",
+  "recording_rich_sha256": "b48f54efea58afebf3d616fcda0ac1da52c1a28cd738c8a9ba85c48a3183463a",
   "steps": [
     {
       "annotations": [
@@ -77,7 +78,7 @@
       "slug": "frame-4"
     },
     {
-      "blind_description": "Shell prompt displaying the result of a subcommand — multi-line text output. (frame slug: frame-5)",
+      "blind_description": "Shell prompt displaying the result of a subcommand \u2014 multi-line text output. (frame slug: frame-5)",
       "index": 5,
       "intent": "Show the plan command's help text with all available options (frame 6)",
       "screenshot_path": "frame-006.png",
@@ -140,7 +141,7 @@
     "assertion_violations": [
       {
         "expected": "__EXIT_",
-        "got_snippet": "--users <USERS> Number of concurrent users [default: 1] --batch <BATCH> Batch size per iteration [default: 1] --weight-quant <WEIGHT_QUANT> Weight quantization …",
+        "got_snippet": "--users <USERS> Number of concurrent users [default: 1] --batch <BATCH> Batch size per iteration [default: 1] --weight-quant <WEIGHT_QUANT> Weight quantization \u2026",
         "kind": "MustContain",
         "step_index": 9
       }
@@ -150,5 +151,6 @@
     "mode": "mock",
     "overall_score": 0.92,
     "timestamp": "2026-04-21T08:21:24Z"
-  }
+  },
+  "voiceover_sha256": "030ecc2d584bdfa64f816b9d72251ac9fef0bff80396865c62e29857f0dc0426"
 }

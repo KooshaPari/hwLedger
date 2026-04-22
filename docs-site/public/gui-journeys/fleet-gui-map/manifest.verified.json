@@ -34,8 +34,8 @@
   "recording_audio_voiceover": "audio/fleet-gui-map.voiceover.wav",
   "recording_gif": "preview.gif",
   "recording_rich": "fleet-gui-map.rich.mp4",
-  "recording_rich_manifest_sha256": "1d42719babbc702950098cb34d9cc1b2e9f59f79058635d789e41699448daea1",
-  "recording_rich_sha256": "cbf565d4e2aa8ebf8e37a0e7bb863ee2ff588da1953abb8ea9e8c01ab346e821",
+  "recording_rich_manifest_sha256": "f10a1a12365467e52f397060980df3a06009c79245d123bb9e6258bc0bb2690c",
+  "recording_rich_sha256": "bc736061068baec2a2d2170be6d237f6c58118be0a2d95f1d752a7d33b12e8f1",
   "steps": [
     {
       "blind_eval": "skip",

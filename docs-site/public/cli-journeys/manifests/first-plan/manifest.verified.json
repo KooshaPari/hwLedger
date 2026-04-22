@@ -67,7 +67,7 @@
       "slug": "frame-4"
     },
     {
-      "blind_description": "Shell prompt displaying the result of a subcommand — multi-line text output. (frame slug: frame-5)",
+      "blind_description": "Shell prompt displaying the result of a subcommand \u2014 multi-line text output. (frame slug: frame-5)",
       "index": 5,
       "intent": "Run your first plan with colored output showing token distribution for 4 users (frame 6)",
       "screenshot_path": "frame-006.png",
@@ -109,7 +109,7 @@
       "slug": "frame-10"
     },
     {
-      "blind_description": "Shell prompt displaying the result of a subcommand — multi-line text output. (frame slug: frame-11)",
+      "blind_description": "Shell prompt displaying the result of a subcommand \u2014 multi-line text output. (frame slug: frame-11)",
       "index": 11,
       "intent": "Run your first plan with colored output showing token distribution for 4 users (frame 12)",
       "screenshot_path": "frame-012.png",

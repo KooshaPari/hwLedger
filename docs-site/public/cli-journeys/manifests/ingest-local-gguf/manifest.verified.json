@@ -4,10 +4,11 @@
   "keyframe_count": 13,
   "passed": true,
   "recording": "recordings/ingest-local-gguf.mp4",
+  "recording_audio_voiceover": "audio/ingest-local-gguf.voiceover.wav",
   "recording_gif": "recordings/ingest-local-gguf.gif",
   "recording_rich": "recordings/ingest-local-gguf/ingest-local-gguf.rich.mp4",
-  "recording_rich_manifest_sha256": "30c8bd3c2ed0651140277ef8b61a94b81f25dd27dd8dc22f15529d039db8cf7a",
-  "recording_rich_sha256": "f37c93916142e96dc60159789455fa1dd5c1954aedd5035b5095991ec9539df0",
+  "recording_rich_manifest_sha256": "8164fd0001975601fc7743c47d3ac3150c403465ed94508cf6ddc51aa6682c85",
+  "recording_rich_sha256": "c0a04b0abb4cae9eadd101f8c57c8bc9a010236b8b7bd7f091f7bdd1c96aea5f",
   "steps": [
     {
       "assertions": {
@@ -54,7 +55,7 @@
       "slug": "frame-4"
     },
     {
-      "blind_description": "Shell prompt displaying the result of a subcommand — multi-line text output. (frame slug: frame-5)",
+      "blind_description": "Shell prompt displaying the result of a subcommand \u2014 multi-line text output. (frame slug: frame-5)",
       "index": 5,
       "intent": "Ingest a local GGUF model file and output JSON metadata (frame 6)",
       "screenshot_path": "frame-006.png",
@@ -96,7 +97,7 @@
       "slug": "frame-10"
     },
     {
-      "blind_description": "Shell prompt displaying the result of a subcommand — multi-line text output. (frame slug: frame-11)",
+      "blind_description": "Shell prompt displaying the result of a subcommand \u2014 multi-line text output. (frame slug: frame-11)",
       "index": 11,
       "intent": "Ingest a local GGUF model file and output JSON metadata (frame 12)",
       "screenshot_path": "frame-012.png",
@@ -142,5 +143,6 @@
     "mode": "mock",
     "overall_score": 0.92,
     "timestamp": "2026-04-21T08:21:21Z"
-  }
+  },
+  "voiceover_sha256": "bb5fc4fde3899255948ea5be32777827ba17aaea7f82d3449e33a24663485818"
 }

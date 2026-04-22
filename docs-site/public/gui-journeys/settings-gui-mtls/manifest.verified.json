@@ -38,8 +38,8 @@
   "recording_audio_voiceover": "audio/settings-gui-mtls.voiceover.wav",
   "recording_gif": "preview.gif",
   "recording_rich": "settings-gui-mtls.rich.mp4",
-  "recording_rich_manifest_sha256": "c2b81c34e2a4b3b4be4ada6a51a8746ab1cc3b4e1031102d7de345c4b422312e",
-  "recording_rich_sha256": "e81fc7f3a510f66809ec90e481409117d68318d30c9390d4490b55ec94241797",
+  "recording_rich_manifest_sha256": "e7c74876c7fc7f403de13df88a6e1fea90bfbdd6236f6608e85c6bfffc80d067",
+  "recording_rich_sha256": "658f232b3381bfce6adbb0967eed2ec8e9c3948ea49ea8a21e6917ac71f52183",
   "steps": [
     {
       "blind_eval": "skip",

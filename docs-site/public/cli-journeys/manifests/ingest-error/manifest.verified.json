@@ -8,7 +8,7 @@
   "recording_gif": "recordings/ingest-error.gif",
   "recording_rich": "recordings/ingest-error/ingest-error.rich.mp4",
   "recording_rich_manifest_sha256": "3fb1ff1c729d292721a6498868b45e214d6fb25d538285bd4fc77fde0d7237c5",
-  "recording_rich_sha256": "238f21489ae6b5a2789d5d1448ce164a95f6ca0f0bbf618f6352371ea2b9750a",
+  "recording_rich_sha256": "c42a6528c37526adf19634d65f9c475ddea9a5283e6f5ff5a00cb8939f45e1b4",
   "steps": [
     {
       "annotations": [
@@ -67,7 +67,7 @@
       "slug": "frame-4"
     },
     {
-      "blind_description": "Shell prompt displaying the result of a subcommand — multi-line text output. (frame slug: frame-5)",
+      "blind_description": "Shell prompt displaying the result of a subcommand \u2014 multi-line text output. (frame slug: frame-5)",
       "index": 5,
       "intent": "Show graceful error handling when a model file doesn't exist (frame 6)",
       "screenshot_path": "frame-006.png",
@@ -134,7 +134,7 @@
     "assertion_violations": [
       {
         "expected": "__EXIT_1__",
-        "got_snippet": "> hwledger plan /nonexistent-model.json; echo \"__EXIT_$?__\" Error: failed to read config: /nonexistent-model.json  Caused by:  No such file or directory (os err…",
+        "got_snippet": "> hwledger plan /nonexistent-model.json; echo \"__EXIT_$?__\" Error: failed to read config: /nonexistent-model.json  Caused by:  No such file or directory (os err\u2026",
         "kind": "MustContain",
         "step_index": 10
       }
