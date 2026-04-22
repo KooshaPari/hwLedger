@@ -79,11 +79,15 @@ If a manifest has `steps[].annotations` (bbox + label — see [the manifest sche
 
 ## Voiceover (Piper TTS)
 
-The pipeline supports two backends:
+The pipeline supports three backends:
 
-- **`silent`** (default) — no audio.
-- **`piper`** — local neural TTS, enabled for three exemplars today
-  (`plan-deepseek`, `probe-list`, `streamlit-hf-search`).
+- **`auto`** (default) — try Piper; log + fall back to silent on any
+  error (binary missing, voice model missing, step count too low, etc.).
+  This is the new default: re-renders on a Piper-equipped host are
+  narrated out of the box; CI hosts without Piper silently continue.
+- **`piper`** — hard-require Piper. Errors if the binary or voice
+  model is missing. Use in release pipelines that must ship audio.
+- **`silent`** — explicit no-audio. Legacy default.
 
 Install with:
 
@@ -98,7 +102,10 @@ curl -L -o ~/.cache/piper/voices/en_US-lessac-medium.onnx.json \
   https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json
 ```
 
-Then pass `--voiceover piper` (subcommand `one` or `all`) to the Rust CLI.
+With Piper installed the default `--voiceover auto` will narrate every
+re-render. Pass `--voiceover silent` to force the legacy no-audio path
+or `--voiceover piper` (subcommand `one` or `all`) to fail loudly if
+Piper is missing.
 `synthesise_voiceover_piper()` generates one WAV per step (intro + each
 `step.description` / `blind_description` / `intent`), concatenates them via
 `ffmpeg`, and sets `manifest.voiceover.audio = "audio/<journey>.voiceover.wav"`

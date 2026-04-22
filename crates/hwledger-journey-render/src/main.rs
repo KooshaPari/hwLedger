@@ -31,7 +31,10 @@ struct Cli {
     output: Option<PathBuf>,
     #[arg(long)]
     scene_spec: Option<PathBuf>,
-    #[arg(long, default_value = "silent")]
+    /// Voiceover backend — `auto` (default) uses Piper when available and
+    /// silently falls back to no audio if the binary or voice model is
+    /// missing. Explicit values: `piper`, `silent`.
+    #[arg(long, default_value = "auto")]
     voiceover: String,
 }
 
@@ -170,7 +173,7 @@ fn annotate_only(manifest: &Path, keyframes: &Path, remotion_root: &Path) -> any
         remotion_root: remotion_abs,
         output_mp4: PathBuf::new(),
         scene_spec: None,
-        voiceover: "silent".to_string(),
+        voiceover: "auto".to_string(),
     };
     let rich_path = build_rich_manifest(&plan)?;
     run_annotate(&plan, &rich_path)?;

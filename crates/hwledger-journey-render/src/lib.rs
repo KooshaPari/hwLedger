@@ -190,9 +190,34 @@ pub fn build_rich_manifest(plan: &RenderPlan) -> Result<PathBuf, RenderError> {
             rich.scenes = Some(scenes);
         }
     }
-    let audio =
-        if plan.voiceover == "piper" { Some(synthesise_voiceover_piper(plan)?) } else { None };
-    rich.voiceover = Some(VoiceoverSpec { backend: plan.voiceover.clone(), lines: None, audio });
+    // Voiceover backend:
+    //   `silent` -> no audio, backend="silent"
+    //   `piper`  -> hard-require Piper; error if missing
+    //   `auto`   -> try Piper; log + fall back to silent on any error
+    let (effective_backend, audio) = match plan.voiceover.as_str() {
+        "silent" => ("silent".to_string(), None),
+        "piper" => ("piper".to_string(), Some(synthesise_voiceover_piper(plan)?)),
+        "auto" | "" => match synthesise_voiceover_piper(plan) {
+            Ok(path) => ("piper".to_string(), Some(path)),
+            Err(e) => {
+                eprintln!(
+                    "[journey-render] piper unavailable for {} ({e}); continuing silent",
+                    plan.journey_id
+                );
+                ("silent".to_string(), None)
+            }
+        },
+        other => {
+            return Err(RenderError::BadManifest(format!(
+                "unknown voiceover backend `{other}`: expected auto|piper|silent"
+            )));
+        }
+    };
+    rich.voiceover = Some(VoiceoverSpec {
+        backend: effective_backend,
+        lines: None,
+        audio,
+    });
     rich.recording_rich =
         Some(format!("recordings/{}/{}.rich.mp4", plan.journey_id, plan.journey_id));
 
