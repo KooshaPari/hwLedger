@@ -9,6 +9,10 @@ public class Journey {
     public let id: String
     private var steps: [(slug: String, intent: String, closure: () async throws -> Void)] = []
     private var screenshots: [String] = []
+    /// Parallel to `screenshots`: the structural-snapshot sibling file (if
+    /// captured). `nil` placeholder for steps that did not produce one.
+    /// Traces to: Tier 0 structural-capture (macOS family).
+    private var structuralPaths: [String?] = []
     private var startTime: Date = Date()
     private var finishTime: Date?
     private var passed: Bool = false
@@ -18,6 +22,11 @@ public class Journey {
     private var screenRecorder: ScreenCaptureRecorder?
     private var recordingPath: URL?
     private var recordingDenied: Bool = false
+    /// Optional accessibility source for structural-capture. When set, every
+    /// `screenshot(...)` call also writes a `.structural.json` sibling next
+    /// to the PNG via `AccessibilitySnapshot.writeSibling`. When nil, the
+    /// structural hook is a no-op (journey runs in screenshot-only mode).
+    public var accessibilityProvider: (() -> (any AccessibilityNodeSource)?)?
 
     /// Initialize a journey with an ID and app driver.
     /// - Parameters:
@@ -66,7 +75,9 @@ public class Journey {
         steps.append((slug: slug, intent: intent, closure: closure))
     }
 
-    /// Capture a screenshot with an intent label.
+    /// Capture a screenshot with an intent label. When
+    /// `accessibilityProvider` is set, also emits a `<stem>.structural.json`
+    /// sibling capturing the accessibility tree at this moment.
     func screenshot(intent: String = "") async throws {
         let index = screenshots.count
         let filename = String(format: "%02d-%@.png", index + 1, formatSlug(intent))
@@ -75,6 +86,41 @@ public class Journey {
         let pngData = try appDriver.screenshot()
         try pngData.write(to: filepath)
         screenshots.append(filename)
+
+        // Tier 0 structural-capture hook. Best-effort: any failure is logged
+        // but does not abort the journey (screenshot PNG is the primary
+        // capture; structural JSON is supplementary).
+        var structuralFilename: String? = nil
+        if let provider = accessibilityProvider, let source = provider() {
+            do {
+                let siblingURL = try AccessibilitySnapshot.writeSibling(
+                    keyframePath: filepath,
+                    source: source
+                )
+                structuralFilename = siblingURL.lastPathComponent
+            } catch {
+                print("Journey: structural-capture failed for \(filename): \(error)")
+            }
+        }
+        structuralPaths.append(structuralFilename)
+    }
+
+    /// Post-step hook: explicitly request a structural snapshot tied to the
+    /// most recent screenshot. Useful when the app state settles after the
+    /// PNG capture (e.g. animation completes). Idempotent — overwrites the
+    /// sibling file if called more than once.
+    public func snapshotAccessibility(after index: Int, source: any AccessibilityNodeSource) throws {
+        guard index >= 0, index < screenshots.count else { return }
+        let filepath = journeyDirectory.appendingPathComponent(screenshots[index])
+        let sibling = try AccessibilitySnapshot.writeSibling(
+            keyframePath: filepath,
+            source: source
+        )
+        // Pad structuralPaths if needed (defensive for mid-run reindex).
+        while structuralPaths.count <= index {
+            structuralPaths.append(nil)
+        }
+        structuralPaths[index] = sibling.lastPathComponent
     }
 
     /// Add an assertion to the journey. Throws if assertion fails.
@@ -120,7 +166,8 @@ public class Journey {
                     index: index,
                     slug: step.slug,
                     intent: step.intent,
-                    screenshot_path: screenshots.indices.contains(index) ? screenshots[index] : nil
+                    screenshot_path: screenshots.indices.contains(index) ? screenshots[index] : nil,
+                    structural_path: structuralPaths.indices.contains(index) ? structuralPaths[index] : nil
                 )
             },
             started_at: ISO8601DateFormatter().string(from: startTime),
@@ -166,6 +213,10 @@ struct JourneyStep: Codable {
     let slug: String
     let intent: String
     let screenshot_path: String?
+    /// Tier 0 structural-capture: sibling JSON path next to `screenshot_path`.
+    /// Present when the accessibility walker ran; nil otherwise. Downstream
+    /// consumers: viewer's "Structural" toolbar pane + traceability gate.
+    let structural_path: String?
 }
 
 enum JourneyError: LocalizedError {

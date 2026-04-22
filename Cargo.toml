@@ -31,6 +31,7 @@ members = [
     "tools/streamlit-recorder",
     "tools/shot-linter",
     "tools/vlm-judge",
+    "tools/cli-ansi-parse",
     "apps/windows/hwledger-tauri/src-tauri",
 ]
 exclude = [

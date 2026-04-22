@@ -11,6 +11,7 @@
 import { Page, TestInfo } from '@playwright/test';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { captureStructural } from './aria-snapshot';
 
 export interface CursorSample {
   /** Frame index (derived from screenshot order; 0-based). */
@@ -30,6 +31,8 @@ export interface JourneyManifestStep {
   slug: string;
   intent: string;
   screenshot_path: string;
+  /** Tier 0 structural-capture sibling (ARIA + HTML + URL + title). */
+  structural_path?: string;
 }
 
 export interface JourneyManifest {
@@ -145,11 +148,25 @@ export class JourneyRecorder {
         click: recent.click,
       });
     }
+    // Tier 0 structural-capture: write ARIA tree + raw HTML + url/title
+    // sibling next to the PNG. Failure is logged but not fatal — the PNG
+    // remains the primary capture (Streamlit's highly-dynamic DOM can trip
+    // accessibility-tree extraction for certain custom components).
+    let structuralName: string | undefined;
+    try {
+      const baseNoExt = path.join(this.outDir, frameName.replace(/\.png$/, ''));
+      const written = await captureStructural(page, baseNoExt);
+      structuralName = path.basename(written);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn(`structural-capture failed for ${frameName}: ${String(err)}`);
+    }
     this.steps.push({
       index: this.stepIndex - 1,
       slug: step.slug,
       intent: step.intent,
       screenshot_path: frameName,
+      structural_path: structuralName,
     });
   }
 
