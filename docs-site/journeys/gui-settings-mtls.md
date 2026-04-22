@@ -8,6 +8,20 @@ This page documents the **settings-gui-mtls** journey, which exercises the mTLS 
 **Status:** Implemented (placeholder artefacts — real recording pending on user Mac)
 **Last Updated:** 2026-04-19
 
+## Keyframe walkthrough
+
+<Shot src="/gui-journeys/settings-gui-mtls/keyframes/frame_002.png"
+      caption="Settings screen visible — System section in view"
+      size="small" align="right" />
+
+<Shot src="/gui-journeys/settings-gui-mtls/keyframes/frame_004.png"
+      caption="Cursor clicks 'Generate Admin Cert'"
+      size="small" align="left" />
+
+<Shot src="/gui-journeys/settings-gui-mtls/keyframes/frame_005.png"
+      caption="Cert block populates — PEM text visible"
+      size="small" align="right" />
+
 ## What you'll see
 
 - App launches on Planner; cursor moves down the sidebar to **Settings**.

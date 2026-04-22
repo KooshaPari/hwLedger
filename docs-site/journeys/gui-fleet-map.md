@@ -8,6 +8,20 @@ This page documents the **fleet-gui-map** journey, which exercises the Fleet Map
 **Status:** Implemented (placeholder artefacts — real recording pending on user Mac)
 **Last Updated:** 2026-04-19
 
+## Keyframe walkthrough
+
+<Shot src="/gui-journeys/fleet-gui-map/keyframes/frame_002.png"
+      caption="Fleet map canvas live — grid backdrop awaits agents"
+      size="small" align="right" />
+
+<Shot src="/gui-journeys/fleet-gui-map/keyframes/frame_004.png"
+      caption="Three more agents fade in across the map"
+      size="small" align="left" />
+
+<Shot src="/gui-journeys/fleet-gui-map/keyframes/frame_005.png"
+      caption="Cursor clicks 'kirin-01' — host detail slides in"
+      size="small" align="right" />
+
 ## What you'll see
 
 - App opens on Planner; cursor clicks **Fleet** in the sidebar.

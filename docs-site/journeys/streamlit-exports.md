@@ -14,6 +14,14 @@ Narrative beats:
 
 All three emit from the same `hwledger-ffi` export functions that power the CLI's `hwledger export` subcommand, so the configs are identical regardless of client.
 
+<Shot src="/gui-journeys/export-gui-vllm/keyframes/frame_004.png"
+      caption="GUI counterpart — 'Export' menu slides open"
+      size="small" align="right" />
+
+<Shot src="/gui-journeys/export-gui-vllm/keyframes/frame_005.png"
+      caption="'vLLM flags' modal — same flags Streamlit's vLLM button emits"
+      size="small" align="left" />
+
 <JourneyViewer manifest="/streamlit-journeys/manifests/streamlit-exports/manifest.verified.json" />
 
 ## Reproduce

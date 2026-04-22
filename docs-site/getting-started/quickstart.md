@@ -57,8 +57,8 @@ hwledger plan tests/golden/deepseek-v3.json --seq 32768 --users 2
       size="small" align="left"
       :annotations='[{"bbox":[120,340,220,28],"label":"MLA","color":"#89b4fa","position":"center-bottom"}]' />
 
-<Shot src="/cli-journeys/keyframes/plan-deepseek/frame-004.png"
-      caption="Stacked VRAM bands — weights / KV / activations / runtime"
+<Shot src="/cli-journeys/keyframes/plan-deepseek/frame-003.png"
+      caption="hwledger plan — MLA VRAM breakdown, deepseek config detected"
       size="small" align="right" />
 
 ## 3. Probe local GPUs

@@ -8,6 +8,20 @@ This page documents the **probe-gui-watch** journey, which exercises the live te
 **Status:** Implemented (placeholder artefacts — real recording pending on user Mac)
 **Last Updated:** 2026-04-19
 
+## Keyframe walkthrough
+
+<Shot src="/gui-journeys/probe-gui-watch/keyframes/frame_001.png"
+      caption="App window appears — sidebar highlights Probe"
+      size="small" align="right" />
+
+<Shot src="/gui-journeys/probe-gui-watch/keyframes/frame_003.png"
+      caption="Live stream fills device rows as telemetry arrives"
+      size="small" align="left" />
+
+<Shot src="/gui-journeys/probe-gui-watch/keyframes/frame_005.png"
+      caption="Row expands — per-process breakdown panel slides down"
+      size="small" align="right" />
+
 ## What you'll see
 
 - App boots on Planner; cursor moves to the sidebar and selects **Probe**.

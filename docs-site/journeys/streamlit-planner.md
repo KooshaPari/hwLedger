@@ -2,6 +2,7 @@
 
 The Streamlit planner is the browser-native cousin of `hwledger plan`: a golden model fixture on one side, a stacked VRAM chart on the other, and live sliders for sequence length, concurrent users, and quantisation wired into the same FFI the CLI uses.
 
+<!-- SHOT-MISMATCH: caption="CLI VRAM breakdown — same math as the Streamlit chart" expected=[cli,vram,breakdown,same,math,streamlit,chart] matched=[] -->
 <Shot src="/cli-journeys/keyframes/plan-deepseek/frame-003.png"
       caption="CLI VRAM breakdown — same math as the Streamlit chart"
       size="small" align="right" />
@@ -21,6 +22,18 @@ Narrative beats:
 3. Slider bumped; the stacked VRAM chart re-renders with a visibly taller KV band.
 4. Scrolling down reveals the per-layer KV contribution heatmap.
 5. Further scroll reveals the export row — vLLM / llama.cpp / MLX buttons.
+
+<Shot src="/streamlit-journeys/recordings/streamlit-planner/frame-001.png"
+      caption="Memory Planner landing — Planner tab active, sidebar open"
+      size="small" align="right" />
+
+<Shot src="/streamlit-journeys/recordings/streamlit-planner/frame-003.png"
+      caption="Fixture loaded — deepseek-v3.json ready"
+      size="small" align="left" />
+
+<Shot src="/streamlit-journeys/recordings/streamlit-planner/frame-004.png"
+      caption="Sequence Length slider at 128k — Memory Planner recomputes"
+      size="small" align="right" />
 
 <JourneyViewer manifest="/streamlit-journeys/manifests/streamlit-planner/manifest.verified.json" />
 

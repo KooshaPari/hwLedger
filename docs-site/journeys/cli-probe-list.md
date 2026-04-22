@@ -12,10 +12,12 @@ Running `hwledger probe` displays:
 
 Watch as the probe detects your hardware in real-time. On multi-GPU boxes, you'll see each device listed separately.
 
+<!-- SHOT-MISMATCH: caption="Command entered" expected=[command,entered] matched=[] -->
 <Shot src="/cli-journeys/keyframes/probe-list/frame-001.png"
       caption="Command entered"
       size="small" align="left" />
 
+<!-- SHOT-MISMATCH: caption="Device 0 row printed" expected=[device,row] matched=[] -->
 <Shot src="/cli-journeys/keyframes/probe-list/frame-002.png"
       caption="Device 0 row printed"
       size="small" align="right"

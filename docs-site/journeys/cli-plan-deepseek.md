@@ -4,10 +4,12 @@ Real-world planning scenario: the massive DeepSeek-V3 (671B mixture-of-experts) 
 
 ## What you'll see
 
+<!-- SHOT-MISMATCH: caption="Command invocation" expected=[command,invocation] matched=[] -->
 <Shot src="/cli-journeys/keyframes/plan-deepseek/frame-001.png"
       caption="Command invocation"
       size="small" align="right" />
 
+<!-- SHOT-MISMATCH: caption="Architecture auto-detected" expected=[architecture,auto-detected] matched=[] -->
 <Shot src="/cli-journeys/keyframes/plan-deepseek/frame-002.png"
       caption="Architecture auto-detected"
       size="small" align="left"

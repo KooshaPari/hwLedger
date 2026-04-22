@@ -9,6 +9,7 @@ Running ingest with a missing file:
 hwledger ingest gguf:///tmp/does-not-exist.gguf
 ```
 
+<!-- SHOT-MISMATCH: caption="Error message + hint" expected=[error,message,hint] matched=[] -->
 <Shot src="/cli-journeys/keyframes/ingest-error/frame-001.png"
       caption="Error message + hint"
       size="small" align="right"

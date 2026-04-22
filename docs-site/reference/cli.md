@@ -27,8 +27,8 @@ Memory planner: estimates VRAM and selects optimal tensor parallelism, quantizat
       caption="plan run start: model arg accepted, config fetched"
       size="small" align="left" />
 
-<Shot src="/cli-journeys/keyframes/plan-deepseek/frame-005.png"
-      caption="Per-layer KV breakdown — MLA latent dim drives the total"
+<Shot src="/cli-journeys/keyframes/plan-mla-deepseek/frame-002.png"
+      caption="Per-layer KV cache column — context input and MLA latent dim"
       size="small" align="right"
       :annotations='[{"bbox":[160,280,280,32],"label":"latent_dim=512","color":"#89b4fa","position":"center-bottom"}]' />
 

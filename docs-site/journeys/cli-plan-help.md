@@ -15,6 +15,7 @@ When you run `hwledger plan --help`, you get:
       size="small" align="right"
       :annotations='[{"bbox":[40,60,520,20],"label":"Usage"}]' />
 
+<!-- SHOT-MISMATCH: caption="—attention-kind flag" expected=[--attention-kind,flag] matched=[] -->
 <Shot src="/cli-journeys/keyframes/plan-help/frame-005.png"
       caption="--attention-kind flag"
       size="small" align="left"

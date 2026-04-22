@@ -10,6 +10,18 @@ The What-If page compares a baseline memory plan to a candidate plan under a set
 4. Side-by-side Plotly grouped bars render the per-band comparison.
 5. Verdict banner calls the delta ("Transformative", "Meaningful", "Marginal", "Regression") and a citations table lists arXiv papers for every applied technique.
 
+<Shot src="/streamlit-journeys/recordings/streamlit-what-if/frame-001.png"
+      caption="What-If page lands — Memory Prediction, compare baseline vs plan"
+      size="small" align="right" />
+
+<Shot src="/streamlit-journeys/recordings/streamlit-what-if/frame-004.png"
+      caption="Techniques selected — Baseline vs Result ledger visible"
+      size="small" align="left" />
+
+<Shot src="/streamlit-journeys/recordings/streamlit-what-if/frame-005.png"
+      caption="Verdict banner with delta and per-band breakdown"
+      size="small" align="right" />
+
 <JourneyViewer manifest="/streamlit-journeys/manifests/streamlit-what-if/manifest.verified.json" />
 
 ## FFI

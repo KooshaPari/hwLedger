@@ -13,8 +13,7 @@ description: Common issues and fixes
 
 <RecordingEmbed tape="probe-list" caption="probe list: healthy baseline to compare your output against" />
 
-<!-- SHOT-MISMATCH: caption="Probe start: backend auto-detect banner" expected=[probe,start,backend,auto-detect,banner] matched=[] -->
-<Shot src="/cli-journeys/keyframes/probe-list/frame-001.png"
+<Shot src="/cli-journeys/keyframes/probe-list/frame-003.png"
       caption="Probe start: backend auto-detect banner"
       size="small" align="left" />
 
@@ -59,8 +58,7 @@ brew install metal-tools
       caption="Exit 2 with actionable remediation line below"
       size="small" align="left" />
 
-<!-- SHOT-MISMATCH: caption="stderr breadcrumb: config parse → resolver → fail" expected=[stderr,breadcrumb,config,parse,resolver,fail] matched=[] -->
-<Shot src="/cli-journeys/keyframes/ingest-error/frame-005.png"
+<Shot src="/cli-journeys/keyframes/ingest-error/frame-011.png"
       caption="stderr breadcrumb: config parse → resolver → fail"
       size="small" align="right" />
 

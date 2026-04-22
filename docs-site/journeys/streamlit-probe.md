@@ -12,6 +12,14 @@ Narrative beats:
 
 If the FFI library hasn't been built (`cargo build --release -p hwledger-ffi`), the page fails loudly with an actionable error per NFR-007 — no silent fallback.
 
+<Shot src="/cli-journeys/keyframes/probe-list/frame-003.png"
+      caption="Same probe output on the CLI — CUDA device 0 row with MiB total"
+      size="small" align="right" />
+
+<Shot src="/cli-journeys/keyframes/probe-watch/frame-003.png"
+      caption="probe watch tick — memory row updates the Streamlit card also consumes"
+      size="small" align="left" />
+
 <JourneyViewer manifest="/streamlit-journeys/manifests/streamlit-probe/manifest.verified.json" />
 
 ## Reproduce

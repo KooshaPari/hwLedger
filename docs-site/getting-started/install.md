@@ -15,8 +15,9 @@ Get hwLedger running on your system.
 
 <RecordingEmbed tape="install-cargo" caption="cargo install: the same path the GitHub Actions matrix uses, run locally" />
 
-<Shot src="/cli-journeys/keyframes/install-cargo/frame-005.png"
-      caption="Final link step before the binary lands on $PATH"
+<!-- SHOT-MISMATCH: caption="Binary installed and on PATH" expected=[binary,installed,path] matched=[] -->
+<Shot src="/cli-journeys/keyframes/install-cargo/frame-004.png"
+      caption="hwledger --version — binary on PATH after install"
       size="small" align="right" />
 
 ### 1. Clone the repository
@@ -35,7 +36,6 @@ cd hwLedger
       caption="Compile progress"
       size="small" align="left" />
 
-<!-- SHOT-MISMATCH: caption="Binary installed and on PATH" expected=[binary,installed,path] matched=[] -->
 <Shot src="/cli-journeys/keyframes/install-cargo/frame-004.png"
       caption="Binary installed and on PATH"
       size="small" align="right" />

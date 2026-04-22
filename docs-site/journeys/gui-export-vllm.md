@@ -8,6 +8,20 @@ This page documents the **export-gui-vllm** journey, which exercises the Planner
 **Status:** Implemented (placeholder artefacts — real recording pending on user Mac)
 **Last Updated:** 2026-04-19
 
+## Keyframe walkthrough
+
+<Shot src="/gui-journeys/export-gui-vllm/keyframes/frame_002.png"
+      caption="Clicking 'Load fixture...' — dropdown opens"
+      size="small" align="right" />
+
+<Shot src="/gui-journeys/export-gui-vllm/keyframes/frame_004.png"
+      caption="User clicks 'Export' — menu appears"
+      size="small" align="left" />
+
+<Shot src="/gui-journeys/export-gui-vllm/keyframes/frame_005.png"
+      caption="Cursor hits 'vLLM flags' — menu opens modal"
+      size="small" align="right" />
+
 ## What you'll see
 
 - Planner opens at defaults (Llama-3.1-8B, 4096 tokens).
