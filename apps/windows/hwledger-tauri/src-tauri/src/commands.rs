@@ -51,8 +51,7 @@ pub fn plan(input: PlannerInput) -> Result<PlannerResult> {
         .ceil() as u64;
 
     let runtime_overhead_bytes: u64 = 256 * 1024 * 1024;
-    let total_bytes =
-        weights_bytes + kv_bytes + prefill_activation_bytes + runtime_overhead_bytes;
+    let total_bytes = weights_bytes + kv_bytes + prefill_activation_bytes + runtime_overhead_bytes;
     let effective_batch = input.batch_size.min(input.concurrent_users);
 
     Ok(PlannerResult {
@@ -168,10 +167,8 @@ fn default_limit() -> u32 {
 
 #[tauri::command]
 pub async fn hf_search(query: HfSearchInput) -> Result<serde_json::Value> {
-    let sort: HfSortKey = query
-        .sort
-        .parse()
-        .map_err(|e: String| CommandError::InvalidInput(format!("sort: {e}")))?;
+    let sort: HfSortKey =
+        query.sort.parse().map_err(|e: String| CommandError::InvalidInput(format!("sort: {e}")))?;
     let q = HfSearchQuery {
         text: query.text,
         tags: query.tags,
@@ -183,10 +180,8 @@ pub async fn hf_search(query: HfSearchInput) -> Result<serde_json::Value> {
         pipeline_tag: query.pipeline_tag,
     };
     let client = HfClient::new(query.token);
-    let results = client
-        .search_models(&q)
-        .await
-        .map_err(|e| CommandError::HfSearch(e.to_string()))?;
+    let results =
+        client.search_models(&q).await.map_err(|e| CommandError::HfSearch(e.to_string()))?;
     serde_json::to_value(results).map_err(|e| CommandError::Internal(e.to_string()))
 }
 
