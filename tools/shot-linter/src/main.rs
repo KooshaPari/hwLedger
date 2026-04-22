@@ -11,10 +11,10 @@
 //! registry is non-fatal.
 
 use anyhow::{Context, Result};
-use clap::Parser;
+use clap::{Parser, Subcommand};
 use owo_colors::OwoColorize;
 use regex::Regex;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -66,6 +66,150 @@ struct Args {
     /// `<!-- SHOT-MISMATCH ... -->` comment after the <Shot> tag.
     #[arg(long)]
     flag_mismatches: bool,
+
+    /// Also walk every `manifest.verified.json` under `apps/**/manifests/`
+    /// and `docs-site/public/**/manifests/` and fail when any
+    /// `steps[i].annotations[j].label` is empty or missing. Strict under
+    /// `HWLEDGER_TAPE_GATE=strict` or when `--strict` is passed, otherwise
+    /// reports as a warning.
+    #[arg(long)]
+    check_empty_labels: bool,
+
+    /// Subcommands. When supplied, the top-level shot-audit pipeline is
+    /// skipped and only the subcommand runs.
+    #[command(subcommand)]
+    cmd: Option<Cmd>,
+}
+
+#[derive(Subcommand, Debug)]
+enum Cmd {
+    /// Walk every `manifest.verified.json` under `apps/**/manifests/` and
+    /// `docs-site/public/**/manifests/` and assert that every
+    /// `steps[i].annotations[j].label` is non-empty.
+    AnnotationsLabels {
+        /// Repo root; defaults to the current working directory.
+        #[arg(long, default_value = ".")]
+        repo: PathBuf,
+        /// Treat empty/missing labels as hard failures even when
+        /// `HWLEDGER_TAPE_GATE` is not `strict`.
+        #[arg(long)]
+        strict: bool,
+    },
+}
+
+#[derive(Debug, Deserialize)]
+struct ManifestFile {
+    #[serde(default)]
+    steps: Vec<ManifestStep>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ManifestStep {
+    #[serde(default)]
+    annotations: Vec<ManifestAnnotation>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ManifestAnnotation {
+    #[serde(default)]
+    label: Option<String>,
+}
+
+#[derive(Debug)]
+struct LabelViolation {
+    manifest: PathBuf,
+    step_index: usize,
+    annotation_index: usize,
+    reason: &'static str,
+}
+
+/// Walk `apps/**/manifests/**/manifest.verified.json` and
+/// `docs-site/public/**/manifests/**/manifest.verified.json`, and collect
+/// every annotation with a missing-or-empty `label`.
+fn scan_empty_labels(repo: &Path) -> Result<Vec<LabelViolation>> {
+    let mut roots: Vec<PathBuf> = Vec::new();
+    let apps = repo.join("apps");
+    let docs_site = repo.join("docs-site").join("public");
+    if apps.exists() {
+        roots.push(apps);
+    }
+    if docs_site.exists() {
+        roots.push(docs_site);
+    }
+
+    let mut violations = Vec::new();
+    for root in &roots {
+        for e in WalkDir::new(root).into_iter().filter_map(Result::ok) {
+            let p = e.path();
+            if !p.is_file() {
+                continue;
+            }
+            if p.file_name().and_then(|n| n.to_str()) != Some("manifest.verified.json") {
+                continue;
+            }
+            let path_str = p.to_string_lossy();
+            if !path_str.contains("/manifests/") {
+                continue;
+            }
+            let text = match std::fs::read_to_string(p) {
+                Ok(t) => t,
+                Err(_) => continue,
+            };
+            let manifest: ManifestFile = match serde_json::from_str(&text) {
+                Ok(m) => m,
+                Err(_) => continue,
+            };
+            for (si, step) in manifest.steps.iter().enumerate() {
+                for (ai, ann) in step.annotations.iter().enumerate() {
+                    match &ann.label {
+                        None => violations.push(LabelViolation {
+                            manifest: p.to_path_buf(),
+                            step_index: si,
+                            annotation_index: ai,
+                            reason: "missing",
+                        }),
+                        Some(s) if s.trim().is_empty() => violations.push(LabelViolation {
+                            manifest: p.to_path_buf(),
+                            step_index: si,
+                            annotation_index: ai,
+                            reason: "empty",
+                        }),
+                        _ => {}
+                    }
+                }
+            }
+        }
+    }
+    Ok(violations)
+}
+
+fn report_label_violations(violations: &[LabelViolation], strict: bool) -> bool {
+    if violations.is_empty() {
+        println!(
+            "{} annotations-labels: all annotations have non-empty labels",
+            "shot-linter:".bold()
+        );
+        return true;
+    }
+    let header = format!(
+        "shot-linter: annotations-labels: {} violation(s)",
+        violations.len()
+    );
+    if strict {
+        eprintln!("{}", header.red().bold());
+    } else {
+        eprintln!("{}", header.yellow().bold());
+    }
+    for v in violations {
+        eprintln!(
+            "  {} steps[{}].annotations[{}] label={}",
+            v.manifest.display(),
+            v.step_index,
+            v.annotation_index,
+            v.reason,
+        );
+    }
+    !strict
 }
 
 #[derive(Debug, Serialize)]
@@ -95,6 +239,35 @@ enum Status {
 
 fn main() -> Result<()> {
     let args = Args::parse();
+
+    // Subcommand path: run only the requested check and exit.
+    if let Some(Cmd::AnnotationsLabels { repo, strict }) = &args.cmd {
+        let gate_strict = *strict
+            || std::env::var("HWLEDGER_TAPE_GATE")
+                .map(|v| v == "strict")
+                .unwrap_or(false);
+        let violations = scan_empty_labels(repo)?;
+        let ok = report_label_violations(&violations, gate_strict);
+        if !ok {
+            std::process::exit(2);
+        }
+        return Ok(());
+    }
+
+    // Default pipeline always runs the annotations-labels check so every
+    // push catches empty labels. Hard-fails in `HWLEDGER_TAPE_GATE=strict`
+    // or when `--strict` / `--check-empty-labels` is passed; otherwise
+    // warns.
+    let gate_strict = args.strict
+        || args.check_empty_labels
+        || std::env::var("HWLEDGER_TAPE_GATE")
+            .map(|v| v == "strict")
+            .unwrap_or(false);
+    let label_failure = {
+        let violations = scan_empty_labels(Path::new("."))?;
+        let ok = report_label_violations(&violations, gate_strict);
+        !ok
+    };
 
     let md_files: Vec<PathBuf> = WalkDir::new(&args.docs_site)
         .into_iter()
@@ -287,6 +460,9 @@ fn main() -> Result<()> {
     if args.strict && (missing > 0 || mism > 0) {
         std::process::exit(2);
     }
+    if label_failure {
+        std::process::exit(2);
+    }
     Ok(())
 }
 
@@ -462,6 +638,62 @@ mod tests {
         assert!(toks.contains(&"binary".to_string()));
         // stopwords removed
         assert!(!toks.iter().any(|t| t == "the"));
+    }
+
+    #[test]
+    fn scan_empty_labels_passes_when_every_annotation_has_label() {
+        let tmp = std::env::temp_dir().join(format!(
+            "hwledger-shot-linter-pass-{}",
+            std::process::id()
+        ));
+        let manifests = tmp.join("apps/cli-journeys/manifests/alpha");
+        std::fs::create_dir_all(&manifests).unwrap();
+        let body = serde_json::json!({
+            "steps": [
+                {"index": 0, "annotations": [{"label": "launch badge", "kind": "highlight"}]},
+                {"index": 1, "annotations": [{"label": "status row"}, {"label": "probe chip"}]}
+            ]
+        });
+        std::fs::write(
+            manifests.join("manifest.verified.json"),
+            serde_json::to_vec_pretty(&body).unwrap(),
+        )
+        .unwrap();
+
+        let violations = scan_empty_labels(&tmp).unwrap();
+        std::fs::remove_dir_all(&tmp).ok();
+        assert!(violations.is_empty(), "expected no violations, got {:?}", violations);
+    }
+
+    #[test]
+    fn scan_empty_labels_fails_on_empty_or_missing_label() {
+        let tmp = std::env::temp_dir().join(format!(
+            "hwledger-shot-linter-fail-{}",
+            std::process::id()
+        ));
+        let manifests = tmp.join("docs-site/public/gui-journeys/beta/manifests/run");
+        std::fs::create_dir_all(&manifests).unwrap();
+        let body = serde_json::json!({
+            "steps": [
+                {"index": 0, "annotations": [
+                    {"label": "ok"},
+                    {"label": ""},
+                    {"kind": "highlight"}
+                ]}
+            ]
+        });
+        std::fs::write(
+            manifests.join("manifest.verified.json"),
+            serde_json::to_vec_pretty(&body).unwrap(),
+        )
+        .unwrap();
+
+        let violations = scan_empty_labels(&tmp).unwrap();
+        std::fs::remove_dir_all(&tmp).ok();
+        assert_eq!(violations.len(), 2, "got: {:?}", violations);
+        let reasons: Vec<_> = violations.iter().map(|v| v.reason).collect();
+        assert!(reasons.contains(&"empty"));
+        assert!(reasons.contains(&"missing"));
     }
 
     #[test]
