@@ -25,6 +25,7 @@ members = [
     "tools/dev-harness",
     "tools/bundle-app",
     "tools/run-journeys",
+    "tools/cli-journey-record",
     "tools/streamlit-recorder",
     "apps/windows/hwledger-tauri/src-tauri",
 ]
