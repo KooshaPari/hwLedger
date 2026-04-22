@@ -52,6 +52,16 @@ pub struct RenderPlan {
     pub scene_spec: Option<PathBuf>,
     /// Voiceover backend ("silent" or "piper").
     pub voiceover: String,
+    /// Which Remotion composition to render. Defaults to `JourneyRich`.
+    /// Batch mode auto-switches to `JourneySlideshow` for GUI journeys whose
+    /// raw MP4 is missing or < 3 s (i.e. TCC-blocked XCUITest capture) — the
+    /// slideshow path drives the render off the per-step keyframe PNGs.
+    #[serde(default = "default_composition_id")]
+    pub composition_id: String,
+}
+
+fn default_composition_id() -> String {
+    "JourneyRich".to_string()
 }
 
 impl RenderPlan {
@@ -70,6 +80,7 @@ impl RenderPlan {
             output_mp4: output_mp4.into(),
             scene_spec: None,
             voiceover: "silent".to_string(),
+            composition_id: default_composition_id(),
         }
     }
 }
@@ -190,9 +201,30 @@ pub fn build_rich_manifest(plan: &RenderPlan) -> Result<PathBuf, RenderError> {
             rich.scenes = Some(scenes);
         }
     }
-    let audio =
-        if plan.voiceover == "piper" { Some(synthesise_voiceover_piper(plan)?) } else { None };
-    rich.voiceover = Some(VoiceoverSpec { backend: plan.voiceover.clone(), lines: None, audio });
+    // Voiceover backend:
+    //   `silent` -> no audio, backend="silent"
+    //   `piper`  -> hard-require Piper; error if missing
+    //   `auto`   -> try Piper; log + fall back to silent on any error
+    let (effective_backend, audio) = match plan.voiceover.as_str() {
+        "silent" => ("silent".to_string(), None),
+        "piper" => ("piper".to_string(), Some(synthesise_voiceover_piper(plan)?)),
+        "auto" | "" => match synthesise_voiceover_piper(plan) {
+            Ok(path) => ("piper".to_string(), Some(path)),
+            Err(e) => {
+                eprintln!(
+                    "[journey-render] piper unavailable for {} ({e}); continuing silent",
+                    plan.journey_id
+                );
+                ("silent".to_string(), None)
+            }
+        },
+        other => {
+            return Err(RenderError::BadManifest(format!(
+                "unknown voiceover backend `{other}`: expected auto|piper|silent"
+            )));
+        }
+    };
+    rich.voiceover = Some(VoiceoverSpec { backend: effective_backend, lines: None, audio });
     rich.recording_rich =
         Some(format!("recordings/{}/{}.rich.mp4", plan.journey_id, plan.journey_id));
 
@@ -237,9 +269,11 @@ pub fn render(plan: &RenderPlan, rich_manifest_path: &Path) -> Result<(), Render
         std::fs::create_dir_all(parent)?;
     }
 
+    let composition =
+        if plan.composition_id.is_empty() { "JourneyRich" } else { plan.composition_id.as_str() };
     let out = Command::new("bun")
         .current_dir(&plan.remotion_root)
-        .args(["x", "remotion", "render", "src/index.tsx", "JourneyRich", "--props"])
+        .args(["x", "remotion", "render", "src/index.tsx", composition, "--props"])
         .arg(&props_str)
         .arg("--output")
         .arg(&plan.output_mp4)

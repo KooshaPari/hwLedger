@@ -35,9 +35,10 @@
   "pass": true,
   "passed": true,
   "recording": "recording.mp4",
+  "recording_audio_voiceover": "audio/settings-gui-mtls.voiceover.wav",
   "recording_gif": "preview.gif",
   "recording_rich": "settings-gui-mtls.rich.mp4",
-  "recording_rich_manifest_sha256": "ed4240ac39c1ecbe8ecdc00ec9f72bd94ec2918f96b035a5f63eaa4b89ac62a8",
+  "recording_rich_manifest_sha256": "c2b81c34e2a4b3b4be4ada6a51a8746ab1cc3b4e1031102d7de345c4b422312e",
   "recording_rich_sha256": "e81fc7f3a510f66809ec90e481409117d68318d30c9390d4490b55ec94241797",
   "steps": [
     {
@@ -92,5 +93,6 @@
     "note": "Placeholder artefacts - real recording pending on user Mac (Accessibility + Screen Recording permission required)",
     "overall_score": 0.0,
     "timestamp": "2026-04-20T07:50:52Z"
-  }
+  },
+  "voiceover_sha256": "1f8f4e39e212234a8021516f6dd3985fb991a3b9ff897306d56e6c21fdc61f27"
 }

@@ -31,9 +31,10 @@
   "pass": true,
   "passed": true,
   "recording": "recording.mp4",
+  "recording_audio_voiceover": "audio/fleet-gui-map.voiceover.wav",
   "recording_gif": "preview.gif",
   "recording_rich": "fleet-gui-map.rich.mp4",
-  "recording_rich_manifest_sha256": "8aef03c9af4e88d0a2b4e04e079396c11cae807e482ff7e859e4e05ad6ad42ac",
+  "recording_rich_manifest_sha256": "1d42719babbc702950098cb34d9cc1b2e9f59f79058635d789e41699448daea1",
   "recording_rich_sha256": "cbf565d4e2aa8ebf8e37a0e7bb863ee2ff588da1953abb8ea9e8c01ab346e821",
   "steps": [
     {
@@ -82,5 +83,6 @@
     "note": "Placeholder artefacts - real recording pending on user Mac (Accessibility + Screen Recording permission required)",
     "overall_score": 0.0,
     "timestamp": "2026-04-20T07:50:50Z"
-  }
+  },
+  "voiceover_sha256": "fb5c4de78768a969cd52d09dd9d4d40ec7e100f99233aee3e261806613f6d23b"
 }

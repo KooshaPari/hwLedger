@@ -19,7 +19,8 @@ import { TitleCard } from "../components/TitleCard";
 import { CalloutBox } from "../components/CalloutBox";
 import { CaptionBar } from "../components/CaptionBar";
 import { FrameStill } from "../components/FrameStill";
-import type { RichManifest, SceneSpec } from "../types";
+import { CursorOverlay } from "../components/CursorOverlay";
+import type { CalloutPosition, RichManifest, SceneSpec } from "../types";
 
 export interface JourneyRichProps {
   journeyId: string;
@@ -88,6 +89,18 @@ export const JourneyRich: React.FC<JourneyRichProps> = ({
         const hasAnnotated = (manifest.annotated_keyframes || []).includes(annotatedName);
         const src = staticFile(hasAnnotated ? annotatedPath : rawPath);
 
+        // Derive callout position from the first annotation's `position`
+        // hint (if any). Varied placement across scenes avoids the "all
+        // callouts stuck top-right" bug flagged in the dispersal review.
+        const firstAnn = (step.annotations ?? [])[0];
+        const position: CalloutPosition =
+          (firstAnn?.position as CalloutPosition | undefined) ?? "auto";
+
+        // Scene-local cursor track — filter global track to this window.
+        const sceneCursor = (manifest.cursor_track ?? []).filter(
+          (p) => p.frame >= from && p.frame < from + duration,
+        );
+
         return (
           <Sequence key={idx} from={from} durationInFrames={duration}>
             <AbsoluteFill>
@@ -97,7 +110,16 @@ export const JourneyRich: React.FC<JourneyRichProps> = ({
                 subText={spec.calloutSubText}
                 color={spec.calloutColor ?? "#34d399"}
                 startFrame={8}
+                at={position}
+                custom={firstAnn?.custom}
+                bbox={firstAnn?.bbox}
               />
+              {sceneCursor.length > 0 && (
+                <CursorOverlay track={sceneCursor.map((p) => ({
+                  ...p,
+                  frame: p.frame - from,
+                }))} />
+              )}
               <CaptionBar text={step.intent} />
             </AbsoluteFill>
           </Sequence>

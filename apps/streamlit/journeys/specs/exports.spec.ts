@@ -13,6 +13,7 @@ test('streamlit exports — vLLM/llama.cpp/MLX', async ({ page }, testInfo) => {
     journeysRoot(testInfo),
   );
   await recorder.init();
+  await recorder.installCursor(page);
 
   await page.goto('/Planner');
   await waitForStreamlit(page);
@@ -36,6 +37,16 @@ test('streamlit exports — vLLM/llama.cpp/MLX', async ({ page }, testInfo) => {
       await waitForStreamlit(page);
     }
     await recorder.capture(page, { slug, intent });
+    // Click the "Copy" icon button the st.code block renders (if any).
+    const copy = page.locator('button[title="Copy"], button', { hasText: /^Copy$/ }).first();
+    if (await copy.isVisible().catch(() => false)) {
+      await copy.click();
+      await page.waitForTimeout(300);
+      await recorder.capture(page, {
+        slug: `${slug}-copied`,
+        intent: `${slug} flag string copied to clipboard — a small toast confirms the action.`,
+      });
+    }
   };
 
   await clickIfPresent(

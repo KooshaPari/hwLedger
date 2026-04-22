@@ -84,8 +84,13 @@ async function main(): Promise<void> {
   for (const step of manifest.steps ?? []) {
     const ann = step.annotations ?? [];
     if (!ann.length) continue;
-    const src = path.join(keyframesDir, step.screenshot_path);
-    const outName = step.screenshot_path.replace(/\.png$/i, ".annotated.png");
+    // GUI manifests emit `screenshot_path: "keyframes/frame_NNN.png"`
+    // (path is relative to the journey dir, not the staged keyframes dir).
+    // The staged `keyframesDir` already IS the keyframes tree, so prefer the
+    // basename to avoid doubling `keyframes/keyframes/`.
+    const basename = path.basename(step.screenshot_path);
+    const src = path.join(keyframesDir, basename);
+    const outName = basename.replace(/\.png$/i, ".annotated.png");
     const out = path.join(keyframesDir, outName);
     try {
       await annotateOne(src, out, ann);

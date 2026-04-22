@@ -397,6 +397,14 @@ pub fn render_all(
         );
         plan.voiceover = voiceover.to_string();
 
+        // GUI auto-detect: when the raw MP4 is missing / < 3 s (TCC-blocked
+        // XCUITest capture), route through the slideshow composition which
+        // synthesises a multi-step walkthrough from the keyframe PNGs.
+        if resolved.family == Family::Gui && gui_needs_slideshow(&resolved.manifest_path, &resolved)
+        {
+            plan.composition_id = "JourneySlideshow".to_string();
+        }
+
         let t0 = Instant::now();
         match run(&plan) {
             Ok(_) => {
@@ -477,6 +485,53 @@ pub fn render_all(
         anyhow::bail!("{} journey(s) failed", failed.len());
     }
     Ok(())
+}
+
+/// Decide whether a GUI journey should render via the slideshow fallback.
+///
+/// Triggers (any match → slideshow):
+///   - The raw `recording.mp4` sibling is missing.
+///   - `ffprobe` reports a duration < 3.0 s.
+///   - The manifest explicitly sets `"recording_denied": true` (TCC-blocked).
+///
+/// The manifest directory for GUI journeys is
+/// `<root>/gui-journeys/<id>/`, which also holds the raw `recording.mp4`.
+fn gui_needs_slideshow(manifest_path: &Path, _resolved: &Resolved) -> bool {
+    // Honour explicit TCC-denied flag.
+    if let Ok(raw) = std::fs::read(manifest_path) {
+        if let Ok(v) = serde_json::from_slice::<serde_json::Value>(&raw) {
+            if v.get("recording_denied").and_then(|x| x.as_bool()).unwrap_or(false) {
+                return true;
+            }
+        }
+    }
+    let Some(dir) = manifest_path.parent() else { return true };
+    let raw_mp4 = dir.join("recording.mp4");
+    if !raw_mp4.exists() {
+        return true;
+    }
+    !matches!(ffprobe_duration_seconds(&raw_mp4), Ok(d) if d >= 3.0)
+}
+
+fn ffprobe_duration_seconds(mp4: &Path) -> Result<f64, std::io::Error> {
+    let out = std::process::Command::new("ffprobe")
+        .args([
+            "-v",
+            "error",
+            "-show_entries",
+            "format=duration",
+            "-of",
+            "default=noprint_wrappers=1:nokey=1",
+        ])
+        .arg(mp4)
+        .output()?;
+    if !out.status.success() {
+        return Err(std::io::Error::other("ffprobe failed"));
+    }
+    let s = String::from_utf8_lossy(&out.stdout);
+    s.trim()
+        .parse::<f64>()
+        .map_err(|e| std::io::Error::other(format!("parse ffprobe duration: {e}")))
 }
 
 /// Location of the cached silent (video-only) render next to the rich MP4.

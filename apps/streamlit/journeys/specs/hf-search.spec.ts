@@ -19,6 +19,7 @@ test('streamlit hf-search — anon search, quick picks, handoff to planner', asy
     journeysRoot(testInfo),
   );
   await recorder.init();
+  await recorder.installCursor(page);
 
   await page.goto('/HF_Search');
   await waitForStreamlit(page);

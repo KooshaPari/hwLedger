@@ -21,6 +21,7 @@ test('streamlit what-if — technique sweep + citations', async ({ page }, testI
     journeysRoot(testInfo),
   );
   await recorder.init();
+  await recorder.installCursor(page);
 
   await page.goto('/WhatIf');
   await waitForStreamlit(page);
@@ -60,12 +61,38 @@ test('streamlit what-if — technique sweep + citations', async ({ page }, testI
     intent: 'Plotly grouped bar chart shows baseline vs candidate per band (Weights, KV, Prefill, Runtime).',
   });
 
+  // Click Run Prediction if present.
+  const runBtn = page
+    .locator('button', { hasText: /Run Prediction|Predict|Run/i })
+    .first();
+  if (await runBtn.isVisible().catch(() => false)) {
+    await runBtn.click();
+    await waitForStreamlit(page);
+  }
+  await recorder.capture(page, {
+    slug: 'prediction-run',
+    intent: 'Prediction run — the candidate bars re-draw with INT4 + KV-FP8 savings applied.',
+  });
+
   // Scroll further for the verdict + citations table.
   await page.mouse.wheel(0, 600);
   await waitForStreamlit(page);
   await recorder.capture(page, {
     slug: 'verdict-citations',
     intent: 'Verdict banner summarises the delta; citations table lists arXiv papers backing each technique.',
+  });
+
+  // Expand the citation list for the first technique.
+  const citeExpander = page
+    .locator('[data-testid="stExpander"]', { hasText: /Citation|Paper|arXiv/i })
+    .first();
+  if (await citeExpander.isVisible().catch(() => false)) {
+    await citeExpander.click();
+    await waitForStreamlit(page);
+  }
+  await recorder.capture(page, {
+    slug: 'citations-open',
+    intent: 'Citations expanded — clickable arXiv links for each technique backing the memory multipliers.',
   });
 
   await recorder.finalize(true);

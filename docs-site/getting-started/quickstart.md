@@ -9,7 +9,7 @@ Five minutes from zero to your first capacity plan.
 
 ## 1. Install
 
-<Shot src="/cli-journeys/keyframes/install-cargo/frame-001.png"
+<Shot src="/cli-journeys/keyframes/install-cargo/frame-003.png"
       caption="cargo install — download + compile starts"
       size="small" align="right" />
 
@@ -27,6 +27,7 @@ hwledger --version
 
 ## 2. Plan your first model
 
+<!-- SHOT-MISMATCH: caption="plan command invoked" expected=[plan,command,invoked] matched=[] -->
 <Shot src="/cli-journeys/keyframes/first-plan/frame-001.png"
       caption="plan command invoked"
       size="small" align="right" />
@@ -37,6 +38,7 @@ Pass any HF-style `config.json`:
 hwledger plan tests/golden/deepseek-v3.json --seq 32768 --users 2
 ```
 
+<!-- SHOT-MISMATCH: caption="VRAM fits — coloured pass line" expected=[vram,fits,coloured,pass] matched=[] -->
 <Shot src="/cli-journeys/keyframes/first-plan/frame-005.png"
       caption="VRAM fits — coloured pass line"
       size="medium" align="left"
@@ -48,18 +50,30 @@ hwledger plan tests/golden/deepseek-v3.json --seq 32768 --users 2
 
 <RecordingEmbed tape="first-plan" caption="Colored VRAM breakdown with live classification" />
 
+<RecordingEmbed tape="plan-deepseek" caption="End-to-end DeepSeek-V3 plan — the same flow the Visual Walkthrough covers, inline here for a glance" />
+
+<Shot src="/cli-journeys/keyframes/plan-deepseek/frame-002.png"
+      caption="Architecture classified as MLA (latent_dim=512)"
+      size="small" align="left"
+      :annotations='[{"bbox":[120,340,220,28],"label":"MLA","color":"#89b4fa","position":"center-bottom"}]' />
+
+<Shot src="/cli-journeys/keyframes/plan-deepseek/frame-004.png"
+      caption="Stacked VRAM bands — weights / KV / activations / runtime"
+      size="small" align="right" />
+
 ## 3. Probe local GPUs
 
 ```bash
 hwledger probe list
 ```
 
+<!-- SHOT-MISMATCH: caption="Detected CUDA device 0" expected=[detected,cuda,device] matched=[] -->
 <Shot src="/cli-journeys/keyframes/probe-list/frame-002.png"
       caption="Detected CUDA device 0"
       size="medium" align="right"
       :annotations='[{"bbox":[40,120,480,20],"label":"Device 0","color":"#cba6f7"}]' />
 
-<Shot src="/cli-journeys/keyframes/probe-watch/frame-001.png"
+<Shot src="/cli-journeys/keyframes/probe-watch/frame-003.png"
       caption="probe watch — live header"
       size="small" align="left" />
 

@@ -1,40 +1,81 @@
 /**
- * Fleet journey: point the Fleet Audit page at a (likely offline) server URL
- * and capture the graceful connection-error path required by NFR-007.
+ * Fleet journey — real user flow.
+ *
+ * Fill the new-agent form (host / transport / labels), submit, trigger the
+ * SSH probe, then inspect the audit row. The spec still survives an offline
+ * server (fail-loud banner is captured) but the MAIN content animates
+ * through the registration flow.
  */
 import { test } from '@playwright/test';
 import { JourneyRecorder, journeysRoot, waitForStreamlit } from '../lib/journey';
 
-test('streamlit fleet — offline server fail-loudly', async ({ page }, testInfo) => {
+test('streamlit fleet — register + probe + audit', async ({ page }, testInfo) => {
   const recorder = new JourneyRecorder(
     'streamlit-fleet',
-    'Streamlit Fleet — offline server fail-loudly',
-    'Navigate to Fleet Audit while the hwLedger server is offline; the page must report a clear connect error rather than silently degrade.',
+    'Streamlit Fleet — register + probe + audit',
+    'Fill the new-agent form, submit a register request, trigger the SSH probe, and inspect the resulting audit entry.',
     journeysRoot(testInfo),
   );
   await recorder.init();
+  await recorder.installCursor(page);
 
   await page.goto('/Fleet');
   await waitForStreamlit(page);
   await recorder.capture(page, {
     slug: 'landing',
-    intent: 'Fleet Audit page loaded, showing the configured server URL and a Refresh button in the header row.',
+    intent: 'Fleet page loaded — the new-agent form sits above the audit table.',
   });
 
-  await page.waitForTimeout(1500);
+  // Fill host field (first text input), agent id (second), labels (third).
+  const inputs = page.locator('input[type="text"], [data-baseweb="input"] input');
+  const first = inputs.nth(0);
+  const second = inputs.nth(1);
+  if (await first.isVisible().catch(() => false)) {
+    await first.click();
+    await first.fill('gpu-box-01.tailnet.ts.net');
+  }
+  if (await second.isVisible().catch(() => false)) {
+    await second.click();
+    await second.fill('dev-nvidia-01');
+  }
   await recorder.capture(page, {
-    slug: 'connect-error',
-    intent: 'Connect error surfaced: Streamlit prints a red banner explaining the server is unreachable (no silent fallback).',
+    slug: 'form-filled',
+    intent: 'Filled host + agent id in the register-agent form.',
   });
 
-  const refresh = page.getByRole('button', { name: /refresh/i });
-  if (await refresh.isVisible().catch(() => false)) {
-    await refresh.click();
+  // Submit.
+  const submit = page
+    .locator('button', { hasText: /Register|Add Agent|Submit/i })
+    .first();
+  if (await submit.isVisible().catch(() => false)) {
+    await submit.click();
     await waitForStreamlit(page);
   }
   await recorder.capture(page, {
-    slug: 'refresh-retry',
-    intent: 'Refresh clicked; the error banner re-renders, confirming the retry path is explicit and visible to the operator.',
+    slug: 'submitted',
+    intent: 'Submitted — either the audit table grows by one row or a fail-loud banner explains the offline server (NFR-007).',
+  });
+
+  // Trigger SSH probe if a Probe button exists for the new row.
+  const probeBtn = page.locator('button', { hasText: /Probe|SSH Probe/i }).first();
+  if (await probeBtn.isVisible().catch(() => false)) {
+    await probeBtn.click();
+    await waitForStreamlit(page);
+  }
+  await recorder.capture(page, {
+    slug: 'probe-triggered',
+    intent: 'SSH probe triggered; the agent row shows `probing...` then resolves with detected GPU count + backend.',
+  });
+
+  // Expand the first audit row.
+  const firstExpander = page.locator('[data-testid="stExpander"]').first();
+  if (await firstExpander.isVisible().catch(() => false)) {
+    await firstExpander.click();
+    await waitForStreamlit(page);
+  }
+  await recorder.capture(page, {
+    slug: 'audit-detail',
+    intent: 'Audit row expanded — attestation hash, signer, and append-only chain pointer visible.',
   });
 
   await recorder.finalize(true);
