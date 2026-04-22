@@ -155,7 +155,26 @@
 | **FR-PLAN-003** | cli | cli-plan-help | 0.92 | yes | OK |
 | **FR-TEL-001** | cli | cli-probe-list | 0.92 | yes | OK |
 | **FR-TEL-002** | cli | cli-probe-list | 0.92 | yes | OK |
-| **FR-UI-001** | gui | planner-gui-launch | 0.90 | yes | OK |
+| **FR-UI-001** | gui | planner-gui-launch | 0.90 | yes | NEEDS_CAPTURE |
+
+### `NEEDS_CAPTURE` — honest stubs, real capture pending
+
+As of 2026-04-22 every GUI keyframe under
+`docs-site/public/gui-journeys/*/keyframes/` is either a confirmed
+gradient-text placeholder (flagged via
+`cargo run -p hwledger-frame-audit`) or part of a journey whose
+`manifest.json` never recorded real `screenshot_path` values. Those
+frames have been regenerated as honest stubs (solid dark background +
+TCC-blocked disclaimer) and their manifest steps are marked
+`blind_eval: "skip"`. The gate surfaces `NEEDS_CAPTURE` so reviewers
+can see the debt without the VLM judge silently rubber-stamping
+placeholder art.
+
+Remediation: grant Accessibility + Screen Recording to Xcode, run
+`apps/macos/HwLedgerUITests/scripts/run-journeys.sh`, and the next
+audit will drop the `blind_eval: "skip"` marks. Escalate to hard
+failure with `--strict-journeys --no-skip-allowed` once real captures
+are expected in CI.
 
 
 <!-- BEGIN: manual audit summary (hand-edited, regenerate-safe) -->

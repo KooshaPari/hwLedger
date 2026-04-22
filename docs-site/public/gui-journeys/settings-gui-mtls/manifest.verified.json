@@ -42,42 +42,49 @@
   "recording_rich_sha256": "e81fc7f3a510f66809ec90e481409117d68318d30c9390d4490b55ec94241797",
   "steps": [
     {
+      "blind_eval": "skip",
       "index": 0,
       "intent": "App launches on Planner; cursor drifts down sidebar to 'Settings', click transitions detail pane.",
       "screenshot_path": "keyframes/frame_001.png",
       "slug": "launch-app"
     },
     {
+      "blind_eval": "skip",
       "index": 1,
       "intent": "Settings screen visible: System, Fleet Server, Logging sections stacked; ScrollView reveals 'mTLS Admin' header below.",
       "screenshot_path": "keyframes/frame_002.png",
       "slug": "settings-open"
     },
     {
+      "blind_eval": "skip",
       "index": 2,
       "intent": "User scrolls down; 'mTLS Admin' section comes into view with CA fingerprint display and two buttons: 'Generate Cert', 'Copy PEM'.",
       "screenshot_path": "keyframes/frame_003.png",
       "slug": "scroll-to-mtls"
     },
     {
+      "blind_eval": "skip",
       "index": 3,
       "intent": "Cursor clicks 'Generate Admin Cert'; button shows spinner, status line reads 'issuing cert, CN=admin@local ...'.",
       "screenshot_path": "keyframes/frame_004.png",
       "slug": "click-generate"
     },
     {
+      "blind_eval": "skip",
       "index": 4,
       "intent": "Cert block populates: PEM text area fills with '-----BEGIN CERTIFICATE-----' and monospaced base64; SHA256 thumbprint row appears.",
       "screenshot_path": "keyframes/frame_005.png",
       "slug": "cert-issued"
     },
     {
+      "blind_eval": "skip",
       "index": 5,
       "intent": "Cursor taps 'Copy PEM'; button briefly inverts colour, toast slides up reading 'Copied admin cert to clipboard'.",
       "screenshot_path": "keyframes/frame_006.png",
       "slug": "click-copy"
     },
     {
+      "blind_eval": "skip",
       "index": 6,
       "intent": "Toast still on screen, PEM text area unchanged; status footer shows 'Last issued: just now - valid 90d'.",
       "screenshot_path": "keyframes/frame_007.png",

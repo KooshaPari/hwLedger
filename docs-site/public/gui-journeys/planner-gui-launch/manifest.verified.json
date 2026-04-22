@@ -52,6 +52,7 @@
           "position": "center-bottom"
         }
       ],
+      "blind_eval": "skip",
       "description": "The hwLedger app window opens and the Planner tab is auto-selected. A brief 'hw' launch badge fades as the planner surface renders.",
       "index": 0,
       "intent": "App launches and shows Planner screen",
@@ -73,6 +74,7 @@
           "position": "top-right"
         }
       ],
+      "blind_eval": "skip",
       "description": "Sidebar shows Planner highlighted; the sequence-length slider defaults to 4096 tokens and the memory breakdown pane is empty awaiting configuration.",
       "index": 1,
       "intent": "Planner screen at launch with default config",
@@ -94,6 +96,7 @@
           "position": "top-right"
         }
       ],
+      "blind_eval": "skip",
       "description": "Cursor grabs the slider thumb around x=700 and drags toward x=940. A tooltip appears above the track reading 'drag to 6000'.",
       "index": 2,
       "intent": "User drags seq-len slider from 4096 to 6000 tokens",
@@ -115,6 +118,7 @@
           "position": "top-right"
         }
       ],
+      "blind_eval": "skip",
       "description": "Slider thumb now sits at the 6000-token mark. The value label flips to the accent colour and the breakdown pane enters its recalculating state.",
       "index": 3,
       "intent": "Planner after adjusting seq-len slider to 6000 tokens",
@@ -136,6 +140,7 @@
           "position": "center-bottom"
         }
       ],
+      "blind_eval": "skip",
       "description": "Four horizontal segments animate in: red Weights (22.4 GB), amber KV Cache (14.7 GB), blue Activations (9.1 GB), green Scratch (4.2 GB).",
       "index": 4,
       "intent": "Memory breakdown stacked bar is rendered",
@@ -157,6 +162,7 @@
           "position": "bottom-right"
         }
       ],
+      "blind_eval": "skip",
       "description": "A callout in the lower-right of the breakdown pane confirms the inferred attention kind: 'Flash v2 GQA'.",
       "index": 5,
       "intent": "Attention kind label shows the attention pattern type",

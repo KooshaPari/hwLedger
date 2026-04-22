@@ -7,6 +7,40 @@ test runner. Until that grant lands, the corresponding FRs are retagged
 `[journey_kind: none]` in PRD.md with one-line justifications so the
 traceability gate stays honest and green.
 
+## Honest stubs + blind-eval skip gate (2026-04-22)
+
+All 33 GUI keyframes across the five journeys were previously
+placeholder images: gradient cards with descriptive narrative text, or
+SwiftUI mock renders with captioned widget labels. Both shapes let the
+Sonnet vision judge score the frame highly by **reading the
+placeholder's own text back** as evidence — effectively blind-eval
+cheating. The stubs have now been regenerated as honest blanks (solid
+`#1e1e2e` background, single disclaimer line naming macOS TCC as the
+blocker) and each affected step in
+`docs-site/public/gui-journeys/*/manifest{,.verified}.json` is marked
+`blind_eval: "skip"`.
+
+The traceability gate
+(`crates/hwledger-traceability/src/journeys.rs`) now recognises
+`NEEDS_CAPTURE` as a first-class row status. Policy:
+
+| Mode | NEEDS_CAPTURE treatment |
+|---|---|
+| (default) | silent — advisory only |
+| `--strict-journeys` | `WARN` surfaced; exit 0 |
+| `--strict-journeys --no-skip-allowed` | `FAIL`; exit 1 |
+
+Re-record via `apps/macos/HwLedgerUITests/scripts/run-journeys.sh`
+once Accessibility + Screen Recording are granted to Xcode; the
+`hwledger-frame-audit` binary will then leave those keyframes alone
+because neither the keyword nor the density heuristic will trip.
+
+Keep the audit honest between runs:
+
+```sh
+cargo run -p hwledger-frame-audit -- --repo . --dry-run -v
+```
+
 ## Reproduction
 
 1. Build the debug bundle:
