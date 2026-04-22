@@ -147,3 +147,38 @@ Run locally with `act` or `gh workflow run journey-rich-render.yml`.
 ## Borrowed components
 
 The Remotion components in `tools/journey-remotion/src/components/` (CalloutBox, CaptionBar, TitleCard, FrameStill) are inlined from the [dino scripts/video pattern](https://github.com/KooshaPari/dino/tree/main/scripts/video); see `/Users/kooshapari/CodeProjects/Phenotype/repos/phenotype-journeys/remotion/borrowed/PROVENANCE.md` for license and attribution details.
+
+## VLM judge backends
+
+`tools/vlm-judge` blind-describes every keyframe and scores the description
+against the step `intent` (agreement module, Jaccard on stemmed tokens). It
+writes `blind_description`, `judge_score`, `judge_status`, `judge_backend`
+and `passed` into each `manifest.verified.json` step.
+
+Backends — pick via `--judge auto|claude|mlx|none`:
+
+- **`claude` (primary, default in `auto` when `ANTHROPIC_API_KEY` is set)**
+  — Claude Sonnet 4.6 multimodal via the Anthropic API. Model override:
+  `HWLEDGER_CLAUDE_MODEL`. Cost-capped via `--max-cost-usd` (default `$5`).
+- **`mlx` (local fallback, Apple Silicon)** — `mlx-vlm` running
+  `mlx-community/Qwen2.5-VL-7B-Instruct-4bit` on Metal/MPS. **No Ollama.**
+  Install: `pip install mlx-vlm`. First run downloads the 4-bit model
+  (~4.5 GB). Model override: `HWLEDGER_MLX_VLM_MODEL`.
+- **`none`** — only scores steps whose `blind_description` is already
+  populated; otherwise marks them `judge_status=pending`.
+
+`auto` picks Claude when `ANTHROPIC_API_KEY` is set, else MLX when
+`python -c "import mlx_vlm"` succeeds, else `none`. Selection fails loud
+when a forced backend is unavailable — no silent degradation.
+
+```bash
+# Primary (Claude)
+ANTHROPIC_API_KEY=sk-ant-… \
+  cargo run --release -p hwledger-vlm-judge -- \
+    --root docs-site/public --judge claude
+
+# Local fallback (MLX on Apple Silicon)
+pip install mlx-vlm     # one-time; first run downloads the model
+cargo run --release -p hwledger-vlm-judge -- \
+  --root docs-site/public --judge mlx
+```
