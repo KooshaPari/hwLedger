@@ -57,6 +57,11 @@ pub struct ManifestStep {
     pub slug: String,
     #[serde(default)]
     pub blind_eval: BlindEvalMode,
+    /// Tier 0 structural-capture sibling path (relative to manifest) — when
+    /// populated, points to a `<frame>.structural.json` produced by the
+    /// per-family accessibility walker. Advisory on GUI/Streamlit journeys.
+    #[serde(default)]
+    pub structural_path: Option<String>,
 }
 
 /// Parsed shape of a verified journey manifest.
@@ -90,6 +95,16 @@ impl JourneyManifest {
     /// True when the manifest has at least one step marked `blind_eval: skip`.
     pub fn has_skipped_step(&self) -> bool {
         self.steps.iter().any(|s| s.blind_eval == BlindEvalMode::Skip)
+    }
+
+    /// Count steps that lack a Tier 0 structural-capture sibling. Used to
+    /// surface an advisory warning when a GUI-family journey ships without
+    /// structural data (the accessibility walker was skipped or failed).
+    pub fn missing_structural_count(&self) -> usize {
+        self.steps
+            .iter()
+            .filter(|s| s.structural_path.as_deref().map_or(true, str::is_empty))
+            .count()
     }
 }
 
@@ -296,6 +311,26 @@ pub fn evaluate(frs: &[FrSpec], scan: &JourneyScan) -> JourneyReport {
             // `NeedsCapture` so reviewers know real capture is still owed.
             let blind_skip = *kind == JourneyKind::Gui && best.has_skipped_step();
 
+            // Tier 0 structural-capture advisory: GUI/Streamlit journeys
+            // should ship a `<frame>.structural.json` sibling per step.
+            // Missing siblings are non-fatal (screenshots + verification are
+            // the primary signal), but we surface a warning so reviewers
+            // know the accessibility walker didn't run for these steps.
+            if matches!(*kind, JourneyKind::Gui | JourneyKind::Web) && !best.steps.is_empty() {
+                let missing = best.missing_structural_count();
+                if missing > 0 {
+                    report.warnings.push(format!(
+                        "{} [{}]: journey {} missing structural_path on {}/{} step(s) \
+                         (Tier 0 advisory — run accessibility walker to populate)",
+                        fr.id,
+                        kind.as_str(),
+                        best.id,
+                        missing,
+                        best.steps.len()
+                    ));
+                }
+            }
+
             let status = if blind_skip {
                 JourneyStatus::NeedsCapture
             } else if score <= 0.0 {
@@ -440,6 +475,7 @@ mod tests {
                 } else {
                     BlindEvalMode::Honest
                 },
+                structural_path: None,
             })
             .collect();
         m
@@ -594,6 +630,47 @@ mod tests {
         assert!(!rep.has_failures());
         // But the escalation hook must detect it.
         assert!(rep.has_needs_capture());
+    }
+
+    /// Tier 0 advisory: GUI journey with all steps missing `structural_path`
+    /// emits a warning but does NOT trip has_failures.
+    #[test]
+    fn test_gui_journey_missing_structural_path_warns() {
+        let frs = vec![fr("FR-UI-001", vec![JourneyKind::Gui])];
+        let mut m = manifest("planner-gui", JourneyKind::Gui, vec!["FR-UI-001"], 0.92, true);
+        m.steps = (0..3)
+            .map(|i| ManifestStep {
+                slug: format!("step-{}", i),
+                blind_eval: BlindEvalMode::Honest,
+                structural_path: None,
+            })
+            .collect();
+        let scan = JourneyScan { manifests: vec![m], warnings: vec![] };
+        let rep = evaluate(&frs, &scan);
+        assert_eq!(rep.rows[0].status, JourneyStatus::Ok);
+        assert!(!rep.has_failures());
+        assert!(
+            rep.warnings.iter().any(|w| w.contains("missing structural_path")),
+            "expected structural_path warning, got: {:?}",
+            rep.warnings
+        );
+    }
+
+    /// When every step has a populated `structural_path`, no warning fires.
+    #[test]
+    fn test_gui_journey_with_structural_path_no_warn() {
+        let frs = vec![fr("FR-UI-001", vec![JourneyKind::Gui])];
+        let mut m = manifest("planner-gui", JourneyKind::Gui, vec!["FR-UI-001"], 0.92, true);
+        m.steps = (0..2)
+            .map(|i| ManifestStep {
+                slug: format!("step-{}", i),
+                blind_eval: BlindEvalMode::Honest,
+                structural_path: Some(format!("keyframes/frame_{:03}.structural.json", i + 1)),
+            })
+            .collect();
+        let scan = JourneyScan { manifests: vec![m], warnings: vec![] };
+        let rep = evaluate(&frs, &scan);
+        assert!(!rep.warnings.iter().any(|w| w.contains("missing structural_path")));
     }
 
     /// Traces to: FR-TRACE-004

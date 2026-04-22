@@ -98,6 +98,8 @@ export default withMermaid(defineConfig({
     // rich-refs plugin links: FR index page not yet scaffolded; future ADRs.
     /^\/reference\/fr(?:#.*)?$/,
     /^\/architecture\/adrs\/00[1-9][0-9](?:-.*)?$/,
+    // ADR-0035 points at repo-relative research index; harmless pre-existing.
+    /prior-recording-research-index/,
   ],
   description: 'LLM capacity planner + fleet ledger + desktop inference runtime',
   base: process.env.GITHUB_ACTIONS ? '/hwLedger/' : '/',
