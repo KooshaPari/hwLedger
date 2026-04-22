@@ -117,8 +117,10 @@ fn sha256_bytes(b: &[u8]) -> String {
     hex::encode(h.finalize())
 }
 
-/// Hash manifest content ignoring the enrichment fields we write back, so that
-/// a just-written manifest still matches on the next run.
+/// Hash manifest content ignoring the enrichment fields we write back AND
+/// ignoring the voiceover subtree, so that a voiceover-only tweak does not
+/// invalidate the video skip-gate. The voiceover track has its own separate
+/// hash (`voiceover_hash`) — see G-005.
 fn canonical_manifest_hash(path: &Path) -> Result<String, std::io::Error> {
     let raw = std::fs::read(path)?;
     let mut v: serde_json::Value = serde_json::from_slice(&raw)
@@ -127,11 +129,56 @@ fn canonical_manifest_hash(path: &Path) -> Result<String, std::io::Error> {
         obj.remove("recording_rich");
         obj.remove("recording_rich_sha256");
         obj.remove("recording_rich_manifest_sha256");
+        obj.remove("recording_rich_video_sha256");
+        obj.remove("recording_audio_voiceover");
+        obj.remove("voiceover_sha256");
+        // Voiceover content is tracked separately by `voiceover_hash()`.
+        obj.remove("voiceover");
+        // The top-level `intent` feeds the spoken intro line but is otherwise
+        // orthogonal to the video; keep it out of the video hash.
+        obj.remove("intent");
+        // Per-step voiceover source text — excluded so a Piper line tweak
+        // doesn't force a video re-render (G-005). Frame-positioned visual
+        // state lives in `annotations`, `screenshot_path`, and `assertions`,
+        // which remain hashed.
+        if let Some(serde_json::Value::Array(steps)) = obj.get_mut("steps") {
+            for step in steps.iter_mut() {
+                if let Some(so) = step.as_object_mut() {
+                    so.remove("intent");
+                    so.remove("description");
+                    so.remove("blind_description");
+                }
+            }
+        }
     }
-    // Serialise canonicalised (sorted via serde_json::Value's BTreeMap-like
-    // behaviour is not guaranteed — use to_vec which preserves insertion).
-    // For idempotency we only need determinism across runs of this same code.
     let canonical = serde_json::to_vec(&v)
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
+    Ok(sha256_bytes(&canonical))
+}
+
+/// Hash only the voiceover-relevant content: the `voiceover` spec itself plus
+/// the per-step text lines that Piper ingests (description > blind_description
+/// > intent, matching `synthesise_voiceover_piper`). A change here implies the
+/// audio track must be re-synthesised, even if the video can be reused.
+fn voiceover_hash(path: &Path) -> Result<String, std::io::Error> {
+    let raw = std::fs::read(path)?;
+    let v: serde_json::Value = serde_json::from_slice(&raw)
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
+    let vo = v.get("voiceover").cloned().unwrap_or(serde_json::Value::Null);
+    let mut lines: Vec<String> = Vec::new();
+    if let Some(steps) = v.get("steps").and_then(|s| s.as_array()) {
+        for step in steps {
+            let line = step
+                .get("description").and_then(|x| x.as_str())
+                .or_else(|| step.get("blind_description").and_then(|x| x.as_str()))
+                .or_else(|| step.get("intent").and_then(|x| x.as_str()))
+                .unwrap_or("");
+            lines.push(line.to_string());
+        }
+    }
+    let intent = v.get("intent").and_then(|x| x.as_str()).unwrap_or("");
+    let payload = serde_json::json!({ "voiceover": vo, "intent": intent, "lines": lines });
+    let canonical = serde_json::to_vec(&payload)
         .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
     Ok(sha256_bytes(&canonical))
 }
@@ -161,13 +208,20 @@ fn stage_keyframes(
     Ok(dst)
 }
 
-/// Patch `recording_rich`, `recording_rich_sha256`, and
-/// `recording_rich_manifest_sha256` into the manifest JSON at `path`.
+/// Patch rich-recording + hash enrichment fields into the manifest JSON at
+/// `path`. Writes both the composite `recording_rich_manifest_sha256` (covers
+/// non-audio state) AND the independent `voiceover_sha256` so audio-only
+/// edits do not force a video re-render. The silent-video hash is optional
+/// (only present when we actually produced a separate silent track).
+#[allow(clippy::too_many_arguments)]
 fn write_manifest_enrichment(
     path: &Path,
     recording_rich_rel: &str,
     rich_sha: &str,
     manifest_hash: &str,
+    voiceover_sha: &str,
+    voiceover_audio_rel: Option<&str>,
+    video_sha: Option<&str>,
 ) -> Result<(), std::io::Error> {
     let raw = std::fs::read(path)?;
     let mut v: serde_json::Value = serde_json::from_slice(&raw)
@@ -179,6 +233,19 @@ fn write_manifest_enrichment(
             "recording_rich_manifest_sha256".into(),
             serde_json::Value::String(manifest_hash.into()),
         );
+        obj.insert("voiceover_sha256".into(), serde_json::Value::String(voiceover_sha.into()));
+        if let Some(audio) = voiceover_audio_rel {
+            obj.insert(
+                "recording_audio_voiceover".into(),
+                serde_json::Value::String(audio.into()),
+            );
+        }
+        if let Some(vsha) = video_sha {
+            obj.insert(
+                "recording_rich_video_sha256".into(),
+                serde_json::Value::String(vsha.into()),
+            );
+        }
     }
     let pretty = serde_json::to_string_pretty(&v)
         .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
@@ -236,21 +303,79 @@ pub fn render_all(
         };
 
         let manifest_hash = canonical_manifest_hash(&resolved.manifest_path)?;
+        let voice_hash = voiceover_hash(&resolved.manifest_path)?;
 
-        // Skip check
+        // Skip gates. Two independent predicates per G-005:
+        //   - manifest_hash  → covers video + non-audio state
+        //   - voice_hash     → covers voiceover text + backend only
+        // Both matching = full skip. Manifest match but voice drift = audio
+        // re-mux only (video track reused via ffmpeg -c:v copy, silent
+        // source preserved from prior render).
+        let mut audio_only_remix = false;
         if !force {
             let raw = std::fs::read(&resolved.manifest_path)?;
             if let Ok(v) = serde_json::from_slice::<serde_json::Value>(&raw) {
-                let stored =
+                let stored_manifest =
                     v.get("recording_rich_manifest_sha256").and_then(|x| x.as_str()).unwrap_or("");
-                if stored == manifest_hash && resolved.output_mp4.exists() {
+                let stored_voice =
+                    v.get("voiceover_sha256").and_then(|x| x.as_str()).unwrap_or("");
+                let manifest_match = stored_manifest == manifest_hash;
+                let voice_match = stored_voice == voice_hash;
+                let rich_exists = resolved.output_mp4.exists();
+                if manifest_match && voice_match && rich_exists {
                     println!(
-                        "[skip] {:9} {:<28} (hash match, rich exists)",
+                        "[skip] {:9} {:<28} (video+audio hash match)",
                         format!("{:?}", resolved.family).to_lowercase(),
                         resolved.journey_id
                     );
                     skipped += 1;
                     continue;
+                }
+                if manifest_match && rich_exists && !voice_match {
+                    audio_only_remix = true;
+                }
+            }
+        }
+
+        if audio_only_remix {
+            // Re-synthesise voiceover + remux audio track onto the existing
+            // rich MP4 without re-rendering the video timeline.
+            let silent_cache = silent_cache_path(&resolved.output_mp4);
+            match remix_audio_only(
+                &resolved,
+                remotion_root,
+                &silent_cache,
+            ) {
+                Ok((new_rich_sha, voiceover_rel)) => {
+                    let rel = recording_rich_relpath(&resolved);
+                    if let Err(e) = write_manifest_enrichment(
+                        &resolved.manifest_path,
+                        &rel,
+                        &new_rich_sha,
+                        &manifest_hash,
+                        &voice_hash,
+                        Some(&voiceover_rel),
+                        None,
+                    ) {
+                        eprintln!(
+                            "[warn] manifest writeback failed for {} (audio-only): {}",
+                            resolved.journey_id, e
+                        );
+                    }
+                    println!(
+                        "[audio] {:9} {:<28} (voiceover re-mixed, video reused)",
+                        format!("{:?}", resolved.family).to_lowercase(),
+                        resolved.journey_id
+                    );
+                    rendered += 1;
+                    continue;
+                }
+                Err(e) => {
+                    eprintln!(
+                        "[warn] audio-only remix failed for {} ({}) — falling back to full render",
+                        resolved.journey_id, e
+                    );
+                    // fall through to full render path below
                 }
             }
         }
@@ -301,11 +426,20 @@ pub fn render_all(
                     continue;
                 }
                 let rel = recording_rich_relpath(&resolved);
+                // Cache a silent copy of the render alongside the rich MP4 so
+                // future voiceover-only edits can avoid re-rendering video
+                // (see audio_only_remix path above).
+                let silent_cache = silent_cache_path(&resolved.output_mp4);
+                let _ = cache_silent_copy(&resolved.output_mp4, &silent_cache);
+                let voiceover_rel = voiceover_audio_relpath(&resolved.journey_id);
                 if let Err(e) = write_manifest_enrichment(
                     &resolved.manifest_path,
                     &rel,
                     &rich_sha,
                     &manifest_hash,
+                    &voice_hash,
+                    Some(&voiceover_rel),
+                    None,
                 ) {
                     eprintln!(
                         "[warn] manifest writeback failed for {}: {}",
@@ -352,6 +486,94 @@ pub fn render_all(
     Ok(())
 }
 
+/// Location of the cached silent (video-only) render next to the rich MP4.
+/// Pattern: `<id>.silent.mp4` so both files share a directory.
+fn silent_cache_path(rich_mp4: &Path) -> PathBuf {
+    let parent = rich_mp4.parent().map(Path::to_path_buf).unwrap_or_default();
+    let stem = rich_mp4.file_stem().map(|s| s.to_string_lossy().into_owned()).unwrap_or_default();
+    // stem already contains `.rich` → strip it so we land on `<id>.silent.mp4`
+    let base = stem.strip_suffix(".rich").unwrap_or(&stem);
+    parent.join(format!("{base}.silent.mp4"))
+}
+
+/// On the first successful full render, cache a video-only (stream-copied)
+/// copy so audio-only re-mux can reuse it. Best-effort: failures are logged
+/// by callers via the `_ =` discard.
+fn cache_silent_copy(rich: &Path, silent: &Path) -> Result<(), std::io::Error> {
+    if silent.exists() {
+        return Ok(());
+    }
+    let status = std::process::Command::new("ffmpeg")
+        .args(["-y", "-i"])
+        .arg(rich)
+        .args(["-an", "-c:v", "copy"])
+        .arg(silent)
+        .status()?;
+    if !status.success() {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            format!("ffmpeg silent cache failed for {}", rich.display()),
+        ));
+    }
+    Ok(())
+}
+
+fn voiceover_audio_relpath(journey_id: &str) -> String {
+    format!("audio/{journey_id}.voiceover.wav")
+}
+
+/// Audio-only re-mux: re-synthesise the voiceover via `render_voiceover_only`
+/// and mux it onto the cached silent video track with `ffmpeg -c:v copy -c:a aac`.
+/// Returns the new rich MP4's SHA-256 and the voiceover relpath on success.
+fn remix_audio_only(
+    resolved: &Resolved,
+    remotion_root: &Path,
+    silent_cache: &Path,
+) -> Result<(String, String), anyhow::Error> {
+    if !silent_cache.exists() {
+        anyhow::bail!(
+            "silent cache missing ({}); a prior full render must produce it first",
+            silent_cache.display()
+        );
+    }
+    // Build a render plan that mirrors the one used for full renders so
+    // synthesise_voiceover_piper lays the WAV in the expected location.
+    let mut plan = RenderPlan::new(
+        resolved.journey_id.clone(),
+        resolved.manifest_path.clone(),
+        remotion_root.join("public").join("keyframes").join(&resolved.journey_id),
+        remotion_root.to_path_buf(),
+        resolved.output_mp4.clone(),
+    );
+    plan.voiceover = "piper".to_string();
+    let voiceover_rel = crate::synthesise_voiceover_piper(&plan)
+        .map_err(|e| anyhow::anyhow!("voiceover synth: {e}"))?;
+
+    let voiceover_wav = remotion_root.join("public").join(&voiceover_rel);
+    if !voiceover_wav.exists() {
+        anyhow::bail!("voiceover wav missing after synth: {}", voiceover_wav.display());
+    }
+
+    // Mix: ffmpeg -i silent.mp4 -i voiceover.wav -c:v copy -c:a aac -shortest -> rich.mp4
+    // Rationale: stream-copy the video, AAC-encode the fresh audio, -shortest
+    // prevents a leftover tail when voiceover is shorter than the silent track.
+    let tmp = resolved.output_mp4.with_extension("remix.mp4");
+    let status = std::process::Command::new("ffmpeg")
+        .args(["-y", "-i"])
+        .arg(silent_cache)
+        .arg("-i")
+        .arg(&voiceover_wav)
+        .args(["-c:v", "copy", "-c:a", "aac", "-shortest"])
+        .arg(&tmp)
+        .status()?;
+    if !status.success() {
+        anyhow::bail!("ffmpeg remix failed for {}", resolved.journey_id);
+    }
+    std::fs::rename(&tmp, &resolved.output_mp4)?;
+    let rich_sha = sha256_file(&resolved.output_mp4)?;
+    Ok((rich_sha, voiceover_rel))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -383,5 +605,62 @@ mod tests {
         assert_eq!(r.family, Family::Gui);
         assert_eq!(r.journey_id, "planner-gui-launch");
         assert!(r.output_mp4.ends_with("planner-gui-launch.rich.mp4"));
+    }
+
+    /// G-005: flipping `step.intent` wording must leave the manifest hash
+    /// stable (only the voiceover hash changes), so the video skip-gate
+    /// holds and we remux audio only.
+    #[test]
+    fn voiceover_edit_leaves_manifest_hash_stable() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("manifest.verified.json");
+        let base = serde_json::json!({
+            "id": "test-journey",
+            "intent": "original intent",
+            "passed": true,
+            "keyframe_count": 1,
+            "steps": [
+                { "index": 0, "slug": "s0", "intent": "say hello", "screenshot_path": "frame-001.png" }
+            ],
+            "voiceover": { "backend": "piper" }
+        });
+        std::fs::write(&path, serde_json::to_string_pretty(&base).unwrap()).unwrap();
+        let mh1 = canonical_manifest_hash(&path).unwrap();
+        let vh1 = voiceover_hash(&path).unwrap();
+
+        // Edit step intent (voiceover source text) — manifest hash must stay put.
+        let mut edited = base.clone();
+        edited["steps"][0]["intent"] = serde_json::Value::String("say bonjour".into());
+        std::fs::write(&path, serde_json::to_string_pretty(&edited).unwrap()).unwrap();
+        let mh2 = canonical_manifest_hash(&path).unwrap();
+        let vh2 = voiceover_hash(&path).unwrap();
+
+        assert_eq!(mh1, mh2, "video/manifest hash must not change for voiceover-only edits");
+        assert_ne!(vh1, vh2, "voiceover hash must change when step text changes");
+    }
+
+    /// Conversely, a non-voiceover edit (e.g. keyframe_count) must bump the
+    /// manifest hash so a full video re-render is triggered.
+    #[test]
+    fn video_edit_bumps_manifest_hash() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("manifest.verified.json");
+        let base = serde_json::json!({
+            "id": "test-journey", "intent": "x", "passed": true,
+            "keyframe_count": 1, "steps": [], "voiceover": { "backend": "piper" }
+        });
+        std::fs::write(&path, serde_json::to_string_pretty(&base).unwrap()).unwrap();
+        let mh1 = canonical_manifest_hash(&path).unwrap();
+        let mut edited = base.clone();
+        edited["keyframe_count"] = serde_json::json!(7);
+        std::fs::write(&path, serde_json::to_string_pretty(&edited).unwrap()).unwrap();
+        let mh2 = canonical_manifest_hash(&path).unwrap();
+        assert_ne!(mh1, mh2);
+    }
+
+    #[test]
+    fn silent_cache_path_strips_rich_suffix() {
+        let p = PathBuf::from("/out/dir/my-journey.rich.mp4");
+        assert_eq!(silent_cache_path(&p), PathBuf::from("/out/dir/my-journey.silent.mp4"));
     }
 }
