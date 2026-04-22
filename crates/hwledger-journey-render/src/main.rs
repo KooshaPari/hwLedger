@@ -5,7 +5,8 @@ use std::path::{Path, PathBuf};
 
 use clap::{Parser, Subcommand};
 use hwledger_journey_render::{
-    annotate as run_annotate, batch, build_rich_manifest, run, Annotation, RenderPlan,
+    annotate as run_annotate, batch, build_rich_manifest, manifest::CustomAnchor, run,
+    Annotation, RenderPlan,
 };
 
 #[derive(Parser, Debug)]
@@ -116,6 +117,21 @@ struct YamlAnnotation {
     note: Option<String>,
     #[serde(default)]
     kind: Option<String>,
+    /// Callout position hint. One of:
+    /// auto | top-left | top-right | bottom-left | bottom-right |
+    /// center | center-top | center-bottom | custom. Default: `auto`
+    /// (renderer picks based on bbox anchor).
+    #[serde(default)]
+    position: Option<String>,
+    /// Custom pixel anchor when `position: custom`.
+    #[serde(default)]
+    custom: Option<YamlCustomAnchor>,
+}
+
+#[derive(serde::Deserialize, Debug, Clone)]
+struct YamlCustomAnchor {
+    x: u32,
+    y: u32,
 }
 
 fn project_annotations(yaml_path: &Path, manifests: &[PathBuf]) -> anyhow::Result<()> {
@@ -148,6 +164,8 @@ fn project_annotations(yaml_path: &Path, manifests: &[PathBuf]) -> anyhow::Resul
                     style: a.style.clone(),
                     note: a.note.clone(),
                     kind: a.kind.clone(),
+                    position: a.position.clone(),
+                    custom: a.custom.as_ref().map(|c| CustomAnchor { x: c.x, y: c.y }),
                 })
                 .collect();
             let step_obj = step.as_object_mut().expect("step is object");
@@ -174,6 +192,7 @@ fn annotate_only(manifest: &Path, keyframes: &Path, remotion_root: &Path) -> any
         output_mp4: PathBuf::new(),
         scene_spec: None,
         voiceover: "auto".to_string(),
+        composition_id: "JourneyRich".to_string(),
     };
     let rich_path = build_rich_manifest(&plan)?;
     run_annotate(&plan, &rich_path)?;

@@ -16,6 +16,20 @@ pub struct Annotation {
     pub note: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub kind: Option<String>,
+    /// Callout position hint. One of `auto` (default),
+    /// `top-left` | `top-right` | `bottom-left` | `bottom-right` |
+    /// `center` | `center-top` | `center-bottom` | `custom`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub position: Option<String>,
+    /// Pixel-space anchor when `position = "custom"`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub custom: Option<CustomAnchor>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CustomAnchor {
+    pub x: u32,
+    pub y: u32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
