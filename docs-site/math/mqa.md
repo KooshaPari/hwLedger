@@ -10,7 +10,11 @@ description: Single shared key-value head
       caption="KV cache row — 8× smaller for MQA vs MHA"
       size="small" align="right" />
 
-<RecordingEmbed tape="first-plan" caption="MQA vs MHA stacked chart — single shared KV head dominates the space savings" />
+<RecordingEmbed tape="planner-gui-launch" kind="gui" caption="Planner GUI: MQA memory breakdown — single shared KV head flattens the KV band" />
+
+<RecordingEmbed tape="streamlit-planner" kind="streamlit" caption="Streamlit Planner: same model, attention-kind override to MQA to watch the band collapse" />
+
+<RecordingEmbed tape="first-plan" kind="cli" caption="CLI plan: MQA vs MHA stacked chart — shared KV head dominates the space savings (scriptable)" />
 
 Extreme KV cache compression: all query heads share a single K, V head.
 

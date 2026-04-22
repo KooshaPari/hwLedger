@@ -9,7 +9,11 @@ description: Low-rank KV projection
       caption="Planner auto-detects MLA with kv_lora_rank=512 for DeepSeek-V3"
       size="small" align="right" />
 
-<RecordingEmbed tape="plan-mla-deepseek" caption="MLA planner run: per-layer KV breakdown in latent space" />
+<RecordingEmbed tape="planner-gui-launch" kind="gui" caption="Planner GUI: MLA auto-detected, per-layer latent-KV breakdown rendered natively on macOS" />
+
+<RecordingEmbed tape="streamlit-planner" kind="streamlit" caption="Streamlit Planner: same MLA breakdown in the browser — drag context, watch latent band stay flat" />
+
+<RecordingEmbed tape="plan-mla-deepseek" kind="cli" caption="CLI plan: MLA planner run — per-layer KV breakdown in latent space (scriptable)" />
 
 Compresses KV cache by projecting to a low-rank latent space before multi-head operation.
 
@@ -48,7 +52,7 @@ MLA was the DeepSeek team's answer to the specific problem that even GQA's 8× c
       size="small" align="right"
       :annotations='[{"bbox":[80,240,480,32],"label":"E-PLAN-MLA-MISSING","color":"#f38ba8","style":"dashed","position":"bottom-left"}]' />
 
-<RecordingEmbed tape="plan-deepseek" caption="MLA classification inside the full plan-deepseek run" />
+<RecordingEmbed tape="plan-deepseek" kind="cli" caption="CLI plan-deepseek: MLA classification inside the full plan run (supplementary, CLI-only)" />
 
 <!-- SHOT-TODO: inline <Shot> showing the refusal-to-plan error when latent_dim is missing -->
 

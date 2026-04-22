@@ -9,7 +9,11 @@ description: Local context with exponential recurrence
       caption="--window-size flag documented in plan --help"
       size="small" align="right" />
 
-<RecordingEmbed tape="plan-help" caption="plan --help: every flag incl. --window-size for sliding-window models" />
+<RecordingEmbed tape="planner-gui-launch" kind="gui" caption="Planner GUI: sliding-window model (Mistral-family) — window-capped KV bar stays flat as context grows" />
+
+<RecordingEmbed tape="streamlit-planner" kind="streamlit" caption="Streamlit Planner: same sliding-window model in the browser — watch the KV plateau past the window boundary" />
+
+<RecordingEmbed tape="plan-help" kind="cli" caption="CLI `plan --help`: every flag incl. `--window-size` for sliding-window models — CLI-only flag reference" />
 
 Restricts attention to a local context window (e.g., 4K tokens) while allowing information to flow globally via stacking.
 

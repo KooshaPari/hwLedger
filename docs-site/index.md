@@ -78,7 +78,11 @@ cargo build --release
 cargo run --bin hwledger-cli -- plan --model llama-2-70b
 ```
 
-<RecordingEmbed tape="first-plan" caption="Live memory planning with colored VRAM breakdown" />
+<RecordingEmbed tape="planner-gui-launch" kind="gui" caption="Planner GUI: native macOS live memory planning with colored VRAM breakdown (primary UI)" />
+
+<RecordingEmbed tape="streamlit-planner" kind="streamlit" caption="Streamlit Planner: same live planning from a browser tab" />
+
+<RecordingEmbed tape="first-plan" kind="cli" caption="CLI plan: colored VRAM breakdown for scripts and CI" />
 
 ## Project Status
 

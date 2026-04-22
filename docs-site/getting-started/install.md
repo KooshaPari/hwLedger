@@ -11,9 +11,9 @@ Get hwLedger running on your system.
 
 ## Build from Source
 
-<RecordingEmbed tape="install-from-source" caption="Clone, build, and verify installation" />
+<RecordingEmbed tape="install-from-source" kind="cli" caption="CLI install-from-source: clone, build, and verify installation (install is a CLI-only operation)" />
 
-<RecordingEmbed tape="install-cargo" caption="cargo install: the same path the GitHub Actions matrix uses, run locally" />
+<RecordingEmbed tape="install-cargo" kind="cli" caption="CLI cargo install: the same path the GitHub Actions matrix uses, run locally" />
 
 <!-- SHOT-MISMATCH: caption="Binary installed and on PATH" expected=[binary,installed,path] matched=[] -->
 <Shot src="/cli-journeys/keyframes/install-cargo/frame-004.png"

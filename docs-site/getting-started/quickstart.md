@@ -23,7 +23,7 @@ hwledger --version
       caption="hwledger --version succeeds"
       size="small" align="left" />
 
-<RecordingEmbed tape="install-cargo" caption="Install + verify in one shot" />
+<RecordingEmbed tape="install-cargo" kind="cli" caption="CLI install — cargo install + verify in one shot (install is a CLI-only operation)" />
 
 ## 2. Plan your first model
 
@@ -48,9 +48,13 @@ hwledger plan tests/golden/deepseek-v3.json --seq 32768 --users 2
       caption="Component breakdown: weights / KV / activations"
       size="small" align="right" />
 
-<RecordingEmbed tape="first-plan" caption="Colored VRAM breakdown with live classification" />
+<RecordingEmbed tape="planner-gui-launch" kind="gui" caption="Planner GUI: launch the native macOS planner and run your first plan (primary UI)" />
 
-<RecordingEmbed tape="plan-deepseek" caption="End-to-end DeepSeek-V3 plan — the same flow the Visual Walkthrough covers, inline here for a glance" />
+<RecordingEmbed tape="streamlit-planner" kind="streamlit" caption="Streamlit Planner: same flow in the browser — drop in a config, read the breakdown" />
+
+<RecordingEmbed tape="first-plan" kind="cli" caption="CLI plan: colored VRAM breakdown with live classification (scriptable)" />
+
+<RecordingEmbed tape="plan-deepseek" kind="cli" caption="CLI end-to-end DeepSeek-V3 plan — the same flow the Visual Walkthrough covers, inline here for a glance" />
 
 <Shot src="/cli-journeys/keyframes/plan-deepseek/frame-002.png"
       caption="Architecture classified as MLA (latent_dim=512)"
@@ -77,7 +81,11 @@ hwledger probe list
       caption="probe watch — live header"
       size="small" align="left" />
 
-<RecordingEmbed tape="probe-list" caption="Detect Apple Silicon, NVIDIA, AMD, Intel backends" />
+<RecordingEmbed tape="probe-gui-watch" kind="gui" caption="Probe GUI: live per-backend telemetry pane in the native desktop app" />
+
+<RecordingEmbed tape="streamlit-probe" kind="streamlit" caption="Streamlit Probe: browse backends and live samples from a browser tab" />
+
+<RecordingEmbed tape="probe-list" kind="cli" caption="CLI probe list: detect Apple Silicon, NVIDIA, AMD, Intel backends (scriptable)" />
 
 Need deeper telemetry? Use `hwledger probe watch --interval 1s` to stream samples.
 

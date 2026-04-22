@@ -10,9 +10,9 @@ hwLedger can query the Hugging Face Hub directly to discover models, pull their
       caption="plan --hf resolves HF model ID and continues"
       size="small" align="right" />
 
-<RecordingEmbed tape="plan-hf-resolve" caption="resolver: same input surface in the CLI that the Streamlit app wraps" />
+<RecordingEmbed tape="streamlit-hf-search" kind="streamlit" caption="Streamlit HF search: quick-pick band + type-to-filter + click-to-use (primary UI)" />
 
-<RecordingEmbed tape="streamlit-hf-search" caption="Streamlit HF search: quick-pick band + type-to-filter + click-to-use" />
+<RecordingEmbed tape="plan-hf-resolve" kind="cli" caption="CLI fallback — same resolver surface the Streamlit app wraps, for automation and scripts" />
 
 <!-- SHOT-MISMATCH: caption="Resolver fallback: full URL → repo id + revision extracted" expected=[resolver,fallback,full,url,repo,revision,extracted] matched=[] -->
 <Shot src="/cli-journeys/keyframes/plan-hf-resolve/frame-003.png"

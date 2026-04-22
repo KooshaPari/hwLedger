@@ -10,7 +10,11 @@ description: Full-rank attention with parallel heads
       caption="--attention-kind flag (planner accepts MHA override)"
       size="small" align="right" />
 
-<RecordingEmbed tape="plan-help" caption="plan --help: --attention-kind enum options (mha | gqa | mqa | mla | ssm | auto)" />
+<RecordingEmbed tape="planner-gui-launch" kind="gui" caption="Planner GUI: MHA memory breakdown — per-head KV band visible in the native macOS chart" />
+
+<RecordingEmbed tape="streamlit-planner" kind="streamlit" caption="Streamlit Planner: same breakdown in the browser, attention-kind badge visible" />
+
+<RecordingEmbed tape="plan-help" kind="cli" caption="CLI `plan --help`: --attention-kind enum options (mha | gqa | mqa | mla | ssm | auto) — CLI-only flag surface" />
 
 Standard Transformer attention mechanism, the foundation all other attention variants derive from.
 

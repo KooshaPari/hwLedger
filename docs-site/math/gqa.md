@@ -11,7 +11,11 @@ description: Multi-head queries, grouped key-values
       size="small" align="right"
       :annotations='[{"bbox":[80,180,400,24],"label":"fits","color":"#a6e3a1","position":"center-bottom"}]' />
 
-<RecordingEmbed tape="first-plan" caption="GQA plan: num_kv_heads detection + share-ratio chart" />
+<RecordingEmbed tape="planner-gui-launch" kind="gui" caption="Planner GUI: native macOS memory breakdown for a GQA model — share-ratio visualisation in the SwiftUI bar chart" />
+
+<RecordingEmbed tape="streamlit-planner" kind="streamlit" caption="Streamlit Planner: same memory breakdown, run from the browser — hover bars for per-layer KV" />
+
+<RecordingEmbed tape="first-plan" kind="cli" caption="CLI plan: num_kv_heads detection + share-ratio chart (use from scripts / CI)" />
 
 Reduces KV cache size by sharing keys and values across multiple query heads.
 

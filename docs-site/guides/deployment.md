@@ -30,9 +30,13 @@ Setting up a persistent fleet server on commodity hardware (old laptop, spare de
       caption="audit summary after first run"
       size="small" align="right" />
 
-<RecordingEmbed tape="fleet-register" caption="fleet register: walk through the bootstrap on a spare box" />
+<RecordingEmbed tape="settings-gui-mtls" kind="gui" caption="Settings → mTLS GUI: generate + pin client cert during fleet bootstrap (primary operator UI)" />
 
-<RecordingEmbed tape="fleet-audit" caption="fleet audit: first-run verification against the fresh ledger" />
+<RecordingEmbed tape="streamlit-fleet" kind="streamlit" caption="Streamlit Fleet: CRUD a freshly-registered device over the browser before handing off to operators" />
+
+<RecordingEmbed tape="fleet-register" kind="cli" caption="CLI fleet register: walk through the bootstrap on a spare box (headless / remote shells)" />
+
+<RecordingEmbed tape="fleet-audit" kind="cli" caption="CLI fleet audit: first-run hash-chain verification — CLI is the reason-of-record for audit chain inspection" />
 
 <Shot src="/cli-journeys/keyframes/fleet-audit/frame-001.png"
       caption="Audit entry point — operator types `hwledger audit --verify`"

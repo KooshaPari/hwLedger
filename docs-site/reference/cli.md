@@ -18,7 +18,7 @@ Complete reference for all `hwledger` subcommands.
       caption="Typical plan output: VRAM breakdown + architecture detection"
       size="small" align="right" />
 
-<RecordingEmbed tape="plan-deepseek" caption="plan: DeepSeek-V3 → live architecture detection + colored VRAM bands" />
+<RecordingEmbed tape="plan-deepseek" kind="cli" caption="CLI plan: DeepSeek-V3 → live architecture detection + colored VRAM bands" />
 
 Memory planner: estimates VRAM and selects optimal tensor parallelism, quantization, and attention variant.
 
@@ -73,9 +73,9 @@ hwledger plan --model llama-70b --context 8000 --json | jq .vram_required
       caption="probe watch — live-refresh header"
       size="small" align="left" />
 
-<RecordingEmbed tape="probe-list" caption="probe list: Apple Silicon / NVIDIA / AMD / Intel backend detection" />
+<RecordingEmbed tape="probe-list" kind="cli" caption="CLI probe list: Apple Silicon / NVIDIA / AMD / Intel backend detection" />
 
-<RecordingEmbed tape="probe-watch" caption="probe watch: continuous telemetry, 2s refresh, ctrl-C to exit" />
+<RecordingEmbed tape="probe-watch" kind="cli" caption="CLI probe watch: continuous telemetry, 2s refresh, ctrl-C to exit" />
 
 GPU discovery and telemetry: list available GPUs, memory, compute capability.
 
@@ -105,7 +105,7 @@ hwledger probe --watch --filter cuda:0
 hwledger probe --json | jq '.gpus[].vram_free_gb'
 ```
 
-<RecordingEmbed tape="ingest-local-gguf" caption="ingest: cache a local GGUF + verify the hash chain entry" />
+<RecordingEmbed tape="ingest-local-gguf" kind="cli" caption="CLI ingest: cache a local GGUF + verify the hash chain entry" />
 
 ## ingest
 
@@ -182,9 +182,9 @@ hwledger run --model llama-70b --remote tcp://fleet.example.com:5443 input.json
       caption="fleet audit — attestation hash verified"
       size="small" align="left" />
 
-<RecordingEmbed tape="fleet-register" caption="fleet register: bootstrap + mTLS handshake + first event written" />
+<RecordingEmbed tape="fleet-register" kind="cli" caption="CLI fleet register: bootstrap + mTLS handshake + first event written" />
 
-<RecordingEmbed tape="fleet-audit" caption="fleet audit: hash chain verified, per-agent attestation summary" />
+<RecordingEmbed tape="fleet-audit" kind="cli" caption="CLI fleet audit: hash chain verified, per-agent attestation summary (audit-chain is a CLI-native surface)" />
 
 Fleet orchestration: register agents, query status, submit jobs.
 

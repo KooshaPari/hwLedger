@@ -36,7 +36,7 @@ graph TD
 
 Every feature is traceable from spec through test to code:
 
-<RecordingEmbed tape="traceability-report" caption="Generate full spec -> test -> code traceability report" />
+<RecordingEmbed tape="traceability-report" kind="cli" caption="CLI traceability: spec -> test -> code report (CLI-only — report text is the feature)" />
 
 See [Traceability Report](/quality/traceability) for methodology and verification gates.
 

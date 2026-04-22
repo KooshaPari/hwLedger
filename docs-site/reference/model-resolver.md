@@ -59,9 +59,11 @@ hwledger plan deepseek-ai/DeepSeek-V3 --seq 4K
 hwledger plan https://huggingface.co/meta-llama/Llama-3-70B --seq 8K
 ```
 
-<RecordingEmbed tape="plan-hf-resolve" caption="Resolver dispatch: repo id, URL, and gold fixture shortcut" />
+<RecordingEmbed tape="streamlit-hf-search" kind="streamlit" caption="Streamlit HF search → click row → auto-redirect to Planner with model pre-filled (primary resolver surface)" />
 
-<RecordingEmbed tape="streamlit-hf-search" caption="Streamlit handoff: HF search → click row → auto-redirect to Planner with model pre-filled" />
+<RecordingEmbed tape="streamlit-planner" kind="streamlit" caption="Streamlit Planner: resolver dispatches the pre-filled model through the same pure function used by every client" />
+
+<RecordingEmbed tape="plan-hf-resolve" kind="cli" caption="CLI fallback — same resolver dispatching repo id, URL, and gold fixture shortcut (useful for scripting)" />
 
 <!-- SHOT-MISMATCH: caption="Dispatch badge: `hf-repo` for a bare repo id" expected=[dispatch,badge,hf-repo,bare,repo] matched=[] -->
 <Shot src="/cli-journeys/keyframes/plan-hf-resolve/frame-002.png"

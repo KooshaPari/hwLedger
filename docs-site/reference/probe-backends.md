@@ -8,9 +8,13 @@
       caption="probe watch — live refresh"
       size="small" align="left" />
 
-<RecordingEmbed tape="probe-list" caption="probe list: all four backends in one run (Metal / CUDA / ROCm / Intel)" />
+<RecordingEmbed tape="probe-gui-watch" kind="gui" caption="Probe GUI: live per-backend telemetry pane in the native desktop app (primary UI)" />
 
-<RecordingEmbed tape="probe-watch" caption="probe watch: per-backend live refresh, no subprocess involved" />
+<RecordingEmbed tape="streamlit-probe" kind="streamlit" caption="Streamlit Probe: browser view over the same backends (Metal / CUDA / ROCm / Intel)" />
+
+<RecordingEmbed tape="probe-list" kind="cli" caption="CLI probe list: all four backends in one run — scripting / CI path" />
+
+<RecordingEmbed tape="probe-watch" kind="cli" caption="CLI probe watch: per-backend live refresh, no subprocess involved" />
 
 <Shot src="/cli-journeys/keyframes/probe-watch/frame-003.png"
       caption="Watch header: refresh interval, attached device count, last-tick timestamp"

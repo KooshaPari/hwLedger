@@ -27,9 +27,13 @@ KV cache size depends on the **attention mechanism** (`AttentionKind`):
 
 Incorrect calculation costs hours of debugging and wasted VRAM. hwLedger derives formulas per architecture directly from the config.json fields.
 
-<RecordingEmbed tape="first-plan" caption="Live MLA classification and per-layer VRAM breakdown" />
+<RecordingEmbed tape="planner-gui-launch" kind="gui" caption="Planner GUI: per-layer KV breakdown, live attention-kind badge, macOS-native stacked bars" />
 
-<RecordingEmbed tape="plan-mla-deepseek" caption="KV cache sweep: context 4K → 32K with stacked band chart" />
+<RecordingEmbed tape="streamlit-planner" kind="streamlit" caption="Streamlit Planner: same breakdown in the browser — drag the context slider to watch the KV band stretch" />
+
+<RecordingEmbed tape="first-plan" kind="cli" caption="CLI plan: MLA classification + per-layer VRAM breakdown (scriptable)" />
+
+<RecordingEmbed tape="plan-mla-deepseek" kind="cli" caption="CLI sweep: context 4K → 32K stacked band chart (helpful for headless benchmarking)" />
 
 <Shot src="/cli-journeys/keyframes/plan-mla-deepseek/frame-003.png"
       caption="32K sweep endpoint — KV band dominates when seq > 16K"

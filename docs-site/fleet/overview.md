@@ -66,13 +66,15 @@ Devices are registered with:
 - **Location**: LAN, tailnet, cloud provider
 - **Transport**: Agent (mTLS), Agentless (SSH), API
 
-<RecordingEmbed tape="fleet-register" caption="Register a device to the fleet" />
+<RecordingEmbed tape="fleet-gui-map" kind="gui" caption="GUI FleetMap: live-updating canvas view of every registered device (primary UI)" />
 
-<RecordingEmbed tape="fleet-audit" caption="Audit fleet health and device status" />
+<RecordingEmbed tape="settings-gui-mtls" kind="gui" caption="Settings → mTLS: generate + pin client cert from the native desktop app" />
 
-<RecordingEmbed tape="fleet-gui-map" caption="GUI fleet map: live-updating canvas view of every registered device" />
+<RecordingEmbed tape="streamlit-fleet" kind="streamlit" caption="Streamlit Fleet: CRUD view over devices, labels, and transports in the browser" />
 
-<RecordingEmbed tape="settings-gui-mtls" caption="Settings → mTLS: generate + pin client cert from the desktop app" />
+<RecordingEmbed tape="fleet-register" kind="cli" caption="CLI `fleet register`: bootstrap a new device (scripting / CI path)" />
+
+<RecordingEmbed tape="fleet-audit" kind="cli" caption="CLI `fleet audit`: inspect the hash-chained audit log — CLI-native reason-of-record for audit-chain review" />
 
 <!-- SHOT-MISMATCH: caption="Register step 2 — labels applied (tenant, env, gpu-class)" expected=[register,step,labels,applied,tenant,env,gpu-class] matched=[] -->
 <Shot src="/cli-journeys/keyframes/fleet-register/frame-002.png"

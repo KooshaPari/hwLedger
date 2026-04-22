@@ -11,7 +11,7 @@ description: Common issues and fixes
       caption="Healthy probe output — device row present"
       size="small" align="right" />
 
-<RecordingEmbed tape="probe-list" caption="probe list: healthy baseline to compare your output against" />
+<RecordingEmbed tape="probe-list" kind="cli" caption="CLI probe list: healthy baseline to compare your output against (exit-code-focused; CLI is canonical for troubleshooting)" />
 
 <Shot src="/cli-journeys/keyframes/probe-list/frame-003.png"
       caption="Probe start: backend auto-detect banner"
@@ -51,7 +51,7 @@ brew install metal-tools
       size="small" align="right"
       :annotations='[{"bbox":[60,220,480,32],"label":"error code","color":"#f38ba8","style":"dashed","position":"bottom-left"}]' />
 
-<RecordingEmbed tape="ingest-error" caption="ingest: deliberate failure → explicit error code, no silent fallback" />
+<RecordingEmbed tape="ingest-error" kind="cli" caption="CLI ingest: deliberate failure → explicit error code, no silent fallback (CLI-native error surface)" />
 
 <!-- SHOT-MISMATCH: caption="Exit 2 with actionable remediation line below" expected=[exit,actionable,remediation,below] matched=[] -->
 <Shot src="/cli-journeys/keyframes/ingest-error/frame-003.png"
