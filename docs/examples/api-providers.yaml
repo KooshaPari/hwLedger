@@ -1,0 +1,228 @@
+# hwLedger API provider policy (canonical example).
+#
+# Drop a copy at ~/.hwledger/api-providers.yaml and set the env vars
+# referenced by `api_key_env` on each provider. The runtime reads this file
+# at startup (see tools/vlm-judge/src/providers.rs). First-party paid APIs
+# (Anthropic / OpenAI / Gemini) are BLOCKED unless `policy: allow-first-party`
+# AND `HWLEDGER_ALLOW_FIRST_PARTY_API=1` is set in the environment.
+#
+# Provider priority (evaluated in order for a given capability):
+#   1. fireworks           — user's unlimited Kimi K2.5 / K2 Turbo plan
+#   2. minimax             — user's MiniMax M2.7 subscription
+#   3. openrouter (:free)  — free-tier routed models only
+#   4. mlx                 — local MLX VLM on Apple Silicon (priority chain,
+#                            newest model that is cached-or-downloadable wins.
+#                            Tier 0: Qwen3.6/3.5 natively-multimodal (early-fusion,
+#                            outperforms Qwen3-VL per Alibaba spec). Qwen3-VL-32B
+#                            is demoted to adapter-VLM floor; Qwen2.5-VL-7B is
+#                            the back-compat anchor only.)
+#   5. claude_code_headless — invokes `claude -p ...` CLI (subscription)
+#   6. codex_headless       — invokes `codex exec ...` CLI (subscription)
+
+policy: free-router-only   # block-all | free-router-only | subscription-routed | allow-first-party
+
+providers:
+  fireworks:
+    enabled: true
+    api_key_env: FIREWORKS_API_KEY
+    base_url: https://api.fireworks.ai/inference/v1
+    models:
+      # Confirmed vision-language on Fireworks (catalog 2026-04-22). The
+      # runtime currently pins a single id; the list is read top-down so new
+      # resolver logic can walk it. Order is: natively-multimodal (early-fusion)
+      # 2026 Qwen3.6/3.5 releases first, then Kimi vision-capable, then legacy.
+      # Alibaba's Qwen3.5 Highlights spec: early-fusion training achieves
+      # "cross-generational parity with Qwen3 and outperforms Qwen3-VL models
+      # across reasoning, coding, agents, and visual understanding benchmarks."
+      vlm:
+        - accounts/fireworks/models/qwen3p6-plus             # 2026-Q1, Qwen3.6 natively-multimodal (vision-capable per FW catalog)
+        - accounts/fireworks/models/qwen3p5-122b-a10b        # 2026-Q1, Qwen3.5 MoE (122B/A10B) natively-multimodal
+        - accounts/fireworks/models/kimi-k2p6                # 2026-Q1, Kimi K2.6 vision
+        - accounts/fireworks/models/kimi-k2p5                # 2025-Q4, Kimi K2.5 vision (back-compat)
+      # Kimi K2 Turbo remains the subscription-wide text default (and K2.6):
+      text: accounts/fireworks/models/kimi-k2-turbo
+
+  minimax:
+    enabled: true
+    api_key_env: MINIMAX_API_KEY
+    # International endpoint. Some accounts use https://api.minimax.chat/v1.
+    base_url: https://api.minimax.io/v1
+    models:
+      # M2.7 is the user's subscription-tier text model.
+      text: MiniMax-M2.7
+      # MiniMax vision support via their native `image` content block is
+      # best-effort; fall through to another provider if it 4xx's.
+      vlm: MiniMax-M2.7
+
+  openrouter:
+    enabled: true
+    api_key_env: OPENROUTER_API_KEY
+    base_url: https://openrouter.ai/api/v1
+    free_only: true
+    models:
+      # Top free VLM on OpenRouter (20 rpm / 200 rpd limits).
+      vlm: qwen/qwen2.5-vl-72b-instruct:free
+      text: meta-llama/llama-3.3-70b-instruct:free
+
+  mlx:
+    enabled: true
+    # Local Apple-Silicon VLM via `python -m mlx_vlm.generate`.
+    #
+    # `models.vlm` is a PRIORITY CHAIN, not a single id. The runtime
+    # (`tools/vlm-judge`, fn `pick_mlx_vlm_model`) walks the list in order
+    # and picks the first candidate already present in
+    # `~/.cache/huggingface/hub/models--<org>--<name>`. If none is cached,
+    # the top entry is returned and `mlx_vlm.generate` triggers the
+    # download. Override the whole chain with `--mlx-vlm-model <id>` or
+    # `HWLEDGER_MLX_VLM_MODEL=<id>`.
+    #
+    # All entries below have been verified on HuggingFace and confirmed
+    # mlx-vlm-compatible (see docs-site/engineering/api-provider-policy.md
+    # for the capability matrix).
+    models:
+      # Priority chain (evaluated top-down). Tiers:
+      #   tier_mlx_moe_reap — Cerebras REAP-pruned MoE VLMs (~40% experts removed,
+      #                       memory halved so 4-bit MoE VLMs fit on Metal). Ranked
+      #                       above dense models of comparable quality when present.
+      #   tier_mlx_dense    — dense 4-bit VLMs, ordered by 2025-Q4 quality.
+      #
+      # TODO(vlm-judge): re-check REAP catalog monthly — as of 2026-04-22, only
+      # OpenMOSE publishes VLM REAPs (BF16 + GGUF). No mlx-community native 4-bit
+      # REAP VLM yet. When mlx-community/Qwen3-VL-REAP-*-4bit ships, promote it
+      # above the dense Qwen3-VL-32B entry. See
+      # docs-site/research/imports-2026-04/zakelfassi-vlm-visual-testing.md for
+      # prompt-design sources consulted alongside this chain.
+      #
+      # Llama 4 Scout intentionally removed (2026-04-22): obsolete vs. Qwen3-VL /
+      # InternVL3.5 / GLM-4.5V on every open bench we track. Not documented as a
+      # fallback either — just gone.
+      vlm:
+        # tier_mlx_native_multimodal — natively-multimodal (early-fusion) 2026
+        # Qwen3.5/3.6 releases. Per Alibaba's Qwen3.5 Highlights spec:
+        #   "Unified Vision-Language Foundation: Early fusion training on
+        #    multimodal tokens achieves cross-generational parity with Qwen3
+        #    and outperforms Qwen3-VL models across reasoning, coding, agents,
+        #    and visual understanding benchmarks."
+        # Qwen3-VL is an adapter-style VLM; Qwen3.5/3.6 are architecturally
+        # natively multimodal and therefore ranked above Qwen3-VL.
+        # MLX ports verified 2026-04-22 on mlx-community.
+        - mlx-community/Qwen3.6-35B-A3B-4bit                 # 2026-Q2, 35B/A3B MoE, ~6 days old, Image-Text-to-Text
+        - mlx-community/Qwen3.5-122B-A10B-4bit               # 2026-Q1, 122B/A10B MoE, natively-multimodal; needs >=96 GB RAM
+        # tier_mlx_moe_reap — currently no mlx-community native 4-bit VLM REAPs.
+        # OpenMOSE BF16 variants exist (Qwen3-VL-REAP-24B-A3B from 30B MoE, ~40%
+        # experts pruned, ~12-14 GB at 4bit if/when mlx-community publishes). When
+        # that ships, insert `mlx-community/Qwen3-VL-REAP-24B-A3B-4bit` here.
+        # References: huggingface.co/OpenMOSE/Qwen3-VL-REAP-24B-A3B (Apache-2.0),
+        #             huggingface.co/OpenMOSE/Qwen3-VL-REAP-145B-A22B.
+        # tier_mlx_dense (general-purpose 2025-Q4 SOTA first):
+        - mlx-community/Qwen3-VL-32B-Instruct-4bit           # 2025-Q4, 19.6 GB, general-purpose SOTA (mlx-vlm 0.3.4)
+        - mlx-community/InternVL3-38B-4bit                   # 2025-Q3, best OCR at size (mlx-vlm 0.1.25+); fallback to InternVL3-14B-4bit if 38B unavailable
+        - mlx-community/InternVL3-14B-4bit                   # 2025-Q3,  8.9 GB, InternVL3-38B fallback
+        - mlx-community/GLM-4.5V-9B-4bit                     # 2025-Q3, Zhipu AI — underrated on UI/doc VQA (availability TBC, fallback if absent)
+        - mlx-community/MiniCPM-V-4-4bit                     # 2025-Q2, ~5 GB, 8B fast OCR
+        - mlx-community/gemma-3-27b-it-4bit                  # 2025-Q1, 16.8 GB, 128K ctx, native vision (mlx-vlm 0.1.18)
+        - mlx-community/pixtral-12b-4bit                     # 2024-Q3,  7.1 GB, Apache 2.0 floor (mlx-vlm 0.0.15)
+        - mlx-community/Qwen2.5-VL-7B-Instruct-4bit          # 2024-Q1,  5.6 GB, back-compat anchor only (mlx-vlm 0.1.11)
+
+  claude_code_headless:
+    enabled: true
+    # Subscription via CLI login (no API key). Image support is text-only in
+    # headless mode today; used as a reasoning/scoring fallback after a
+    # cheaper provider produces the blind description.
+    cli_bin: claude
+    cli_model: claude-opus-4-7
+
+  codex_headless:
+    enabled: true
+    cli_bin: codex
+    cli_model: gpt-5
+
+  # Two-stage frame-describer chain (ADR-0038, 2026-04-22).
+  #
+  # Successor architecture to the single `providers.mlx.models.vlm` chain
+  # above. The legacy `.vlm` key is preserved for back-compat; new callers
+  # should migrate to `providers.frame_describer.{parser,describer}`.
+  #
+  # Stage 1 (parser) returns a deterministic JSON array of UI elements with
+  # bboxes; Stage 2 (describer) is prompted with that array as authoritative
+  # context and returns a grounded JSON description. See ADR-0038 and
+  # docs-site/research/imports-2026-04/frame-describer-landscape-2026.md for
+  # the full rationale, the prompt template, and the landscape table (25+
+  # models covering UI-specialists, omni-modal natives, and adapter-VLMs).
+  frame_describer:
+    enabled: true
+    parser:
+      # tier_ui_parser — domain-specific, bbox-grounded, non-generative.
+      # OmniParser-v2 has no dedicated MLX port as of 2026-04-22; it runs
+      # under PyTorch MPS on Apple Silicon (2-4x latency penalty vs. a
+      # hypothetical MLX port — acceptable for offline journey render).
+      # paddleocr-vl.swift is the MLX-native fast path; it loses the
+      # `interactable` label but keeps OCR + layout.
+      models:
+        - microsoft/OmniParser-v2.0                           # 2025-02, canonical parser; PyTorch MPS on macOS
+        - mlx-community/paddleocr-vl.swift                    # 2025,    native Swift+MLX; loses interactable labels
+        - describer-only                                      # sentinel: fall through to Stage 2 if no parser available
+
+    describer:
+      # tier_ui_specialist — UI-grounded, trained on screenshot->action pairs.
+      # Preferred because our workload IS screenshot->action description.
+      # UI-TARS-1.5 is MLX-native (mlx-vlm 0.1.25). UI-TARS-2 exists
+      # (ByteDance-Seed, 2025-09) but no mlx-community port yet — promote
+      # when published (see bytedance/UI-TARS#193).
+      #
+      # tier_omni_native — natively-multimodal (early-fusion) 2026 releases.
+      # Beats adapter-VLMs on general content, loses to UI-specialists on
+      # dense UI screenshots.
+      #
+      # tier_vlm_adapter — legacy adapter-style VLMs. Kept as floors.
+      #
+      # Gemma 4 (Google, 2026-04-02, Apache-2.0, native multimodal incl. OCR,
+      # 256K ctx) is the next insertion target — pending an
+      # `mlx-community/gemma-4-*-4bit` port.
+      models:
+        # tier_ui_specialist (preferred)
+        - mlx-community/UI-TARS-1.5-7B-6bit                   # 2025-04, 7B, UI-grounded, MLX-native
+        - mlx-community/UI-TARS-1.5-7B-4bit                   # 2025-04, 7B, smaller quant fallback
+        # TODO(frame-describer): when UI-TARS-2 MLX port ships, insert
+        #   - mlx-community/UI-TARS-2-7B-DPO-4bit
+        # here at position 1 and demote UI-TARS-1.5 to positions 2-3.
+
+        # tier_omni_native (strong fallback when UI-specialist unavailable)
+        - mlx-community/Qwen3.6-35B-A3B-4bit                  # 2026-Q2, 35B/A3B MoE, natively-multimodal
+        - mlx-community/Qwen3.5-122B-A10B-4bit                # 2026-Q1, 122B/A10B MoE, needs >=96 GB RAM
+        # TODO(frame-describer): when Gemma 4 MLX port ships, insert
+        #   - mlx-community/gemma-4-31b-it-4bit
+        #   - mlx-community/gemma-4-26b-moe-it-4bit
+
+        # tier_vlm_adapter (floors, ordered by quality)
+        - mlx-community/Qwen3-VL-32B-Instruct-4bit            # 2025-Q4, 19.6 GB, adapter-VLM floor
+        - mlx-community/InternVL3-38B-4bit                    # 2025-Q3, best OCR at size
+        - mlx-community/InternVL3-14B-4bit                    # 2025-Q3,  8.9 GB, mid-tier
+        - mlx-community/GLM-4.5V-9B-4bit                      # 2025-Q3, underrated on UI/doc VQA
+        - mlx-community/MiniCPM-V-4-4bit                      # 2025-Q2, ~5 GB, fast OCR
+        - mlx-community/gemma-3-27b-it-4bit                   # 2025-Q1, 16.8 GB, 128K ctx (Gemma 4 successor pending)
+        - mlx-community/pixtral-12b-4bit                      # 2024-Q3,  7.1 GB, Apache 2.0
+        - mlx-community/Qwen2.5-VL-7B-Instruct-4bit           # 2024-Q1,  5.6 GB, back-compat anchor
+
+    # Cloud / subscription fallbacks (no first-party API spend).
+    cloud_fallbacks:
+      - provider: fireworks
+        model: accounts/fireworks/models/qwen3p6-plus         # unlimited plan, natively-multimodal
+      - provider: fireworks
+        model: accounts/fireworks/models/kimi-k2p6            # vision capability per FW catalog; verify with live call
+      - provider: openrouter
+        model: qwen/qwen2.5-vl-72b-instruct:free
+      - provider: claude_code_headless
+        model: claude-opus-4-7                                # reasoning-tier fallback only
+
+# Explicit denies. These MUST stay disabled unless policy is
+# allow-first-party. Even then, HWLEDGER_ALLOW_FIRST_PARTY_API=1 must be set.
+  anthropic:
+    enabled: false
+    reason: "Direct Anthropic paid API blocked. Use claude_code_headless."
+  openai:
+    enabled: false
+    reason: "Direct OpenAI paid API blocked. Use codex_headless."
+  gemini:
+    enabled: false
+    reason: "Direct Google paid API blocked. No approved substitute."
