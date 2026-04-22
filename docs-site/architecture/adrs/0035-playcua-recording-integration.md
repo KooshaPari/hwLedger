@@ -11,7 +11,7 @@
 - **Related:** PlayCua ADR-001 (Hexagonal), ADR-002 (stdio JSON-RPC), ADR-003
   (Cross-Platform Capture). hwLedger ADR 0010 (TTS), 0011 (Remotion
   compositing), 0023 (macOS GPU telemetry).
-- **Research index:** [`docs/research/prior-recording-research-index.md`](../../../docs/research/prior-recording-research-index.md)
+- **Research index:** [`docs/research/prior-recording-research-index.md`](../../research/prior-recording-research-index.md)
 
 ## Context
 
