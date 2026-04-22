@@ -10,9 +10,9 @@ use hwledger_frame_audit::{
     detect, journey_capture_missing, patch_manifest_blind_eval, regenerate_honest_stub,
     render_audit_markdown, walk_candidates, FlaggedFrame,
 };
-use std::collections::HashSet;
 use std::collections::BTreeMap;
-use std::path::{Path, PathBuf};
+use std::collections::HashSet;
+use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
 #[command(
@@ -93,8 +93,7 @@ fn main() -> Result<()> {
                 continue;
             }
         };
-        let journey_dir =
-            path.parent().and_then(|p| p.parent()).unwrap_or(path).to_path_buf();
+        let journey_dir = path.parent().and_then(|p| p.parent()).unwrap_or(path).to_path_buf();
         let force = always_flag_journeys.contains(&journey_dir);
         if args.verbose {
             eprintln!(
@@ -111,21 +110,14 @@ fn main() -> Result<()> {
             continue;
         }
 
-        let journey_id = journey_dir
-            .file_name()
-            .and_then(|n| n.to_str())
-            .unwrap_or("<unknown>")
-            .to_string();
+        let journey_id =
+            journey_dir.file_name().and_then(|n| n.to_str()).unwrap_or("<unknown>").to_string();
         let basename = path.file_name().and_then(|n| n.to_str()).unwrap_or("").to_string();
 
         flagged.push(FlaggedFrame {
             journey_id: journey_id.clone(),
             frame_basename: basename.clone(),
-            frame_path: path
-                .strip_prefix(&repo)
-                .unwrap_or(path)
-                .display()
-                .to_string(),
+            frame_path: path.strip_prefix(&repo).unwrap_or(path).display().to_string(),
             coverage: det.coverage,
             word_count: det.word_count,
         });
@@ -174,8 +166,3 @@ fn main() -> Result<()> {
     // In write mode we always succeed — the regeneration+patch is the remediation.
     Ok(())
 }
-
-// Suppress unused-import warnings when compiling the binary — `Path` is used
-// via the Path::new call below.
-#[allow(dead_code)]
-fn _touch(_p: &Path) {}

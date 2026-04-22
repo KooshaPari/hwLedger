@@ -101,8 +101,8 @@ impl RenderPlan {
 /// Requires `edge-tts` CLI on PATH. Falls through to the caller's error
 /// handling if the binary is missing so `auto`-mode can fall back to Piper.
 pub fn synthesise_voiceover_edge_tts(plan: &RenderPlan) -> Result<String, RenderError> {
-    let voice = std::env::var("HWLEDGER_EDGE_VOICE")
-        .unwrap_or_else(|_| "en-US-AriaNeural".to_string());
+    let voice =
+        std::env::var("HWLEDGER_EDGE_VOICE").unwrap_or_else(|_| "en-US-AriaNeural".to_string());
     if Command::new("edge-tts").arg("--help").output().is_err() {
         return Err(RenderError::BadManifest("edge-tts not on PATH".into()));
     }
@@ -305,8 +305,7 @@ pub fn build_rich_manifest(plan: &RenderPlan) -> Result<PathBuf, RenderError> {
         let steps_len = rich.steps.len() as u32;
         if needs_synth && steps_len > 0 {
             let fps = 30.0_f32;
-            let per_step_frames =
-                ((target_s * fps) / steps_len as f32).clamp(75.0, 180.0) as u32;
+            let per_step_frames = ((target_s * fps) / steps_len as f32).clamp(75.0, 180.0) as u32;
             let scenes: Vec<SceneSpec> = (0..steps_len)
                 .map(|i| SceneSpec {
                     step: i,
@@ -327,9 +326,7 @@ pub fn build_rich_manifest(plan: &RenderPlan) -> Result<PathBuf, RenderError> {
     let (effective_backend, audio) = match plan.voiceover.as_str() {
         "silent" => ("silent".to_string(), None),
         "piper" => ("piper".to_string(), Some(synthesise_voiceover_piper(plan)?)),
-        "edge-tts" | "edge" => {
-            ("edge-tts".to_string(), Some(synthesise_voiceover_edge_tts(plan)?))
-        }
+        "edge-tts" | "edge" => ("edge-tts".to_string(), Some(synthesise_voiceover_edge_tts(plan)?)),
         "indextts" | "indextts2" | "index-tts" | "index-tts-2" => {
             ("indextts2".to_string(), Some(synthesise_voiceover_indextts2(plan)?))
         }
@@ -418,6 +415,59 @@ pub fn run(plan: &RenderPlan) -> Result<PathBuf, RenderError> {
     annotate(plan, &rich)?;
     render(plan, &rich)?;
     Ok(plan.output_mp4.clone())
+}
+
+/// `auto` dispatch: walk `select_voice_backend()` and try the helper; if it
+/// errors, log and drop one tier at a time until Silent. Edge-tts is never
+/// considered here — it must be opt-in.
+fn auto_select_and_render(plan: &RenderPlan) -> (String, Option<String>) {
+    let preferred = select_voice_backend();
+    let chain: Vec<VoiceBackend> = match preferred {
+        VoiceBackend::IndexTts2 => vec![
+            VoiceBackend::IndexTts2,
+            VoiceBackend::Kokoro82,
+            VoiceBackend::Kitten,
+            VoiceBackend::AVSpeech,
+            VoiceBackend::Piper,
+        ],
+        VoiceBackend::Kokoro82 => vec![
+            VoiceBackend::Kokoro82,
+            VoiceBackend::Kitten,
+            VoiceBackend::AVSpeech,
+            VoiceBackend::Piper,
+        ],
+        VoiceBackend::Kitten => {
+            vec![VoiceBackend::Kitten, VoiceBackend::AVSpeech, VoiceBackend::Piper]
+        }
+        VoiceBackend::AVSpeech => vec![VoiceBackend::AVSpeech, VoiceBackend::Piper],
+        VoiceBackend::Piper => vec![VoiceBackend::Piper],
+        // Explicit overrides should have been handled above, but be defensive.
+        VoiceBackend::EdgeTts => vec![VoiceBackend::EdgeTts],
+        VoiceBackend::Silent => vec![],
+    };
+    for backend in chain {
+        let attempt: Result<String, RenderError> = match backend {
+            VoiceBackend::IndexTts2 => synthesise_voiceover_indextts2(plan),
+            VoiceBackend::Kokoro82 => synthesise_voiceover_kokoro(plan),
+            VoiceBackend::Kitten => synthesise_voiceover_kittentts(plan),
+            VoiceBackend::AVSpeech => synthesise_voiceover_avspeech(plan),
+            VoiceBackend::Piper => synthesise_voiceover_piper(plan),
+            VoiceBackend::EdgeTts => synthesise_voiceover_edge_tts(plan),
+            VoiceBackend::Silent => continue,
+        };
+        match attempt {
+            Ok(path) => return (backend.as_tag().to_string(), Some(path)),
+            Err(e) => {
+                eprintln!(
+                    "[journey-render] backend {} unavailable ({}); trying next tier",
+                    backend.as_tag(),
+                    e
+                );
+            }
+        }
+    }
+    eprintln!("[journey-render] all voice backends failed; continuing silent");
+    ("silent".to_string(), None)
 }
 
 fn ensure_bun() -> Result<(), RenderError> {
@@ -696,10 +746,7 @@ pub fn synthesise_voiceover_indextts2(plan: &RenderPlan) -> Result<String, Rende
             String::from_utf8_lossy(&out.stderr)
         )));
     }
-    eprintln!(
-        "[journey-render] indextts2 render: {:.2}s",
-        start.elapsed().as_secs_f64()
-    );
+    eprintln!("[journey-render] indextts2 render: {:.2}s", start.elapsed().as_secs_f64());
     let out_wav = plan
         .remotion_root
         .join("public")
