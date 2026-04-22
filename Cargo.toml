@@ -33,6 +33,7 @@ members = [
     "tools/vlm-judge",
     "tools/cli-ansi-parse",
     "tools/docs-health",
+    "tools/user-story-extract",
     "apps/windows/hwledger-tauri/src-tauri",
 ]
 exclude = [
