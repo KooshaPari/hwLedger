@@ -134,6 +134,28 @@ real thing before committing.
 
 ---
 
+## I — edge-tts / Andrew Multilingual (Conversational, male — Clipchamp authoritative)
+
+<audio controls preload="metadata" src="/audio/voice-ab/i-edge-andrew.wav"></audio>
+
+*The voice the user originally keyed on: Microsoft's `en-US-AndrewMultilingualNeural`,
+the authoritative male Copilot/Clipchamp voice — "Warm, Confident, Authentic,
+Honest". This is the direct-from-source reference for the male-authoritative
+category; Christopher (sample C) was a News-voice substitute for Davis, while
+Andrew is the Conversation/Copilot equivalent Clipchamp itself exposes. Compare
+this side-by-side with C to pick newscaster cadence vs. Copilot cadence.*
+
+```
+codec_name=pcm_s16le
+sample_rate=22050
+channels=1
+bits_per_sample=16
+duration=38.808027
+bit_rate=352800
+```
+
+---
+
 ## Spec summary (read *after* listening)
 
 | Slug | Engine | Voice | License | Offline-capable | Sample rate |
@@ -142,6 +164,7 @@ real thing before committing.
 | `b-edge-ava` | edge-tts 7.2.8 | `en-US-AvaMultilingualNeural` | Microsoft Edge TTS ToS | ❌ cloud | 22050 mono s16 |
 | `c-edge-christopher` | edge-tts 7.2.8 | `en-US-ChristopherNeural` (Davis substitute) | Microsoft Edge TTS ToS | ❌ cloud | 22050 mono s16 |
 | `d-piper-lessac` | piper-tts 1.3.0 | `en_US-lessac-medium` (IndexTTS stand-in) | MIT (piper) + MIT (voice) | ✅ fully local | 22050 mono s16 |
+| `i-edge-andrew` | edge-tts 7.2.8 | `en-US-AndrewMultilingualNeural` (Clipchamp authoritative male) | Microsoft Edge TTS ToS | ❌ cloud | 22050 mono s16 |
 
 All four were converted to WAV 22050 Hz mono 16-bit PCM with ffmpeg. The
 `duration=` line in each `ffprobe` block confirms no time-stretch happened
