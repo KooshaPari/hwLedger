@@ -169,7 +169,8 @@ fn voiceover_hash(path: &Path) -> Result<String, std::io::Error> {
     if let Some(steps) = v.get("steps").and_then(|s| s.as_array()) {
         for step in steps {
             let line = step
-                .get("description").and_then(|x| x.as_str())
+                .get("description")
+                .and_then(|x| x.as_str())
                 .or_else(|| step.get("blind_description").and_then(|x| x.as_str()))
                 .or_else(|| step.get("intent").and_then(|x| x.as_str()))
                 .unwrap_or("");
@@ -235,10 +236,7 @@ fn write_manifest_enrichment(
         );
         obj.insert("voiceover_sha256".into(), serde_json::Value::String(voiceover_sha.into()));
         if let Some(audio) = voiceover_audio_rel {
-            obj.insert(
-                "recording_audio_voiceover".into(),
-                serde_json::Value::String(audio.into()),
-            );
+            obj.insert("recording_audio_voiceover".into(), serde_json::Value::String(audio.into()));
         }
         if let Some(vsha) = video_sha {
             obj.insert(
@@ -317,8 +315,7 @@ pub fn render_all(
             if let Ok(v) = serde_json::from_slice::<serde_json::Value>(&raw) {
                 let stored_manifest =
                     v.get("recording_rich_manifest_sha256").and_then(|x| x.as_str()).unwrap_or("");
-                let stored_voice =
-                    v.get("voiceover_sha256").and_then(|x| x.as_str()).unwrap_or("");
+                let stored_voice = v.get("voiceover_sha256").and_then(|x| x.as_str()).unwrap_or("");
                 let manifest_match = stored_manifest == manifest_hash;
                 let voice_match = stored_voice == voice_hash;
                 let rich_exists = resolved.output_mp4.exists();
@@ -341,11 +338,7 @@ pub fn render_all(
             // Re-synthesise voiceover + remux audio track onto the existing
             // rich MP4 without re-rendering the video timeline.
             let silent_cache = silent_cache_path(&resolved.output_mp4);
-            match remix_audio_only(
-                &resolved,
-                remotion_root,
-                &silent_cache,
-            ) {
+            match remix_audio_only(&resolved, remotion_root, &silent_cache) {
                 Ok((new_rich_sha, voiceover_rel)) => {
                     let rel = recording_rich_relpath(&resolved);
                     if let Err(e) = write_manifest_enrichment(

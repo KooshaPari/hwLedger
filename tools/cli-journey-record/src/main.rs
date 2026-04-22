@@ -53,11 +53,16 @@ fn main() -> Result<()> {
 
     let mut cmd = locate_phenotype_journey()?;
     cmd.arg("record")
-        .arg("--tapes-dir").arg(&tapes_dir)
-        .arg("--recordings-dir").arg(&recordings_dir)
-        .arg("--cwd").arg(&repo_root)
-        .arg("--path-prepend").arg(&release_dir)
-        .arg("--summary-path").arg(&summary_path)
+        .arg("--tapes-dir")
+        .arg(&tapes_dir)
+        .arg("--recordings-dir")
+        .arg(&recordings_dir)
+        .arg("--cwd")
+        .arg(&repo_root)
+        .arg("--path-prepend")
+        .arg(&release_dir)
+        .arg("--summary-path")
+        .arg(&summary_path)
         .args(&cli.forward);
 
     // execvp — hand the process off so signal handling + exit code are clean.
@@ -79,7 +84,9 @@ fn resolve_repo_root_from_env() -> Option<PathBuf> {
             if cur.join("apps/cli-journeys").is_dir() && cur.join("Cargo.toml").is_file() {
                 return Some(cur);
             }
-            if !cur.pop() { return None; }
+            if !cur.pop() {
+                return None;
+            }
         }
     }
 }
@@ -115,9 +122,8 @@ fn locate_phenotype_journey() -> Result<Command> {
     if which("phenotype-journey").is_some() {
         return Ok(Command::new("phenotype-journey"));
     }
-    let phenotype_root = env::var_os("PHENOTYPE_JOURNEYS_ROOT")
-        .map(PathBuf::from)
-        .unwrap_or_else(|| {
+    let phenotype_root =
+        env::var_os("PHENOTYPE_JOURNEYS_ROOT").map(PathBuf::from).unwrap_or_else(|| {
             PathBuf::from("/Users/kooshapari/CodeProjects/Phenotype/repos/phenotype-journeys")
         });
     let manifest = phenotype_root.join("Cargo.toml");
@@ -128,11 +134,11 @@ fn locate_phenotype_journey() -> Result<Command> {
         );
     }
     let mut c = Command::new("cargo");
-    c.args([
-        "run", "--quiet", "--manifest-path",
-    ])
-    .arg(manifest)
-    .args(["--bin", "phenotype-journey", "--"]);
+    c.args(["run", "--quiet", "--manifest-path"]).arg(manifest).args([
+        "--bin",
+        "phenotype-journey",
+        "--",
+    ]);
     Ok(c)
 }
 
