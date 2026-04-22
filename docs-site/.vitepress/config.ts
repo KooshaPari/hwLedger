@@ -129,6 +129,7 @@ export default withMermaid(defineConfig({
       { text: 'Fleet', link: '/fleet/overview' },
       { text: 'Getting Started', link: '/getting-started/install' },
       { text: 'Research', link: '/research/' },
+      { text: 'Engineering', link: '/engineering/' },
       { text: 'GitHub', link: 'https://github.com/KooshaPari/hwLedger' }
     ],
 
@@ -191,6 +192,11 @@ export default withMermaid(defineConfig({
 
       '/research/': buildResearchSidebar(),
       '/research/imports-2026-04/': buildResearchSidebar(),
+
+      '/engineering/': [
+        { text: 'Engineering', link: '/engineering/' },
+        { text: 'Scripting Policy', link: '/engineering/scripting-policy' }
+      ],
 
       '/journeys/': [
         { text: 'Overview', link: '/journeys/' },
