@@ -1,25 +1,25 @@
 [package]
-name = "hwledger-run-journeys"
+name = "hwledger-journey-record"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
 authors.workspace = true
-description = "hwLedger UI journey runner: builds + runs UI tests + extracts keyframes + emits summary JSON."
+description = "Per-OS recording orchestrator for hwLedger GUI + web journeys (SCSK/Xvfb/WinRDP backends)."
 
 [[bin]]
-name = "hwledger-run-journeys"
+name = "hwledger-journey-record"
 path = "src/main.rs"
 
 [dependencies]
 anyhow = { workspace = true }
 clap = { workspace = true }
-owo-colors = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
-chrono = { workspace = true }
 
-[target.'cfg(unix)'.dependencies]
-libc = { workspace = true }
+[dev-dependencies]
+tempfile = "3"

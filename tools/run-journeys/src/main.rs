@@ -91,6 +91,13 @@ fn run(cli: Cli) -> Result<()> {
     run_cmd(Command::new("swift").args(["build", "-c", cfg]).current_dir(&project_root))
         .context("swift build UI tests failed")?;
 
+    // Optional capture-layer swap: when the harness wants video alongside
+    // XCUITest-driven events, set HWLEDGER_RECORD_BACKEND={scsk|xvfb|winrdp|auto}
+    // and HWLEDGER_RECORD_TARGET=<bundle-id|url|pid>. We spawn
+    // `hwledger-journey-record` in the background for the duration of the
+    // UI test step; XCUITest still drives the events.
+    let capture_handle = maybe_spawn_journey_record(&repo_root, &build_dir);
+
     eprintln!("{}", "Step 3: executing UI test journeys…".yellow().bold());
     let test_binary = project_root.join(format!(".build/{cfg}/HwLedgerUITests"));
     if !test_binary.exists() {
@@ -102,6 +109,20 @@ fn run(cli: Cli) -> Result<()> {
     }
     // Documented: in full setup this runs swift test --package-path {project_root}.
     eprintln!("  swift test --package-path {}", project_root.display());
+
+    // Stop the optional journey-record capture (if spawned) before keyframe
+    // extraction, so the MP4 is finalized on disk.
+    if let Some(mut child) = capture_handle {
+        #[cfg(unix)]
+        {
+            // SIGINT so the recorder writes a clean MP4 trailer.
+            let pid = child.id() as i32;
+            unsafe {
+                libc::kill(pid, libc::SIGINT);
+            }
+        }
+        let _ = child.wait();
+    }
 
     eprintln!("{}", "Step 4: extracting keyframes per journey…".yellow().bold());
     let journeys_dir = project_root.join("journeys");
@@ -199,6 +220,61 @@ fn find_repo_root() -> Result<PathBuf> {
         }
         if !cur.pop() {
             bail!("repo root not found from current directory");
+        }
+    }
+}
+
+/// If `HWLEDGER_RECORD_BACKEND` is set, spawn `hwledger-journey-record` as a
+/// background capture process for the duration of the UI test step. The
+/// process is terminated with SIGINT before keyframe extraction.
+///
+/// Env:
+///
+/// * `HWLEDGER_RECORD_BACKEND` — `scsk|xvfb|winrdp|auto`
+/// * `HWLEDGER_RECORD_TARGET`  — bundle-id / URL / PID (required)
+/// * `HWLEDGER_RECORD_OUTPUT`  — MP4 path (default: `<build>/journey-record.mp4`)
+/// * `HWLEDGER_RECORD_FLAGS`   — optional extra flags, space-separated
+fn maybe_spawn_journey_record(
+    repo_root: &Path,
+    build_dir: &Path,
+) -> Option<std::process::Child> {
+    let backend = std::env::var("HWLEDGER_RECORD_BACKEND").ok()?;
+    let target = match std::env::var("HWLEDGER_RECORD_TARGET") {
+        Ok(t) => t,
+        Err(_) => {
+            eprintln!(
+                "{} HWLEDGER_RECORD_BACKEND set but HWLEDGER_RECORD_TARGET missing — skipping capture",
+                "warn:".yellow().bold()
+            );
+            return None;
+        }
+    };
+    let output = std::env::var("HWLEDGER_RECORD_OUTPUT")
+        .unwrap_or_else(|_| build_dir.join("journey-record.mp4").display().to_string());
+
+    let bin = repo_root.join("target/release/hwledger-journey-record");
+    let bin = if bin.is_file() { bin } else { PathBuf::from("hwledger-journey-record") };
+
+    let mut cmd = Command::new(bin);
+    cmd.args(["--backend", &backend, "--target", &target, "--output", &output]);
+    if let Ok(extra) = std::env::var("HWLEDGER_RECORD_FLAGS") {
+        for flag in extra.split_whitespace() {
+            cmd.arg(flag);
+        }
+    }
+
+    eprintln!(
+        "{} spawning journey-record (backend={}, target={}, output={})",
+        "info:".cyan(),
+        backend,
+        target,
+        output
+    );
+    match cmd.spawn() {
+        Ok(child) => Some(child),
+        Err(e) => {
+            eprintln!("{} failed to spawn hwledger-journey-record: {}", "warn:".yellow(), e);
+            None
         }
     }
 }
