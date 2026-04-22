@@ -1,0 +1,24 @@
+[package]
+name = "hwledger-frame-audit"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Audit GUI-journey keyframes for text-card placeholders and regenerate them as honest stubs."
+
+[[bin]]
+name = "hwledger-frame-audit"
+path = "src/main.rs"
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+clap = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+walkdir = "2"
+image = { version = "0.25", default-features = false, features = ["png"] }

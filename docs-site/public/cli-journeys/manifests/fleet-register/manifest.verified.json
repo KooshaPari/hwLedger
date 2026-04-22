@@ -4,10 +4,11 @@
   "keyframe_count": 12,
   "passed": true,
   "recording": "recordings/fleet-register.mp4",
+  "recording_audio_voiceover": "audio/fleet-register.voiceover.wav",
   "recording_gif": "recordings/fleet-register.gif",
   "recording_rich": "recordings/fleet-register/fleet-register.rich.mp4",
-  "recording_rich_manifest_sha256": "407ae7a983bbded3b5928322b3ab39150e309b7349597a9abfa1404556616c53",
-  "recording_rich_sha256": "0f32e3e5bb0ab60e3cd37be93884ea0f9246a883a089baded85b4e8d82866730",
+  "recording_rich_manifest_sha256": "de364f6e6b67136fd94e639e0faebe8fc5a2d1456608ee255f58bf5bafa24e9d",
+  "recording_rich_sha256": "78b9472895486e33e25717c78cd9e8ad65f137fc97249afad73800470b1d914b",
   "steps": [
     {
       "assertions": {
@@ -148,5 +149,6 @@
     "mode": "mock",
     "overall_score": 0.92,
     "timestamp": "2026-04-21T08:21:19Z"
-  }
+  },
+  "voiceover_sha256": "35674a5fe5fe61aaa929e45ecb52334c988d03bbbd49bc409cd240888bd1fb28"
 }

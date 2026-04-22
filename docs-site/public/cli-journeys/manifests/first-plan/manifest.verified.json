@@ -4,10 +4,11 @@
   "keyframe_count": 14,
   "passed": false,
   "recording": "recordings/first-plan.mp4",
+  "recording_audio_voiceover": "audio/first-plan.voiceover.wav",
   "recording_gif": "recordings/first-plan.gif",
   "recording_rich": "recordings/first-plan/first-plan.rich.mp4",
-  "recording_rich_manifest_sha256": "4ead154ab244e585d6f1a2d66db5d8a148b0485b3d868d9b80264577b0cfd13f",
-  "recording_rich_sha256": "48853971f6787ade342ddcf11e92ae11b1cfcec35b80d9889985fdd735110f4f",
+  "recording_rich_manifest_sha256": "74cdc9a75551da446a58566214c371463c6a96d57f9b90eab0b855fe9139296d",
+  "recording_rich_sha256": "21bdf7d1ea9ec76034b4c9442bdb424c9855988346fcd8500017e30be60c769f",
   "steps": [
     {
       "assertions": {
@@ -203,5 +204,6 @@
     "mode": "mock",
     "overall_score": 0.92,
     "timestamp": "2026-04-21T08:21:16Z"
-  }
+  },
+  "voiceover_sha256": "f48944ad7c7047fc8a71f4bab1e772385655d6380b9d4538b1dc6ce87e1a98df"
 }

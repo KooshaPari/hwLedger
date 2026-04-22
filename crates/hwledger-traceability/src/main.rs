@@ -46,6 +46,13 @@ struct Args {
     #[arg(long)]
     allow_not_passed: bool,
 
+    /// Escalate `NeedsCapture` rows (GUI journeys with any `blind_eval: skip`
+    /// step) from warning-class to hard failure. Default policy keeps them
+    /// advisory so the pipeline can stay green while real macOS captures are
+    /// pending TCC grant.
+    #[arg(long)]
+    no_skip_allowed: bool,
+
     /// Verbose output
     #[arg(short, long)]
     verbose: bool,
@@ -126,7 +133,7 @@ fn main() -> Result<()> {
 
         // Journey gate (FR-TRACE-003) — evaluated first so it reports even if
         // classic coverage is already green.
-        if journey_report.has_failures() {
+        if journey_report.has_failures() || journey_report.has_needs_capture() {
             let mut hard_fail = false;
             eprintln!("\nJourney coverage gate (--strict):");
             for row in &journey_report.rows {
@@ -144,6 +151,10 @@ fn main() -> Result<()> {
                     JourneyStatus::NotPassed => {
                         ("journey not passed".to_string(), !args.allow_not_passed)
                     }
+                    JourneyStatus::NeedsCapture => (
+                        "real capture pending (blind_eval: skip; macOS TCC)".to_string(),
+                        args.no_skip_allowed,
+                    ),
                 };
                 let level = if is_hard { "FAIL" } else { "WARN" };
                 eprintln!("  - {level} {} [{}] ({})", row.fr, row.kind, reason);

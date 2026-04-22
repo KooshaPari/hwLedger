@@ -4,10 +4,11 @@
   "keyframe_count": 0,
   "passed": true,
   "recording": "recordings/hf-search-deepseek.mp4",
+  "recording_audio_voiceover": "audio/hf-search-deepseek.voiceover.wav",
   "recording_gif": "recordings/hf-search-deepseek.gif",
   "recording_rich": "recordings/hf-search-deepseek/hf-search-deepseek.rich.mp4",
-  "recording_rich_manifest_sha256": "c1ec3b13bc403323e12aabd147b835879f3a1862dda491f867f24e149f821efb",
-  "recording_rich_sha256": "3ad3b1f1f756f8d94c56bc966199979b5689e382f0fc8f797588907d7ab716c1",
+  "recording_rich_manifest_sha256": "b5632a7eae1a8919fa68e2e82c63ff2bed440dc2514a185949b415f10b1494f7",
+  "recording_rich_sha256": "79592124b57977c58c01a5a37654c02b45859bc4c4dac5da9c8d73c182d9352e",
   "steps": [],
   "traces_to": [
     "FR-HF-001",
@@ -21,5 +22,6 @@
     "mode": "pending-record",
     "overall_score": 0.92,
     "timestamp": "2026-04-21T01:00:00Z"
-  }
+  },
+  "voiceover_sha256": "a4300d49fffd637d2b07d9cafcc219c5c522dbddbc33da11117d896d566aa70c"
 }

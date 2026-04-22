@@ -18,8 +18,8 @@ pub mod scan;
 
 pub use journeys::{
     evaluate as evaluate_journeys, render_markdown as render_journey_markdown, scan_verified,
-    JourneyCoverageRow, JourneyManifest, JourneyReport, JourneyScan, JourneyStatus,
-    ManifestVerification, OrphanJourney, MIN_JOURNEY_SCORE,
+    BlindEvalMode, JourneyCoverageRow, JourneyManifest, JourneyReport, JourneyScan, JourneyStatus,
+    ManifestStep, ManifestVerification, OrphanJourney, MIN_JOURNEY_SCORE,
 };
 pub use prd::{FrKind, FrSpec, JourneyKind, PrdParser};
 pub use report::{CoverageLevel, CoverageReport, FrCoverage, Stats};

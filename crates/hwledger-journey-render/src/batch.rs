@@ -397,6 +397,16 @@ pub fn render_all(
         );
         plan.voiceover = voiceover.to_string();
 
+        // CLI family: terminal recordings have no bboxes for cursor/callout
+        // overlays; instead, give each step a visible CaptionBar (center-bottom)
+        // + StepBadge (top-left) via the dedicated `JourneyCli` composition.
+        // Target ~25s total content so voiceover lines fit comfortably and
+        // captions are readable (was ~9-12s at the 3s-per-step default).
+        if resolved.family == Family::Cli {
+            plan.target_content_seconds = Some(25.0);
+            plan.composition_id = "JourneyCli".to_string();
+        }
+
         // GUI auto-detect: when the raw MP4 is missing / < 3 s (TCC-blocked
         // XCUITest capture), route through the slideshow composition which
         // synthesises a multi-step walkthrough from the keyframe PNGs.

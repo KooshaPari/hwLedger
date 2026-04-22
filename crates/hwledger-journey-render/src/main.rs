@@ -197,6 +197,7 @@ fn annotate_only(manifest: &Path, keyframes: &Path, remotion_root: &Path) -> any
         scene_spec: None,
         voiceover: "auto".to_string(),
         composition_id: "JourneyRich".to_string(),
+        target_content_seconds: None,
     };
     let rich_path = build_rich_manifest(&plan)?;
     run_annotate(&plan, &rich_path)?;

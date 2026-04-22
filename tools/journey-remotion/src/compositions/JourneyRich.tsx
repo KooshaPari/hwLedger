@@ -20,6 +20,7 @@ import { CalloutBox } from "../components/CalloutBox";
 import { CaptionBar } from "../components/CaptionBar";
 import { FrameStill } from "../components/FrameStill";
 import { CursorOverlay } from "../components/CursorOverlay";
+import { StepBadge } from "../components/StepBadge";
 import type { CalloutPosition, RichManifest, SceneSpec } from "../types";
 
 export interface JourneyRichProps {
@@ -62,8 +63,12 @@ export const JourneyRich: React.FC<JourneyRichProps> = ({
   });
   const endOfScenes = cursor;
 
+  const voiceoverBackend = manifest.voiceover?.backend;
   const voiceoverSrc =
-    manifest.voiceover?.backend === "piper" && manifest.voiceover?.audio
+    (voiceoverBackend === "piper" ||
+      voiceoverBackend === "edge-tts" ||
+      voiceoverBackend === "edge") &&
+    manifest.voiceover?.audio
       ? staticFile(manifest.voiceover.audio)
       : null;
 
@@ -120,6 +125,7 @@ export const JourneyRich: React.FC<JourneyRichProps> = ({
                   frame: p.frame - from,
                 }))} />
               )}
+              <StepBadge step={spec.step + 1} total={steps.length} />
               <CaptionBar text={step.intent} />
             </AbsoluteFill>
           </Sequence>

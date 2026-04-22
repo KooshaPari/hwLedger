@@ -33,6 +33,32 @@ pub struct ManifestVerification {
     pub all_intents_passed: bool,
 }
 
+/// Blind-eval mode for an individual journey step.
+///
+/// `Skip` marks a step whose screenshot is an honest stub (real capture blocked
+/// by macOS TCC) — the VLM/OCR judge MUST NOT score it. Default is `Honest`,
+/// meaning the frame was really captured and is fair game for blind evaluation.
+///
+/// Traces to: FR-TRACE-003, FR-UX-VERIFY-002
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum BlindEvalMode {
+    #[default]
+    Honest,
+    Skip,
+}
+
+/// Per-step manifest fragment used by the journey gate. We only decode the
+/// subset we need (blind-eval mode + slug for diagnostics); the real manifest
+/// carries many more fields (annotations, descriptions, bboxes, …).
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
+pub struct ManifestStep {
+    #[serde(default)]
+    pub slug: String,
+    #[serde(default)]
+    pub blind_eval: BlindEvalMode,
+}
+
 /// Parsed shape of a verified journey manifest.
 ///
 /// We allow additional fields (the real manifests contain a lot more).
@@ -49,12 +75,22 @@ pub struct JourneyManifest {
     /// manifests are backfilled.
     #[serde(default)]
     pub traces_to: Vec<String>,
+    /// Per-step blind-eval metadata. Missing => all steps default to `Honest`.
+    #[serde(default)]
+    pub steps: Vec<ManifestStep>,
     /// Inferred from the directory the manifest lives under
     /// (set post-deserialization by the scanner).
     #[serde(skip)]
     pub kind: Option<JourneyKind>,
     #[serde(skip)]
     pub manifest_path: PathBuf,
+}
+
+impl JourneyManifest {
+    /// True when the manifest has at least one step marked `blind_eval: skip`.
+    pub fn has_skipped_step(&self) -> bool {
+        self.steps.iter().any(|s| s.blind_eval == BlindEvalMode::Skip)
+    }
 }
 
 /// Result of scanning all journey roots.
@@ -137,6 +173,11 @@ pub enum JourneyStatus {
     Missing,
     LowScore,
     NotPassed,
+    /// GUI journey with ≥1 step flagged `blind_eval: skip` — real capture is
+    /// pending (e.g. macOS TCC denied). Treated as a non-fatal warning by
+    /// default under `--strict-journeys`, but upgradable to hard failure via
+    /// `--no-skip-allowed`.
+    NeedsCapture,
 }
 
 /// Report produced by [`evaluate`].
@@ -155,9 +196,22 @@ pub struct OrphanJourney {
 }
 
 impl JourneyReport {
-    /// True when any row or orphan requires a CI failure.
+    /// True when any row or orphan requires a CI failure under the default
+    /// `--strict-journeys` policy. `NeedsCapture` is a warning-class status
+    /// (advisory) and does NOT count here — callers that want to promote it
+    /// to a hard failure should check [`JourneyReport::has_needs_capture`]
+    /// separately (see `--no-skip-allowed` in the CLI).
     pub fn has_failures(&self) -> bool {
-        self.rows.iter().any(|r| r.status != JourneyStatus::Ok) || !self.orphan_journeys.is_empty()
+        self.rows
+            .iter()
+            .any(|r| !matches!(r.status, JourneyStatus::Ok | JourneyStatus::NeedsCapture))
+            || !self.orphan_journeys.is_empty()
+    }
+
+    /// True when any row is `NeedsCapture` — used by `--no-skip-allowed` to
+    /// escalate the warning into a blocking failure.
+    pub fn has_needs_capture(&self) -> bool {
+        self.rows.iter().any(|r| r.status == JourneyStatus::NeedsCapture)
     }
 }
 
@@ -235,7 +289,16 @@ pub fn evaluate(frs: &[FrSpec], scan: &JourneyScan) -> JourneyReport {
             //   score >= MIN_JOURNEY_SCORE AND !text_passed      -> OK + warning
             //   score <  MIN_JOURNEY_SCORE                       -> LowScore
             //   score == 0 (no/pending capture)                  -> NotPassed
-            let status = if score <= 0.0 {
+            // Blind-eval skip gate: a GUI journey with any step marked
+            // `blind_eval: skip` has been explicitly admitted as
+            // partially-captured. Regardless of vision-judge score (which
+            // would be measuring honest-stub frames), surface this as
+            // `NeedsCapture` so reviewers know real capture is still owed.
+            let blind_skip = *kind == JourneyKind::Gui && best.has_skipped_step();
+
+            let status = if blind_skip {
+                JourneyStatus::NeedsCapture
+            } else if score <= 0.0 {
                 JourneyStatus::NotPassed
             } else if score < MIN_JOURNEY_SCORE {
                 JourneyStatus::LowScore
@@ -289,6 +352,7 @@ pub fn render_markdown(report: &JourneyReport) -> String {
                 JourneyStatus::Missing => "MISSING",
                 JourneyStatus::LowScore => "LOW_SCORE",
                 JourneyStatus::NotPassed => "NOT_PASSED",
+                JourneyStatus::NeedsCapture => "NEEDS_CAPTURE",
             };
             md.push_str(&format!(
                 "| **{}** | {} | {} | {} | {} | {} |\n",
@@ -352,9 +416,33 @@ mod tests {
                 all_intents_passed: passed,
             }),
             traces_to: traces.into_iter().map(String::from).collect(),
+            steps: Vec::new(),
             kind: Some(kind),
             manifest_path: PathBuf::from(format!("fake/{}/manifest.verified.json", id)),
         }
+    }
+
+    fn manifest_with_skip(
+        id: &str,
+        kind: JourneyKind,
+        traces: Vec<&str>,
+        score: f64,
+        passed: bool,
+        skip_indices: &[usize],
+    ) -> JourneyManifest {
+        let mut m = manifest(id, kind, traces, score, passed);
+        // Fabricate 6 steps, marking the listed indices as skip.
+        m.steps = (0..6)
+            .map(|i| ManifestStep {
+                slug: format!("step-{}", i),
+                blind_eval: if skip_indices.contains(&i) {
+                    BlindEvalMode::Skip
+                } else {
+                    BlindEvalMode::Honest
+                },
+            })
+            .collect();
+        m
     }
 
     /// Traces to: FR-TRACE-001
@@ -477,6 +565,35 @@ mod tests {
         assert!(!rep.has_failures());
         // Advisory warning must surface.
         assert!(rep.warnings.iter().any(|w| w.contains("OCR advisory")));
+    }
+
+    /// GUI journey with ≥1 step marked `blind_eval: skip` surfaces as
+    /// `NeedsCapture`, NOT `Ok`, regardless of vision-judge score. Under the
+    /// default policy this is advisory (no CI failure) but
+    /// `has_needs_capture()` returns true so `--no-skip-allowed` can escalate.
+    ///
+    /// Traces to: FR-TRACE-003, FR-UX-VERIFY-002
+    #[test]
+    fn test_gui_journey_with_blind_eval_skip_surfaces_needs_capture() {
+        let frs = vec![fr("FR-UI-001", vec![JourneyKind::Gui])];
+        let scan = JourneyScan {
+            manifests: vec![manifest_with_skip(
+                "planner-gui-launch",
+                JourneyKind::Gui,
+                vec!["FR-UI-001"],
+                0.92, // even a "good" score must NOT mask a skipped step
+                true,
+                &[0, 4],
+            )],
+            warnings: vec![],
+        };
+        let rep = evaluate(&frs, &scan);
+        assert_eq!(rep.rows.len(), 1);
+        assert_eq!(rep.rows[0].status, JourneyStatus::NeedsCapture);
+        // Advisory-class by default — does NOT trip has_failures().
+        assert!(!rep.has_failures());
+        // But the escalation hook must detect it.
+        assert!(rep.has_needs_capture());
     }
 
     /// Traces to: FR-TRACE-004

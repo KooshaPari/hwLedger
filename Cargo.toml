@@ -22,6 +22,7 @@ members = [
     "crates/hwledger-devtools",
     "crates/hwledger-attest",
     "crates/hwledger-journey-render",
+    "crates/hwledger-frame-audit",
     "tools/dev-harness",
     "tools/bundle-app",
     "tools/run-journeys",

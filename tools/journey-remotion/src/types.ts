@@ -75,8 +75,14 @@ export interface SceneSpec {
 }
 
 export interface VoiceoverSpec {
-  /** "silent" = skip TTS; "piper" = locally synthesised with Piper. */
-  backend: "silent" | "piper";
+  /**
+   * Voiceover backend used to synthesise `audio`.
+   *   - `silent`    = no audio track
+   *   - `piper`     = locally synthesised with Piper
+   *   - `edge-tts`  = synthesised via Microsoft edge-tts (cloud)
+   *   - `edge`      = alias of `edge-tts`
+   */
+  backend: "silent" | "piper" | "edge-tts" | "edge";
   /** Per-scene narration text (index-aligned with `scenes`). */
   lines?: string[];
   /** Relative path to a pre-rendered WAV/MP3 under `public/`. */

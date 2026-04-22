@@ -4,10 +4,11 @@
   "keyframe_count": 8,
   "passed": true,
   "recording": "recordings/fleet-audit.mp4",
+  "recording_audio_voiceover": "audio/fleet-audit.voiceover.wav",
   "recording_gif": "recordings/fleet-audit.gif",
   "recording_rich": "recordings/fleet-audit/fleet-audit.rich.mp4",
-  "recording_rich_manifest_sha256": "36031674514f522cdf610ac747f23bf37c12fdc63a96c6609cd5106c0b60ba8b",
-  "recording_rich_sha256": "9c5b80ca16f5327f678f82acb5508293c6f80479a5355f4519dd11f1b1c428f0",
+  "recording_rich_manifest_sha256": "b0a02578cb841109af1a0bb00b15f1305f84c6ad29c714d56556f5912a35a487",
+  "recording_rich_sha256": "160e32b55a16e4168fdffba6890a4646d2a7554c6f79673982b135cc13eed762",
   "steps": [
     {
       "assertions": {
@@ -117,5 +118,6 @@
     "mode": "mock",
     "overall_score": 0.92,
     "timestamp": "2026-04-21T08:21:18Z"
-  }
+  },
+  "voiceover_sha256": "4be6666c7261d49da45b5dbd3b7ae5cfa02f5abb51dca945e0fd2f56121aeb79"
 }
