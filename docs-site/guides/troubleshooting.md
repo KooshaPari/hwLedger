@@ -11,7 +11,11 @@ description: Common issues and fixes
       caption="Healthy probe output — device row present"
       size="small" align="right" />
 
-<!-- SHOT-TODO: capture an empty probe list result (no-GPU host) -->
+<RecordingEmbed tape="probe-list" caption="probe list: healthy baseline to compare your output against" />
+
+<Shot src="/cli-journeys/keyframes/probe-list/frame-001.png"
+      caption="Probe start: backend auto-detect banner"
+      size="small" align="left" />
 
 **Symptom**: `hwledger probe` returns empty GPU list.
 
@@ -44,7 +48,17 @@ brew install metal-tools
 <Shot src="/cli-journeys/keyframes/ingest-error/frame-001.png"
       caption="Fail-loud error line (E-INGEST-02) — same style as NVML failures"
       size="small" align="right"
-      :annotations='[{"bbox":[60,220,480,32],"label":"error code","color":"#f38ba8","style":"dashed"}]' />
+      :annotations='[{"bbox":[60,220,480,32],"label":"error code","color":"#f38ba8","style":"dashed","position":"bottom-left"}]' />
+
+<RecordingEmbed tape="ingest-error" caption="ingest: deliberate failure → explicit error code, no silent fallback" />
+
+<Shot src="/cli-journeys/keyframes/ingest-error/frame-003.png"
+      caption="Exit 2 with actionable remediation line below"
+      size="small" align="left" />
+
+<Shot src="/cli-journeys/keyframes/ingest-error/frame-005.png"
+      caption="stderr breadcrumb: config parse → resolver → fail"
+      size="small" align="right" />
 
 ## NVML library not found
 

@@ -9,16 +9,27 @@ Complete reference for all `hwledger` subcommands.
 
 ## plan
 
-<Shot src="/cli-journeys/keyframes/plan-help/frame-001.png"
+<Shot src="/cli-journeys/keyframes/plan-help/frame-005.png"
       caption="hwledger plan --help"
       size="small" align="right"
-      :annotations='[{"bbox":[40,60,520,20],"label":"usage"}]' />
+      :annotations='[{"bbox":[40,60,520,20],"label":"usage","position":"top-right"}]' />
 
 <Shot src="/cli-journeys/keyframes/plan-deepseek/frame-003.png"
       caption="Typical plan output: VRAM breakdown + architecture detection"
       size="small" align="right" />
 
+<RecordingEmbed tape="plan-deepseek" caption="plan: DeepSeek-V3 → live architecture detection + colored VRAM bands" />
+
 Memory planner: estimates VRAM and selects optimal tensor parallelism, quantization, and attention variant.
+
+<Shot src="/cli-journeys/keyframes/plan-deepseek/frame-001.png"
+      caption="plan run start: model arg accepted, config fetched"
+      size="small" align="left" />
+
+<Shot src="/cli-journeys/keyframes/plan-deepseek/frame-005.png"
+      caption="Per-layer KV breakdown — MLA latent dim drives the total"
+      size="small" align="right"
+      :annotations='[{"bbox":[160,280,280,32],"label":"latent_dim=512","color":"#89b4fa","position":"center-bottom"}]' />
 
 ```bash
 hwledger plan [OPTIONS] --model <MODEL>
@@ -55,13 +66,21 @@ hwledger plan --model llama-70b --context 8000 --json | jq .vram_required
 <Shot src="/cli-journeys/keyframes/probe-list/frame-002.png"
       caption="probe list — one device row per GPU"
       size="small" align="right"
-      :annotations='[{"bbox":[40,120,480,20],"label":"device 0","color":"#cba6f7"}]' />
+      :annotations='[{"bbox":[40,120,480,20],"label":"device 0","color":"#cba6f7","position":"top-left"}]' />
 
-<Shot src="/cli-journeys/keyframes/probe-watch/frame-001.png"
+<Shot src="/cli-journeys/keyframes/probe-watch/frame-003.png"
       caption="probe watch — live-refresh header"
       size="small" align="left" />
 
+<RecordingEmbed tape="probe-list" caption="probe list: Apple Silicon / NVIDIA / AMD / Intel backend detection" />
+
+<RecordingEmbed tape="probe-watch" caption="probe watch: continuous telemetry, 2s refresh, ctrl-C to exit" />
+
 GPU discovery and telemetry: list available GPUs, memory, compute capability.
+
+<Shot src="/cli-journeys/keyframes/probe-list/frame-003.png"
+      caption="Per-GPU VRAM + free / used split"
+      size="small" align="right" />
 
 ```bash
 hwledger probe [OPTIONS]
@@ -84,6 +103,8 @@ hwledger probe --watch --filter cuda:0
 # Export JSON for parsing
 hwledger probe --json | jq '.gpus[].vram_free_gb'
 ```
+
+<RecordingEmbed tape="ingest-local-gguf" caption="ingest: cache a local GGUF + verify the hash chain entry" />
 
 ## ingest
 
@@ -153,13 +174,26 @@ hwledger run --model llama-70b --remote tcp://fleet.example.com:5443 input.json
 <Shot src="/cli-journeys/keyframes/fleet-register/frame-003.png"
       caption="fleet register — host added"
       size="small" align="right"
-      :annotations='[{"bbox":[80,160,360,24],"label":"host added","color":"#a6e3a1"}]' />
+      :annotations='[{"bbox":[80,160,360,24],"label":"host added","color":"#a6e3a1","position":"top-right"}]' />
 
 <Shot src="/cli-journeys/keyframes/fleet-audit/frame-002.png"
       caption="fleet audit — attestation hash verified"
       size="small" align="left" />
 
+<RecordingEmbed tape="fleet-register" caption="fleet register: bootstrap + mTLS handshake + first event written" />
+
+<RecordingEmbed tape="fleet-audit" caption="fleet audit: hash chain verified, per-agent attestation summary" />
+
 Fleet orchestration: register agents, query status, submit jobs.
+
+<Shot src="/cli-journeys/keyframes/fleet-register/frame-005.png"
+      caption="mTLS client cert pinned, agent id bound to host"
+      size="small" align="right"
+      :annotations='[{"bbox":[60,200,420,28],"label":"cert pin","color":"#f9e2af","position":"bottom-right"}]' />
+
+<Shot src="/cli-journeys/keyframes/fleet-audit/frame-004.png"
+      caption="Hash chain walk: every event cryptographically linked"
+      size="small" align="left" />
 
 ```bash
 hwledger fleet <SUBCOMMAND>

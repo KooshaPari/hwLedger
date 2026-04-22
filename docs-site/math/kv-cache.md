@@ -29,6 +29,13 @@ Incorrect calculation costs hours of debugging and wasted VRAM. hwLedger derives
 
 <RecordingEmbed tape="first-plan" caption="Live MLA classification and per-layer VRAM breakdown" />
 
+<RecordingEmbed tape="plan-mla-deepseek" caption="KV cache sweep: context 4K → 32K with stacked band chart" />
+
+<Shot src="/cli-journeys/keyframes/plan-mla-deepseek/frame-003.png"
+      caption="32K sweep endpoint — KV band dominates when seq > 16K"
+      size="small" align="right"
+      :annotations='[{"bbox":[200,160,280,28],"label":"KV dominant","color":"#fab387","position":"center"}]' />
+
 ## KV Cache Formula Derivation
 
 ### 1. Multi-Head Attention (MHA)

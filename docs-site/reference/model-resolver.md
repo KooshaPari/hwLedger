@@ -60,6 +60,17 @@ hwledger plan https://huggingface.co/meta-llama/Llama-3-70B --seq 8K
 
 <RecordingEmbed tape="plan-hf-resolve" caption="Resolver dispatch: repo id, URL, and gold fixture shortcut" />
 
+<RecordingEmbed tape="streamlit-hf-search" caption="Streamlit handoff: HF search → click row → auto-redirect to Planner with model pre-filled" />
+
+<Shot src="/cli-journeys/keyframes/plan-hf-resolve/frame-002.png"
+      caption="Dispatch badge: `hf-repo` for a bare repo id"
+      size="small" align="left"
+      :annotations='[{"bbox":[60,120,280,24],"label":"hf-repo","color":"#f9e2af","position":"top-left"}]' />
+
+<Shot src="/cli-journeys/keyframes/plan-hf-resolve/frame-004.png"
+      caption="Dispatch badge: `gold` for a fixture shortcut"
+      size="small" align="right" />
+
 ### Via Streamlit
 
 The web app exposes a single text input labelled "Model". It forwards the raw

@@ -13,9 +13,15 @@ Get hwLedger running on your system.
 
 <RecordingEmbed tape="install-from-source" caption="Clone, build, and verify installation" />
 
+<RecordingEmbed tape="install-cargo" caption="cargo install: the same path the GitHub Actions matrix uses, run locally" />
+
+<Shot src="/cli-journeys/keyframes/install-cargo/frame-005.png"
+      caption="Final link step before the binary lands on $PATH"
+      size="small" align="right" />
+
 ### 1. Clone the repository
 
-<Shot src="/cli-journeys/keyframes/install-cargo/frame-001.png"
+<Shot src="/cli-journeys/keyframes/install-cargo/frame-003.png"
       caption="cargo install — download"
       size="small" align="right" />
 

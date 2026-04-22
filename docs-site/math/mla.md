@@ -9,7 +9,14 @@ description: Low-rank KV projection
       caption="Planner auto-detects MLA with kv_lora_rank=512 for DeepSeek-V3"
       size="small" align="right" />
 
+<RecordingEmbed tape="plan-mla-deepseek" caption="MLA planner run: per-layer KV breakdown in latent space" />
+
 Compresses KV cache by projecting to a low-rank latent space before multi-head operation.
+
+<Shot src="/cli-journeys/keyframes/plan-mla-deepseek/frame-001.png"
+      caption="Latent projection step highlighted in the plan trace"
+      size="small" align="left"
+      :annotations='[{"bbox":[120,180,320,28],"label":"latent_dim","color":"#89b4fa","position":"center-top"}]' />
 
 ## Formula
 
@@ -33,6 +40,13 @@ MLA was the DeepSeek team's answer to the specific problem that even GQA's 8× c
       size="small" align="left" />
 
 **hwLedger accounting gotcha.** MLA's KV footprint is `2 * kv_lora_rank * bytes` per token per layer — NOT `2 * num_kv_heads * head_dim * bytes`. A naive reuse of the GQA formula overstates memory by ~10× for DeepSeek-V3. `AttentionKind::MLA { latent_dim }` carries the latent dim explicitly; the planner will refuse to produce a result if `latent_dim` is missing rather than silently fall back to GQA math.
+
+<Shot src="/cli-journeys/keyframes/plan-mla-deepseek/frame-004.png"
+      caption="Refuse-to-plan path: missing latent_dim surfaces as a hard error, not a silent fallback"
+      size="small" align="right"
+      :annotations='[{"bbox":[80,240,480,32],"label":"E-PLAN-MLA-MISSING","color":"#f38ba8","style":"dashed","position":"bottom-left"}]' />
+
+<RecordingEmbed tape="plan-deepseek" caption="MLA classification inside the full plan-deepseek run" />
 
 <!-- SHOT-TODO: inline <Shot> showing the refusal-to-plan error when latent_dim is missing -->
 

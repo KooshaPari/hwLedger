@@ -22,11 +22,25 @@ Setting up a persistent fleet server on commodity hardware (old laptop, spare de
 
 <Shot src="/cli-journeys/keyframes/fleet-register/frame-007.png"
       caption="Signature attached to attestation"
-      size="small" align="left" />
+      size="small" align="left"
+      :annotations='[{"bbox":[60,180,480,28],"label":"ed25519 signature","color":"#a6e3a1","position":"center-top"}]' />
 
 <Shot src="/cli-journeys/keyframes/fleet-audit/frame-005.png"
       caption="audit summary after first run"
       size="small" align="right" />
+
+<RecordingEmbed tape="fleet-register" caption="fleet register: walk through the bootstrap on a spare box" />
+
+<RecordingEmbed tape="fleet-audit" caption="fleet audit: first-run verification against the fresh ledger" />
+
+<Shot src="/cli-journeys/keyframes/fleet-audit/frame-001.png"
+      caption="Audit entry point — operator types `hwledger audit --verify`"
+      size="small" align="left" />
+
+<Shot src="/cli-journeys/keyframes/fleet-audit/frame-003.png"
+      caption="Chain integrity confirmed across N events"
+      size="small" align="right"
+      :annotations='[{"bbox":[80,140,440,24],"label":"chain OK","color":"#a6e3a1","position":"bottom-right"}]' />
 
 ### 1. Download binary
 

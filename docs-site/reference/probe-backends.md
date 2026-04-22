@@ -4,9 +4,18 @@
       caption="Metal backend — device 0 detected"
       size="small" align="right" />
 
-<Shot src="/cli-journeys/keyframes/probe-watch/frame-001.png"
+<Shot src="/cli-journeys/keyframes/probe-watch/frame-003.png"
       caption="probe watch — live refresh"
       size="small" align="left" />
+
+<RecordingEmbed tape="probe-list" caption="probe list: all four backends in one run (Metal / CUDA / ROCm / Intel)" />
+
+<RecordingEmbed tape="probe-watch" caption="probe watch: per-backend live refresh, no subprocess involved" />
+
+<Shot src="/cli-journeys/keyframes/probe-watch/frame-001.png"
+      caption="Watch header: refresh interval, attached device count, last-tick timestamp"
+      size="small" align="right"
+      :annotations='[{"bbox":[40,60,480,24],"label":"2s tick","color":"#f9e2af","position":"top-right"}]' />
 
 The `hwledger-probe` crate exposes a trait-based `GpuProbe` abstraction with four concrete backends. This page documents the Apple Silicon (Metal / IOKit) backend in detail, including the IOKit key matrix and chip-support table.
 

@@ -8,11 +8,19 @@ description: Multi-head queries, grouped key-values
 <Shot src="/cli-journeys/keyframes/first-plan/frame-005.png"
       caption="Planner VRAM fit line — typical GQA model"
       size="small" align="right"
-      :annotations='[{"bbox":[80,180,400,24],"label":"fits","color":"#a6e3a1"}]' />
+      :annotations='[{"bbox":[80,180,400,24],"label":"fits","color":"#a6e3a1","position":"center-bottom"}]' />
 
-<!-- SHOT-TODO: capture frame showing num_kv_heads detection -->
+<RecordingEmbed tape="first-plan" caption="GQA plan: num_kv_heads detection + share-ratio chart" />
 
 Reduces KV cache size by sharing keys and values across multiple query heads.
+
+<Shot src="/cli-journeys/keyframes/first-plan/frame-003.png"
+      caption="Config parse: num_kv_heads=8 for a 32-head model → 4:1 share ratio"
+      size="small" align="left" />
+
+<Shot src="/cli-journeys/keyframes/first-plan/frame-008.png"
+      caption="Chart: KV band is 1/4 the height of MHA baseline for same context"
+      size="small" align="right" />
 
 ## Formula
 

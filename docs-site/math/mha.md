@@ -9,9 +9,14 @@ description: Full-rank attention with parallel heads
       caption="--attention-kind flag (planner accepts MHA override)"
       size="small" align="right" />
 
-<!-- SHOT-TODO: capture planner output for a pure-MHA model (e.g. LLaMA-2-7B) -->
+<RecordingEmbed tape="plan-help" caption="plan --help: --attention-kind enum options (mha | gqa | mqa | mla | ssm | auto)" />
 
 Standard Transformer attention mechanism, the foundation all other attention variants derive from.
+
+<Shot src="/cli-journeys/keyframes/plan-help/frame-003.png"
+      caption="Flag dump: --attention-kind default is `auto`"
+      size="small" align="left"
+      :annotations='[{"bbox":[40,120,420,24],"label":"auto (default)","color":"#f9e2af","position":"top-left"}]' />
 
 ## Formula
 

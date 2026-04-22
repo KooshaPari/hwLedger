@@ -9,9 +9,14 @@ description: Single shared key-value head
       caption="KV cache row — 8× smaller for MQA vs MHA"
       size="small" align="right" />
 
-<!-- SHOT-TODO: capture planner output against an MQA-only model (PaLM config) -->
+<RecordingEmbed tape="first-plan" caption="MQA vs MHA stacked chart — single shared KV head dominates the space savings" />
 
 Extreme KV cache compression: all query heads share a single K, V head.
+
+<Shot src="/cli-journeys/keyframes/first-plan/frame-010.png"
+      caption="Component breakdown: MQA's KV band is barely visible at the same context length"
+      size="small" align="left"
+      :annotations='[{"bbox":[120,220,360,28],"label":"KV = 1/num_heads of MHA","color":"#cba6f7","position":"bottom-right"}]' />
 
 ## Formula
 

@@ -9,9 +9,13 @@ description: Local context with exponential recurrence
       caption="--window-size flag documented in plan --help"
       size="small" align="right" />
 
-<!-- SHOT-TODO: capture planner output for Mistral-7B (window=4096) -->
+<RecordingEmbed tape="plan-help" caption="plan --help: every flag incl. --window-size for sliding-window models" />
 
 Restricts attention to a local context window (e.g., 4K tokens) while allowing information to flow globally via stacking.
+
+<Shot src="/cli-journeys/keyframes/plan-help/frame-009.png"
+      caption="--window-size default (0 = full sequence) surfaced in the flag table"
+      size="small" align="left" />
 
 ## Formula
 

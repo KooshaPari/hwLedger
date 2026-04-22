@@ -69,6 +69,28 @@ Devices are registered with:
 
 <RecordingEmbed tape="fleet-audit" caption="Audit fleet health and device status" />
 
+<RecordingEmbed tape="fleet-gui-map" caption="GUI fleet map: live-updating canvas view of every registered device" />
+
+<RecordingEmbed tape="settings-gui-mtls" caption="Settings → mTLS: generate + pin client cert from the desktop app" />
+
+<Shot src="/cli-journeys/keyframes/fleet-register/frame-002.png"
+      caption="Register step 2 — labels applied (tenant, env, gpu-class)"
+      size="small" align="left"
+      :annotations='[{"bbox":[60,160,440,28],"label":"labels","color":"#cba6f7","position":"top-left"}]' />
+
+<Shot src="/cli-journeys/keyframes/fleet-register/frame-006.png"
+      caption="Register step 6 — first event written, ledger head advances"
+      size="small" align="right" />
+
+<Shot src="/cli-journeys/keyframes/fleet-audit/frame-003.png"
+      caption="Audit: per-agent row with last-seen, backend, and hash verdict"
+      size="small" align="left"
+      :annotations='[{"bbox":[40,200,560,28],"label":"verdict: PASS","color":"#a6e3a1","position":"bottom-left"}]' />
+
+<Shot src="/cli-journeys/keyframes/fleet-audit/frame-006.png"
+      caption="Audit summary: total events, chain length, verification duration"
+      size="small" align="right" />
+
 ### Event Log
 
 Every operation is logged as an immutable event:
