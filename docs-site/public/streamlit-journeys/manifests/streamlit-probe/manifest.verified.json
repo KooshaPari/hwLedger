@@ -14,6 +14,7 @@
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: landing)",
       "index": 0,
       "intent": "Probe page loaded; a banner reports whether any GPUs were detected via the hwledger-ffi shim.",
+      "judge_status": "pending",
       "screenshot_path": "frame-001.png",
       "slug": "landing"
     },
@@ -21,6 +22,7 @@
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: device-panel)",
       "index": 1,
       "intent": "Primary device panel expanded (or warning shown when FFI is unavailable), listing backend and VRAM per device.",
+      "judge_status": "pending",
       "screenshot_path": "frame-002.png",
       "slug": "device-panel"
     },
@@ -28,6 +30,7 @@
       "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: summary-table)",
       "index": 2,
       "intent": "Summary dataframe at the bottom: one row per device with ID, name, backend, and VRAM in GB.",
+      "judge_status": "pending",
       "screenshot_path": "frame-003.png",
       "slug": "summary-table"
     }

@@ -23,6 +23,7 @@
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-0)",
       "index": 0,
       "intent": "Terminal prompt ready to invoke hwledger-traceability twice (non-strict then --strict)",
+      "judge_status": "pending",
       "screenshot_path": "frame-001.png",
       "slug": "frame-0"
     },
@@ -30,6 +31,7 @@
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
       "intent": "Show strict mode enforcement with passing and failing traceability checks (frame 2)",
+      "judge_status": "pending",
       "screenshot_path": "frame-002.png",
       "slug": "frame-1"
     },
@@ -55,6 +57,7 @@
       "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-2)",
       "index": 2,
       "intent": "Strict mode output listing FRs with missing impl (FR-FLEET, FR-UI, FR-UX-VERIFY, FR-TRACE, NFR); trailing __EXIT_1__ sentinel proving the gate exits non-zero",
+      "judge_status": "pending",
       "screenshot_path": "frame-003.png",
       "slug": "frame-2"
     }

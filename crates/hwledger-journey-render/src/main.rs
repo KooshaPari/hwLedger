@@ -59,6 +59,12 @@ enum Cmd {
         /// Voiceover backend ("silent" or "piper").
         #[arg(long, default_value = "silent")]
         voiceover: String,
+
+        /// Post-render blind-judge phase. `auto` picks Claude when
+        /// ANTHROPIC_API_KEY is set, else Ollama when reachable, else none.
+        /// `none` disables the post-render judge phase entirely.
+        #[arg(long, default_value = "auto")]
+        judge: String,
     },
 
     /// Single journey (same as the legacy flag-only invocation).
@@ -221,9 +227,12 @@ fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     match cli.cmd {
-        Some(Cmd::All { root, remotion_root, force, voiceover }) => {
+        Some(Cmd::All { root, remotion_root, force, voiceover, judge }) => {
             let remotion_root = remotion_root.unwrap_or_else(default_remotion_root);
             batch::render_all(&root, &remotion_root, force, &voiceover)?;
+            if judge != "none" {
+                invoke_vlm_judge(&root, &judge)?;
+            }
             Ok(())
         }
         Some(Cmd::One {
@@ -296,6 +305,37 @@ fn run_single(
     plan.composition_id = composition;
     let out = run(&plan)?;
     println!("{}", out.display());
+    Ok(())
+}
+
+/// Shell out to the sibling `hwledger-vlm-judge` binary as a post-render
+/// phase. Best-effort: a failure here logs but does not abort the render run.
+fn invoke_vlm_judge(root: &Path, judge: &str) -> anyhow::Result<()> {
+    let bin_name = "hwledger-vlm-judge";
+    let candidates: Vec<PathBuf> = std::iter::once(PathBuf::from(bin_name))
+        .chain(std::env::current_exe().ok().and_then(|p| p.parent().map(|dir| dir.join(bin_name))))
+        .collect();
+    let mut last_err: Option<String> = None;
+    for cand in &candidates {
+        let mut cmd = std::process::Command::new(cand);
+        cmd.arg("--judge").arg(judge).arg("--root").arg(root);
+        match cmd.status() {
+            Ok(s) if s.success() => {
+                return Ok(());
+            }
+            Ok(s) => {
+                last_err = Some(format!("exit {s}"));
+            }
+            Err(e) => {
+                last_err = Some(format!("spawn {cand:?}: {e}"));
+                continue;
+            }
+        }
+    }
+    eprintln!(
+        "[journey-render] vlm-judge phase skipped ({}): install `hwledger-vlm-judge` (cargo build -p hwledger-vlm-judge)",
+        last_err.unwrap_or_else(|| "binary not found".into())
+    );
     Ok(())
 }
 

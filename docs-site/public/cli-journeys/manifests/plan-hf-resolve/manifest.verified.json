@@ -23,6 +23,7 @@
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-0)",
       "index": 0,
       "intent": "Terminal at prompt, ready to invoke the planner via the HF resolver",
+      "judge_status": "pending",
       "screenshot_path": "frame-001.png",
       "slug": "frame-0"
     },
@@ -44,6 +45,7 @@
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
       "intent": "First invocation resolves a bare HF repo id (`deepseek-ai/DeepSeek-V3`) and renders the VRAM table with MLA attention",
+      "judge_status": "pending",
       "screenshot_path": "frame-002.png",
       "slug": "frame-1"
     },
@@ -67,6 +69,7 @@
       "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-2)",
       "index": 2,
       "intent": "Planner output from the first invocation is fully rendered and the second invocation resolves a full HF URL (`https://huggingface.co/mistralai/Mistral-7B-v0.1`)",
+      "judge_status": "pending",
       "screenshot_path": "frame-003.png",
       "slug": "frame-2"
     },
@@ -89,6 +92,7 @@
       "blind_description": "Shell session showing a command header and a paragraph of structured stdout. (frame slug: frame-3)",
       "index": 3,
       "intent": "Third invocation uses the `gold:deepseek-v3` fixture shortcut at 32K seq; MLA attention + VRAM breakdown + __EXIT_0__ sentinel",
+      "judge_status": "pending",
       "screenshot_path": "frame-004.png",
       "slug": "frame-3"
     }

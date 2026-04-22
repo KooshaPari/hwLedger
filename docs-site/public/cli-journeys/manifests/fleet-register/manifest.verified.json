@@ -23,6 +23,7 @@
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-0)",
       "index": 0,
       "intent": "Terminal prompt (server launched silently in the background)",
+      "judge_status": "pending",
       "screenshot_path": "frame-001.png",
       "slug": "frame-0"
     },
@@ -30,6 +31,7 @@
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
       "intent": "Register a new agent with the fleet, then verify it appears in fleet status (frame 2)",
+      "judge_status": "pending",
       "screenshot_path": "frame-002.png",
       "slug": "frame-1"
     },
@@ -49,6 +51,7 @@
       "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-2)",
       "index": 2,
       "intent": "Register a new agent with the fleet, then verify it appears in fleet status (frame 3)",
+      "judge_status": "pending",
       "screenshot_path": "frame-003.png",
       "slug": "frame-2"
     },
@@ -56,6 +59,7 @@
       "blind_description": "Shell session showing a command header and a paragraph of structured stdout. (frame slug: frame-3)",
       "index": 3,
       "intent": "Register a new agent with the fleet, then verify it appears in fleet status (frame 4)",
+      "judge_status": "pending",
       "screenshot_path": "frame-004.png",
       "slug": "frame-3"
     },
@@ -63,13 +67,15 @@
       "blind_description": "Terminal window with a list-style summary and no visible error indicator. (frame slug: frame-4)",
       "index": 4,
       "intent": "Register a new agent with the fleet, then verify it appears in fleet status (frame 5)",
+      "judge_status": "pending",
       "screenshot_path": "frame-005.png",
       "slug": "frame-4"
     },
     {
-      "blind_description": "Shell prompt displaying the result of a subcommand \u2014 multi-line text output. (frame slug: frame-5)",
+      "blind_description": "Shell prompt displaying the result of a subcommand — multi-line text output. (frame slug: frame-5)",
       "index": 5,
       "intent": "Register a new agent with the fleet, then verify it appears in fleet status (frame 6)",
+      "judge_status": "pending",
       "screenshot_path": "frame-006.png",
       "slug": "frame-5"
     },
@@ -77,6 +83,7 @@
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-6)",
       "index": 6,
       "intent": "Register a new agent with the fleet, then verify it appears in fleet status (frame 7)",
+      "judge_status": "pending",
       "screenshot_path": "frame-007.png",
       "slug": "frame-6"
     },
@@ -84,6 +91,7 @@
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-7)",
       "index": 7,
       "intent": "Register a new agent with the fleet, then verify it appears in fleet status (frame 8)",
+      "judge_status": "pending",
       "screenshot_path": "frame-008.png",
       "slug": "frame-7"
     },
@@ -91,6 +99,7 @@
       "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-8)",
       "index": 8,
       "intent": "Register a new agent with the fleet, then verify it appears in fleet status (frame 9)",
+      "judge_status": "pending",
       "screenshot_path": "frame-009.png",
       "slug": "frame-8"
     },
@@ -98,6 +107,7 @@
       "blind_description": "Shell session showing a command header and a paragraph of structured stdout. (frame slug: frame-9)",
       "index": 9,
       "intent": "Register a new agent with the fleet, then verify it appears in fleet status (frame 10)",
+      "judge_status": "pending",
       "screenshot_path": "frame-010.png",
       "slug": "frame-9"
     },
@@ -105,6 +115,7 @@
       "blind_description": "Terminal window with a list-style summary and no visible error indicator. (frame slug: frame-10)",
       "index": 10,
       "intent": "Register a new agent with the fleet, then verify it appears in fleet status (frame 11)",
+      "judge_status": "pending",
       "screenshot_path": "frame-011.png",
       "slug": "frame-10"
     },
@@ -130,9 +141,10 @@
         ],
         "ocr_required": false
       },
-      "blind_description": "Shell prompt displaying the result of a subcommand \u2014 multi-line text output. (frame slug: frame-11)",
+      "blind_description": "Shell prompt displaying the result of a subcommand — multi-line text output. (frame slug: frame-11)",
       "index": 11,
       "intent": "Fleet status table reflecting the just-registered agent: Version, Uptime, Connected Agents, Total VRAM; trailing __EXIT sentinel",
+      "judge_status": "pending",
       "screenshot_path": "frame-012.png",
       "slug": "frame-11"
     }

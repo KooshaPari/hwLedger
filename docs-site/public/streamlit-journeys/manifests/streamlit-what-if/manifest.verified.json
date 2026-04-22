@@ -14,6 +14,7 @@
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: landing)",
       "index": 0,
       "intent": "What-If page loaded; baseline defaults to latest Planner result with a manual-entry fallback.",
+      "judge_status": "pending",
       "screenshot_path": "frame-001.png",
       "slug": "landing"
     },
@@ -21,6 +22,7 @@
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: manual-baseline)",
       "index": 1,
       "intent": "Switched to manual baseline; four numeric inputs expose weights/KV/prefill/runtime MB.",
+      "judge_status": "pending",
       "screenshot_path": "frame-002.png",
       "slug": "manual-baseline"
     },
@@ -28,6 +30,7 @@
       "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: pick-techniques)",
       "index": 2,
       "intent": "Technique picker opened: INT4, INT8, KV-FP8, KV-INT4, LoRA, REAP, SpecDecode, FlashAttn3 available.",
+      "judge_status": "pending",
       "screenshot_path": "frame-003.png",
       "slug": "pick-techniques"
     },
@@ -35,6 +38,7 @@
       "blind_description": "Shell session showing a command header and a paragraph of structured stdout. (frame slug: side-by-side)",
       "index": 3,
       "intent": "Plotly grouped bar chart shows baseline vs candidate per band (Weights, KV, Prefill, Runtime).",
+      "judge_status": "pending",
       "screenshot_path": "frame-004.png",
       "slug": "side-by-side"
     },
@@ -42,6 +46,7 @@
       "blind_description": "Terminal window with a list-style summary and no visible error indicator. (frame slug: verdict-citations)",
       "index": 4,
       "intent": "Verdict banner summarises the delta; citations table lists arXiv papers backing each technique.",
+      "judge_status": "pending",
       "screenshot_path": "frame-005.png",
       "slug": "verdict-citations"
     }

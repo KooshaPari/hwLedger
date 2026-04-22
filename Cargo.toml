@@ -30,6 +30,7 @@ members = [
     "tools/journey-record",
     "tools/streamlit-recorder",
     "tools/shot-linter",
+    "tools/vlm-judge",
     "apps/windows/hwledger-tauri/src-tauri",
 ]
 exclude = [

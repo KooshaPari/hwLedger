@@ -34,6 +34,7 @@
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-0)",
       "index": 0,
       "intent": "Terminal prompt ready for `hwledger probe watch`",
+      "judge_status": "pending",
       "screenshot_path": "frame-001.png",
       "slug": "frame-0"
     },
@@ -41,6 +42,7 @@
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
       "intent": "Watch probe metrics update in real time with 1-second refresh intervals (frame 2)",
+      "judge_status": "pending",
       "screenshot_path": "frame-002.png",
       "slug": "frame-1"
     },
@@ -67,6 +69,7 @@
       "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-2)",
       "index": 2,
       "intent": "Streaming NDJSON samples (schema, timestamp_ms, devices: Apple Silicon GPU) with Ctrl+C shutdown and trailing `probe-watch-done __EXIT` sentinel",
+      "judge_status": "pending",
       "screenshot_path": "frame-003.png",
       "slug": "frame-2"
     }

@@ -23,6 +23,7 @@
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-0)",
       "index": 0,
       "intent": "Terminal prompt ready to run `hwledger probe list`",
+      "judge_status": "pending",
       "screenshot_path": "frame-001.png",
       "slug": "frame-0"
     },
@@ -42,6 +43,7 @@
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
       "intent": "List all available probes in both table and JSON formats (frame 2)",
+      "judge_status": "pending",
       "screenshot_path": "frame-002.png",
       "slug": "frame-1"
     },
@@ -66,6 +68,7 @@
       "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-2)",
       "index": 2,
       "intent": "JSON output from `hwledger probe list --json` with schema/timestamp_ms/devices array (Apple Silicon GPU, metal backend, total_vram, utilization), trailing __EXIT sentinel",
+      "judge_status": "pending",
       "screenshot_path": "frame-003.png",
       "slug": "frame-2"
     }

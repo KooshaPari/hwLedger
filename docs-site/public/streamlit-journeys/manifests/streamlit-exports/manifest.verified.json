@@ -14,13 +14,15 @@
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: planner-ready)",
       "index": 0,
       "intent": "Planner page ready with a concrete plan already computed; we scroll down to the Export Configuration row.",
+      "judge_status": "pending",
       "screenshot_path": "frame-001.png",
       "slug": "planner-ready"
     },
     {
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: export-row)",
       "index": 1,
-      "intent": "Export Configuration row in view: three buttons \u2014 Export as vLLM, Export as llama.cpp, Export as MLX.",
+      "intent": "Export Configuration row in view: three buttons — Export as vLLM, Export as llama.cpp, Export as MLX.",
+      "judge_status": "pending",
       "screenshot_path": "frame-002.png",
       "slug": "export-row"
     },
@@ -28,6 +30,7 @@
       "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: vllm-config)",
       "index": 2,
       "intent": "vLLM click: JSON payload with --model, --max-model-len, --max-num-seqs rendered in a code block.",
+      "judge_status": "pending",
       "screenshot_path": "frame-003.png",
       "slug": "vllm-config"
     },
@@ -35,6 +38,7 @@
       "blind_description": "Shell session showing a command header and a paragraph of structured stdout. (frame slug: llama-config)",
       "index": 3,
       "intent": "llama.cpp click: CLI arg string (-m, -c, -ngl) emitted for the same plan parameters.",
+      "judge_status": "pending",
       "screenshot_path": "frame-004.png",
       "slug": "llama-config"
     },
@@ -42,6 +46,7 @@
       "blind_description": "Terminal window with a list-style summary and no visible error indicator. (frame slug: mlx-config)",
       "index": 4,
       "intent": "MLX click: Apple Silicon deploy config serialised as JSON, completing the export triple.",
+      "judge_status": "pending",
       "screenshot_path": "frame-005.png",
       "slug": "mlx-config"
     }

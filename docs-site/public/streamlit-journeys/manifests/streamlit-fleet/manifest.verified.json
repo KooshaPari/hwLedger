@@ -14,6 +14,7 @@
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: landing)",
       "index": 0,
       "intent": "Fleet Audit page loaded, showing the configured server URL and a Refresh button in the header row.",
+      "judge_status": "pending",
       "screenshot_path": "frame-001.png",
       "slug": "landing"
     },
@@ -21,6 +22,7 @@
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: connect-error)",
       "index": 1,
       "intent": "Connect error surfaced: Streamlit prints a red banner explaining the server is unreachable (no silent fallback).",
+      "judge_status": "pending",
       "screenshot_path": "frame-002.png",
       "slug": "connect-error"
     },
@@ -28,6 +30,7 @@
       "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: refresh-retry)",
       "index": 2,
       "intent": "Refresh clicked; the error banner re-renders, confirming the retry path is explicit and visible to the operator.",
+      "judge_status": "pending",
       "screenshot_path": "frame-003.png",
       "slug": "refresh-retry"
     }

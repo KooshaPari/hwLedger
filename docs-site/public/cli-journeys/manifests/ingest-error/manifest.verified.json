@@ -35,6 +35,7 @@
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-0)",
       "index": 0,
       "intent": "Terminal prompt ready to invoke the planner against a missing config",
+      "judge_status": "pending",
       "screenshot_path": "frame-001.png",
       "slug": "frame-0"
     },
@@ -42,6 +43,7 @@
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
       "intent": "Show graceful error handling when a model file doesn't exist (frame 2)",
+      "judge_status": "pending",
       "screenshot_path": "frame-002.png",
       "slug": "frame-1"
     },
@@ -49,6 +51,7 @@
       "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-2)",
       "index": 2,
       "intent": "Show graceful error handling when a model file doesn't exist (frame 3)",
+      "judge_status": "pending",
       "screenshot_path": "frame-003.png",
       "slug": "frame-2"
     },
@@ -56,6 +59,7 @@
       "blind_description": "Shell session showing a command header and a paragraph of structured stdout. (frame slug: frame-3)",
       "index": 3,
       "intent": "Show graceful error handling when a model file doesn't exist (frame 4)",
+      "judge_status": "pending",
       "screenshot_path": "frame-004.png",
       "slug": "frame-3"
     },
@@ -63,13 +67,15 @@
       "blind_description": "Terminal window with a list-style summary and no visible error indicator. (frame slug: frame-4)",
       "index": 4,
       "intent": "Show graceful error handling when a model file doesn't exist (frame 5)",
+      "judge_status": "pending",
       "screenshot_path": "frame-005.png",
       "slug": "frame-4"
     },
     {
-      "blind_description": "Shell prompt displaying the result of a subcommand \u2014 multi-line text output. (frame slug: frame-5)",
+      "blind_description": "Shell prompt displaying the result of a subcommand — multi-line text output. (frame slug: frame-5)",
       "index": 5,
       "intent": "Show graceful error handling when a model file doesn't exist (frame 6)",
+      "judge_status": "pending",
       "screenshot_path": "frame-006.png",
       "slug": "frame-5"
     },
@@ -77,6 +83,7 @@
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-6)",
       "index": 6,
       "intent": "Show graceful error handling when a model file doesn't exist (frame 7)",
+      "judge_status": "pending",
       "screenshot_path": "frame-007.png",
       "slug": "frame-6"
     },
@@ -84,6 +91,7 @@
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-7)",
       "index": 7,
       "intent": "Show graceful error handling when a model file doesn't exist (frame 8)",
+      "judge_status": "pending",
       "screenshot_path": "frame-008.png",
       "slug": "frame-7"
     },
@@ -91,6 +99,7 @@
       "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-8)",
       "index": 8,
       "intent": "Show graceful error handling when a model file doesn't exist (frame 9)",
+      "judge_status": "pending",
       "screenshot_path": "frame-009.png",
       "slug": "frame-8"
     },
@@ -98,6 +107,7 @@
       "blind_description": "Shell session showing a command header and a paragraph of structured stdout. (frame slug: frame-9)",
       "index": 9,
       "intent": "Show graceful error handling when a model file doesn't exist (frame 10)",
+      "judge_status": "pending",
       "screenshot_path": "frame-010.png",
       "slug": "frame-9"
     },
@@ -122,6 +132,7 @@
       "blind_description": "Terminal window with a list-style summary and no visible error indicator. (frame slug: frame-10)",
       "index": 10,
       "intent": "Graceful error: `failed to read config: /nonexistent-model.json` with `Caused by: No such file or directory`, trailing __EXIT sentinel with non-zero code",
+      "judge_status": "pending",
       "screenshot_path": "frame-011.png",
       "slug": "frame-10"
     }
@@ -134,7 +145,7 @@
     "assertion_violations": [
       {
         "expected": "__EXIT_1__",
-        "got_snippet": "> hwledger plan /nonexistent-model.json; echo \"__EXIT_$?__\" Error: failed to read config: /nonexistent-model.json  Caused by:  No such file or directory (os err\u2026",
+        "got_snippet": "> hwledger plan /nonexistent-model.json; echo \"__EXIT_$?__\" Error: failed to read config: /nonexistent-model.json  Caused by:  No such file or directory (os err…",
         "kind": "MustContain",
         "step_index": 10
       }

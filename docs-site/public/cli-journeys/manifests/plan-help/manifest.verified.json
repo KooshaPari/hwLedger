@@ -35,6 +35,7 @@
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-0)",
       "index": 0,
       "intent": "Terminal prompt awaiting command",
+      "judge_status": "pending",
       "screenshot_path": "frame-001.png",
       "slug": "frame-0"
     },
@@ -42,6 +43,7 @@
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
       "intent": "Show the plan command's help text with all available options (frame 2)",
+      "judge_status": "pending",
       "screenshot_path": "frame-002.png",
       "slug": "frame-1"
     },
@@ -49,6 +51,7 @@
       "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-2)",
       "index": 2,
       "intent": "Show the plan command's help text with all available options (frame 3)",
+      "judge_status": "pending",
       "screenshot_path": "frame-003.png",
       "slug": "frame-2"
     },
@@ -56,6 +59,7 @@
       "blind_description": "Shell session showing a command header and a paragraph of structured stdout. (frame slug: frame-3)",
       "index": 3,
       "intent": "Show the plan command's help text with all available options (frame 4)",
+      "judge_status": "pending",
       "screenshot_path": "frame-004.png",
       "slug": "frame-3"
     },
@@ -74,13 +78,15 @@
       "blind_description": "Terminal window with a list-style summary and no visible error indicator. (frame slug: frame-4)",
       "index": 4,
       "intent": "Show the plan command's help text with all available options (frame 5)",
+      "judge_status": "pending",
       "screenshot_path": "frame-005.png",
       "slug": "frame-4"
     },
     {
-      "blind_description": "Shell prompt displaying the result of a subcommand \u2014 multi-line text output. (frame slug: frame-5)",
+      "blind_description": "Shell prompt displaying the result of a subcommand — multi-line text output. (frame slug: frame-5)",
       "index": 5,
       "intent": "Show the plan command's help text with all available options (frame 6)",
+      "judge_status": "pending",
       "screenshot_path": "frame-006.png",
       "slug": "frame-5"
     },
@@ -88,6 +94,7 @@
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-6)",
       "index": 6,
       "intent": "Show the plan command's help text with all available options (frame 7)",
+      "judge_status": "pending",
       "screenshot_path": "frame-007.png",
       "slug": "frame-6"
     },
@@ -95,6 +102,7 @@
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-7)",
       "index": 7,
       "intent": "Show the plan command's help text with all available options (frame 8)",
+      "judge_status": "pending",
       "screenshot_path": "frame-008.png",
       "slug": "frame-7"
     },
@@ -102,6 +110,7 @@
       "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-8)",
       "index": 8,
       "intent": "Show the plan command's help text with all available options (frame 9)",
+      "judge_status": "pending",
       "screenshot_path": "frame-009.png",
       "slug": "frame-8"
     },
@@ -129,6 +138,7 @@
       "blind_description": "Shell session showing a command header and a paragraph of structured stdout. (frame slug: frame-9)",
       "index": 9,
       "intent": "Tail of plan --help options: --users, --batch, --weight-quant, --kv-quant, --json, --export, --no-color; trailing __EXIT sentinel",
+      "judge_status": "pending",
       "screenshot_path": "frame-010.png",
       "slug": "frame-9"
     }
@@ -141,7 +151,7 @@
     "assertion_violations": [
       {
         "expected": "__EXIT_",
-        "got_snippet": "--users <USERS> Number of concurrent users [default: 1] --batch <BATCH> Batch size per iteration [default: 1] --weight-quant <WEIGHT_QUANT> Weight quantization \u2026",
+        "got_snippet": "--users <USERS> Number of concurrent users [default: 1] --batch <BATCH> Batch size per iteration [default: 1] --weight-quant <WEIGHT_QUANT> Weight quantization …",
         "kind": "MustContain",
         "step_index": 9
       }

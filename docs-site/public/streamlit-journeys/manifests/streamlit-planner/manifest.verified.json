@@ -14,6 +14,7 @@
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: landing)",
       "index": 0,
       "intent": "Planner loaded with the default fixture; sidebar exposes seq length, concurrent users, and quantisation controls.",
+      "judge_status": "pending",
       "screenshot_path": "frame-001.png",
       "slug": "landing"
     },
@@ -21,6 +22,7 @@
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: sidebar-open)",
       "index": 1,
       "intent": "Sidebar expanded, showing the sequence length slider at its default 4096 tokens.",
+      "judge_status": "pending",
       "screenshot_path": "frame-002.png",
       "slug": "sidebar-open"
     },
@@ -28,6 +30,7 @@
       "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: seq-bumped)",
       "index": 2,
       "intent": "Sequence length bumped upward; the stacked VRAM chart re-renders with a taller KV cache band.",
+      "judge_status": "pending",
       "screenshot_path": "frame-003.png",
       "slug": "seq-bumped"
     },
@@ -35,6 +38,7 @@
       "blind_description": "Shell session showing a command header and a paragraph of structured stdout. (frame slug: layer-heatmap)",
       "index": 3,
       "intent": "Per-layer KV contribution heatmap visible below the main chart; deeper layers contribute more memory.",
+      "judge_status": "pending",
       "screenshot_path": "frame-004.png",
       "slug": "layer-heatmap"
     },
@@ -42,6 +46,7 @@
       "blind_description": "Terminal window with a list-style summary and no visible error indicator. (frame slug: export-row)",
       "index": 4,
       "intent": "Export row in view: vLLM, llama.cpp, and MLX buttons ready to emit deploy-ready configs for the current plan.",
+      "judge_status": "pending",
       "screenshot_path": "frame-005.png",
       "slug": "export-row"
     }
