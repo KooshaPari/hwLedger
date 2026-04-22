@@ -103,7 +103,7 @@ impl JourneyManifest {
     pub fn missing_structural_count(&self) -> usize {
         self.steps
             .iter()
-            .filter(|s| s.structural_path.as_deref().map_or(true, str::is_empty))
+            .filter(|s| s.structural_path.as_deref().is_none_or(str::is_empty))
             .count()
     }
 }
