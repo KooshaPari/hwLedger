@@ -101,10 +101,7 @@ impl JourneyManifest {
     /// surface an advisory warning when a GUI-family journey ships without
     /// structural data (the accessibility walker was skipped or failed).
     pub fn missing_structural_count(&self) -> usize {
-        self.steps
-            .iter()
-            .filter(|s| s.structural_path.as_deref().is_none_or(str::is_empty))
-            .count()
+        self.steps.iter().filter(|s| s.structural_path.as_deref().is_none_or(str::is_empty)).count()
     }
 }
 
