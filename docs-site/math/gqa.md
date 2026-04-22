@@ -5,6 +5,7 @@ description: Multi-head queries, grouped key-values
 
 # Grouped Query Attention (GQA)
 
+<!-- SHOT-MISMATCH: caption="Planner VRAM fit line — typical GQA model" expected=[planner,vram,fit,typical,gqa,model] matched=[] -->
 <Shot src="/cli-journeys/keyframes/first-plan/frame-005.png"
       caption="Planner VRAM fit line — typical GQA model"
       size="small" align="right"
@@ -14,10 +15,12 @@ description: Multi-head queries, grouped key-values
 
 Reduces KV cache size by sharing keys and values across multiple query heads.
 
+<!-- SHOT-MISMATCH: caption="Config parse: num_kv_heads=8 for a 32-head model → 4:1 share ratio" expected=[config,parse,num_kv_heads,32-head,model,share,ratio] matched=[] -->
 <Shot src="/cli-journeys/keyframes/first-plan/frame-003.png"
       caption="Config parse: num_kv_heads=8 for a 32-head model → 4:1 share ratio"
       size="small" align="left" />
 
+<!-- SHOT-MISMATCH: caption="Chart: KV band is 1/4 the height of MHA baseline for same context" expected=[chart,band,height,mha,baseline,same,context] matched=[] -->
 <Shot src="/cli-journeys/keyframes/first-plan/frame-008.png"
       caption="Chart: KV band is 1/4 the height of MHA baseline for same context"
       size="small" align="right" />

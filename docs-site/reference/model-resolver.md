@@ -7,6 +7,7 @@ description: How hwLedger dispatches `plan` inputs — gold fixtures, local conf
 
 Traces to: **FR-HF-001**
 
+<!-- SHOT-MISMATCH: caption="Resolver accepts an HF repo id and dispatches" expected=[resolver,accepts,repo,dispatches] matched=[] -->
 <Shot src="/cli-journeys/keyframes/plan-hf-resolve/frame-001.png"
       caption="Resolver accepts an HF repo id and dispatches"
       size="small" align="right" />
@@ -62,6 +63,7 @@ hwledger plan https://huggingface.co/meta-llama/Llama-3-70B --seq 8K
 
 <RecordingEmbed tape="streamlit-hf-search" caption="Streamlit handoff: HF search → click row → auto-redirect to Planner with model pre-filled" />
 
+<!-- SHOT-MISMATCH: caption="Dispatch badge: `hf-repo` for a bare repo id" expected=[dispatch,badge,hf-repo,bare,repo] matched=[] -->
 <Shot src="/cli-journeys/keyframes/plan-hf-resolve/frame-002.png"
       caption="Dispatch badge: `hf-repo` for a bare repo id"
       size="small" align="left"

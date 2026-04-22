@@ -269,11 +269,8 @@ pub fn render(plan: &RenderPlan, rich_manifest_path: &Path) -> Result<(), Render
         std::fs::create_dir_all(parent)?;
     }
 
-    let composition = if plan.composition_id.is_empty() {
-        "JourneyRich"
-    } else {
-        plan.composition_id.as_str()
-    };
+    let composition =
+        if plan.composition_id.is_empty() { "JourneyRich" } else { plan.composition_id.as_str() };
     let out = Command::new("bun")
         .current_dir(&plan.remotion_root)
         .args(["x", "remotion", "render", "src/index.tsx", composition, "--props"])

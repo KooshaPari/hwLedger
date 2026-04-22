@@ -13,6 +13,7 @@ description: Low-rank KV projection
 
 Compresses KV cache by projecting to a low-rank latent space before multi-head operation.
 
+<!-- SHOT-MISMATCH: caption="Latent projection step highlighted in the plan trace" expected=[latent,projection,step,highlighted,plan,trace] matched=[] -->
 <Shot src="/cli-journeys/keyframes/plan-mla-deepseek/frame-001.png"
       caption="Latent projection step highlighted in the plan trace"
       size="small" align="left"
@@ -41,6 +42,7 @@ MLA was the DeepSeek team's answer to the specific problem that even GQA's 8× c
 
 **hwLedger accounting gotcha.** MLA's KV footprint is `2 * kv_lora_rank * bytes` per token per layer — NOT `2 * num_kv_heads * head_dim * bytes`. A naive reuse of the GQA formula overstates memory by ~10× for DeepSeek-V3. `AttentionKind::MLA { latent_dim }` carries the latent dim explicitly; the planner will refuse to produce a result if `latent_dim` is missing rather than silently fall back to GQA math.
 
+<!-- SHOT-MISMATCH: caption="Refuse-to-plan path: missing latent_dim surfaces as a hard error, not a silent fallback" expected=[refuse-to-plan,path,missing,latent_dim,surfaces,hard,error,not,silent,fallback] matched=[] -->
 <Shot src="/cli-journeys/keyframes/plan-mla-deepseek/frame-004.png"
       caption="Refuse-to-plan path: missing latent_dim surfaces as a hard error, not a silent fallback"
       size="small" align="right"

@@ -27,6 +27,7 @@ hwledger --version
 
 ## 2. Plan your first model
 
+<!-- SHOT-MISMATCH: caption="plan command invoked" expected=[plan,command,invoked] matched=[] -->
 <Shot src="/cli-journeys/keyframes/first-plan/frame-001.png"
       caption="plan command invoked"
       size="small" align="right" />
@@ -37,6 +38,7 @@ Pass any HF-style `config.json`:
 hwledger plan tests/golden/deepseek-v3.json --seq 32768 --users 2
 ```
 
+<!-- SHOT-MISMATCH: caption="VRAM fits — coloured pass line" expected=[vram,fits,coloured,pass] matched=[] -->
 <Shot src="/cli-journeys/keyframes/first-plan/frame-005.png"
       caption="VRAM fits — coloured pass line"
       size="medium" align="left"
@@ -65,6 +67,7 @@ hwledger plan tests/golden/deepseek-v3.json --seq 32768 --users 2
 hwledger probe list
 ```
 
+<!-- SHOT-MISMATCH: caption="Detected CUDA device 0" expected=[detected,cuda,device] matched=[] -->
 <Shot src="/cli-journeys/keyframes/probe-list/frame-002.png"
       caption="Detected CUDA device 0"
       size="medium" align="right"

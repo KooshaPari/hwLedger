@@ -6,6 +6,7 @@ The fleet ledger tracks heterogeneous hardware (local NVIDIA/AMD, Apple Silicon,
       caption="fleet register — bootstrap"
       size="small" align="right" />
 
+<!-- SHOT-MISMATCH: caption="Host added" expected=[host,added] matched=[] -->
 <Shot src="/cli-journeys/keyframes/fleet-register/frame-003.png"
       caption="Host added"
       size="small" align="left"
@@ -73,6 +74,7 @@ Devices are registered with:
 
 <RecordingEmbed tape="settings-gui-mtls" caption="Settings → mTLS: generate + pin client cert from the desktop app" />
 
+<!-- SHOT-MISMATCH: caption="Register step 2 — labels applied (tenant, env, gpu-class)" expected=[register,step,labels,applied,tenant,env,gpu-class] matched=[] -->
 <Shot src="/cli-journeys/keyframes/fleet-register/frame-002.png"
       caption="Register step 2 — labels applied (tenant, env, gpu-class)"
       size="small" align="left"

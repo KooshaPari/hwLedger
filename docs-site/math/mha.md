@@ -5,6 +5,7 @@ description: Full-rank attention with parallel heads
 
 # Multi-Head Attention (MHA)
 
+<!-- SHOT-MISMATCH: caption="—attention-kind flag (planner accepts MHA override)" expected=[--attention-kind,flag,planner,accepts,mha,override] matched=[] -->
 <Shot src="/cli-journeys/keyframes/plan-help/frame-005.png"
       caption="--attention-kind flag (planner accepts MHA override)"
       size="small" align="right" />
@@ -13,6 +14,7 @@ description: Full-rank attention with parallel heads
 
 Standard Transformer attention mechanism, the foundation all other attention variants derive from.
 
+<!-- SHOT-MISMATCH: caption="Flag dump: —attention-kind default is `auto`" expected=[flag,dump,--attention-kind,default,auto] matched=[] -->
 <Shot src="/cli-journeys/keyframes/plan-help/frame-003.png"
       caption="Flag dump: --attention-kind default is `auto`"
       size="small" align="left"

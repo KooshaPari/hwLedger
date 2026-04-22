@@ -12,6 +12,7 @@
 
 <RecordingEmbed tape="probe-watch" caption="probe watch: per-backend live refresh, no subprocess involved" />
 
+<!-- SHOT-MISMATCH: caption="Watch header: refresh interval, attached device count, last-tick timestamp" expected=[watch,header,refresh,interval,attached,device,count,last-tick,timestamp] matched=[] -->
 <Shot src="/cli-journeys/keyframes/probe-watch/frame-001.png"
       caption="Watch header: refresh interval, attached device count, last-tick timestamp"
       size="small" align="right"

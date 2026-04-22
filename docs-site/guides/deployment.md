@@ -20,6 +20,7 @@ Setting up a persistent fleet server on commodity hardware (old laptop, spare de
       caption="fleet register bootstrap"
       size="small" align="right" />
 
+<!-- SHOT-MISMATCH: caption="Signature attached to attestation" expected=[signature,attached,attestation] matched=[] -->
 <Shot src="/cli-journeys/keyframes/fleet-register/frame-007.png"
       caption="Signature attached to attestation"
       size="small" align="left"
@@ -37,6 +38,7 @@ Setting up a persistent fleet server on commodity hardware (old laptop, spare de
       caption="Audit entry point — operator types `hwledger audit --verify`"
       size="small" align="left" />
 
+<!-- SHOT-MISMATCH: caption="Chain integrity confirmed across N events" expected=[chain,integrity,confirmed,across,events] matched=[] -->
 <Shot src="/cli-journeys/keyframes/fleet-audit/frame-003.png"
       caption="Chain integrity confirmed across N events"
       size="small" align="right"

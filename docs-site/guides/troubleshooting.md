@@ -13,6 +13,7 @@ description: Common issues and fixes
 
 <RecordingEmbed tape="probe-list" caption="probe list: healthy baseline to compare your output against" />
 
+<!-- SHOT-MISMATCH: caption="Probe start: backend auto-detect banner" expected=[probe,start,backend,auto-detect,banner] matched=[] -->
 <Shot src="/cli-journeys/keyframes/probe-list/frame-001.png"
       caption="Probe start: backend auto-detect banner"
       size="small" align="left" />
@@ -45,6 +46,7 @@ brew install metal-tools
 # Restart Terminal
 ```
 
+<!-- SHOT-MISMATCH: caption="Fail-loud error line (E-INGEST-02) — same style as NVML failures" expected=[fail-loud,error,e-ingest-02,same,style,nvml,failures] matched=[] -->
 <Shot src="/cli-journeys/keyframes/ingest-error/frame-001.png"
       caption="Fail-loud error line (E-INGEST-02) — same style as NVML failures"
       size="small" align="right"
@@ -52,10 +54,12 @@ brew install metal-tools
 
 <RecordingEmbed tape="ingest-error" caption="ingest: deliberate failure → explicit error code, no silent fallback" />
 
+<!-- SHOT-MISMATCH: caption="Exit 2 with actionable remediation line below" expected=[exit,actionable,remediation,below] matched=[] -->
 <Shot src="/cli-journeys/keyframes/ingest-error/frame-003.png"
       caption="Exit 2 with actionable remediation line below"
       size="small" align="left" />
 
+<!-- SHOT-MISMATCH: caption="stderr breadcrumb: config parse → resolver → fail" expected=[stderr,breadcrumb,config,parse,resolver,fail] matched=[] -->
 <Shot src="/cli-journeys/keyframes/ingest-error/frame-005.png"
       caption="stderr breadcrumb: config parse → resolver → fail"
       size="small" align="right" />

@@ -5,8 +5,8 @@ use std::path::{Path, PathBuf};
 
 use clap::{Parser, Subcommand};
 use hwledger_journey_render::{
-    annotate as run_annotate, batch, build_rich_manifest, manifest::CustomAnchor, run,
-    Annotation, RenderPlan,
+    annotate as run_annotate, batch, build_rich_manifest, manifest::CustomAnchor, run, Annotation,
+    RenderPlan,
 };
 
 #[derive(Parser, Debug)]
@@ -77,6 +77,10 @@ enum Cmd {
         scene_spec: Option<PathBuf>,
         #[arg(long, default_value = "silent")]
         voiceover: String,
+        /// Override the Remotion composition id. Defaults to `JourneyRich`;
+        /// pass `JourneySlideshow` to force the keyframe-slideshow fallback.
+        #[arg(long, default_value = "JourneyRich")]
+        composition: String,
     },
 
     /// Annotate keyframes for an already-projected manifest (no MP4 render).
@@ -229,9 +233,17 @@ fn main() -> anyhow::Result<()> {
             output,
             scene_spec,
             voiceover,
-        }) => {
-            run_single(journey, manifest, keyframes, remotion_root, output, scene_spec, voiceover)
-        }
+            composition,
+        }) => run_single(
+            journey,
+            manifest,
+            keyframes,
+            remotion_root,
+            output,
+            scene_spec,
+            voiceover,
+            composition,
+        ),
         Some(Cmd::Annotate { manifest, keyframes, remotion_root }) => {
             annotate_only(&manifest, &keyframes, &remotion_root)
         }
@@ -255,11 +267,13 @@ fn main() -> anyhow::Result<()> {
                 output,
                 cli.scene_spec,
                 cli.voiceover,
+                "JourneyRich".to_string(),
             )
         }
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn run_single(
     journey: String,
     manifest: PathBuf,
@@ -268,6 +282,7 @@ fn run_single(
     output: PathBuf,
     scene_spec: Option<PathBuf>,
     voiceover: String,
+    composition: String,
 ) -> anyhow::Result<()> {
     let manifest_abs = std::fs::canonicalize(&manifest).unwrap_or(manifest);
     let keyframes_abs = std::fs::canonicalize(&keyframes).unwrap_or(keyframes);
@@ -277,6 +292,7 @@ fn run_single(
     let mut plan = RenderPlan::new(journey, manifest_abs, keyframes_abs, remotion_abs, output_abs);
     plan.scene_spec = scene_spec;
     plan.voiceover = voiceover;
+    plan.composition_id = composition;
     let out = run(&plan)?;
     println!("{}", out.display());
     Ok(())

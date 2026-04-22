@@ -22,6 +22,7 @@ Complete reference for all `hwledger` subcommands.
 
 Memory planner: estimates VRAM and selects optimal tensor parallelism, quantization, and attention variant.
 
+<!-- SHOT-MISMATCH: caption="plan run start: model arg accepted, config fetched" expected=[plan,run,start,model,arg,accepted,config,fetched] matched=[] -->
 <Shot src="/cli-journeys/keyframes/plan-deepseek/frame-001.png"
       caption="plan run start: model arg accepted, config fetched"
       size="small" align="left" />
@@ -108,6 +109,7 @@ hwledger probe --json | jq '.gpus[].vram_free_gb'
 
 ## ingest
 
+<!-- SHOT-MISMATCH: caption="ingest — fail-loud error path (E-INGEST-02)" expected=[ingest,fail-loud,error,path,e-ingest-02] matched=[] -->
 <Shot src="/cli-journeys/keyframes/ingest-error/frame-001.png"
       caption="ingest — fail-loud error path (E-INGEST-02)"
       size="small" align="right"
@@ -225,11 +227,13 @@ hwledger fleet jobs [--agent <AGENT_ID>] [--status <STATUS>] [--json]
 
 ## audit
 
+<!-- SHOT-MISMATCH: caption="audit — FR coverage headline" expected=[audit,coverage,headline] matched=[] -->
 <Shot src="/cli-journeys/keyframes/traceability-report/frame-001.png"
       caption="audit — FR coverage headline"
       size="small" align="right"
       :annotations='[{"bbox":[40,40,560,24],"label":"FR coverage"}]' />
 
+<!-- SHOT-MISMATCH: caption="Per-crate coverage table" expected=[per-crate,coverage,table] matched=[] -->
 <Shot src="/cli-journeys/keyframes/traceability-report/frame-003.png"
       caption="Per-crate coverage table"
       size="small" align="left" />
