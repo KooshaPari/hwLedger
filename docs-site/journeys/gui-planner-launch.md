@@ -46,6 +46,8 @@ The journey is recorded using hwledger-gui-recorder (ScreenCaptureKit):
   Your browser does not support the video tag.
 </video>
 
+<JourneyViewer manifest="/gui-journeys/planner-gui-launch/manifest.verified.json" />
+
 ## Execution Requirements
 
 To run this journey locally:

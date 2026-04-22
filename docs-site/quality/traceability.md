@@ -157,3 +157,22 @@
 | **FR-TEL-002** | cli | cli-probe-list | 0.92 | yes | OK |
 | **FR-UI-001** | gui | planner-gui-launch | 0.90 | yes | OK |
 
+
+<!-- BEGIN: manual audit summary (hand-edited, regenerate-safe) -->
+
+## Audit summary (2026-04-21 v2)
+
+See [`audit-2026-04-21-v2.md`](./audit-2026-04-21-v2.md) for the full
+second-pass claim audit, and [`gap-backlog-2026-04-21.md`](./gap-backlog-2026-04-21.md)
+for the residual gaps.
+
+- **Claims audited:** 56
+- **PASS:** 50
+- **PARTIAL:** 3
+- **FIXED inline:** 1 (JourneyViewer added to `gui-planner-launch.md`)
+- **FAIL:** 0
+- **Strict journey coverage:** `cargo run -p hwledger-traceability -- --strict-journeys` exits 0
+- **Attestation chain:** 7 entries, `chain: OK`
+- **Rich render idempotency:** confirmed (`rendered=0 skipped=26` on second consecutive run)
+
+<!-- END: manual audit summary -->
