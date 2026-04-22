@@ -76,10 +76,37 @@ tccutil reset All com.kooshapari.hwLedger
 
 ## When the TCC grant lands
 
-1. Remove the `[journey_kind: none]` override on the above FRs in PRD.md.
-2. Run the full bundle (`cargo run -p hwledger-bundle-app -- debug` then
-   `swift test --filter ...`).
-3. Sync resulting artefacts into `docs-site/public/gui-journeys/<slug>/`
-   and regenerate `manifest.verified.json`.
-4. Re-run `cargo run -p hwledger-traceability -- --repo . --strict-journeys`
-   to confirm all rows stay green.
+Source-of-truth is now `apps/macos/HwLedgerUITests/recordings/<slug>/recording.rich.mp4`
+(mirrors the CLI/Streamlit family layout). The docs-site copies under
+`docs-site/public/gui-journeys/<slug>/*.rich.mp4` are generated derivatives —
+do not hand-edit.
+
+### Exact commands the user must run
+
+```sh
+# 1) Grant TCC (see above), then bundle the app:
+bash apps/macos/HwLedgerUITests/scripts/bundle-app.sh --no-codesign debug
+
+# 2) Run each UITest target — captures land in recordings/<slug>/:
+cd apps/macos/HwLedgerUITests
+swift test --filter PlannerJourneyTests      # planner-gui-launch
+swift test --filter ProbeJourneyTests        # probe-gui-watch
+swift test --filter FleetMapJourneyTests     # fleet-gui-map
+swift test --filter SettingsMTLSJourneyTests # settings-gui-mtls
+swift test --filter ExportVLLMJourneyTests   # export-gui-vllm
+cd -
+
+# 3) Sync the new recordings/ tree into docs-site/public/:
+bash docs-site/scripts/sync-journey-artefacts.sh
+#   (or: phenotype-journey sync --kind gui-journeys \
+#        --from apps/macos/HwLedgerUITests/recordings \
+#        --to   docs-site/public/journeys)
+
+# 4) Remove the [journey_kind: none] overrides on PRD.md FRs listed above.
+
+# 5) Re-render + re-verify:
+cargo run -p hwledger-journey-render -- --kind gui-journeys --force
+cargo run -p hwledger-traceability -- --repo . --strict-journeys
+
+# 6) Expect `find apps -name "*.rich.mp4" | wc -l` == 26.
+```
