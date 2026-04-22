@@ -50,7 +50,7 @@ const STOPWORDS: &[&str] = &[
 ];
 
 fn is_stopword(w: &str) -> bool {
-    w.len() <= 1 || STOPWORDS.iter().any(|s| *s == w)
+    w.len() <= 1 || STOPWORDS.contains(&w)
 }
 
 pub fn tokenise(text: &str) -> Vec<String> {
