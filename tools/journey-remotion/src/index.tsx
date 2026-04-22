@@ -1,6 +1,11 @@
 import { Composition, registerRoot } from "remotion";
 import React from "react";
 import { JourneyRich, totalFrames, type JourneyRichProps } from "./compositions/JourneyRich";
+import {
+  JourneySlideshow,
+  slideshowTotalFrames,
+  type JourneySlideshowProps,
+} from "./compositions/JourneySlideshow";
 import type { RichManifest } from "./types";
 
 // Placeholder manifest — real values come in via --props at render time or
@@ -35,6 +40,23 @@ const RemotionRoot: React.FC = () => (
       calculateMetadata={({ props }) => {
         const m = (props as unknown as JourneyRichProps).manifest;
         return { durationInFrames: totalFrames(m, FPS) };
+      }}
+    />
+    <Composition<Record<string, unknown>, JourneySlideshowProps>
+      id="JourneySlideshow"
+      component={JourneySlideshow as React.ComponentType<Record<string, unknown>>}
+      defaultProps={{
+        journeyId: "placeholder",
+        manifest: PLACEHOLDER_MANIFEST,
+        keyframeBase: "keyframes/placeholder",
+      }}
+      durationInFrames={FPS * 4}
+      fps={FPS}
+      width={1440}
+      height={900}
+      calculateMetadata={({ props }) => {
+        const m = (props as unknown as JourneySlideshowProps).manifest;
+        return { durationInFrames: slideshowTotalFrames(m, FPS) };
       }}
     />
   </>
