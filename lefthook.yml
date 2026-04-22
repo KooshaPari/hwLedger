@@ -151,6 +151,25 @@ pre-push:
         fi
         cargo run --quiet -p hwledger-traceability -- --repo . $flags
 
+    shot-linter:
+      # Gate: every `<Shot src=...>` in docs-site/**/*.md must OCR-match at
+      # least one caption token. Strict in `HWLEDGER_TAPE_GATE=strict`; warn
+      # otherwise. Runs without `--apply` so it never silently rewrites docs
+      # during push. Requires `tesseract` on PATH; missing tesseract degrades
+      # to `--no-ocr` (records but does not assert).
+      run: |
+        set -euo pipefail
+        mode="${HWLEDGER_TAPE_GATE:-warn}"
+        flags=""
+        if ! command -v tesseract >/dev/null 2>&1; then
+          flags="--no-ocr"
+        fi
+        if [ "$mode" = "strict" ]; then
+          cargo run --quiet -p hwledger-shot-linter -- --strict $flags
+        else
+          cargo run --quiet -p hwledger-shot-linter -- $flags
+        fi
+
     swift-main:
       root: "apps/macos/HwLedger"
       run: |
