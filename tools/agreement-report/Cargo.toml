@@ -1,0 +1,20 @@
+[package]
+name = "hwledger-agreement-report"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Walks every verified journey manifest and renders a per-step intent↔blind agreement table for docs-site/quality/agreement-report.md."
+
+[[bin]]
+name = "hwledger-agreement-report"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+clap = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+walkdir = "2"
+rust-stemmers = "1.2"

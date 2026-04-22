@@ -48,6 +48,35 @@ pub enum BlindEvalMode {
     Skip,
 }
 
+/// Intent ↔ blind agreement status baked into each verified manifest step
+/// by `phenotype-journey verify`. Mirrors the Rust `Agreement` enum in
+/// `phenotype-journey-core::agreement`.
+///
+/// Traces to: FR-UX-VERIFY-003
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize, Default)]
+#[serde(rename_all = "lowercase")]
+pub enum AgreementStatus {
+    #[default]
+    Green,
+    Yellow,
+    Red,
+}
+
+/// Per-step agreement report — the overlap score + diff sets produced by
+/// the Rust scorer at verify time. We decode only the fields the gate
+/// cares about; the viewer reads the richer shape directly from JSON.
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
+pub struct StepAgreement {
+    #[serde(default)]
+    pub status: AgreementStatus,
+    #[serde(default)]
+    pub overlap: f64,
+    #[serde(default)]
+    pub missing_in_blind: Vec<String>,
+    #[serde(default)]
+    pub extras_in_blind: Vec<String>,
+}
+
 /// Per-step manifest fragment used by the journey gate. We only decode the
 /// subset we need (blind-eval mode + slug for diagnostics); the real manifest
 /// carries many more fields (annotations, descriptions, bboxes, …).
@@ -57,6 +86,10 @@ pub struct ManifestStep {
     pub slug: String,
     #[serde(default)]
     pub blind_eval: BlindEvalMode,
+    /// Intent ↔ blind agreement score. Missing => agreement was not
+    /// computed (legacy manifest) and must not drive the gate.
+    #[serde(default)]
+    pub agreement: Option<StepAgreement>,
 }
 
 /// Parsed shape of a verified journey manifest.
@@ -90,6 +123,18 @@ impl JourneyManifest {
     /// True when the manifest has at least one step marked `blind_eval: skip`.
     pub fn has_skipped_step(&self) -> bool {
         self.steps.iter().any(|s| s.blind_eval == BlindEvalMode::Skip)
+    }
+
+    /// True when any step carries an `agreement.status = red` report.
+    ///
+    /// Traces to: FR-UX-VERIFY-003
+    pub fn has_red_agreement(&self) -> bool {
+        self.steps.iter().any(|s| {
+            s.agreement
+                .as_ref()
+                .map(|a| a.status == AgreementStatus::Red)
+                .unwrap_or(false)
+        })
     }
 }
 
@@ -164,6 +209,13 @@ pub struct JourneyCoverageRow {
     pub passed: Option<bool>,
     /// Human-readable reason when the row fails the gate.
     pub status: JourneyStatus,
+    /// True when the backing journey has at least one step whose
+    /// intent↔blind agreement status is Red. Advisory by default;
+    /// promoted to a hard failure by `--no-agreement-red`.
+    ///
+    /// Traces to: FR-UX-VERIFY-003
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub needs_agreement_review: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -212,6 +264,16 @@ impl JourneyReport {
     /// escalate the warning into a blocking failure.
     pub fn has_needs_capture(&self) -> bool {
         self.rows.iter().any(|r| r.status == JourneyStatus::NeedsCapture)
+    }
+
+    /// True when any row is flagged `needs_agreement_review` — i.e. the
+    /// underlying journey has at least one step whose intent↔blind
+    /// agreement is Red. Used by `--no-agreement-red` to escalate the
+    /// advisory into a hard failure.
+    ///
+    /// Traces to: FR-UX-VERIFY-003
+    pub fn has_agreement_red(&self) -> bool {
+        self.rows.iter().any(|r| r.needs_agreement_review)
     }
 }
 
@@ -263,6 +325,7 @@ pub fn evaluate(frs: &[FrSpec], scan: &JourneyScan) -> JourneyReport {
                     score: None,
                     passed: None,
                     status: JourneyStatus::Missing,
+                    needs_agreement_review: false,
                 });
                 continue;
             }
@@ -317,6 +380,18 @@ pub fn evaluate(frs: &[FrSpec], scan: &JourneyScan) -> JourneyReport {
             };
             let passed = text_passed;
 
+            let needs_agreement_review = best.has_red_agreement();
+            if needs_agreement_review {
+                report.warnings.push(format!(
+                    "{} [{}]: journey {} has ≥1 step with intent↔blind agreement=red \
+                     — surface as `needs_agreement_review` (advisory; \
+                     `--no-agreement-red` promotes to FAIL)",
+                    fr.id,
+                    kind.as_str(),
+                    best.id,
+                ));
+            }
+
             report.rows.push(JourneyCoverageRow {
                 fr: fr.id.clone(),
                 kind: kind.as_str().into(),
@@ -324,6 +399,7 @@ pub fn evaluate(frs: &[FrSpec], scan: &JourneyScan) -> JourneyReport {
                 score: Some(score),
                 passed: Some(passed),
                 status,
+                needs_agreement_review,
             });
         }
     }
@@ -341,8 +417,8 @@ pub fn render_markdown(report: &JourneyReport) -> String {
     if report.rows.is_empty() {
         md.push_str("_No FRs tagged with `journey_kind` yet._\n\n");
     } else {
-        md.push_str("| FR | kind | journey id | score | passed | status |\n");
-        md.push_str("|---|---|---|---|---|---|\n");
+        md.push_str("| FR | kind | journey id | score | passed | status | agreement |\n");
+        md.push_str("|---|---|---|---|---|---|---|\n");
         for r in &report.rows {
             let jid = r.journey_id.clone().unwrap_or_else(|| "—".into());
             let score = r.score.map(|s| format!("{:.2}", s)).unwrap_or_else(|| "—".into());
@@ -354,9 +430,14 @@ pub fn render_markdown(report: &JourneyReport) -> String {
                 JourneyStatus::NotPassed => "NOT_PASSED",
                 JourneyStatus::NeedsCapture => "NEEDS_CAPTURE",
             };
+            let agreement = if r.needs_agreement_review {
+                "needs_agreement_review"
+            } else {
+                "—"
+            };
             md.push_str(&format!(
-                "| **{}** | {} | {} | {} | {} | {} |\n",
-                r.fr, r.kind, jid, score, passed, status
+                "| **{}** | {} | {} | {} | {} | {} | {} |\n",
+                r.fr, r.kind, jid, score, passed, status, agreement
             ));
         }
         md.push('\n');
@@ -440,6 +521,7 @@ mod tests {
                 } else {
                     BlindEvalMode::Honest
                 },
+                agreement: None,
             })
             .collect();
         m
@@ -540,6 +622,73 @@ mod tests {
         let rep = evaluate(&frs, &scan);
         assert_eq!(rep.rows[0].status, JourneyStatus::Ok);
         assert!(!rep.has_failures());
+    }
+
+    fn manifest_with_agreement(
+        id: &str,
+        kind: JourneyKind,
+        traces: Vec<&str>,
+        score: f64,
+        passed: bool,
+        statuses: &[AgreementStatus],
+    ) -> JourneyManifest {
+        let mut m = manifest(id, kind, traces, score, passed);
+        m.steps = statuses
+            .iter()
+            .enumerate()
+            .map(|(i, s)| ManifestStep {
+                slug: format!("step-{}", i),
+                blind_eval: BlindEvalMode::Honest,
+                agreement: Some(StepAgreement {
+                    status: *s,
+                    overlap: match s {
+                        AgreementStatus::Green => 0.8,
+                        AgreementStatus::Yellow => 0.45,
+                        AgreementStatus::Red => 0.1,
+                    },
+                    missing_in_blind: vec!["plan".into()],
+                    extras_in_blind: vec!["cat".into()],
+                }),
+            })
+            .collect();
+        m
+    }
+
+    /// A journey with any step whose `agreement.status == red` must surface
+    /// `needs_agreement_review` on the row (advisory by default) and
+    /// `has_agreement_red()` must return true so `--no-agreement-red`
+    /// can escalate it.
+    ///
+    /// Traces to: FR-UX-VERIFY-003
+    #[test]
+    fn test_red_agreement_surfaces_needs_agreement_review() {
+        let frs = vec![fr("FR-PLAN-003", vec![JourneyKind::Cli])];
+        let scan = JourneyScan {
+            manifests: vec![manifest_with_agreement(
+                "cli-plan",
+                JourneyKind::Cli,
+                vec!["FR-PLAN-003"],
+                0.92,
+                true,
+                &[AgreementStatus::Green, AgreementStatus::Red, AgreementStatus::Yellow],
+            )],
+            warnings: vec![],
+        };
+        let rep = evaluate(&frs, &scan);
+        assert_eq!(rep.rows.len(), 1);
+        // Status is still OK (score >= threshold, passed, no blind-eval skip).
+        assert_eq!(rep.rows[0].status, JourneyStatus::Ok);
+        // But the agreement flag must light up.
+        assert!(rep.rows[0].needs_agreement_review);
+        assert!(rep.has_agreement_red());
+        // Advisory — does NOT count toward `has_failures()`.
+        assert!(!rep.has_failures());
+        // An advisory warning must surface with the journey id.
+        assert!(
+            rep.warnings
+                .iter()
+                .any(|w| w.contains("cli-plan") && w.contains("agreement=red"))
+        );
     }
 
     /// Vision-judge authority: score >= threshold flips to OK even with

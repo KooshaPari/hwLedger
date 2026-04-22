@@ -29,6 +29,7 @@ members = [
     "tools/cli-journey-record",
     "tools/streamlit-recorder",
     "tools/shot-linter",
+    "tools/agreement-report",
     "apps/windows/hwledger-tauri/src-tauri",
 ]
 exclude = [
