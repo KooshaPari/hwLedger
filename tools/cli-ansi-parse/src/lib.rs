@@ -240,7 +240,7 @@ pub fn replay_and_snapshot(
     }
 
     // After all events: any remaining timestamps snapshot the final screen.
-    while let Some((idx, _t)) = ts_iter.next() {
+    for (idx, _t) in ts_iter {
         out[idx] = Some(snapshot_screen(&parser, title.clone()));
     }
 
