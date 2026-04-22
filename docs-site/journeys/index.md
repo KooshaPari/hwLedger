@@ -45,29 +45,31 @@ Generated manifests land in
 
 | Journey | What it demonstrates |
 |---|---|
-| Install from Source | Clone, build, and verify hwLedger installation |
-| First Plan | Live memory planning with colored VRAM breakdown |
+| [Install from Source](./cli-install-cargo.md) | Clone, build, and verify hwLedger installation |
+| [First Plan](./cli-first-plan.md) | Live memory planning with colored VRAM breakdown |
 
 ### Fleet Management
 
 | Journey | What it demonstrates |
 |---|---|
-| Fleet Register | Register a device to the fleet network |
-| Fleet Audit | Audit fleet health and device status |
+| [Fleet Register](./cli-fleet-register.md) | Register a device to the fleet network |
+| [Fleet Audit](./cli-fleet-audit.md) | Audit fleet health and device status |
 
 ### Model Ingestion
 
 | Journey | What it demonstrates |
 |---|---|
-| Ingest (Hugging Face) | Fetch model metadata from Hugging Face hub |
-| Ingest (Ollama) | Query local Ollama server for model info |
+| [Ingest (local GGUF)](./cli-ingest-local-gguf.md) | Read GGUF header and register the model locally |
+| [HF search (DeepSeek)](./cli-hf-search-deepseek.md) | Anonymous Hugging Face search from the terminal |
+| [plan (HF resolve)](./cli-plan-hf-resolve.md) | Resolve a model by HF ID and plan directly |
+| [plan (MLA · DeepSeek)](./cli-plan-mla-deepseek.md) | MLA KV-cache sweep across context lengths |
 
 ### Releases & Quality
 
 | Journey | What it demonstrates |
 |---|---|
-| Release (Signed DMG) | Create signed macOS releases with notarization |
-| Traceability Report | Generate spec -> test -> code traceability report |
+| [Traceability Report](./cli-traceability-report.md) | Generate spec -> test -> code traceability report |
+| [Traceability (strict)](./cli-traceability-strict.md) | CI-grade strict mode: fail on any uncovered FR/NFR |
 
 Recorded and verified via `apps/cli-journeys/scripts/record-all.sh` + `verify-manifests.sh`. Without an `ANTHROPIC_API_KEY`, verification runs against a local mock server so the pipeline exercises end-to-end offline.
 
