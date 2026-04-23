@@ -135,19 +135,14 @@ fn hf_cache_dir_for(model_id: &str) -> Option<String> {
     Some(format!("models--{org}--{name}"))
 }
 
-/// Blind prompt — two-part pattern borrowed from zakelfassi's "VLM as
-/// visual-diff oracle" post (2026). Pattern: (a) ask for concrete on-screen
-/// elements in 1-2 sentences, (b) explicitly rule out the confusable
-/// negative (placeholder / stub / "frame N" guesses the old prompt still
-/// occasionally produced). See
-/// `docs-site/research/imports-2026-04/zakelfassi-vlm-visual-testing.md`
-/// for extraction notes.
-/// Source post: https://zakelfassi.com/vlm-visual-testing-chrome-extension
-const BLIND_PROMPT: &str = "Describe what you see in this image in 1-2 sentences. \
-Stick to concrete on-screen elements (windows, panels, text fragments, buttons, cursor). \
-This is NOT a placeholder, stub, or synthetic test frame — do not say 'placeholder', \
-'stub', 'frame N', 'image N', 'test image', or 'no content'. \
-Do not guess application context you cannot see.";
+/// Blind prompt — re-exported from `providers::BLIND_PROMPT` so every
+/// provider (Claude direct, headless Claude Code CLI, Fireworks, MiniMax,
+/// OpenRouter, MLX / Qwen / UI-TARS / Florence-2) runs the SAME
+/// specificity-forced prompt. See
+/// `providers::BLIND_PROMPT` for the cite to user feedback (2026-04-22)
+/// that motivated the rewrite. Kept as a const alias to avoid a cascade
+/// of touch-ups at every call-site.
+const BLIND_PROMPT: &str = providers::BLIND_PROMPT;
 
 #[derive(Parser, Debug)]
 #[command(
@@ -390,6 +385,11 @@ async fn run(cli: Cli) -> Result<()> {
                 continue;
             }
 
+            // Capture the per-call backend to drive a stricter retry if the
+            // generic-phrase detector rejects the first-pass description.
+            // Cite: user feedback 2026-04-22 — "if the output matches the
+            // generic-phrase regex, score it `judge_status: generic_rejected`
+            // and re-run with a stricter prompt."
             let (blind, backend_used) = match call_backend {
                 EffectiveBackend::Claude => {
                     let key = anthropic_key
@@ -433,12 +433,12 @@ async fn run(cli: Cli) -> Result<()> {
                     // as a reference string; the model can still reason over
                     // the filename + surrounding manifest context.
                     let cfg = providers::ProviderConfig::load();
-                    let prompt = "Blind-describe the CLI/UI screenshot at this path in <=40 words. \
-                                  Factual description only; no interpretation.";
+                    // Unified specificity-forced prompt (see providers::BLIND_PROMPT).
+                    // Cite: user feedback 2026-04-22.
                     match providers::claude_code_headless_describe(
                         &cfg,
                         &image_path.display().to_string(),
-                        prompt,
+                        BLIND_PROMPT,
                     ) {
                         Ok(desc) => {
                             claude_calls += 1;
@@ -503,6 +503,63 @@ async fn run(cli: Cli) -> Result<()> {
                 }
             };
 
+            // Post-generation reject: if the VLM produced a generic placeholder
+            // phrase despite the specificity-forced prompt, re-run ONCE with
+            // `BLIND_PROMPT_STRICT`. If the retry is still generic, record the
+            // rejection in `judge_status` so the traceability gate can warn.
+            // Cite: user feedback 2026-04-22 —
+            //   "if the output matches the generic-phrase regex, score it
+            //    `judge_status: 'generic_rejected'` and re-run with a stricter
+            //    prompt."
+            let (blind, generic_rejected) = if providers::is_generic_blind_description(&blind) {
+                eprintln!(
+                    "[vlm-judge] generic description rejected for {} — retrying with strict prompt",
+                    journey_id
+                );
+                let retry = match call_backend {
+                    EffectiveBackend::Claude => {
+                        let key = anthropic_key
+                            .as_deref()
+                            .ok_or_else(|| anyhow!("ANTHROPIC_API_KEY not set"))?;
+                        claude_describe_with_prompt(
+                            &http,
+                            key,
+                            &claude_model,
+                            &image_path,
+                            providers::BLIND_PROMPT_STRICT,
+                        )
+                        .await
+                    }
+                    EffectiveBackend::ClaudeCodeHeadless => {
+                        let cfg = providers::ProviderConfig::load();
+                        providers::claude_code_headless_describe(
+                            &cfg,
+                            &image_path.display().to_string(),
+                            providers::BLIND_PROMPT_STRICT,
+                        )
+                    }
+                    EffectiveBackend::Mlx => mlx_describe_with_prompt(
+                        &mlx_model,
+                        &image_path,
+                        providers::BLIND_PROMPT_STRICT,
+                    ),
+                    EffectiveBackend::None => Err(anyhow!("backend=none; cannot retry")),
+                };
+                match retry {
+                    Ok(desc) if !providers::is_generic_blind_description(&desc) => (desc, false),
+                    Ok(desc) => (desc, true),
+                    Err(e) => {
+                        eprintln!(
+                            "[vlm-judge] strict-retry failed for {}: {} — keeping first-pass text",
+                            journey_id, e
+                        );
+                        (blind, true)
+                    }
+                }
+            } else {
+                (blind, false)
+            };
+
             let report = agreement_score(&intent, &blind);
             step_obj.insert(
                 "blind_description".into(),
@@ -512,9 +569,14 @@ async fn run(cli: Cli) -> Result<()> {
                 "judge_score".into(),
                 serde_json::json!(round_f64(report.overlap, 4)),
             );
+            let status_str: &'static str = if generic_rejected {
+                "generic_rejected"
+            } else {
+                report.status.as_str()
+            };
             step_obj.insert(
                 "judge_status".into(),
-                serde_json::Value::String(report.status.as_str().into()),
+                serde_json::Value::String(status_str.into()),
             );
             step_obj.insert(
                 "judge_backend".into(),
@@ -522,9 +584,18 @@ async fn run(cli: Cli) -> Result<()> {
             );
             step_obj.insert(
                 "passed".into(),
-                serde_json::Value::Bool(report.status.is_passed()),
+                serde_json::Value::Bool(report.status.is_passed() && !generic_rejected),
             );
-            if !report.status.is_passed() {
+            if generic_rejected {
+                step_obj.insert(
+                    "judge_reason".into(),
+                    serde_json::Value::String(
+                        "blind_description matched generic-phrase regex even after strict retry \
+                         (user feedback 2026-04-22); prompt rerun advised"
+                            .into(),
+                    ),
+                );
+            } else if !report.status.is_passed() {
                 step_obj.insert(
                     "judge_reason".into(),
                     serde_json::Value::String(format!(
@@ -535,7 +606,7 @@ async fn run(cli: Cli) -> Result<()> {
             } else {
                 step_obj.remove("judge_reason");
             }
-            *dist.entry(report.status.as_str()).or_insert(0) += 1;
+            *dist.entry(status_str).or_insert(0) += 1;
             scored += 1;
             any_mutated = true;
         }
@@ -554,7 +625,7 @@ async fn run(cli: Cli) -> Result<()> {
          manifests: {} found, {} updated\n\
          steps: scored={} skipped_already={} pending={}\n\
          calls: claude={} mlx={}\n\
-         distribution: green={} yellow={} red={}\n\
+         distribution: green={} yellow={} red={} generic_rejected={}\n\
          claude est cost: ${:.3} (cap ${:.2})\n",
         manifests.len(),
         manifests_touched,
@@ -566,6 +637,7 @@ async fn run(cli: Cli) -> Result<()> {
         dist.get("green").copied().unwrap_or(0),
         dist.get("yellow").copied().unwrap_or(0),
         dist.get("red").copied().unwrap_or(0),
+        dist.get("generic_rejected").copied().unwrap_or(0),
         est_cost,
         cli.max_cost_usd
     );
@@ -734,6 +806,16 @@ async fn claude_describe(
     model: &str,
     image: &Path,
 ) -> Result<String> {
+    claude_describe_with_prompt(http, api_key, model, image, BLIND_PROMPT).await
+}
+
+async fn claude_describe_with_prompt(
+    http: &reqwest::Client,
+    api_key: &str,
+    model: &str,
+    image: &Path,
+    prompt: &'static str,
+) -> Result<String> {
     let bytes = std::fs::read(image).with_context(|| format!("read {}", image.display()))?;
     let media_type = mime_from_extension(image);
     let b64 = base64::engine::general_purpose::STANDARD.encode(&bytes);
@@ -747,7 +829,7 @@ async fn claude_describe(
                 ClaudeContent::Image {
                     source: ClaudeImageSource { kind: "base64", media_type, data: b64 },
                 },
-                ClaudeContent::Text { text: BLIND_PROMPT },
+                ClaudeContent::Text { text: prompt },
             ],
         }],
     };
@@ -886,6 +968,10 @@ fn parse_mlx_stdout(stdout: &str) -> Option<String> {
 }
 
 fn mlx_describe(model: &str, image: &Path) -> Result<String> {
+    mlx_describe_with_prompt(model, image, BLIND_PROMPT)
+}
+
+fn mlx_describe_with_prompt(model: &str, image: &Path, prompt: &str) -> Result<String> {
     let py = python_bin();
     let out = std::process::Command::new(py)
         .args([
@@ -896,7 +982,7 @@ fn mlx_describe(model: &str, image: &Path) -> Result<String> {
             "--image",
             image.to_str().ok_or_else(|| anyhow!("image path not utf-8"))?,
             "--prompt",
-            BLIND_PROMPT,
+            prompt,
             "--max-tokens",
             "150",
             "--temperature",
