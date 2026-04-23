@@ -51,13 +51,16 @@ This page documents the **planner-gui-launch** journey, which exercises core Pla
 
 The journey is recorded using hwledger-gui-recorder (ScreenCaptureKit):
 
-- **Video:** `recording.mp4` (H.264, 1440×900, 30 fps)
+- **Video:** `planner-gui-launch.rich.mp4` (H.264, 1440×900, 30 fps)
 - **Keyframes:** `keyframes/*.png` (I-frame extraction)
 - **Preview:** `preview.gif` (optimized for web)
 
-<JourneyViewer manifest="/gui-journeys/planner-gui-launch/manifest.verified.json" />
+<video width="1440" height="900" controls>
+  <source src="/gui-journeys/planner-gui-launch/planner-gui-launch.rich.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-Recording: [`recording.mp4`](https://github.com/KooshaPari/hwLedger/blob/main/docs-site/public/gui-journeys/planner-gui-launch/recording.mp4) (H.264, 1440×900, 30 fps).
+<JourneyViewer manifest="/gui-journeys/planner-gui-launch/manifest.verified.json" />
 
 ## Execution Requirements
 

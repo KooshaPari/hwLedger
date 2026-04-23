@@ -54,6 +54,6 @@ bash docs-site/scripts/sync-journey-artefacts.sh
 ## Source
 
 - Test: [`apps/macos/HwLedgerUITests/Tests/ExportVLLMJourneyTests.swift`](https://github.com/KooshaPari/hwLedger/blob/main/apps/macos/HwLedgerUITests/Tests/ExportVLLMJourneyTests.swift)
-- Manifest: [`docs-site/public/gui-journeys/export-gui-vllm/manifest.json`](https://github.com/KooshaPari/hwLedger/blob/main/docs-site/public/gui-journeys/export-gui-vllm/manifest.json)
-- Verified manifest: [`docs-site/public/gui-journeys/export-gui-vllm/manifest.verified.json`](https://github.com/KooshaPari/hwLedger/blob/main/docs-site/public/gui-journeys/export-gui-vllm/manifest.verified.json)
-- Recording: [`recording.mp4`](https://github.com/KooshaPari/hwLedger/blob/main/docs-site/public/gui-journeys/export-gui-vllm/recording.mp4) · [`preview.gif`](https://github.com/KooshaPari/hwLedger/blob/main/docs-site/public/gui-journeys/export-gui-vllm/preview.gif)
+- Manifest: [`docs-site/public/gui-journeys/export-gui-vllm/manifest.json`](/gui-journeys/export-gui-vllm/manifest.json)
+- Verified manifest: [`docs-site/public/gui-journeys/export-gui-vllm/manifest.verified.json`](/gui-journeys/export-gui-vllm/manifest.verified.json)
+- Recording: [`export-gui-vllm.rich.mp4`](/gui-journeys/export-gui-vllm/export-gui-vllm.rich.mp4) · [`preview.gif`](/gui-journeys/export-gui-vllm/preview.gif)

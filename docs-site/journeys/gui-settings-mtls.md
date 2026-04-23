@@ -54,6 +54,6 @@ bash docs-site/scripts/sync-journey-artefacts.sh
 ## Source
 
 - Test: [`apps/macos/HwLedgerUITests/Tests/SettingsMTLSJourneyTests.swift`](https://github.com/KooshaPari/hwLedger/blob/main/apps/macos/HwLedgerUITests/Tests/SettingsMTLSJourneyTests.swift)
-- Manifest: [`docs-site/public/gui-journeys/settings-gui-mtls/manifest.json`](https://github.com/KooshaPari/hwLedger/blob/main/docs-site/public/gui-journeys/settings-gui-mtls/manifest.json)
-- Verified manifest: [`docs-site/public/gui-journeys/settings-gui-mtls/manifest.verified.json`](https://github.com/KooshaPari/hwLedger/blob/main/docs-site/public/gui-journeys/settings-gui-mtls/manifest.verified.json)
-- Recording: [`recording.mp4`](https://github.com/KooshaPari/hwLedger/blob/main/docs-site/public/gui-journeys/settings-gui-mtls/recording.mp4) · [`preview.gif`](https://github.com/KooshaPari/hwLedger/blob/main/docs-site/public/gui-journeys/settings-gui-mtls/preview.gif)
+- Manifest: [`docs-site/public/gui-journeys/settings-gui-mtls/manifest.json`](/gui-journeys/settings-gui-mtls/manifest.json)
+- Verified manifest: [`docs-site/public/gui-journeys/settings-gui-mtls/manifest.verified.json`](/gui-journeys/settings-gui-mtls/manifest.verified.json)
+- Recording: [`settings-gui-mtls.rich.mp4`](/gui-journeys/settings-gui-mtls/settings-gui-mtls.rich.mp4) · [`preview.gif`](/gui-journeys/settings-gui-mtls/preview.gif)
