@@ -7,15 +7,14 @@ description: Common issues and fixes
 
 ## GPU not detected
 
-<Shot src="/cli-journeys/keyframes/probe-list/frame-002.png"
-      caption="Healthy probe output — device row present"
-      size="small" align="right" />
+<ShotGallery
+  title="Healthy probe output — compare against your own"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/probe-list/frame-002.png","caption":"Healthy probe output — device row present"},
+    {"src":"/cli-journeys/keyframes/probe-list/frame-003.png","caption":"Probe start: backend auto-detect banner"}
+  ]' />
 
 <RecordingEmbed tape="probe-list" kind="cli" caption="CLI probe list: healthy baseline to compare your output against (exit-code-focused; CLI is canonical for troubleshooting)" />
-
-<Shot src="/cli-journeys/keyframes/probe-list/frame-003.png"
-      caption="Probe start: backend auto-detect banner"
-      size="small" align="left" />
 
 **Symptom**: `hwledger probe` returns empty GPU list.
 
@@ -45,22 +44,15 @@ brew install metal-tools
 # Restart Terminal
 ```
 
-<!-- SHOT-MISMATCH: caption="Fail-loud error line (E-INGEST-02) — same style as NVML failures" expected=[fail-loud,error,e-ingest-02,same,style,nvml,failures] matched=[] -->
-<Shot src="/cli-journeys/keyframes/ingest-error/frame-001.png"
-      caption="Fail-loud error line (E-INGEST-02) — same style as NVML failures"
-      size="small" align="right"
-      :annotations='[{"bbox":[60,220,480,32],"label":"error code","color":"#f38ba8","style":"dashed","position":"bottom-left"}]' />
+<ShotGallery
+  title="Fail-loud error style — shared across ingest + NVML failures"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/ingest-error/frame-001.png","caption":"Fail-loud error line (E-INGEST-02) — same style as NVML failures"},
+    {"src":"/cli-journeys/keyframes/ingest-error/frame-003.png","caption":"Exit 2 with actionable remediation line below"},
+    {"src":"/cli-journeys/keyframes/ingest-error/frame-011.png","caption":"stderr breadcrumb: config parse → resolver → fail"}
+  ]' />
 
 <RecordingEmbed tape="ingest-error" kind="cli" caption="CLI ingest: deliberate failure → explicit error code, no silent fallback (CLI-native error surface)" />
-
-<!-- SHOT-MISMATCH: caption="Exit 2 with actionable remediation line below" expected=[exit,actionable,remediation,below] matched=[] -->
-<Shot src="/cli-journeys/keyframes/ingest-error/frame-003.png"
-      caption="Exit 2 with actionable remediation line below"
-      size="small" align="left" />
-
-<Shot src="/cli-journeys/keyframes/ingest-error/frame-011.png"
-      caption="stderr breadcrumb: config parse → resolver → fail"
-      size="small" align="right" />
 
 ## NVML library not found
 

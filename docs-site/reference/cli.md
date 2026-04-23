@@ -9,28 +9,18 @@ Complete reference for all `hwledger` subcommands.
 
 ## plan
 
-<Shot src="/cli-journeys/keyframes/plan-help/frame-005.png"
-      caption="hwledger plan --help"
-      size="small" align="right"
-      :annotations='[{"bbox":[40,60,520,20],"label":"usage","position":"top-right"}]' />
-
-<Shot src="/cli-journeys/keyframes/plan-deepseek/frame-003.png"
-      caption="Typical plan output: VRAM breakdown + architecture detection"
-      size="small" align="right" />
+<ShotGallery
+  title="plan — help, run, and VRAM breakdown"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/plan-help/frame-005.png","caption":"hwledger plan --help"},
+    {"src":"/cli-journeys/keyframes/plan-deepseek/frame-003.png","caption":"Typical plan output: VRAM breakdown + architecture detection"},
+    {"src":"/cli-journeys/keyframes/plan-deepseek/frame-001.png","caption":"plan run start: model arg accepted, config fetched"},
+    {"src":"/cli-journeys/keyframes/plan-mla-deepseek/frame-002.png","caption":"Per-layer KV cache column — context input and MLA latent dim"}
+  ]' />
 
 <RecordingEmbed tape="plan-deepseek" kind="cli" caption="CLI plan: DeepSeek-V3 → live architecture detection + colored VRAM bands" />
 
 Memory planner: estimates VRAM and selects optimal tensor parallelism, quantization, and attention variant.
-
-<!-- SHOT-MISMATCH: caption="plan run start: model arg accepted, config fetched" expected=[plan,run,start,model,arg,accepted,config,fetched] matched=[] -->
-<Shot src="/cli-journeys/keyframes/plan-deepseek/frame-001.png"
-      caption="plan run start: model arg accepted, config fetched"
-      size="small" align="left" />
-
-<Shot src="/cli-journeys/keyframes/plan-mla-deepseek/frame-002.png"
-      caption="Per-layer KV cache column — context input and MLA latent dim"
-      size="small" align="right"
-      :annotations='[{"bbox":[160,280,280,32],"label":"latent_dim=512","color":"#89b4fa","position":"center-bottom"}]' />
 
 ```bash
 hwledger plan [OPTIONS] --model <MODEL>
@@ -64,24 +54,19 @@ hwledger plan --model llama-70b --context 8000 --json | jq .vram_required
 
 ## probe
 
-<Shot src="/cli-journeys/keyframes/probe-list/frame-002.png"
-      caption="probe list — one device row per GPU"
-      size="small" align="right"
-      :annotations='[{"bbox":[40,120,480,20],"label":"device 0","color":"#cba6f7","position":"top-left"}]' />
-
-<Shot src="/cli-journeys/keyframes/probe-watch/frame-003.png"
-      caption="probe watch — live-refresh header"
-      size="small" align="left" />
+<ShotGallery
+  title="probe — list and watch"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/probe-list/frame-002.png","caption":"probe list — one device row per GPU"},
+    {"src":"/cli-journeys/keyframes/probe-watch/frame-003.png","caption":"probe watch — live-refresh header"},
+    {"src":"/cli-journeys/keyframes/probe-list/frame-003.png","caption":"Per-GPU VRAM + free / used split"}
+  ]' />
 
 <RecordingEmbed tape="probe-list" kind="cli" caption="CLI probe list: Apple Silicon / NVIDIA / AMD / Intel backend detection" />
 
 <RecordingEmbed tape="probe-watch" kind="cli" caption="CLI probe watch: continuous telemetry, 2s refresh, ctrl-C to exit" />
 
 GPU discovery and telemetry: list available GPUs, memory, compute capability.
-
-<Shot src="/cli-journeys/keyframes/probe-list/frame-003.png"
-      caption="Per-GPU VRAM + free / used split"
-      size="small" align="right" />
 
 ```bash
 hwledger probe [OPTIONS]
@@ -109,11 +94,11 @@ hwledger probe --json | jq '.gpus[].vram_free_gb'
 
 ## ingest
 
-<!-- SHOT-MISMATCH: caption="ingest — fail-loud error path (E-INGEST-02)" expected=[ingest,fail-loud,error,path,e-ingest-02] matched=[] -->
-<Shot src="/cli-journeys/keyframes/ingest-error/frame-001.png"
-      caption="ingest — fail-loud error path (E-INGEST-02)"
-      size="small" align="right"
-      :annotations='[{"bbox":[60,220,480,32],"label":"error code","color":"#f38ba8","style":"dashed"}]' />
+<ShotGallery
+  title="ingest — error path"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/ingest-error/frame-001.png","caption":"ingest — fail-loud error path (E-INGEST-02)"}
+  ]' />
 
 <!-- SHOT-TODO: capture a successful HF ingest run -->
 
@@ -173,29 +158,20 @@ hwledger run --model llama-70b --remote tcp://fleet.example.com:5443 input.json
 
 ## fleet
 
-<Shot src="/cli-journeys/keyframes/fleet-register/frame-003.png"
-      caption="fleet register — host added"
-      size="small" align="right"
-      :annotations='[{"bbox":[80,160,360,24],"label":"host added","color":"#a6e3a1","position":"top-right"}]' />
-
-<Shot src="/cli-journeys/keyframes/fleet-audit/frame-002.png"
-      caption="fleet audit — attestation hash verified"
-      size="small" align="left" />
+<ShotGallery
+  title="fleet — register and audit"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/fleet-register/frame-003.png","caption":"fleet register — host added"},
+    {"src":"/cli-journeys/keyframes/fleet-audit/frame-002.png","caption":"fleet audit — attestation hash verified"},
+    {"src":"/cli-journeys/keyframes/fleet-register/frame-005.png","caption":"mTLS client cert pinned, agent id bound to host"},
+    {"src":"/cli-journeys/keyframes/fleet-audit/frame-004.png","caption":"Hash chain walk: every event cryptographically linked"}
+  ]' />
 
 <RecordingEmbed tape="fleet-register" kind="cli" caption="CLI fleet register: bootstrap + mTLS handshake + first event written" />
 
 <RecordingEmbed tape="fleet-audit" kind="cli" caption="CLI fleet audit: hash chain verified, per-agent attestation summary (audit-chain is a CLI-native surface)" />
 
 Fleet orchestration: register agents, query status, submit jobs.
-
-<Shot src="/cli-journeys/keyframes/fleet-register/frame-005.png"
-      caption="mTLS client cert pinned, agent id bound to host"
-      size="small" align="right"
-      :annotations='[{"bbox":[60,200,420,28],"label":"cert pin","color":"#f9e2af","position":"bottom-right"}]' />
-
-<Shot src="/cli-journeys/keyframes/fleet-audit/frame-004.png"
-      caption="Hash chain walk: every event cryptographically linked"
-      size="small" align="left" />
 
 ```bash
 hwledger fleet <SUBCOMMAND>
@@ -227,16 +203,12 @@ hwledger fleet jobs [--agent <AGENT_ID>] [--status <STATUS>] [--json]
 
 ## audit
 
-<!-- SHOT-MISMATCH: caption="audit — FR coverage headline" expected=[audit,coverage,headline] matched=[] -->
-<Shot src="/cli-journeys/keyframes/traceability-report/frame-001.png"
-      caption="audit — FR coverage headline"
-      size="small" align="right"
-      :annotations='[{"bbox":[40,40,560,24],"label":"FR coverage"}]' />
-
-<!-- SHOT-MISMATCH: caption="Per-crate coverage table" expected=[per-crate,coverage,table] matched=[] -->
-<Shot src="/cli-journeys/keyframes/traceability-report/frame-003.png"
-      caption="Per-crate coverage table"
-      size="small" align="left" />
+<ShotGallery
+  title="audit — coverage report"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/traceability-report/frame-001.png","caption":"audit — FR coverage headline"},
+    {"src":"/cli-journeys/keyframes/traceability-report/frame-003.png","caption":"Per-crate coverage table"}
+  ]' />
 
 Verify ledger integrity and export audit trail.
 

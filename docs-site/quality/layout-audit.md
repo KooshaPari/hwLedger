@@ -21,8 +21,10 @@ replacement: big hero + thumbnail strip + lightbox, no floats.
 - **Fixed in this PR:** `guides/visual-walkthrough-plan-deepseek.md`,
   `getting-started/quickstart.md` (Section 2 only — Sections 1 and 3 left
   unchanged; see recommendations below).
-- **Inventoried only:** every file in the table below. No code changes beyond
-  the two targets above.
+- **Migrated (top-5 follow-up):** `reference/cli.md`, `fleet/overview.md`,
+  `guides/troubleshooting.md`, `guides/deployment.md`,
+  `journeys/streamlit-planner.md`. 27 of 72 opposite-align pairs resolved.
+- **Inventoried only:** every remaining file in the table below.
 
 ## Inventory
 
@@ -33,11 +35,11 @@ rendering as a broken column.
 
 | File | Shots | Opposite-align pairs | First Shot line | Recommended gallery grouping |
 |------|-------|----------------------|-----------------|------------------------------|
-| `reference/cli.md` | 14 | 9 | 12 | Split by H2 section; one `<ShotGallery>` per command subsection. |
-| `fleet/overview.md` | 8 | 6 | 5 | One gallery per lifecycle stage (register, status, audit, remove). |
-| `guides/troubleshooting.md` | 5 | 4 | 10 | One gallery per symptom cluster. |
-| `guides/deployment.md` | 5 | 4 | 19 | One gallery per deployment target. |
-| `journeys/streamlit-planner.md` | 5 | 4 | 6 | Single gallery for the full flow. |
+| `reference/cli.md` | 14 | 9 | 12 | ✅ Migrated — one `<ShotGallery>` per H2 command subsection (plan / probe / ingest / fleet / audit). |
+| `fleet/overview.md` | 8 | 6 | 5 | ✅ Migrated — register + audit lifecycle galleries. |
+| `guides/troubleshooting.md` | 5 | 4 | 10 | ✅ Migrated — galleries per symptom cluster (GPU-not-detected, fail-loud errors). |
+| `guides/deployment.md` | 5 | 4 | 19 | ✅ Migrated — bootstrap/register gallery + first-run audit gallery. |
+| `journeys/streamlit-planner.md` | 5 | 4 | 6 | ✅ Migrated — single full-flow gallery (CLI baseline + Streamlit sweep). |
 | `getting-started/quickstart.md` | 4 | 3 | 12 | Section 2 converted; Sections 1 + 3 each have one opposite pair — consider collapsing into a single 2-shot gallery per section. |
 | `math/mla.md` | 5 | 2 | 8 | One gallery at the formula illustration; keep inline references separate. |
 | `math/kv-cache.md` | 3 | 2 | 3 | Single gallery near the top. |
@@ -65,8 +67,10 @@ rendering as a broken column.
 | `journeys/streamlit-fleet.md` | 2 | 1 | 15 | Single 2-shot gallery. |
 | `reference/hf-search.md` | 2 | 1 | 9 | Single 2-shot gallery. |
 
-**Total pages with opposite-align Shots:** 31.
-**Total opposite-align pairs across docs-site:** 72.
+**Total pages with opposite-align Shots:** 31 inventoried; 7 migrated (2 original
+in this PR + 5 top-priority follow-up). 24 remaining.
+**Total opposite-align pairs across docs-site:** 72 inventoried; 27 resolved in
+the top-5 migration. 45 remaining.
 
 ## Recommended follow-up (not done here)
 

@@ -16,19 +16,13 @@ Setting up a persistent fleet server on commodity hardware (old laptop, spare de
 
 ## Installation
 
-<Shot src="/cli-journeys/keyframes/fleet-register/frame-001.png"
-      caption="fleet register bootstrap"
-      size="small" align="right" />
-
-<!-- SHOT-MISMATCH: caption="Signature attached to attestation" expected=[signature,attached,attestation] matched=[] -->
-<Shot src="/cli-journeys/keyframes/fleet-register/frame-007.png"
-      caption="Signature attached to attestation"
-      size="small" align="left"
-      :annotations='[{"bbox":[60,180,480,28],"label":"ed25519 signature","color":"#a6e3a1","position":"center-top"}]' />
-
-<Shot src="/cli-journeys/keyframes/fleet-audit/frame-005.png"
-      caption="audit summary after first run"
-      size="small" align="right" />
+<ShotGallery
+  title="Register a freshly-deployed server — bootstrap + signed attestation"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/fleet-register/frame-001.png","caption":"fleet register bootstrap"},
+    {"src":"/cli-journeys/keyframes/fleet-register/frame-007.png","caption":"Signature attached to attestation"},
+    {"src":"/cli-journeys/keyframes/fleet-audit/frame-005.png","caption":"audit summary after first run"}
+  ]' />
 
 <RecordingEmbed tape="settings-gui-mtls" kind="gui" caption="Settings → mTLS GUI: generate + pin client cert during fleet bootstrap (primary operator UI)" />
 
@@ -38,15 +32,12 @@ Setting up a persistent fleet server on commodity hardware (old laptop, spare de
 
 <RecordingEmbed tape="fleet-audit" kind="cli" caption="CLI fleet audit: first-run hash-chain verification — CLI is the reason-of-record for audit chain inspection" />
 
-<Shot src="/cli-journeys/keyframes/fleet-audit/frame-001.png"
-      caption="Audit entry point — operator types `hwledger audit --verify`"
-      size="small" align="left" />
-
-<!-- SHOT-MISMATCH: caption="Chain integrity confirmed across N events" expected=[chain,integrity,confirmed,across,events] matched=[] -->
-<Shot src="/cli-journeys/keyframes/fleet-audit/frame-003.png"
-      caption="Chain integrity confirmed across N events"
-      size="small" align="right"
-      :annotations='[{"bbox":[80,140,440,24],"label":"chain OK","color":"#a6e3a1","position":"bottom-right"}]' />
+<ShotGallery
+  title="First-run audit — operator verifies the chain"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/fleet-audit/frame-001.png","caption":"Audit entry point — operator types `hwledger audit --verify`"},
+    {"src":"/cli-journeys/keyframes/fleet-audit/frame-003.png","caption":"Chain integrity confirmed across N events"}
+  ]' />
 
 ### 1. Download binary
 
