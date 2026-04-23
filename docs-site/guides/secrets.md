@@ -9,7 +9,7 @@ Handling private keys, Sparkle certificates, and cloud API credentials securely.
 
 <Shot src="/cli-journeys/keyframes/fleet-register/frame-007.png"
       caption="Signature attached during fleet register"
-      size="small" align="right" />
+      size="small" />
 
 <!-- SHOT-TODO: capture keychain unlock prompt when running hwledger fleet register -->
 
