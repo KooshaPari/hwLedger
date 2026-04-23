@@ -19,7 +19,7 @@
     {
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: export-row)",
       "index": 1,
-      "intent": "Export Configuration row in view: three buttons — Export as vLLM, Export as llama.cpp, Export as MLX.",
+      "intent": "Export Configuration row in view: three buttons \u2014 Export as vLLM, Export as llama.cpp, Export as MLX.",
       "screenshot_path": "frame-002.png",
       "slug": "export-row"
     },
@@ -53,5 +53,6 @@
     "mode": "mock",
     "overall_score": 0.92,
     "timestamp": "2026-04-21T04:31:06Z"
-  }
+  },
+  "keyframes_root": "recordings/streamlit-exports"
 }

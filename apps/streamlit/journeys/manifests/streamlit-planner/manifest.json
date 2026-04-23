@@ -1,6 +1,6 @@
 {
   "id": "streamlit-planner",
-  "title": "Streamlit Planner — seq length sweep",
+  "title": "Streamlit Planner \u2014 seq length sweep",
   "intent": "Load the DeepSeek-V3 golden fixture, sweep sequence length from 2K to 32K, and watch the KV cache bar dominate the stacked VRAM chart.",
   "recording": "recordings/streamlit-planner.mp4",
   "recording_gif": "recordings/streamlit-planner.gif",
@@ -37,5 +37,6 @@
       "intent": "Export row in view: vLLM, llama.cpp, and MLX buttons ready to emit deploy-ready configs for the current plan.",
       "screenshot_path": "frame-005.png"
     }
-  ]
+  ],
+  "keyframes_root": "recordings/streamlit-planner"
 }
