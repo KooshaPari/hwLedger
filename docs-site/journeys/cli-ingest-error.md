@@ -12,7 +12,7 @@ hwledger ingest gguf:///tmp/does-not-exist.gguf
 <!-- SHOT-MISMATCH: caption="Error message + hint" expected=[error,message,hint] matched=[] -->
 <Shot src="/cli-journeys/keyframes/ingest-error/frame-001.png"
       caption="Error message + hint"
-      size="small" align="right"
+      size="small"
       :annotations='[{"bbox":[60,220,480,32],"label":"E-INGEST-02","color":"#f38ba8","style":"dashed"}]' />
 
 The tool returns:
