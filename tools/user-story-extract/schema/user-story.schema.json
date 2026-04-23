@@ -1,0 +1,91 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://phenotype.dev/schema/user-story.schema.json",
+  "title": "PhenotypeUserStory",
+  "description": "Canonical YAML contract for @phenotype/user-story annotations embedded in test source files. Harvested by tools/user-story-extract/ and consumed downstream by manifest + doc generators (Batches 2-6).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "journey_id",
+    "title",
+    "persona",
+    "given",
+    "when",
+    "then",
+    "traces_to"
+  ],
+  "properties": {
+    "journey_id": {
+      "type": "string",
+      "description": "Globally unique kebab-case identifier. Must match [a-z0-9][a-z0-9-]*[a-z0-9].",
+      "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$",
+      "minLength": 2,
+      "maxLength": 80
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable one-line title for docs and tapes.",
+      "minLength": 3,
+      "maxLength": 160
+    },
+    "persona": {
+      "type": "string",
+      "description": "The actor performing the journey (e.g. 'fleet operator', 'solo dev on MacBook').",
+      "minLength": 2,
+      "maxLength": 120
+    },
+    "given": {
+      "type": "string",
+      "description": "Pre-state prose. One paragraph; may embed cited FR IDs.",
+      "minLength": 3
+    },
+    "when": {
+      "type": "array",
+      "description": "Ordered list of user actions. Each item is a concrete, observable action.",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 1
+    },
+    "then": {
+      "type": "array",
+      "description": "Ordered list of expected post-conditions / assertions.",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 1
+    },
+    "traces_to": {
+      "type": "array",
+      "description": "FR IDs this user-story fulfills. At least one required.",
+      "items": {
+        "type": "string",
+        "pattern": "^FR-[A-Z0-9][A-Z0-9_-]*$"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "record": {
+      "type": "boolean",
+      "description": "Whether the harvester should attach this story to a recorded manifest/video artifact.",
+      "default": true
+    },
+    "blind_judge": {
+      "type": "string",
+      "description": "Whether the blind VLM judge pipeline runs on the recorded artifact.",
+      "enum": ["auto", "skip"],
+      "default": "auto"
+    },
+    "backend": {
+      "type": "string",
+      "description": "Override for the recording backend (rust/swift/playwright/k6). Usually auto-inferred from family.",
+      "minLength": 1
+    },
+    "blind_eval": {
+      "type": "string",
+      "description": "Legacy synonym / parallel knob for blind evaluation. 'honest' opts into shared blind suite.",
+      "enum": ["honest", "skip"]
+    },
+    "family": {
+      "type": "string",
+      "description": "Test family. Auto-inferred from harvest location if absent (e.g. apps/streamlit/journeys -> streamlit).",
+      "enum": ["cli", "gui", "streamlit", "k6", "other"]
+    }
+  }
+}

@@ -33,6 +33,9 @@ members = [
     "tools/vlm-judge",
     "tools/cli-ansi-parse",
     "tools/docs-health",
+    "tools/user-story-extract",
+    "crates/hwledger-user-story-macros",
+    "crates/hwledger-user-story-runtime",
     "apps/windows/hwledger-tauri/src-tauri",
 ]
 exclude = [

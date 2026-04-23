@@ -48,3 +48,5 @@ reqwest.workspace = true
 assert_cmd.workspace = true
 predicates.workspace = true
 tempfile.workspace = true
+hwledger-user-story-macros = { path = "../hwledger-user-story-macros" }
+hwledger-user-story-runtime = { path = "../hwledger-user-story-runtime" }

@@ -1,0 +1,13 @@
+error: [user_story_test] YAML frontmatter missing required field(s): journey_id. See docs/adr/0034-user-story-test-sourcing.md.
+  --> tests/trybuild/missing_journey_id.rs:3:1
+   |
+ 3 | / #[user_story_test(yaml = r#"
+ 4 | | title: "missing journey id"
+ 5 | | persona: x
+ 6 | | given: y
+...  |
+ 9 | | traces_to: [FR-X-001]
+10 | | "#)]
+   | |____^
+   |
+   = note: this error originates in the attribute macro `user_story_test` (in Nightly builds, run with -Z macro-backtrace for more info)
