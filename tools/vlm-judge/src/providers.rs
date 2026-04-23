@@ -593,16 +593,94 @@ pub fn codex_headless_describe(
 // upstream MLX wiring, this re-exports it unchanged).
 // ---------------------------------------------------------------------------
 
-/// Blind prompt — kept identical to `main::BLIND_PROMPT`. Two-part pattern
-/// borrowed from zakelfassi (2026): positive target in 1-2 sentences + explicit
-/// negative to rule out stub/placeholder hallucinations. Source:
-/// <https://zakelfassi.com/vlm-visual-testing-chrome-extension>. Extraction
-/// notes: `docs-site/research/imports-2026-04/zakelfassi-vlm-visual-testing.md`.
-pub const BLIND_PROMPT: &str = "Describe what you see in this image in 1-2 sentences. \
-Stick to concrete on-screen elements (windows, panels, text fragments, buttons, cursor). \
-This is NOT a placeholder, stub, or synthetic test frame — do not say 'placeholder', \
-'stub', 'frame N', 'image N', 'test image', or 'no content'. \
-Do not guess application context you cannot see.";
+/// Blind prompt — specificity-forced rewrite (2026-04-22, user feedback).
+///
+/// Previous prompt (kept here for provenance) was:
+///   "Describe what you see in this image in 1-2 sentences. Stick to
+///    concrete on-screen elements (windows, panels, text fragments,
+///    buttons, cursor). This is NOT a placeholder, stub, or synthetic
+///    test frame ... Do not guess application context you cannot see."
+///
+/// That wording produced vague output because "do not guess context"
+/// was being over-applied by the VLM — models refused to name commands
+/// and flags they could clearly read off the pixels. The new prompt
+/// inverts the default: it REQUIRES verbatim quoting of visible text,
+/// commands, flags, numeric values, labels, and error messages, and
+/// explicitly bans placeholder phrases.
+///
+/// User feedback cite (2026-04-22):
+///   "Current blind_description outputs are generic — 'a command was
+///    run with an output' instead of 'the `hwledger plan --help`
+///    command output, showing --context and --batch flags.' The problem
+///    is prompt design, not VLM capability."
+///
+/// Applies to every provider in this module: Claude direct, headless
+/// claude-code, Fireworks, MiniMax, OpenRouter free tier, and MLX
+/// (Qwen / UI-TARS / Florence-2 / other mlx-vlm models).
+pub const BLIND_PROMPT: &str = "You are describing a software screenshot for a blind-evaluation step. \
+Your description MUST be specific and machine-checkable. Follow these rules:\n\n\
+1. Name every visible CLI command verbatim, including flags (e.g. `hwledger plan --help`, not \"a command\").\n\
+2. Quote visible text tokens verbatim (e.g. \"Attention Kind: MLA\" not \"an attention label\").\n\
+3. State exact numeric values shown (e.g. \"VRAM: 49.79 MB\" not \"some memory value\").\n\
+4. Name every visible UI element by its visible label (e.g. \"Plan button\", \"Seq-len slider at 32768\").\n\
+5. If the frame shows terminal output, list the first 3 lines verbatim.\n\
+6. If the frame shows an error, quote the error text exactly.\n\
+7. Do NOT write placeholder phrases: \"a command\", \"some output\", \"an image\", \"what appears to be\".\n\n\
+Write 2-4 short sentences. If you cannot see a specific element, say \"not visible\" rather than guess.";
+
+/// Stricter retry prompt used when the first description hits the
+/// generic-phrase detector. Reasserts the rules in the second person
+/// and demands at least one verbatim quote.
+pub const BLIND_PROMPT_STRICT: &str = "Your previous description was REJECTED because it used generic placeholder \
+phrases (\"a command\", \"some output\", \"an image\", \"what appears to be\", \"it looks like\"). \
+Re-describe the screenshot with the same rules as before, but this time you MUST:\n\
+- Include at least ONE verbatim quoted string taken directly from the visible pixels (commands, flags, labels, error text, or numeric values).\n\
+- Avoid every banned phrase.\n\
+- If you genuinely cannot read a specific element, write \"not visible\" for that element instead of hedging.\n\n\
+Write 2-4 short sentences. Specificity is mandatory.";
+
+/// Generic-phrase rejection detector used by the post-generation gate
+/// and the traceability warn/fail pass.
+///
+/// Matches (case-insensitive, word-boundaried) any of:
+///   "a command", "some output", "an image",
+///   "what appears to be", "it looks like"
+///
+/// Equivalent regex (user spec, 2026-04-22):
+///   `/\b(a command|some output|an image|what appears to be|it looks like)\b/i`
+///
+/// Implemented by hand to avoid pulling `regex` into this crate's graph.
+pub fn is_generic_blind_description(text: &str) -> bool {
+    const NEEDLES: &[&str] = &[
+        "a command",
+        "some output",
+        "an image",
+        "what appears to be",
+        "it looks like",
+    ];
+    let hay = text.to_ascii_lowercase();
+    let bytes = hay.as_bytes();
+    for needle in NEEDLES {
+        let needle = *needle;
+        let mut start = 0usize;
+        while let Some(idx) = hay[start..].find(needle) {
+            let abs = start + idx;
+            let end = abs + needle.len();
+            let left_ok = abs == 0 || !is_word_byte(bytes[abs - 1]);
+            let right_ok = end == bytes.len() || !is_word_byte(bytes[end]);
+            if left_ok && right_ok {
+                return true;
+            }
+            start = abs + 1;
+        }
+    }
+    false
+}
+
+#[inline]
+fn is_word_byte(b: u8) -> bool {
+    b.is_ascii_alphanumeric() || b == b'_'
+}
 
 pub fn mlx_describe(model: &str, image: &Path) -> Result<String> {
     let py = python_bin();
@@ -687,5 +765,62 @@ mod tests {
             Some("A terminal window.")
         );
         assert!(parse_mlx_stdout("no separators").is_none());
+    }
+
+    // Cite: user feedback 2026-04-22 — reject outputs matching
+    // `/\b(a command|some output|an image|what appears to be|it looks like)\b/i`
+    // and re-run with BLIND_PROMPT_STRICT.
+    #[test]
+    fn generic_phrase_detector_true_positive() {
+        // Six example generic strings that MUST be flagged as generic.
+        let generic = [
+            "a command was run with an output",
+            "The terminal shows some output from the tool.",
+            "An image of a user interface is displayed.",
+            "What appears to be a dashboard with tiles.",
+            "It looks like a Streamlit page with controls.",
+            "Shell session — a command produced some output with another stream.",
+        ];
+        for g in &generic {
+            assert!(
+                is_generic_blind_description(g),
+                "expected generic-flag for: {g:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn generic_phrase_detector_true_negative() {
+        // Six example specific strings that MUST NOT be flagged.
+        let specific = [
+            "Terminal shows `hwledger plan --help` with flags --context and --batch.",
+            "Streamlit page titled \"Attention Kind: MLA\" showing VRAM: 49.79 MB.",
+            "GUI frame with Plan button and Seq-len slider at 32768.",
+            "Error banner reads \"failed to parse manifest.verified.json at line 12\".",
+            "First three stdout lines: \"ok\", \"ok\", \"running 3 tests\".",
+            "Sidebar lists entries: probe-gui-watch, settings-gui-mtls, export-gui-vllm.",
+        ];
+        for s in &specific {
+            assert!(
+                !is_generic_blind_description(s),
+                "expected NOT generic for: {s:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn generic_phrase_detector_respects_word_boundaries() {
+        // "command" alone (no leading "a ") must not trigger; "animage"
+        // must not trigger. But "an image" in-sentence should trigger.
+        assert!(!is_generic_blind_description("The command hwledger plan ran."));
+        assert!(!is_generic_blind_description("Animage compression tool."));
+        assert!(is_generic_blind_description("This is an image of a terminal."));
+    }
+
+    #[test]
+    fn blind_prompt_strict_differs_from_default() {
+        assert_ne!(BLIND_PROMPT, BLIND_PROMPT_STRICT);
+        assert!(BLIND_PROMPT.contains("verbatim"));
+        assert!(BLIND_PROMPT_STRICT.contains("REJECTED"));
     }
 }
