@@ -22,6 +22,17 @@ public class Journey {
     private var screenRecorder: ScreenCaptureRecorder?
     private var recordingPath: URL?
     private var recordingDenied: Bool = false
+    /// Cursor-track recorder. Owned by the journey; wired into
+    /// `appDriver.cursorTracker` so synthesized click/release events at
+    /// tap sites end up in the JSONL alongside real HID cursor motion.
+    /// Emits `<journeyDir>/cursor-track.jsonl` in `finalize()`.
+    /// Traces to: Deliverable 2 (XCUITest parallel to Playwright D3).
+    private let cursorTracker: CursorTracker
+    /// Per-step native window dimensions (in screen points), captured at
+    /// step-start. Feeds `JourneyStep.native_width` / `native_height` so
+    /// downstream Remotion `CursorOverlay` can scale coordinates from the
+    /// capture-time window into the composition canvas.
+    private var nativeSizes: [CGSize?] = []
     /// Optional accessibility source for structural-capture. When set, every
     /// `screenshot(...)` call also writes a `.structural.json` sibling next
     /// to the PNG via `AccessibilitySnapshot.writeSibling`. When nil, the
@@ -41,6 +52,14 @@ public class Journey {
 
         // Create journey directory
         try FileManager.default.createDirectory(at: journeyDirectory, withIntermediateDirectories: true)
+
+        // Start cursor tracking for this journey and wire the driver so
+        // synthesized tap events at tap sites are recorded in the JSONL.
+        // `startTime` is anchored to now so ts_ms is rebased to the
+        // journey's start — matching Playwright's recorderStartMs contract.
+        self.cursorTracker = CursorTracker(startTime: Date())
+        self.cursorTracker.start()
+        appDriver.cursorTracker = self.cursorTracker
     }
 
     /// Enable screen recording for this journey.
@@ -103,6 +122,10 @@ public class Journey {
             }
         }
         structuralPaths.append(structuralFilename)
+
+        // Record the main-window bounds at capture time. Best-effort; a
+        // nil value simply omits the native dims for this step.
+        nativeSizes.append(appDriver.mainWindowBounds()?.size)
     }
 
     /// Post-step hook: explicitly request a structural snapshot tied to the
@@ -155,6 +178,23 @@ public class Journey {
                 print("Journey: Failed to stop recording: \(error)")
             }
         }
+
+        // Stop cursor tracking and flush the JSONL sibling. Best-effort:
+        // the screenshot + manifest are the primary deliverables; a write
+        // failure is logged but does not fail the journey.
+        cursorTracker.stop()
+        do {
+            try cursorTracker.writeJSONL(to: journeyDirectory)
+        } catch {
+            print("Journey: Failed to write cursor-track.jsonl: \(error)")
+        }
+    }
+
+    /// Test seam: returns an immutable snapshot of recorded cursor events.
+    /// Used by harness tests to assert at least one event was captured and
+    /// that timestamps are monotonically non-decreasing.
+    public func cursorEventsSnapshot() -> [CursorTrackEvent] {
+        cursorTracker.snapshot()
     }
 
     /// Write the journey manifest (JSON) to disk.
@@ -162,12 +202,15 @@ public class Journey {
         let manifest = JourneyManifest(
             id: id,
             steps: steps.enumerated().map { index, step in
-                JourneyStep(
+                let size = nativeSizes.indices.contains(index) ? nativeSizes[index] : nil
+                return JourneyStep(
                     index: index,
                     slug: step.slug,
                     intent: step.intent,
                     screenshot_path: screenshots.indices.contains(index) ? screenshots[index] : nil,
-                    structural_path: structuralPaths.indices.contains(index) ? structuralPaths[index] : nil
+                    structural_path: structuralPaths.indices.contains(index) ? structuralPaths[index] : nil,
+                    native_width: size.map { Int($0.width) },
+                    native_height: size.map { Int($0.height) }
                 )
             },
             started_at: ISO8601DateFormatter().string(from: startTime),
@@ -217,6 +260,12 @@ struct JourneyStep: Codable {
     /// Present when the accessibility walker ran; nil otherwise. Downstream
     /// consumers: viewer's "Structural" toolbar pane + traceability gate.
     let structural_path: String?
+    /// Main-window width at capture time, in screen points. Mirrors the
+    /// Playwright manifest field so the Remotion `CursorOverlay` can scale
+    /// cursor-track coordinates across capture and composition canvases.
+    let native_width: Int?
+    /// Main-window height at capture time, in screen points.
+    let native_height: Int?
 }
 
 enum JourneyError: LocalizedError {

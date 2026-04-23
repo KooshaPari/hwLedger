@@ -22,6 +22,13 @@ public final class AppDriver {
     private let app: NSRunningApplication
     private let axApp: AXUIElement
 
+    /// Optional cursor-track recorder. When set, tap sites below call
+    /// `recordSynthetic(...)` so the JSONL captures synthesized click /
+    /// release events even if the global CGEvent tap is denied by OS
+    /// policy. Wired by `Journey` which owns the tracker lifecycle.
+    /// Traces to: Deliverable 2 (XCUITest parallel to D3 Playwright).
+    public var cursorTracker: CursorTracker?
+
     /// Initialize AppDriver with the path to the HwLedger.app bundle.
     /// Launches the app and initializes the accessibility element.
     /// - Parameter appPath: Path to HwLedger.app (e.g., "/path/to/HwLedger.app")
@@ -87,6 +94,13 @@ public final class AppDriver {
         let axErr = AXUIElementCopyActionNames(el, &actions)
 
         if axErr == .success, let actions = actions as? [String], actions.contains(kAXPressAction) {
+            // Record a synthetic click/release pair at the element center so
+            // the JSONL captures AXPress-driven interactions (AXPress does
+            // NOT produce HID events, so the CGEvent tap would miss it).
+            if let tracker = cursorTracker, let center = try? centerPoint(of: el) {
+                tracker.recordSynthetic(action: "click", at: center)
+                tracker.recordSynthetic(action: "release", at: center)
+            }
             _ = AXUIElementPerformAction(el, kAXPressAction as CFString)
             try waitForIdle(timeout: 1.0)
             return
@@ -254,6 +268,24 @@ public final class AppDriver {
         return ""
     }
 
+    /// Return the app's main-window bounds (screen coordinates). Used by
+    /// `Journey` to record `native_width` / `native_height` per manifest
+    /// step — the Remotion `CursorOverlay` maps cursor-track coordinates
+    /// through these dimensions. Returns nil if the window cannot be
+    /// resolved (journey falls back to omitting native dims for that step).
+    public func mainWindowBounds() -> CGRect? {
+        // `getMainWindowID()` throws and returns an optional; collapse both
+        // failure modes into `nil`.
+        let maybeID: CGWindowID?
+        do {
+            maybeID = try getMainWindowID()
+        } catch {
+            return nil
+        }
+        guard let id = maybeID else { return nil }
+        return try? getWindowBounds(id)
+    }
+
     // MARK: - Private Helpers
 
     /// Recursively find a descendant element matching an accessibility identifier.
@@ -321,9 +353,32 @@ public final class AppDriver {
             throw AppDriverError.actionFailed("tapButton: could not create CGEvent")
         }
 
+        // Synthetic tap-site instrumentation for cursor-track JSONL. The
+        // global CGEvent tap in CursorTracker will also see these, but we
+        // record here to guarantee coverage on CI where the tap may be
+        // denied without Input Monitoring permission.
+        cursorTracker?.recordSynthetic(action: "click", at: clickPoint)
         downEvent.post(tap: CGEventTapLocation.cghidEventTap)
         Thread.sleep(forTimeInterval: 0.05)
         upEvent.post(tap: CGEventTapLocation.cghidEventTap)
+        cursorTracker?.recordSynthetic(action: "release", at: clickPoint)
+    }
+
+    /// Compute the on-screen center of an AX element. Used for cursor-track
+    /// instrumentation when AXPress is taken (no HID events generated).
+    private func centerPoint(of element: AXUIElement) throws -> CGPoint {
+        var position: AnyObject?
+        var size: AnyObject?
+        AXUIElementCopyAttributeValue(element, kAXPositionAttribute as CFString, &position)
+        AXUIElementCopyAttributeValue(element, kAXSizeAttribute as CFString, &size)
+        guard let pos = position, let sz = size else {
+            throw AppDriverError.actionFailed("centerPoint: missing position/size")
+        }
+        var cgPoint = CGPoint.zero
+        var cgSize = CGSize.zero
+        AXValueGetValue(pos as! AXValue, .cgPoint, &cgPoint)
+        AXValueGetValue(sz as! AXValue, .cgSize, &cgSize)
+        return CGPoint(x: cgPoint.x + cgSize.width / 2, y: cgPoint.y + cgSize.height / 2)
     }
 
     /// Focus an element (make it the focused UI element).
