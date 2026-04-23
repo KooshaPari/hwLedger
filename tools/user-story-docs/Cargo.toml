@@ -1,0 +1,27 @@
+[package]
+name = "user-story-docs"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Auto-generate docs-site/journeys/<id>.md pages from the harvested user-stories.json index. Preserves manual prose written after the @user-story-docs:END marker."
+
+[[bin]]
+name = "user-story-docs"
+path = "src/main.rs"
+
+[lib]
+name = "user_story_docs"
+path = "src/lib.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+clap = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

@@ -179,6 +179,27 @@ pre-push:
           echo "XCFramework missing — skip Swift build (run scripts/build-xcframework.sh first)"
         fi
 
+    user-story-docs-sync:
+      # Regenerate docs-site/journeys/<id>.md pages from the harvested
+      # user-stories.json index (Batch 5 of the user-story-as-test framework).
+      # Warn-mode by default (reports diffs, never blocks); strict under
+      # HWLEDGER_TAPE_GATE=strict (exit 2 if any page is out of date).
+      # Skipped cleanly when the harvested index is missing so fresh
+      # checkouts don't trip the gate before Batch 1 has run.
+      run: |
+        set -euo pipefail
+        INDEX="docs-site/quality/user-stories.json"
+        if [ ! -f "$INDEX" ]; then
+          echo "user-story-docs-sync: no $INDEX yet — skipping"
+          exit 0
+        fi
+        mode="${HWLEDGER_TAPE_GATE:-warn}"
+        flags=""
+        if [ "$mode" = "strict" ]; then
+          flags="--strict"
+        fi
+        cargo run --quiet -p user-story-docs -- --index "$INDEX" --out docs-site/journeys $flags
+
     attest-build:
       # Local-CI attestation: after the above gates have passed, emit a
       # signed, hash-chained manifest to .hwledger/attestations.log. The
