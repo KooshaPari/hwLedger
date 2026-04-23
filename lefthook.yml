@@ -70,6 +70,14 @@ pre-push:
         fi
         ${BIN} check-verified --root docs-site/public --root apps
 
+    docs-health:
+      # Proactive docs-health gate: mermaid / LaTeX / broken-link / missing
+      # asset / placeholder / tiny-video checks across docs-site/. Blocks on
+      # Error findings; warnings are surfaced but non-blocking until the
+      # backlog in docs-site/quality/docs-health-backlog.md is drained.
+      glob: "{docs-site,apps}/**/*.md"
+      run: cargo run -q -p hwledger-docs-health -- --root docs-site --fail-on error
+
     workspace-verify:
       run: |
         set -euo pipefail

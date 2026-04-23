@@ -32,6 +32,7 @@ members = [
     "tools/shot-linter",
     "tools/vlm-judge",
     "tools/cli-ansi-parse",
+    "tools/docs-health",
     "apps/windows/hwledger-tauri/src-tauri",
 ]
 exclude = [
