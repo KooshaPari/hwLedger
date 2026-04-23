@@ -59,6 +59,17 @@ export interface JourneyStep {
   description?: string | null;
   blind_description?: string | null;
   annotations?: Annotation[] | null;
+  /**
+   * Native pixel dimensions of `screenshot_path`. When present, Remotion
+   * renders bbox overlays inside an SVG with
+   * `viewBox="0 0 native_width native_height"` and lets the browser scale
+   * to the composition size — otherwise bboxes in native image pixels
+   * (e.g. 1440×900) render wildly off inside a 1280×720 canvas.
+   *
+   * Traces to: `feat/annotations-cursor-visible` — Problem 1(b) SVG viewBox fix.
+   */
+  native_width?: number;
+  native_height?: number;
 }
 
 export interface SceneSpec {

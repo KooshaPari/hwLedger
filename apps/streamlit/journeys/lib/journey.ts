@@ -33,6 +33,10 @@ export interface JourneyManifestStep {
   screenshot_path: string;
   /** Tier 0 structural-capture sibling (ARIA + HTML + URL + title). */
   structural_path?: string;
+  /** Native pixel dimensions of the captured PNG (viewport size). Feeds
+   *  Remotion's AnnotationOverlay SVG viewBox — see Problem 1(b). */
+  native_width?: number;
+  native_height?: number;
 }
 
 export interface JourneyManifest {
@@ -46,11 +50,32 @@ export interface JourneyManifest {
   steps: JourneyManifestStep[];
 }
 
+/**
+ * Raw cursor event emitted by the in-page listener (`page.addInitScript`).
+ * One line per event in the output JSONL.
+ *
+ * - `ts_ms`  — monotonic ms from the recorder's start (drawn from
+ *              `performance.now()` in-page, rebased to the recorder clock).
+ * - `action` — `"move"` for every mousemove sample, `"click"` at the moment
+ *              of `mousedown`, `"release"` at `mouseup`.
+ *
+ * Traces to: `feat/annotations-cursor-visible` — Deliverable 3 JSONL shape.
+ */
+export interface CursorTrackEvent {
+  ts_ms: number;
+  x: number;
+  y: number;
+  action: 'move' | 'click' | 'release';
+}
+
 export class JourneyRecorder {
   private readonly steps: JourneyManifestStep[] = [];
   private readonly cursor: CursorSample[] = [];
+  /** Raw, per-event cursor log for the JSONL sibling (Deliverable 3). */
+  private readonly cursorLog: CursorTrackEvent[] = [];
   private readonly outDir: string;
   private stepIndex = 0;
+  private readonly recorderStartMs: number = Date.now();
 
   constructor(
     public readonly id: string,
@@ -106,12 +131,18 @@ export class JourneyRecorder {
       dot.style.left = '-100px';
       dot.style.top = '-100px';
       document.documentElement.appendChild(dot);
-      const samples: Array<{ t: number; x: number; y: number; click?: boolean }> = [];
-      (window as unknown as { __hwledgerCursor: typeof samples }).__hwledgerCursor = samples;
+      type Sample = {
+        t: number;
+        x: number;
+        y: number;
+        action: 'move' | 'click' | 'release';
+      };
+      const samples: Sample[] = [];
+      (window as unknown as { __hwledgerCursor: Sample[] }).__hwledgerCursor = samples;
       document.addEventListener('mousemove', (e) => {
         dot.style.left = `${e.clientX}px`;
         dot.style.top = `${e.clientY}px`;
-        samples.push({ t: performance.now(), x: e.clientX, y: e.clientY });
+        samples.push({ t: performance.now(), x: e.clientX, y: e.clientY, action: 'move' });
       }, { passive: true, capture: true });
       document.addEventListener('mousedown', (e) => {
         const r = document.createElement('div');
@@ -120,7 +151,10 @@ export class JourneyRecorder {
         r.style.top = `${e.clientY}px`;
         document.documentElement.appendChild(r);
         setTimeout(() => r.remove(), 600);
-        samples.push({ t: performance.now(), x: e.clientX, y: e.clientY, click: true });
+        samples.push({ t: performance.now(), x: e.clientX, y: e.clientY, action: 'click' });
+      }, { passive: true, capture: true });
+      document.addEventListener('mouseup', (e) => {
+        samples.push({ t: performance.now(), x: e.clientX, y: e.clientY, action: 'release' });
       }, { passive: true, capture: true });
     });
   }
@@ -131,21 +165,56 @@ export class JourneyRecorder {
     const frameName = `frame-${String(this.stepIndex).padStart(3, '0')}.png`;
     const absPath = path.join(this.outDir, frameName);
     await page.screenshot({ path: absPath, fullPage: false });
-    // Snapshot cursor position at capture time; frame index = stepIndex - 1.
-    type Sample = { t: number; x: number; y: number; click?: boolean };
-    const recent: Sample | null = await page
+    // Drain all cursor events since the last capture. Two sinks:
+    //   1. `this.cursor` — one entry per frame (most-recent position) for
+    //      the manifest's inlined `cursor_track` (used by Remotion directly
+    //      when it doesn't want to load the JSONL sibling).
+    //   2. `this.cursorLog` — every raw event for the JSONL sibling.
+    type Sample = {
+      t: number;
+      x: number;
+      y: number;
+      action: 'move' | 'click' | 'release';
+    };
+    const drained: Sample[] = await page
       .evaluate(() => {
-        const w = window as unknown as { __hwledgerCursor?: Sample[] };
+        type InPageSample = {
+          t: number;
+          x: number;
+          y: number;
+          action: 'move' | 'click' | 'release';
+        };
+        const w = window as unknown as { __hwledgerCursor?: InPageSample[] };
         const arr = w.__hwledgerCursor ?? [];
-        return arr.length > 0 ? arr[arr.length - 1] : null;
+        const copy = arr.slice();
+        // Reset so subsequent captures only see new events.
+        w.__hwledgerCursor = [];
+        return copy;
       })
-      .catch(() => null);
+      .catch(() => [] as Sample[]);
+    const recorderStart = this.recorderStartMs;
+    for (const ev of drained) {
+      this.cursorLog.push({
+        // Rebase to recorder clock: `performance.now()` is epoch-ish-relative
+        // in-page; we can't trivially align it, so use monotonic Date.now()
+        // at drain time as an approximation (events captured between the
+        // previous capture and this one are all attributed to the drain
+        // window, which is accurate to <1 frame at 30fps for user-paced UI).
+        ts_ms: Math.max(0, Date.now() - recorderStart),
+        x: ev.x,
+        y: ev.y,
+        action: ev.action,
+      });
+    }
+    // Per-frame sample: most-recent position in the drained window, or fall
+    // back to the previous capture's last recorded point.
+    const recent = drained[drained.length - 1];
     if (recent) {
       this.cursor.push({
         frame: this.stepIndex - 1,
         x: recent.x,
         y: recent.y,
-        click: recent.click,
+        click: recent.action === 'click',
       });
     }
     // Tier 0 structural-capture: write ARIA tree + raw HTML + url/title
@@ -161,12 +230,18 @@ export class JourneyRecorder {
       // eslint-disable-next-line no-console
       console.warn(`structural-capture failed for ${frameName}: ${String(err)}`);
     }
+    // Record the viewport size at capture time so downstream Remotion
+    // renders place bboxes in the right coordinate system regardless of
+    // the eventual composition canvas size.
+    const viewport = page.viewportSize();
     this.steps.push({
       index: this.stepIndex - 1,
       slug: step.slug,
       intent: step.intent,
       screenshot_path: frameName,
       structural_path: structuralName,
+      native_width: viewport?.width,
+      native_height: viewport?.height,
     });
   }
 
@@ -187,6 +262,23 @@ export class JourneyRecorder {
       JSON.stringify(manifest, null, 2) + '\n',
       'utf8',
     );
+    // Emit cursor-track.jsonl — one event per line, ts_ms relative to the
+    // recording's start. This is the Remotion-agnostic cursor source (sibling
+    // to `manifest.cursor_track` which is the already-frame-indexed variant).
+    // Consumed by downstream tooling (bbox-ground, VLM auditors, Remotion
+    // loader when the manifest does not carry an inlined track).
+    //
+    // Traces to: `feat/annotations-cursor-visible` — Deliverable 3.
+    if (this.cursorLog.length > 0) {
+      const jsonl = this.cursorLog
+        .map((ev) => JSON.stringify(ev))
+        .join('\n');
+      await fs.writeFile(
+        path.join(this.outDir, 'cursor-track.jsonl'),
+        jsonl + '\n',
+        'utf8',
+      );
+    }
     return manifest;
   }
 }

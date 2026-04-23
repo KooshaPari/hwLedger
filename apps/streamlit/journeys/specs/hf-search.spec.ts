@@ -1,39 +1,52 @@
 /**
- * HF Search journey: drive the new HuggingFace search page end-to-end.
+ * @user-story
+ * ---
+ * journey_id: streamlit-hf-search
+ * title: Streamlit — HuggingFace model search journey
+ * persona: ML engineer picking a model for local inference
+ * given: Streamlit server running, HF token cached
+ * when:
+ *   - navigate to /HF_Search
+ *   - type "llama" in the query box
+ *   - scroll to per-row actions
+ *   - click "Plan it" on the first result
+ * then:
+ *   - url contains /Planner
+ *   - resolved-model chip renders for the chosen model
+ * traces_to: [FR-HF-001, FR-UI-001]
+ * record: true
+ * blind_judge: auto
+ * family: streamlit
+ * ---
  *
- * Beats:
- *   1. landing — quick picks band visible, search box empty.
- *   2. search-typed — user types 'llama' into the search input.
- *   3. filter-applied — library picker set to 'transformers', sort 'downloads'.
- *   4. results — search executed, result table rendered.
- *   5. use-model — 'Plan it →' clicked on a row, handing off to the Planner.
+ * HF Search journey: drive the HuggingFace search page end-to-end and
+ * emit a Phenotype-conformant user-story manifest via
+ * `@phenotype/playwright-record`.
  */
-import { test } from '@playwright/test';
-import { JourneyRecorder, journeysRoot, waitForStreamlit } from '../lib/journey';
+import { test, expect } from '@phenotype/playwright-record';
 
-test('streamlit hf-search — anon search, quick picks, handoff to planner', async ({ page }, testInfo) => {
-  const recorder = new JourneyRecorder(
-    'streamlit-hf-search',
-    'Streamlit HF Search — anon search + handoff',
-    'Load the HF Search page, browse the 2025-2026 quick picks, type a query, pick filters, and hand off a selected model to the Planner.',
-    journeysRoot(testInfo),
-  );
-  await recorder.init();
-  await recorder.installCursor(page);
+async function waitForStreamlitIdle(page: import('@playwright/test').Page) {
+  // Streamlit reports "Running" in the top-right during reruns; wait for idle.
+  try {
+    await page.waitForLoadState('networkidle', { timeout: 15_000 });
+  } catch {
+    /* best-effort */
+  }
+}
 
+test('streamlit hf-search — anon search, quick picks, handoff to planner', async ({
+  page,
+  recorder,
+}) => {
   await page.goto('/HF_Search');
-  await waitForStreamlit(page);
-  await recorder.capture(page, {
-    slug: 'landing',
-    intent: 'HF Search landed; Quick picks grid visible with 2025-2026 releases and download-count badges.',
-  });
+  await waitForStreamlitIdle(page);
+  await recorder.capture(
+    page,
+    'landing',
+    'HF Search landed; Quick picks grid visible with 2025-2026 releases and download-count badges.',
+  );
 
-  // Focus the query box (Streamlit renders text_input with placeholder).
-  const queryBox = page
-    .getByPlaceholder(/llama|qwen|mistral/i)
-    .first();
-  // Best-effort: Streamlit may delay first-paint; use a longer wait and
-  // fall back to the generic selector if the placeholder isn't reachable.
+  const queryBox = page.getByPlaceholder(/llama|qwen|mistral/i).first();
   try {
     await queryBox.waitFor({ state: 'visible', timeout: 30_000 });
     await queryBox.click();
@@ -44,42 +57,41 @@ test('streamlit hf-search — anon search, quick picks, handoff to planner', asy
     await fallback.click();
     await fallback.fill('llama');
   }
-  await waitForStreamlit(page);
-  await recorder.capture(page, {
-    slug: 'search-typed',
-    intent: 'User types "llama" into the search box; quick picks remain visible above.',
-  });
+  await waitForStreamlitIdle(page);
+  await recorder.capture(
+    page,
+    'search-typed',
+    'User types "llama" into the search box; quick picks remain visible above.',
+  );
 
-  // Execute the search (if a dedicated button exists; otherwise the live
-  // input already drives the query).
   const searchBtn = page.getByRole('button', { name: /^Search$/i }).first();
   if (await searchBtn.isVisible().catch(() => false)) {
     await searchBtn.click();
-    await waitForStreamlit(page);
+    await waitForStreamlitIdle(page);
   }
-  await recorder.capture(page, {
-    slug: 'results',
-    intent: 'Search returned; results table shows models with downloads, likes, library, tags, and last-modified.',
-  });
+  await recorder.capture(
+    page,
+    'results',
+    'Search returned; results table shows models with downloads, likes, library, tags, and last-modified.',
+  );
 
-  // Scroll to the per-row action list.
   await page.mouse.wheel(0, 900);
-  await waitForStreamlit(page);
-  await recorder.capture(page, {
-    slug: 'model-actions',
-    intent: 'Per-row actions visible: each model exposes a "Plan it →" button that primes the Planner session.',
-  });
+  await waitForStreamlitIdle(page);
+  await recorder.capture(
+    page,
+    'model-actions',
+    'Per-row actions visible: each model exposes a "Plan it →" button that primes the Planner session.',
+  );
 
-  // Click the first "Plan it" action and confirm navigation.
   const planBtn = page.getByRole('button', { name: /Plan it/i }).first();
   if (await planBtn.isVisible().catch(() => false)) {
     await planBtn.click();
-    await waitForStreamlit(page);
-    await recorder.capture(page, {
-      slug: 'handoff-planner',
-      intent: 'Handoff complete: Planner opens with the chosen model id banner at the top.',
-    });
+    await waitForStreamlitIdle(page);
+    await expect(page).toHaveURL(/\/Planner/i);
+    await recorder.capture(
+      page,
+      'handoff-planner',
+      'Handoff complete: Planner opens with the chosen model id banner at the top.',
+    );
   }
-
-  await recorder.finalize(true);
 });

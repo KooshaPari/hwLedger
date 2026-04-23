@@ -32,10 +32,12 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
+import { AnnotationOverlay } from "../components/AnnotationOverlay";
 import { CalloutBox } from "../components/CalloutBox";
 import { CaptionBar } from "../components/CaptionBar";
 import { ClickPulse } from "../components/ClickPulse";
 import { Cursor } from "../components/Cursor";
+import { CursorOverlay } from "../components/CursorOverlay";
 import { TitleCard } from "../components/TitleCard";
 import type {
   Annotation,
@@ -127,7 +129,9 @@ const StepSlide: React.FC<{
   durationFrames: number;
   isFirst: boolean;
   canvas: { w: number; h: number };
-}> = ({ step, keyframeBase, durationFrames, isFirst, canvas }) => {
+  /** Scene-local cursor track (frames are already rebased to 0). */
+  cursorTrack?: { frame: number; x: number; y: number; click?: boolean }[];
+}> = ({ step, keyframeBase, durationFrames, isFirst, canvas, cursorTrack }) => {
   const frame = useCurrentFrame();
   const fade = isFirst
     ? 1
@@ -160,6 +164,16 @@ const StepSlide: React.FC<{
           canvas={canvas}
         />
       )}
+      {/* Authoritative bbox rendering: SVG with viewBox set to the step's
+          native image dimensions (falls back to slideshow canvas otherwise).
+          Draws EVERY annotation rectangle; the CalloutBox below only carries
+          the text card. See `feat/annotations-cursor-visible` Problem 1. */}
+      <AnnotationOverlay
+        annotations={annotations}
+        durationFrames={durationFrames}
+        nativeWidth={step.native_width ?? canvas.w}
+        nativeHeight={step.native_height ?? canvas.h}
+      />
       {annotations.map((ann, i) => {
         const pos: CalloutPosition =
           ann.position && ann.position !== "auto"
@@ -173,11 +187,17 @@ const StepSlide: React.FC<{
             color={ann.color ?? "#34d399"}
             startFrame={Math.max(8, cursorFrom - 4)}
             at={pos}
-            bbox={ann.bbox}
+            /* bbox visualisation moved to AnnotationOverlay — this card now
+               only renders the text callout anchored by `pos`. */
           />
         );
       })}
-      {primary && (
+      {/* Real cursor track from the recorder (Playwright DOM events or
+          XCUITest CGEvent coords). Falls back to the synthetic start→focus
+          interpolation only when no real track is present. */}
+      {cursorTrack && cursorTrack.length > 0 ? (
+        <CursorOverlay track={cursorTrack} />
+      ) : primary ? (
         <>
           <Cursor
             from={cursorFrom}
@@ -187,7 +207,7 @@ const StepSlide: React.FC<{
           />
           <ClickPulse at={endPt} frame={cursorTo} color="#f9e2af" />
         </>
-      )}
+      ) : null}
       <CaptionBar text={step.intent} />
     </AbsoluteFill>
   );
@@ -226,17 +246,25 @@ export const JourneySlideshow: React.FC<JourneySlideshowProps> = ({
         <TitleCard title={journeyId} subtitle={manifest.intent} />
       </Sequence>
 
-      {scenes.map(({ step, from, duration }, idx) => (
+      {scenes.map(({ step, from, duration }, idx) => {
+        // Rebase the global cursor track to scene-local frames and filter
+        // to samples inside this scene's window.
+        const sceneCursor = (manifest.cursor_track ?? [])
+          .filter((p) => p.frame >= from && p.frame < from + duration)
+          .map((p) => ({ ...p, frame: p.frame - from }));
+        return (
         <Sequence key={idx} from={from} durationInFrames={duration}>
           <StepSlide
             step={step}
             keyframeBase={keyframeBase}
             durationFrames={duration}
+            cursorTrack={sceneCursor}
             isFirst={idx === 0}
             canvas={{ w: width, h: height }}
           />
         </Sequence>
-      ))}
+        );
+      })}
 
       <Sequence from={endOfScenes} durationInFrames={outroFrames}>
         <TitleCard

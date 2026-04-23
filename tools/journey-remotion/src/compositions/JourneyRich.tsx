@@ -21,6 +21,7 @@ import { CaptionBar } from "../components/CaptionBar";
 import { FrameStill } from "../components/FrameStill";
 import { CursorOverlay } from "../components/CursorOverlay";
 import { StepBadge } from "../components/StepBadge";
+import { AnnotationOverlay } from "../components/AnnotationOverlay";
 import type { CalloutPosition, RichManifest, SceneSpec } from "../types";
 
 export interface JourneyRichProps {
@@ -106,10 +107,20 @@ export const JourneyRich: React.FC<JourneyRichProps> = ({
           (p) => p.frame >= from && p.frame < from + duration,
         );
 
+        const annotations = step.annotations ?? [];
         return (
           <Sequence key={idx} from={from} durationInFrames={duration}>
             <AbsoluteFill>
               <FrameStill src={src} durationFrames={duration} />
+              {/* Authoritative bbox overlays — scaled via SVG viewBox against
+                  the step's native image dimensions. Renders ALL annotations,
+                  not just the first. Fades in/out within the scene. */}
+              <AnnotationOverlay
+                annotations={annotations}
+                durationFrames={duration}
+                nativeWidth={step.native_width}
+                nativeHeight={step.native_height}
+              />
               <CalloutBox
                 text={spec.calloutText}
                 subText={spec.calloutSubText}
@@ -117,7 +128,9 @@ export const JourneyRich: React.FC<JourneyRichProps> = ({
                 startFrame={8}
                 at={position}
                 custom={firstAnn?.custom}
-                bbox={firstAnn?.bbox}
+                /* bbox rendering delegated to AnnotationOverlay above — the
+                   legacy CalloutBox bbox was in composition-pixel space and
+                   drifted off-image; see Problem 1(b). */
               />
               {sceneCursor.length > 0 && (
                 <CursorOverlay track={sceneCursor.map((p) => ({

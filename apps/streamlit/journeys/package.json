@@ -9,8 +9,11 @@
     "playwright": "playwright test",
     "playwright:ui": "playwright test --ui"
   },
+  "dependencies": {
+    "@phenotype/playwright-record": "file:../../../vendor/phenotype-journeys/phenotype-playwright-record-0.1.0.tgz"
+  },
   "devDependencies": {
-    "@playwright/test": "^1.47.0",
+    "@playwright/test": "^1.59.1",
     "@types/node": "^25.6.0",
     "typescript": "^5.5.4"
   }
