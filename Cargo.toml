@@ -36,6 +36,7 @@ members = [
     "tools/user-story-extract",
     "crates/hwledger-user-story-macros",
     "crates/hwledger-user-story-runtime",
+    "tools/bbox-ground",
     "apps/windows/hwledger-tauri/src-tauri",
 ]
 exclude = [

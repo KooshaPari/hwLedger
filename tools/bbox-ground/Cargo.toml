@@ -1,0 +1,25 @@
+[package]
+name = "hwledger-bbox-ground"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Structural-tree-priority bbox selector + hit-rate harness (D6 of bbox/cursor mandate)."
+
+[[bin]]
+name = "bbox-ground"
+path = "src/main.rs"
+
+[lib]
+name = "hwledger_bbox_ground"
+path = "src/lib.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+clap = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+walkdir = "2"
