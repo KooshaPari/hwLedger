@@ -53,6 +53,15 @@ struct Args {
     #[arg(long)]
     no_skip_allowed: bool,
 
+    /// Escalate `needs_agreement_review` rows (journeys with any step whose
+    /// intent↔blind agreement is Red) from advisory to hard failure. Default
+    /// policy keeps them advisory so noisy blind descriptions do not block
+    /// CI while prompts are being tuned.
+    ///
+    /// Traces to: FR-UX-VERIFY-003
+    #[arg(long)]
+    no_agreement_red: bool,
+
     /// Verbose output
     #[arg(short, long)]
     verbose: bool,
@@ -133,10 +142,27 @@ fn main() -> Result<()> {
 
         // Journey gate (FR-TRACE-003) — evaluated first so it reports even if
         // classic coverage is already green.
-        if journey_report.has_failures() || journey_report.has_needs_capture() {
+        if journey_report.has_failures()
+            || journey_report.has_needs_capture()
+            || journey_report.has_agreement_red()
+        {
             let mut hard_fail = false;
             eprintln!("\nJourney coverage gate (--strict):");
             for row in &journey_report.rows {
+                // Agreement-red gate (FR-UX-VERIFY-003) is orthogonal to the
+                // status-based reasons below; emit it first so reviewers see
+                // the provenance regardless of the row status.
+                if row.needs_agreement_review {
+                    let level = if args.no_agreement_red { "FAIL" } else { "WARN" };
+                    eprintln!(
+                        "  - {level} {} [{}] (needs_agreement_review: ≥1 step with \
+                         intent↔blind agreement=red)",
+                        row.fr, row.kind,
+                    );
+                    if args.no_agreement_red {
+                        hard_fail = true;
+                    }
+                }
                 let (reason, is_hard) = match row.status {
                     JourneyStatus::Ok => continue,
                     JourneyStatus::Missing => ("missing journey for tagged FR".to_string(), true),
