@@ -883,7 +883,10 @@ fn probe_mlx_once() -> bool {
         Ok(c) => c,
         Err(_) => return false,
     };
-    let deadline = std::time::Instant::now() + Duration::from_secs(2);
+    // 60 s budget — fresh `import mlx_vlm` on Apple Silicon pulls in torch + mlx
+    // shared libs, which cold-imports in 10–40 s on first run (conda Python).
+    // 2 s was too tight in practice.
+    let deadline = std::time::Instant::now() + Duration::from_secs(60);
     loop {
         match child.try_wait() {
             Ok(Some(status)) => return status.success(),
