@@ -20,7 +20,7 @@ already exist — e.g. `./cli-install-cargo.md`, `./cli-first-plan.md`,
 `./cli-ingest-local-gguf.md`, `./cli-ingest-error.md`,
 `./cli-traceability-report.md`.
 
-**Accept when:** every bullet in those sections is `[name](./cli-*.md)`
+**Accept when:** every bullet in those sections is a markdown link of the form `[name]` followed by `(./cli-*.md)`
 and `grep -c "JourneyViewer" docs-site/journeys/*.md` equals
 `ls docs-site/journeys/*.md | wc -l` (minus 2 for the roadmap/index
 pages).
