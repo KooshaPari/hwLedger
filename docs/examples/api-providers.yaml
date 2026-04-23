@@ -137,83 +137,88 @@ providers:
     cli_bin: codex
     cli_model: gpt-5
 
-  # Two-stage frame-describer chain (ADR-0038, 2026-04-22).
+  # Frame-describer tiered chain (ADR-0015 v5 / ADR-0039, 2026-04-22).
   #
-  # Successor architecture to the single `providers.mlx.models.vlm` chain
-  # above. The legacy `.vlm` key is preserved for back-compat; new callers
-  # should migrate to `providers.frame_describer.{parser,describer}`.
+  # Purpose-built describer chain for keyframe captioning / OCR / region
+  # description. The dominant workload for hwLedger is "describe this region"
+  # and "OCR this image"; Florence-2 is the task-specialist SLM for exactly
+  # that and runs ~10x faster than UI-TARS-1.5-7B on the same frame with ~1.5
+  # GB RAM vs ~7 GB. UI-TARS is therefore demoted to a tier3 domain specialist
+  # that wins on UI-action description but is overkill for plain captioning.
   #
-  # Stage 1 (parser) returns a deterministic JSON array of UI elements with
-  # bboxes; Stage 2 (describer) is prompted with that array as authoritative
-  # context and returns a grounded JSON description. See ADR-0038 and
-  # docs-site/research/imports-2026-04/frame-describer-landscape-2026.md for
-  # the full rationale, the prompt template, and the landscape table (25+
-  # models covering UI-specialists, omni-modal natives, and adapter-VLMs).
+  # Tier semantics:
+  #   tier1_classical_cv — Apple Vision / Tesseract / PaddleOCR; deterministic.
+  #   tier2_slm          — small VLMs tuned for caption/OCR/region-describe.
+  #   tier3_domain       — domain specialists (UI-TARS for UI-action frames).
+  #   tier4_omni         — generalist 2026 omni models (cached MLX chain).
+  #   tier5_cloud        — subscription / free-router cloud fallbacks.
+  #
+  # The runtime (`tools/vlm-judge/src/providers.rs::describer_task_router`)
+  # maps a keyframe's task-family to a preferred tier list; see
+  # `task_routing` below and `docs-site/engineering/api-provider-policy.md`
+  # ("Task routing") for the authoritative mapping.
   frame_describer:
     enabled: true
-    parser:
-      # tier_ui_parser — domain-specific, bbox-grounded, non-generative.
-      # OmniParser-v2 has no dedicated MLX port as of 2026-04-22; it runs
-      # under PyTorch MPS on Apple Silicon (2-4x latency penalty vs. a
-      # hypothetical MLX port — acceptable for offline journey render).
-      # paddleocr-vl.swift is the MLX-native fast path; it loses the
-      # `interactable` label but keeps OCR + layout.
-      models:
-        - microsoft/OmniParser-v2.0                           # 2025-02, canonical parser; PyTorch MPS on macOS
-        - mlx-community/paddleocr-vl.swift                    # 2025,    native Swift+MLX; loses interactable labels
-        - describer-only                                      # sentinel: fall through to Stage 2 if no parser available
-
     describer:
-      # tier_ui_specialist — UI-grounded, trained on screenshot->action pairs.
-      # Preferred because our workload IS screenshot->action description.
-      # UI-TARS-1.5 is MLX-native (mlx-vlm 0.1.25). UI-TARS-2 exists
-      # (ByteDance-Seed, 2025-09) but no mlx-community port yet — promote
-      # when published (see bytedance/UI-TARS#193).
-      #
-      # tier_omni_native — natively-multimodal (early-fusion) 2026 releases.
-      # Beats adapter-VLMs on general content, loses to UI-specialists on
-      # dense UI screenshots.
-      #
-      # tier_vlm_adapter — legacy adapter-style VLMs. Kept as floors.
-      #
-      # Gemma 4 (Google, 2026-04-02, Apache-2.0, native multimodal incl. OCR,
-      # 256K ctx) is the next insertion target — pending an
-      # `mlx-community/gemma-4-*-4bit` port.
-      models:
-        # tier_ui_specialist (preferred)
-        - mlx-community/UI-TARS-1.5-7B-6bit                   # 2025-04, 7B, UI-grounded, MLX-native
-        - mlx-community/UI-TARS-1.5-7B-4bit                   # 2025-04, 7B, smaller quant fallback
+      # tier2_slm — DEFAULT. Small task-specialist VLMs. Florence-2-large
+      # (771M, MIT) runs ~50 ms/frame on Apple Silicon via transformers+MPS
+      # and beats UI-TARS on generic caption benchmarks; it is the dominant
+      # path for caption_region and a strong second path for ocr_only.
+      tier2_slm:
+        - microsoft/Florence-2-large            # 771M, MIT, ~50 ms/frame on Metal via MPS
+        - microsoft/Florence-2-base             # 232M, for hosts with <4 GB free
+        - vikhyatk/moondream2                   # 1.86B, Apache-2.0, strong on visual-QA
+        - HuggingFaceTB/SmolVLM2-2.2B-Instruct  # 2.2B, Apache-2.0, native on-device
+        - google/paligemma-3b-mix-448           # 3B, Gemma license (restrictive — last resort)
+
+      # tier3_domain — UI-action specialist. Previously tier 1 for all
+      # describer calls; now routed only for UI-action frames (SwiftUI
+      # button taps, HUD interactions) where screenshot->action training
+      # wins over general caption models.
+      tier3_domain:
+        - mlx-community/UI-TARS-1.5-7B-6bit     # action-describe specialist, MLX-native
+        - mlx-community/UI-TARS-1.5-7B-4bit     # smaller quant fallback
         # TODO(frame-describer): when UI-TARS-2 MLX port ships, insert
         #   - mlx-community/UI-TARS-2-7B-DPO-4bit
-        # here at position 1 and demote UI-TARS-1.5 to positions 2-3.
+        # at position 1 and demote UI-TARS-1.5 below it.
 
-        # tier_omni_native (strong fallback when UI-specialist unavailable)
-        - mlx-community/Qwen3.6-35B-A3B-4bit                  # 2026-Q2, 35B/A3B MoE, natively-multimodal
-        - mlx-community/Qwen3.5-122B-A10B-4bit                # 2026-Q1, 122B/A10B MoE, needs >=96 GB RAM
-        # TODO(frame-describer): when Gemma 4 MLX port ships, insert
-        #   - mlx-community/gemma-4-31b-it-4bit
-        #   - mlx-community/gemma-4-26b-moe-it-4bit
+      # tier4_omni — generalist fallback (shares the MLX priority chain used
+      # by the legacy `providers.mlx.models.vlm` block). Used when tier2/3
+      # are unavailable or task is `novel_unusual`.
+      tier4_omni:
+        - mlx-community/Qwen3.6-35B-A3B-4bit
+        - mlx-community/Qwen3.5-122B-A10B-4bit
+        - mlx-community/Qwen3-VL-32B-Instruct-4bit
+        - mlx-community/InternVL3-38B-4bit
+        - mlx-community/InternVL3-14B-4bit
+        - mlx-community/GLM-4.5V-9B-4bit
+        - mlx-community/MiniCPM-V-4-4bit
+        - mlx-community/gemma-3-27b-it-4bit
+        - mlx-community/pixtral-12b-4bit
+        - mlx-community/Qwen2.5-VL-7B-Instruct-4bit
 
-        # tier_vlm_adapter (floors, ordered by quality)
-        - mlx-community/Qwen3-VL-32B-Instruct-4bit            # 2025-Q4, 19.6 GB, adapter-VLM floor
-        - mlx-community/InternVL3-38B-4bit                    # 2025-Q3, best OCR at size
-        - mlx-community/InternVL3-14B-4bit                    # 2025-Q3,  8.9 GB, mid-tier
-        - mlx-community/GLM-4.5V-9B-4bit                      # 2025-Q3, underrated on UI/doc VQA
-        - mlx-community/MiniCPM-V-4-4bit                      # 2025-Q2, ~5 GB, fast OCR
-        - mlx-community/gemma-3-27b-it-4bit                   # 2025-Q1, 16.8 GB, 128K ctx (Gemma 4 successor pending)
-        - mlx-community/pixtral-12b-4bit                      # 2024-Q3,  7.1 GB, Apache 2.0
-        - mlx-community/Qwen2.5-VL-7B-Instruct-4bit           # 2024-Q1,  5.6 GB, back-compat anchor
+      # tier5_cloud — subscription / free cloud fallbacks. No first-party
+      # paid APIs here by policy; see the `anthropic`/`openai`/`gemini`
+      # blocks below.
+      tier5_cloud:
+        - provider: fireworks
+          model: accounts/fireworks/models/qwen3p6-plus
+        - provider: fireworks
+          model: accounts/fireworks/models/kimi-k2p6
+        - provider: openrouter
+          model: qwen/qwen2.5-vl-72b-instruct:free
+        - provider: claude_code_headless
+          model: claude-opus-4-7
 
-    # Cloud / subscription fallbacks (no first-party API spend).
-    cloud_fallbacks:
-      - provider: fireworks
-        model: accounts/fireworks/models/qwen3p6-plus         # unlimited plan, natively-multimodal
-      - provider: fireworks
-        model: accounts/fireworks/models/kimi-k2p6            # vision capability per FW catalog; verify with live call
-      - provider: openrouter
-        model: qwen/qwen2.5-vl-72b-instruct:free
-      - provider: claude_code_headless
-        model: claude-opus-4-7                                # reasoning-tier fallback only
+    # Task routing: map a keyframe's inferred task-family to a preferred
+    # ordered list of tiers. The runtime
+    # (`describer_task_router(family, intent)`) returns the first tier whose
+    # preferred backend is available on the host.
+    task_routing:
+      caption_region:     [tier2_slm, tier3_domain, tier4_omni]   # Florence-2 wins
+      ui_action_describe: [tier3_domain, tier4_omni]              # UI-TARS wins
+      ocr_only:           [tier1_classical_cv, tier2_slm]         # tesseract/Vision + Florence-2
+      novel_unusual:      [tier4_omni, tier5_cloud]
 
 # Explicit denies. These MUST stay disabled unless policy is
 # allow-first-party. Even then, HWLEDGER_ALLOW_FIRST_PARTY_API=1 must be set.

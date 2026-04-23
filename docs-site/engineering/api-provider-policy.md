@@ -1,5 +1,58 @@
 # API provider policy — MLX VLM priority chain
 
+## Task routing (ADR-0015 v5, 2026-04-22)
+
+The frame-describer chain is now **tiered by task family**, not a single
+priority list. The runtime
+(`tools/vlm-judge/src/providers.rs::describer_task_router`) infers the task
+family from the keyframe's step context and walks the preferred tier list
+until it finds an available backend. Florence-2-771M is the default tier-2
+SLM — ~10× faster than UI-TARS-1.5-7B on the same frame at ~1.5 GB RAM vs.
+~7 GB — and beats UI-TARS on generic captioning benchmarks. UI-TARS is
+preserved as a tier-3 domain specialist for UI-action frames where its
+screenshot→action training still wins.
+
+**Tier semantics:**
+
+| Tier                  | Purpose                                     | Canonical models                                        |
+|-----------------------|---------------------------------------------|---------------------------------------------------------|
+| `tier1_classical_cv`  | Deterministic OCR / layout                  | Apple Vision, Tesseract, PaddleOCR                      |
+| `tier2_slm`           | Small task-specialist VLMs (caption/OCR)    | Florence-2-large/base, moondream2, SmolVLM2             |
+| `tier3_domain`        | Domain specialists (UI-action describe)     | UI-TARS-1.5-7B (6-bit / 4-bit)                          |
+| `tier4_omni`          | 2026 omni generalists (MLX)                 | Qwen3.6-35B-A3B, Qwen3.5-122B-A10B, Qwen3-VL-32B, …     |
+| `tier5_cloud`         | Subscription / free cloud fallbacks         | Fireworks, OpenRouter `:free`, headless Claude CLI      |
+
+**Task → tier mapping:**
+
+| Task family          | Preferred tiers (first→last)                       | Rationale                                                                     |
+|----------------------|----------------------------------------------------|-------------------------------------------------------------------------------|
+| `caption_region`     | tier2_slm → tier3_domain → tier4_omni              | Florence-2 beats UI-TARS on generic captions; omni only when SLM unavailable. |
+| `ui_action_describe` | tier3_domain → tier4_omni                          | UI-TARS wins on screenshot→action; skip tier2_slm entirely.                   |
+| `ocr_only`           | tier1_classical_cv → tier2_slm                     | Classical OCR is deterministic; Florence-2 for layout-heavy frames.           |
+| `novel_unusual`      | tier4_omni → tier5_cloud                           | Reach for the biggest generalist; fall to cloud if no local model loads.      |
+
+**Task inference rules (runtime):**
+
+- Terminal / CLI keyframes → `ocr_only`.
+- SwiftUI / AppKit button or HUD interaction frames → `ui_action_describe`.
+- Streamlit dashboard and docs-site gallery views → `caption_region`.
+- Frames tagged `family: unknown` or outside the above → `novel_unusual`.
+
+**Florence-2 footprint:**
+
+- `microsoft/Florence-2-large` — 771M params, MIT licensed, ~1.5 GB RAM at
+  float32 on MPS, ~50 ms/frame once the model is in memory. First-run
+  download is ~1.6 GB from HuggingFace and a one-time `transformers` +
+  `torch` install on the host (~2 min `pip install` on a warm pip cache).
+- `microsoft/Florence-2-base` — 232M params, drop-in replacement for hosts
+  with <4 GB free.
+
+Florence-2 has no first-class MLX port yet, so the runtime shells to
+`python -m` using `transformers` + `torch`. On Apple Silicon we select MPS
+automatically; on other hosts the same code path uses CUDA or CPU.
+
+---
+
 The `mlx` provider in `docs/examples/api-providers.yaml` and the runtime
 resolver in `tools/vlm-judge/src/main.rs` now treat `providers.mlx.models.vlm`
 as a **priority chain**, not a single model id. The runtime walks the chain in

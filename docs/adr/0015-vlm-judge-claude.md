@@ -1,4 +1,28 @@
-# ADR 0015 — VLM judge: subscription-routed / free-router / local-only (v3)
+# ADR 0015 — VLM judge: SLM-first frame describer with tiered task routing (v5)
+
+> **v5 (2026-04-22, agent-acf41589):** Replace the default frame describer with
+> **Florence-2-771M (microsoft/Florence-2-large, MIT)** as the tier-2 SLM and
+> demote **UI-TARS-1.5-7B** to a tier-3 domain specialist. Florence-2 is
+> purpose-built for caption / OCR / region-describe — our dominant workload —
+> and runs ~10× faster than UI-TARS on the same frame (~50 ms/frame on
+> Apple-Silicon MPS vs. ~500 ms) at ~1.5 GB RAM vs. ~7 GB. UI-TARS still wins
+> on UI-action screenshots so it is preserved as tier-3 for
+> `ui_action_describe`. A new `task_routing` block in
+> `docs/examples/api-providers.yaml` maps keyframe family → preferred tier
+> list:
+>
+> | Task family          | Tier preference                                    |
+> |----------------------|----------------------------------------------------|
+> | `caption_region`     | tier2_slm → tier3_domain → tier4_omni (Florence-2) |
+> | `ui_action_describe` | tier3_domain → tier4_omni (UI-TARS)                |
+> | `ocr_only`           | tier1_classical_cv → tier2_slm                     |
+> | `novel_unusual`      | tier4_omni → tier5_cloud                           |
+>
+> Runtime: `tools/vlm-judge/src/providers.rs::{describer_task_router,
+> select_describer_model, Florence2*}`. Florence-2 shells to
+> `python -m` (transformers + torch, MPS on Apple Silicon) — same pattern as
+> the existing MLX path. v3 subscription-routed / free-router policy remains
+> in force; only the in-process default describer changed.
 
 > **v3 (2026-04-22, ab6be8c9):** First-party paid APIs (Anthropic / OpenAI /
 > Gemini) are blocked by default. The new priority chain is Fireworks.ai →
