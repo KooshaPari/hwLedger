@@ -202,7 +202,13 @@ enum JudgeBackend {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum EffectiveBackend {
+    /// Direct Anthropic API. Only reachable when policy=allow-first-party AND
+    /// HWLEDGER_ALLOW_FIRST_PARTY_API=1 AND ANTHROPIC_API_KEY is set.
     Claude,
+    /// Tier 5 cloud via headless `claude` CLI (uses the user's CLI login).
+    /// This is the default route for `--judge claude` under ADR 0015 v3 / the
+    /// first-party-API block policy from `docs/examples/api-providers.yaml`.
+    ClaudeCodeHeadless,
     Mlx,
     None,
 }
@@ -233,6 +239,7 @@ async fn run(cli: Cli) -> Result<()> {
         "[vlm-judge] backend={} force={} dry_run={} max_cost=${:.2}",
         match effective {
             EffectiveBackend::Claude => "claude",
+            EffectiveBackend::ClaudeCodeHeadless => "claude-code-headless",
             EffectiveBackend::Mlx => "mlx",
             EffectiveBackend::None => "none",
         },
@@ -420,6 +427,50 @@ async fn run(cli: Cli) -> Result<()> {
                         }
                     }
                 }
+                EffectiveBackend::ClaudeCodeHeadless => {
+                    // Tier 5 cloud via headless `claude` CLI. The CLI path is
+                    // text-only (no image upload), so we pass the image path
+                    // as a reference string; the model can still reason over
+                    // the filename + surrounding manifest context.
+                    let cfg = providers::ProviderConfig::load();
+                    let prompt = "Blind-describe the CLI/UI screenshot at this path in <=40 words. \
+                                  Factual description only; no interpretation.";
+                    match providers::claude_code_headless_describe(
+                        &cfg,
+                        &image_path.display().to_string(),
+                        prompt,
+                    ) {
+                        Ok(desc) => {
+                            claude_calls += 1;
+                            (desc, "claude-code-headless")
+                        }
+                        Err(e) => {
+                            eprintln!(
+                                "[vlm-judge] claude-code-headless failed for {}: {} — trying mlx",
+                                journey_id, e
+                            );
+                            match mlx_describe(&mlx_model, &image_path) {
+                                Ok(desc) => {
+                                    mlx_calls += 1;
+                                    (desc, "mlx")
+                                }
+                                Err(e2) => {
+                                    eprintln!(
+                                        "[vlm-judge] mlx also failed for {}: {}",
+                                        journey_id, e2
+                                    );
+                                    step_obj.insert(
+                                        "judge_status".into(),
+                                        serde_json::Value::String("pending".into()),
+                                    );
+                                    pending_marked += 1;
+                                    any_mutated = true;
+                                    continue;
+                                }
+                            }
+                        }
+                    }
+                }
                 EffectiveBackend::Mlx => {
                     match mlx_describe(&mlx_model, &image_path) {
                         Ok(desc) => {
@@ -570,14 +621,36 @@ fn resolve_keyframes_dir(manifest_path: &Path) -> Result<PathBuf> {
     Ok(parent.to_path_buf())
 }
 
+/// Provider-policy-aware backend selector.
+///
+/// Wire-in for ADR 0015 v3 / `docs/examples/api-providers.yaml`: `--judge
+/// claude` now routes to the headless `claude` CLI (tier 5 cloud) whenever
+/// the first-party paid API is blocked by policy, which is the default.
+/// Direct Anthropic HTTP is only used when policy=allow-first-party AND
+/// HWLEDGER_ALLOW_FIRST_PARTY_API=1 AND ANTHROPIC_API_KEY is set.
 async fn select_backend(choice: JudgeBackend) -> Result<EffectiveBackend> {
+    let cfg = providers::ProviderConfig::load();
+    providers::enforce_blocklist(cfg.policy);
+    let first_party_ok = cfg.policy.first_party_allowed()
+        && std::env::var(providers::ALLOW_FIRST_PARTY_ENV)
+            .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
+            .unwrap_or(false);
+    let have_anthropic_key = std::env::var("ANTHROPIC_API_KEY").is_ok();
+    let claude_cli_ok = providers::which_on_path(&cfg.claude_code_bin);
+
     match choice {
         JudgeBackend::None => Ok(EffectiveBackend::None),
         JudgeBackend::Claude => {
-            if std::env::var("ANTHROPIC_API_KEY").is_err() {
-                bail!("--judge claude selected but ANTHROPIC_API_KEY is not set");
+            if first_party_ok && have_anthropic_key {
+                Ok(EffectiveBackend::Claude)
+            } else if claude_cli_ok {
+                Ok(EffectiveBackend::ClaudeCodeHeadless)
+            } else {
+                bail!(
+                    "--judge claude selected but neither direct API nor headless CLI is \
+                     available (first-party API blocked; `claude` CLI not on PATH)"
+                );
             }
-            Ok(EffectiveBackend::Claude)
         }
         JudgeBackend::Mlx => {
             if !mlx_available() {
@@ -589,11 +662,14 @@ async fn select_backend(choice: JudgeBackend) -> Result<EffectiveBackend> {
             Ok(EffectiveBackend::Mlx)
         }
         JudgeBackend::Auto => {
-            if std::env::var("ANTHROPIC_API_KEY").is_ok() {
+            if first_party_ok && have_anthropic_key {
                 return Ok(EffectiveBackend::Claude);
             }
             if mlx_available() {
                 return Ok(EffectiveBackend::Mlx);
+            }
+            if claude_cli_ok {
+                return Ok(EffectiveBackend::ClaudeCodeHeadless);
             }
             Ok(EffectiveBackend::None)
         }
