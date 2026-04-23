@@ -137,6 +137,84 @@ providers:
     cli_bin: codex
     cli_model: gpt-5
 
+  # Two-stage frame-describer chain (ADR-0038, 2026-04-22).
+  #
+  # Successor architecture to the single `providers.mlx.models.vlm` chain
+  # above. The legacy `.vlm` key is preserved for back-compat; new callers
+  # should migrate to `providers.frame_describer.{parser,describer}`.
+  #
+  # Stage 1 (parser) returns a deterministic JSON array of UI elements with
+  # bboxes; Stage 2 (describer) is prompted with that array as authoritative
+  # context and returns a grounded JSON description. See ADR-0038 and
+  # docs-site/research/imports-2026-04/frame-describer-landscape-2026.md for
+  # the full rationale, the prompt template, and the landscape table (25+
+  # models covering UI-specialists, omni-modal natives, and adapter-VLMs).
+  frame_describer:
+    enabled: true
+    parser:
+      # tier_ui_parser — domain-specific, bbox-grounded, non-generative.
+      # OmniParser-v2 has no dedicated MLX port as of 2026-04-22; it runs
+      # under PyTorch MPS on Apple Silicon (2-4x latency penalty vs. a
+      # hypothetical MLX port — acceptable for offline journey render).
+      # paddleocr-vl.swift is the MLX-native fast path; it loses the
+      # `interactable` label but keeps OCR + layout.
+      models:
+        - microsoft/OmniParser-v2.0                           # 2025-02, canonical parser; PyTorch MPS on macOS
+        - mlx-community/paddleocr-vl.swift                    # 2025,    native Swift+MLX; loses interactable labels
+        - describer-only                                      # sentinel: fall through to Stage 2 if no parser available
+
+    describer:
+      # tier_ui_specialist — UI-grounded, trained on screenshot->action pairs.
+      # Preferred because our workload IS screenshot->action description.
+      # UI-TARS-1.5 is MLX-native (mlx-vlm 0.1.25). UI-TARS-2 exists
+      # (ByteDance-Seed, 2025-09) but no mlx-community port yet — promote
+      # when published (see bytedance/UI-TARS#193).
+      #
+      # tier_omni_native — natively-multimodal (early-fusion) 2026 releases.
+      # Beats adapter-VLMs on general content, loses to UI-specialists on
+      # dense UI screenshots.
+      #
+      # tier_vlm_adapter — legacy adapter-style VLMs. Kept as floors.
+      #
+      # Gemma 4 (Google, 2026-04-02, Apache-2.0, native multimodal incl. OCR,
+      # 256K ctx) is the next insertion target — pending an
+      # `mlx-community/gemma-4-*-4bit` port.
+      models:
+        # tier_ui_specialist (preferred)
+        - mlx-community/UI-TARS-1.5-7B-6bit                   # 2025-04, 7B, UI-grounded, MLX-native
+        - mlx-community/UI-TARS-1.5-7B-4bit                   # 2025-04, 7B, smaller quant fallback
+        # TODO(frame-describer): when UI-TARS-2 MLX port ships, insert
+        #   - mlx-community/UI-TARS-2-7B-DPO-4bit
+        # here at position 1 and demote UI-TARS-1.5 to positions 2-3.
+
+        # tier_omni_native (strong fallback when UI-specialist unavailable)
+        - mlx-community/Qwen3.6-35B-A3B-4bit                  # 2026-Q2, 35B/A3B MoE, natively-multimodal
+        - mlx-community/Qwen3.5-122B-A10B-4bit                # 2026-Q1, 122B/A10B MoE, needs >=96 GB RAM
+        # TODO(frame-describer): when Gemma 4 MLX port ships, insert
+        #   - mlx-community/gemma-4-31b-it-4bit
+        #   - mlx-community/gemma-4-26b-moe-it-4bit
+
+        # tier_vlm_adapter (floors, ordered by quality)
+        - mlx-community/Qwen3-VL-32B-Instruct-4bit            # 2025-Q4, 19.6 GB, adapter-VLM floor
+        - mlx-community/InternVL3-38B-4bit                    # 2025-Q3, best OCR at size
+        - mlx-community/InternVL3-14B-4bit                    # 2025-Q3,  8.9 GB, mid-tier
+        - mlx-community/GLM-4.5V-9B-4bit                      # 2025-Q3, underrated on UI/doc VQA
+        - mlx-community/MiniCPM-V-4-4bit                      # 2025-Q2, ~5 GB, fast OCR
+        - mlx-community/gemma-3-27b-it-4bit                   # 2025-Q1, 16.8 GB, 128K ctx (Gemma 4 successor pending)
+        - mlx-community/pixtral-12b-4bit                      # 2024-Q3,  7.1 GB, Apache 2.0
+        - mlx-community/Qwen2.5-VL-7B-Instruct-4bit           # 2024-Q1,  5.6 GB, back-compat anchor
+
+    # Cloud / subscription fallbacks (no first-party API spend).
+    cloud_fallbacks:
+      - provider: fireworks
+        model: accounts/fireworks/models/qwen3p6-plus         # unlimited plan, natively-multimodal
+      - provider: fireworks
+        model: accounts/fireworks/models/kimi-k2p6            # vision capability per FW catalog; verify with live call
+      - provider: openrouter
+        model: qwen/qwen2.5-vl-72b-instruct:free
+      - provider: claude_code_headless
+        model: claude-opus-4-7                                # reasoning-tier fallback only
+
 # Explicit denies. These MUST stay disabled unless policy is
 # allow-first-party. Even then, HWLEDGER_ALLOW_FIRST_PARTY_API=1 must be set.
   anthropic:
