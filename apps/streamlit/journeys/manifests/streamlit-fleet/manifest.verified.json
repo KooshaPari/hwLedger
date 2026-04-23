@@ -39,5 +39,6 @@
     "mode": "mock",
     "overall_score": 0.92,
     "timestamp": "2026-04-21T04:31:06Z"
-  }
+  },
+  "keyframes_root": "recordings/streamlit-fleet"
 }
