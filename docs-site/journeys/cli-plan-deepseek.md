@@ -4,21 +4,13 @@ Real-world planning scenario: the massive DeepSeek-V3 (671B mixture-of-experts) 
 
 ## What you'll see
 
-<!-- SHOT-MISMATCH: caption="Command invocation" expected=[command,invocation] matched=[] -->
-<Shot src="/cli-journeys/keyframes/plan-deepseek/frame-001.png"
-      caption="Command invocation"
-      size="small" align="right" />
-
-<!-- SHOT-MISMATCH: caption="Architecture auto-detected" expected=[architecture,auto-detected] matched=[] -->
-<Shot src="/cli-journeys/keyframes/plan-deepseek/frame-002.png"
-      caption="Architecture auto-detected"
-      size="small" align="left"
-      :annotations='[{"bbox":[80,120,320,24],"label":"DeepSeek-V2","style":"dashed"}]' />
-
-<Shot src="/cli-journeys/keyframes/plan-deepseek/frame-003.png"
-      caption="VRAM breakdown with MLA row"
-      size="small" align="right"
-      :annotations='[{"bbox":[120,340,220,28],"label":"MLA (kv_lora_rank=512)","color":"#89b4fa"}]' />
+<ShotGallery
+  title="plan DeepSeek-V3 — invocation → detect → breakdown"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/plan-deepseek/frame-001.png","caption":"Command invocation"},
+    {"src":"/cli-journeys/keyframes/plan-deepseek/frame-002.png","caption":"Architecture auto-detected"},
+    {"src":"/cli-journeys/keyframes/plan-deepseek/frame-003.png","caption":"VRAM breakdown with MLA row"}
+  ]' />
 
 Planning for DeepSeek-V3 with:
 - Model: DeepSeek-V3 (671B MoE)

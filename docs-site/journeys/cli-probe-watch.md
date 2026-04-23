@@ -10,20 +10,13 @@ Running `hwledger probe --watch`:
 - Utilization percentage changes as workloads come and go
 - Clean Ctrl+C exit (<200 ms) with no leftover processes
 
-<!-- SHOT-MISMATCH: caption="Live-refresh header" expected=[live-refresh,header] matched=[] -->
-<Shot src="/cli-journeys/keyframes/probe-watch/frame-001.png"
-      caption="Live-refresh header"
-      size="small" align="right"
-      :annotations='[{"bbox":[60,80,400,20],"label":"Refresh header"}]' />
-
-<!-- SHOT-MISMATCH: caption="Second tick — memory row updates" expected=[second,tick,memory,row,updates] matched=[] -->
-<Shot src="/cli-journeys/keyframes/probe-watch/frame-002.png"
-      caption="Second tick — memory row updates"
-      size="small" align="left" />
-
-<Shot src="/cli-journeys/keyframes/probe-watch/frame-003.png"
-      caption="Clean Ctrl+C exit line"
-      size="small" align="right" />
+<ShotGallery
+  title="probe --watch — header, tick, exit"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/probe-watch/frame-001.png","caption":"Live-refresh header"},
+    {"src":"/cli-journeys/keyframes/probe-watch/frame-002.png","caption":"Second tick — memory row updates"},
+    {"src":"/cli-journeys/keyframes/probe-watch/frame-003.png","caption":"Clean Ctrl+C exit line"}
+  ]' />
 
 This is useful for:
 - Watching a running inference job

@@ -5,19 +5,16 @@ Traces to: **FR-HF-001**, FR-PLAN-003
 hwLedger can query the Hugging Face Hub directly to discover models, pull their
 `config.json`, and plan memory — no manual download required.
 
-<!-- SHOT-MISMATCH: caption="plan —hf resolves HF model ID and continues" expected=[plan,--hf,resolves,model,continues] matched=[] -->
-<Shot src="/cli-journeys/keyframes/plan-hf-resolve/frame-001.png"
-      caption="plan --hf resolves HF model ID and continues"
-      size="small" align="right" />
+<ShotGallery
+  title="HF resolver — model ID + URL fallback"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/plan-hf-resolve/frame-001.png","caption":"plan --hf resolves HF model ID and continues"},
+    {"src":"/cli-journeys/keyframes/plan-hf-resolve/frame-003.png","caption":"Resolver fallback: full URL → repo id + revision extracted"}
+  ]' />
 
 <RecordingEmbed tape="streamlit-hf-search" kind="streamlit" caption="Streamlit HF search: quick-pick band + type-to-filter + click-to-use (primary UI)" />
 
 <RecordingEmbed tape="plan-hf-resolve" kind="cli" caption="CLI fallback — same resolver surface the Streamlit app wraps, for automation and scripts" />
-
-<!-- SHOT-MISMATCH: caption="Resolver fallback: full URL → repo id + revision extracted" expected=[resolver,fallback,full,url,repo,revision,extracted] matched=[] -->
-<Shot src="/cli-journeys/keyframes/plan-hf-resolve/frame-003.png"
-      caption="Resolver fallback: full URL → repo id + revision extracted"
-      size="small" align="left" />
 
 ## Anonymous by default
 

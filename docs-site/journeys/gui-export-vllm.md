@@ -10,17 +10,13 @@ This page documents the **export-gui-vllm** journey, which exercises the Planner
 
 ## Keyframe walkthrough
 
-<Shot src="/gui-journeys/export-gui-vllm/keyframes/frame_002.png"
-      caption="Clicking 'Load fixture...' — dropdown opens"
-      size="small" align="right" />
-
-<Shot src="/gui-journeys/export-gui-vllm/keyframes/frame_004.png"
-      caption="User clicks 'Export' — menu appears"
-      size="small" align="left" />
-
-<Shot src="/gui-journeys/export-gui-vllm/keyframes/frame_005.png"
-      caption="Cursor hits 'vLLM flags' — menu opens modal"
-      size="small" align="right" />
+<ShotGallery
+  title="Planner → Export → vLLM flags"
+  :shots='[
+    {"src":"/gui-journeys/export-gui-vllm/keyframes/frame_002.png","caption":"Clicking `Load fixture...` — dropdown opens"},
+    {"src":"/gui-journeys/export-gui-vllm/keyframes/frame_004.png","caption":"User clicks `Export` — menu appears"},
+    {"src":"/gui-journeys/export-gui-vllm/keyframes/frame_005.png","caption":"Cursor hits `vLLM flags` — menu opens modal"}
+  ]' />
 
 ## What you'll see
 

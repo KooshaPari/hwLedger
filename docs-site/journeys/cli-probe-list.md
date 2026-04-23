@@ -12,20 +12,13 @@ Running `hwledger probe` displays:
 
 Watch as the probe detects your hardware in real-time. On multi-GPU boxes, you'll see each device listed separately.
 
-<!-- SHOT-MISMATCH: caption="Command entered" expected=[command,entered] matched=[] -->
-<Shot src="/cli-journeys/keyframes/probe-list/frame-001.png"
-      caption="Command entered"
-      size="small" align="left" />
-
-<!-- SHOT-MISMATCH: caption="Device 0 row printed" expected=[device,row] matched=[] -->
-<Shot src="/cli-journeys/keyframes/probe-list/frame-002.png"
-      caption="Device 0 row printed"
-      size="small" align="right"
-      :annotations='[{"bbox":[40,120,480,20],"label":"Device 0","color":"#cba6f7"}]' />
-
-<Shot src="/cli-journeys/keyframes/probe-list/frame-003.png"
-      caption="Summary footer with backend badge"
-      size="small" align="left" />
+<ShotGallery
+  title="probe — command → device row → summary"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/probe-list/frame-001.png","caption":"Command entered"},
+    {"src":"/cli-journeys/keyframes/probe-list/frame-002.png","caption":"Device 0 row printed"},
+    {"src":"/cli-journeys/keyframes/probe-list/frame-003.png","caption":"Summary footer with backend badge"}
+  ]' />
 
 <JourneyViewer manifest="/cli-journeys/manifests/probe-list/manifest.verified.json" />
 

@@ -5,10 +5,12 @@ description: Full-rank attention with parallel heads
 
 # Multi-Head Attention (MHA)
 
-<!-- SHOT-MISMATCH: caption="—attention-kind flag (planner accepts MHA override)" expected=[--attention-kind,flag,planner,accepts,mha,override] matched=[] -->
-<Shot src="/cli-journeys/keyframes/plan-help/frame-005.png"
-      caption="--attention-kind flag (planner accepts MHA override)"
-      size="small" align="right" />
+<ShotGallery
+  title="MHA planner flag + default"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/plan-help/frame-005.png","caption":"--attention-kind flag (planner accepts MHA override)"},
+    {"src":"/cli-journeys/keyframes/plan-help/frame-003.png","caption":"Flag dump: --attention-kind default is `auto`"}
+  ]' />
 
 <RecordingEmbed tape="planner-gui-launch" kind="gui" caption="Planner GUI: MHA memory breakdown — per-head KV band visible in the native macOS chart" />
 
@@ -17,12 +19,6 @@ description: Full-rank attention with parallel heads
 <RecordingEmbed tape="plan-help" kind="cli" caption="CLI `plan --help`: --attention-kind enum options (mha | gqa | mqa | mla | ssm | auto) — CLI-only flag surface" />
 
 Standard Transformer attention mechanism, the foundation all other attention variants derive from.
-
-<!-- SHOT-MISMATCH: caption="Flag dump: —attention-kind default is `auto`" expected=[flag,dump,--attention-kind,default,auto] matched=[] -->
-<Shot src="/cli-journeys/keyframes/plan-help/frame-003.png"
-      caption="Flag dump: --attention-kind default is `auto`"
-      size="small" align="left"
-      :annotations='[{"bbox":[40,120,420,24],"label":"auto (default)","color":"#f9e2af","position":"top-left"}]' />
 
 ## Formula
 

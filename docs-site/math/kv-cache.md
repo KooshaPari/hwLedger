@@ -1,14 +1,12 @@
 # KV Cache Formulas
 
-<Shot src="/cli-journeys/keyframes/plan-deepseek/frame-003.png"
-      caption="Live KV cache breakdown: weights / kv_cache / activations"
-      size="medium" align="right"
-      :annotations='[{"bbox":[120,340,220,28],"label":"kv_cache row","color":"#89b4fa"}]' />
-
-<Shot src="/cli-journeys/keyframes/plan-mla-deepseek/frame-002.png"
-      caption="Per-layer KV cache bytes"
-      size="small" align="left"
-      :annotations='[{"bbox":[140,200,260,32],"label":"per-layer bytes","color":"#a6e3a1"}]' />
+<ShotGallery
+  title="KV cache — live breakdown, per-layer bytes, 32K sweep endpoint"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/plan-deepseek/frame-003.png","caption":"Live KV cache breakdown: weights / kv_cache / activations"},
+    {"src":"/cli-journeys/keyframes/plan-mla-deepseek/frame-002.png","caption":"Per-layer KV cache bytes"},
+    {"src":"/cli-journeys/keyframes/plan-mla-deepseek/frame-003.png","caption":"32K sweep endpoint — KV band dominates when seq > 16K"}
+  ]' />
 
 The math core is the soul of hwLedger. This document walks through the derivation of KV cache formulas per attention architecture, with interactive breakdowns and live calculation.
 
@@ -34,11 +32,6 @@ Incorrect calculation costs hours of debugging and wasted VRAM. hwLedger derives
 <RecordingEmbed tape="first-plan" kind="cli" caption="CLI plan: MLA classification + per-layer VRAM breakdown (scriptable)" />
 
 <RecordingEmbed tape="plan-mla-deepseek" kind="cli" caption="CLI sweep: context 4K → 32K stacked band chart (helpful for headless benchmarking)" />
-
-<Shot src="/cli-journeys/keyframes/plan-mla-deepseek/frame-003.png"
-      caption="32K sweep endpoint — KV band dominates when seq > 16K"
-      size="small" align="right"
-      :annotations='[{"bbox":[200,160,280,28],"label":"KV dominant","color":"#fab387","position":"center"}]' />
 
 ## KV Cache Formula Derivation
 

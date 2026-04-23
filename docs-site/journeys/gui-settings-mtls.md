@@ -10,17 +10,13 @@ This page documents the **settings-gui-mtls** journey, which exercises the mTLS 
 
 ## Keyframe walkthrough
 
-<Shot src="/gui-journeys/settings-gui-mtls/keyframes/frame_002.png"
-      caption="Settings screen visible — System section in view"
-      size="small" align="right" />
-
-<Shot src="/gui-journeys/settings-gui-mtls/keyframes/frame_004.png"
-      caption="Cursor clicks 'Generate Admin Cert'"
-      size="small" align="left" />
-
-<Shot src="/gui-journeys/settings-gui-mtls/keyframes/frame_005.png"
-      caption="Cert block populates — PEM text visible"
-      size="small" align="right" />
+<ShotGallery
+  title="Settings mTLS — generate admin cert → PEM visible"
+  :shots='[
+    {"src":"/gui-journeys/settings-gui-mtls/keyframes/frame_002.png","caption":"Settings screen visible — System section in view"},
+    {"src":"/gui-journeys/settings-gui-mtls/keyframes/frame_004.png","caption":"Cursor clicks `Generate Admin Cert`"},
+    {"src":"/gui-journeys/settings-gui-mtls/keyframes/frame_005.png","caption":"Cert block populates — PEM text visible"}
+  ]' />
 
 ## What you'll see
 

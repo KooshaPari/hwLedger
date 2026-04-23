@@ -10,17 +10,13 @@ This page documents the **probe-gui-watch** journey, which exercises the live te
 
 ## Keyframe walkthrough
 
-<Shot src="/gui-journeys/probe-gui-watch/keyframes/frame_001.png"
-      caption="App window appears — sidebar highlights Probe"
-      size="small" align="right" />
-
-<Shot src="/gui-journeys/probe-gui-watch/keyframes/frame_003.png"
-      caption="Live stream fills device rows as telemetry arrives"
-      size="small" align="left" />
-
-<Shot src="/gui-journeys/probe-gui-watch/keyframes/frame_005.png"
-      caption="Row expands — per-process breakdown panel slides down"
-      size="small" align="right" />
+<ShotGallery
+  title="Probe GUI — open → stream → expand detail"
+  :shots='[
+    {"src":"/gui-journeys/probe-gui-watch/keyframes/frame_001.png","caption":"App window appears — sidebar highlights Probe"},
+    {"src":"/gui-journeys/probe-gui-watch/keyframes/frame_003.png","caption":"Live stream fills device rows as telemetry arrives"},
+    {"src":"/gui-journeys/probe-gui-watch/keyframes/frame_005.png","caption":"Row expands — per-process breakdown panel slides down"}
+  ]' />
 
 ## What you'll see
 

@@ -18,13 +18,15 @@ replacement: big hero + thumbnail strip + lightbox, no floats.
 
 ## Status
 
-- **Fixed in this PR:** `guides/visual-walkthrough-plan-deepseek.md`,
-  `getting-started/quickstart.md` (Section 2 only — Sections 1 and 3 left
-  unchanged; see recommendations below).
+- **Fixed earlier:** `guides/visual-walkthrough-plan-deepseek.md`,
+  `getting-started/quickstart.md` (Section 2).
 - **Migrated (top-5 follow-up):** `reference/cli.md`, `fleet/overview.md`,
   `guides/troubleshooting.md`, `guides/deployment.md`,
-  `journeys/streamlit-planner.md`. 27 of 72 opposite-align pairs resolved.
-- **Inventoried only:** every remaining file in the table below.
+  `journeys/streamlit-planner.md`.
+- **Mechanical batch migration (this commit):** 26 remaining pages (all
+  math, journey, and reference pages listed in the table below, plus
+  `getting-started/install.md` and quickstart Sections 1 + 3). All 45
+  previously outstanding opposite-align pairs are resolved — **0 remaining**.
 
 ## Inventory
 
@@ -40,45 +42,45 @@ rendering as a broken column.
 | `guides/troubleshooting.md` | 5 | 4 | 10 | ✅ Migrated — galleries per symptom cluster (GPU-not-detected, fail-loud errors). |
 | `guides/deployment.md` | 5 | 4 | 19 | ✅ Migrated — bootstrap/register gallery + first-run audit gallery. |
 | `journeys/streamlit-planner.md` | 5 | 4 | 6 | ✅ Migrated — single full-flow gallery (CLI baseline + Streamlit sweep). |
-| `getting-started/quickstart.md` | 4 | 3 | 12 | Section 2 converted; Sections 1 + 3 each have one opposite pair — consider collapsing into a single 2-shot gallery per section. |
-| `math/mla.md` | 5 | 2 | 8 | One gallery at the formula illustration; keep inline references separate. |
-| `math/kv-cache.md` | 3 | 2 | 3 | Single gallery near the top. |
-| `math/gqa.md` | 3 | 2 | 9 | Single gallery. |
-| `getting-started/install.md` | 4 | 2 | 19 | One gallery per install method (cargo, brew, DMG). |
-| `journeys/gui-planner-launch.md` | 3 | 2 | 13 | Single gallery. |
-| `journeys/cli-plan-help.md` | 3 | 2 | 13 | Single gallery. |
-| `journeys/streamlit-hf-search.md` | 3 | 2 | 13 | Single gallery. |
-| `journeys/cli-probe-watch.md` | 3 | 2 | 14 | Single gallery. |
-| `journeys/gui-export-vllm.md` | 3 | 2 | 13 | Single gallery. |
-| `journeys/cli-plan-deepseek.md` | 3 | 2 | 8 | Single gallery. |
-| `journeys/gui-fleet-map.md` | 3 | 2 | 13 | Single gallery. |
-| `journeys/cli-probe-list.md` | 3 | 2 | 16 | Single gallery. |
-| `journeys/gui-settings-mtls.md` | 3 | 2 | 13 | Single gallery. |
-| `journeys/streamlit-what-if.md` | 3 | 2 | 13 | Single gallery. |
-| `journeys/gui-probe-watch.md` | 3 | 2 | 13 | Single gallery. |
-| `reference/probe-backends.md` | 3 | 2 | 3 | Single gallery. |
-| `reference/model-resolver.md` | 3 | 2 | 11 | Single gallery. |
-| `math/mha.md` | 2 | 1 | 9 | Single 2-shot gallery. |
-| `math/mqa.md` | 2 | 1 | 9 | Single 2-shot gallery. |
-| `math/sliding-window.md` | 2 | 1 | 8 | Single 2-shot gallery. |
-| `guides/faq.md` | 2 | 1 | 8 | Single 2-shot gallery. |
-| `journeys/streamlit-probe.md` | 2 | 1 | 15 | Single 2-shot gallery. |
-| `journeys/streamlit-exports.md` | 2 | 1 | 17 | Single 2-shot gallery. |
-| `journeys/streamlit-fleet.md` | 2 | 1 | 15 | Single 2-shot gallery. |
-| `reference/hf-search.md` | 2 | 1 | 9 | Single 2-shot gallery. |
+| `getting-started/quickstart.md` | 4 | 0 | — | ✅ Migrated — Sections 1 + 3 each converted to a single 2-shot gallery. |
+| `math/mla.md` | 5 | 0 | — | ✅ Migrated — two 2-shot galleries (detection + latent projection, sweep + refuse-to-plan); inline reference shot retained without alignment. |
+| `math/kv-cache.md` | 3 | 0 | — | ✅ Migrated — single 3-shot gallery near the top. |
+| `math/gqa.md` | 3 | 0 | — | ✅ Migrated — single 3-shot gallery. |
+| `getting-started/install.md` | 4 | 0 | — | ✅ Migrated — single 3-shot cargo-install gallery (dedup of repeated verify frame). |
+| `journeys/gui-planner-launch.md` | 3 | 0 | — | ✅ Migrated — single 3-shot gallery. |
+| `journeys/cli-plan-help.md` | 3 | 0 | — | ✅ Migrated — single 3-shot gallery. |
+| `journeys/streamlit-hf-search.md` | 3 | 0 | — | ✅ Migrated — single 3-shot gallery. |
+| `journeys/cli-probe-watch.md` | 3 | 0 | — | ✅ Migrated — single 3-shot gallery. |
+| `journeys/gui-export-vllm.md` | 3 | 0 | — | ✅ Migrated — single 3-shot gallery. |
+| `journeys/cli-plan-deepseek.md` | 3 | 0 | — | ✅ Migrated — single 3-shot gallery. |
+| `journeys/gui-fleet-map.md` | 3 | 0 | — | ✅ Migrated — single 3-shot gallery. |
+| `journeys/cli-probe-list.md` | 3 | 0 | — | ✅ Migrated — single 3-shot gallery. |
+| `journeys/gui-settings-mtls.md` | 3 | 0 | — | ✅ Migrated — single 3-shot gallery. |
+| `journeys/streamlit-what-if.md` | 3 | 0 | — | ✅ Migrated — single 3-shot gallery. |
+| `journeys/gui-probe-watch.md` | 3 | 0 | — | ✅ Migrated — single 3-shot gallery. |
+| `reference/probe-backends.md` | 3 | 0 | — | ✅ Migrated — single 3-shot gallery. |
+| `reference/model-resolver.md` | 3 | 0 | — | ✅ Migrated — single 3-shot gallery. |
+| `math/mha.md` | 2 | 0 | — | ✅ Migrated — single 2-shot gallery. |
+| `math/mqa.md` | 2 | 0 | — | ✅ Migrated — single 2-shot gallery. |
+| `math/sliding-window.md` | 2 | 0 | — | ✅ Migrated — single 2-shot gallery. |
+| `guides/faq.md` | 2 | 0 | — | ✅ Migrated — single 2-shot gallery. |
+| `journeys/streamlit-probe.md` | 2 | 0 | — | ✅ Migrated — single 2-shot gallery. |
+| `journeys/streamlit-exports.md` | 2 | 0 | — | ✅ Migrated — single 2-shot gallery. |
+| `journeys/streamlit-fleet.md` | 2 | 0 | — | ✅ Migrated — single 2-shot gallery. |
+| `reference/hf-search.md` | 2 | 0 | — | ✅ Migrated — single 2-shot gallery. |
 
-**Total pages with opposite-align Shots:** 31 inventoried; 7 migrated (2 original
-in this PR + 5 top-priority follow-up). 24 remaining.
-**Total opposite-align pairs across docs-site:** 72 inventoried; 27 resolved in
-the top-5 migration. 45 remaining.
+**Total pages with opposite-align Shots:** 31 inventoried; **31 migrated, 0 remaining.**
+**Total opposite-align pairs across docs-site:** 72 inventoried; **72 resolved, 0 remaining.**
+
+Two files retain a single `<Shot align="right" />` (`guides/secrets.md`,
+`journeys/cli-ingest-error.md`) — each has exactly one Shot and therefore **zero
+opposite-align pairs**, so they render cleanly without a gallery. Safe to leave
+in place until the follow-up that deprecates `align="left|right"` altogether.
 
 ## Recommended follow-up (not done here)
 
-1. **High-priority migration** (pages with >= 4 opposite pairs):
-   `reference/cli.md`, `fleet/overview.md`, `guides/troubleshooting.md`,
-   `guides/deployment.md`, `journeys/streamlit-planner.md`. These five pages
-   alone account for 27 of the 72 pairs.
-2. **Low-risk batch migration** (2-shot pages): 8 pages can be converted
-   mechanically to a single 2-shot `<ShotGallery>` each.
-3. **Consider deprecating `align="left|right"`** on `<Shot>` after migration;
-   keep `inline` and `center` only.
+1. **Deprecate `align="left|right"`** on `<Shot>` after the two remaining
+   single-shot surviving usages are updated — retain `inline` and `center`
+   only.
+2. **Codify the ShotGallery pattern** in the component doc so new pages default
+   to the gallery surface rather than paired floats.

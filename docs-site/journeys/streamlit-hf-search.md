@@ -10,17 +10,13 @@ The HF Search page is the browser-native entry point to the HuggingFace Hub. Ope
 4. Per-row actions surface a `Plan it →` button on each model.
 5. The button stores the model id in session state and switches to the Planner page, which displays a banner acknowledging the handoff.
 
-<Shot src="/streamlit-journeys/recordings/streamlit-hf-search/frame-001.png"
-      caption="HF Search page — HuggingFace search input, Planner/Fleet nav"
-      size="small" align="right" />
-
-<Shot src="/streamlit-journeys/recordings/streamlit-hf-search/frame-002.png"
-      caption="Results — Hermes-3-Llama-3.1, Yi-1.5-34B, Cohere entries"
-      size="small" align="left" />
-
-<Shot src="/streamlit-journeys/recordings/streamlit-hf-search/frame-004.png"
-      caption="meta-llama/Llama-3.1-8B selected — 15M downloads, transformers tag"
-      size="small" align="right" />
+<ShotGallery
+  title="HF Search — search → results → handoff"
+  :shots='[
+    {"src":"/streamlit-journeys/recordings/streamlit-hf-search/frame-001.png","caption":"HF Search page — HuggingFace search input, Planner/Fleet nav"},
+    {"src":"/streamlit-journeys/recordings/streamlit-hf-search/frame-002.png","caption":"Results — Hermes-3-Llama-3.1, Yi-1.5-34B, Cohere entries"},
+    {"src":"/streamlit-journeys/recordings/streamlit-hf-search/frame-004.png","caption":"meta-llama/Llama-3.1-8B selected — 15M downloads, transformers tag"}
+  ]' />
 
 <JourneyViewer manifest="/streamlit-journeys/manifests/streamlit-hf-search/manifest.verified.json" />
 

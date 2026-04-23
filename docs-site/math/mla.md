@@ -5,9 +5,12 @@ description: Low-rank KV projection
 
 # Multi-Head Latent Attention (MLA)
 
-<Shot src="/cli-journeys/keyframes/plan-deepseek/frame-003.png"
-      caption="Planner auto-detects MLA with kv_lora_rank=512 for DeepSeek-V3"
-      size="small" align="right" />
+<ShotGallery
+  title="MLA — auto-detection + latent projection"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/plan-deepseek/frame-003.png","caption":"Planner auto-detects MLA with kv_lora_rank=512 for DeepSeek-V3"},
+    {"src":"/cli-journeys/keyframes/plan-mla-deepseek/frame-001.png","caption":"Latent projection step highlighted in the plan trace"}
+  ]' />
 
 <RecordingEmbed tape="planner-gui-launch" kind="gui" caption="Planner GUI: MLA auto-detected, per-layer latent-KV breakdown rendered natively on macOS" />
 
@@ -16,12 +19,6 @@ description: Low-rank KV projection
 <RecordingEmbed tape="plan-mla-deepseek" kind="cli" caption="CLI plan: MLA planner run — per-layer KV breakdown in latent space (scriptable)" />
 
 Compresses KV cache by projecting to a low-rank latent space before multi-head operation.
-
-<!-- SHOT-MISMATCH: caption="Latent projection step highlighted in the plan trace" expected=[latent,projection,step,highlighted,plan,trace] matched=[] -->
-<Shot src="/cli-journeys/keyframes/plan-mla-deepseek/frame-001.png"
-      caption="Latent projection step highlighted in the plan trace"
-      size="small" align="left"
-      :annotations='[{"bbox":[120,180,320,28],"label":"latent_dim","color":"#89b4fa","position":"center-top"}]' />
 
 ## Formula
 
@@ -40,17 +37,14 @@ Benefit: KV cache is d_latent-sized instead of d_model-sized.
 
 MLA was the DeepSeek team's answer to the specific problem that even GQA's 8× compression left long-context (>100K) inference infeasible on commodity hardware for models in the 200B+ parameter class. By projecting into a latent space *before* splitting into heads, MLA stores a single `kv_lora_rank`-sized tensor per token instead of per-head K and V tensors — a 10–16× reduction over GQA at equivalent quality. It was introduced in [DeepSeek-V2 (2024)](https://arxiv.org/abs/2405.04434) and productionized in [DeepSeek-V3 (2024–2025)](https://arxiv.org/abs/2412.19437) and DeepSeek-R1 (2025). The technique is also the basis for Qwen's latent variants.
 
-<Shot src="/cli-journeys/keyframes/plan-mla-deepseek/frame-002.png"
-      caption="Per-layer KV cache breakdown for DeepSeek-V2 MLA sweep"
-      size="small" align="left" />
+<ShotGallery
+  title="MLA — sweep + refuse-to-plan"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/plan-mla-deepseek/frame-002.png","caption":"Per-layer KV cache breakdown for DeepSeek-V2 MLA sweep"},
+    {"src":"/cli-journeys/keyframes/plan-mla-deepseek/frame-004.png","caption":"Refuse-to-plan path: missing latent_dim surfaces as a hard error, not a silent fallback"}
+  ]' />
 
 **hwLedger accounting gotcha.** MLA's KV footprint is `2 * kv_lora_rank * bytes` per token per layer — NOT `2 * num_kv_heads * head_dim * bytes`. A naive reuse of the GQA formula overstates memory by ~10× for DeepSeek-V3. `AttentionKind::MLA { latent_dim }` carries the latent dim explicitly; the planner will refuse to produce a result if `latent_dim` is missing rather than silently fall back to GQA math.
-
-<!-- SHOT-MISMATCH: caption="Refuse-to-plan path: missing latent_dim surfaces as a hard error, not a silent fallback" expected=[refuse-to-plan,path,missing,latent_dim,surfaces,hard,error,not,silent,fallback] matched=[] -->
-<Shot src="/cli-journeys/keyframes/plan-mla-deepseek/frame-004.png"
-      caption="Refuse-to-plan path: missing latent_dim surfaces as a hard error, not a silent fallback"
-      size="small" align="right"
-      :annotations='[{"bbox":[80,240,480,32],"label":"E-PLAN-MLA-MISSING","color":"#f38ba8","style":"dashed","position":"bottom-left"}]' />
 
 <RecordingEmbed tape="plan-deepseek" kind="cli" caption="CLI plan-deepseek: MLA classification inside the full plan run (supplementary, CLI-only)" />
 
@@ -60,7 +54,7 @@ MLA was the DeepSeek team's answer to the specific problem that even GQA's 8× c
 
 <Shot src="/cli-journeys/keyframes/plan-mla-deepseek/frame-003.png"
       caption="KV cache footprint (32K context) at FP16"
-      size="medium" align="right" />
+      size="medium" />
 
 DeepSeek-V2 with MLA (d_latent = 256 vs d_model = 4096):
 - KV cache per layer: 32K × 256 × 2 = **16.4 MB/layer**

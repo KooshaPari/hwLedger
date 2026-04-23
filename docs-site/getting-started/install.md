@@ -15,30 +15,20 @@ Get hwLedger running on your system.
 
 <RecordingEmbed tape="install-cargo" kind="cli" caption="CLI cargo install: the same path the GitHub Actions matrix uses, run locally" />
 
-<!-- SHOT-MISMATCH: caption="Binary installed and on PATH" expected=[binary,installed,path] matched=[] -->
-<Shot src="/cli-journeys/keyframes/install-cargo/frame-004.png"
-      caption="hwledger --version — binary on PATH after install"
-      size="small" align="right" />
+<ShotGallery
+  title="Cargo install flow — clone, compile, verify"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/install-cargo/frame-003.png","caption":"cargo install — download"},
+    {"src":"/cli-journeys/keyframes/install-cargo/frame-002.png","caption":"Compile progress"},
+    {"src":"/cli-journeys/keyframes/install-cargo/frame-004.png","caption":"Binary installed and on PATH — hwledger --version succeeds"}
+  ]' />
 
 ### 1. Clone the repository
-
-<Shot src="/cli-journeys/keyframes/install-cargo/frame-003.png"
-      caption="cargo install — download"
-      size="small" align="right" />
 
 ```bash
 git clone https://github.com/KooshaPari/hwLedger.git
 cd hwLedger
 ```
-
-<!-- SHOT-MISMATCH: caption="Compile progress" expected=[compile,progress] matched=[] -->
-<Shot src="/cli-journeys/keyframes/install-cargo/frame-002.png"
-      caption="Compile progress"
-      size="small" align="left" />
-
-<Shot src="/cli-journeys/keyframes/install-cargo/frame-004.png"
-      caption="Binary installed and on PATH"
-      size="small" align="right" />
 
 ### 2. Install Rust (if not already installed)
 

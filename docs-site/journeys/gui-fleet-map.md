@@ -10,17 +10,13 @@ This page documents the **fleet-gui-map** journey, which exercises the Fleet Map
 
 ## Keyframe walkthrough
 
-<Shot src="/gui-journeys/fleet-gui-map/keyframes/frame_002.png"
-      caption="Fleet map canvas live — grid backdrop awaits agents"
-      size="small" align="right" />
-
-<Shot src="/gui-journeys/fleet-gui-map/keyframes/frame_004.png"
-      caption="Three more agents fade in across the map"
-      size="small" align="left" />
-
-<Shot src="/gui-journeys/fleet-gui-map/keyframes/frame_005.png"
-      caption="Cursor clicks 'kirin-01' — host detail slides in"
-      size="small" align="right" />
+<ShotGallery
+  title="Fleet map — canvas → agents appear → host detail"
+  :shots='[
+    {"src":"/gui-journeys/fleet-gui-map/keyframes/frame_002.png","caption":"Fleet map canvas live — grid backdrop awaits agents"},
+    {"src":"/gui-journeys/fleet-gui-map/keyframes/frame_004.png","caption":"Three more agents fade in across the map"},
+    {"src":"/gui-journeys/fleet-gui-map/keyframes/frame_005.png","caption":"Cursor clicks `kirin-01` — host detail slides in"}
+  ]' />
 
 ## What you'll see
 

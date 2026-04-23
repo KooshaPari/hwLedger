@@ -5,9 +5,12 @@ description: Local context with exponential recurrence
 
 # Sliding Window Attention
 
-<Shot src="/cli-journeys/keyframes/plan-help/frame-007.png"
-      caption="--window-size flag documented in plan --help"
-      size="small" align="right" />
+<ShotGallery
+  title="Sliding-window flag surface"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/plan-help/frame-007.png","caption":"--window-size flag documented in plan --help"},
+    {"src":"/cli-journeys/keyframes/plan-help/frame-009.png","caption":"--window-size default (0 = full sequence) surfaced in the flag table"}
+  ]' />
 
 <RecordingEmbed tape="planner-gui-launch" kind="gui" caption="Planner GUI: sliding-window model (Mistral-family) — window-capped KV bar stays flat as context grows" />
 
@@ -16,10 +19,6 @@ description: Local context with exponential recurrence
 <RecordingEmbed tape="plan-help" kind="cli" caption="CLI `plan --help`: every flag incl. `--window-size` for sliding-window models — CLI-only flag reference" />
 
 Restricts attention to a local context window (e.g., 4K tokens) while allowing information to flow globally via stacking.
-
-<Shot src="/cli-journeys/keyframes/plan-help/frame-009.png"
-      caption="--window-size default (0 = full sequence) surfaced in the flag table"
-      size="small" align="left" />
 
 ## Formula
 

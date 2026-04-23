@@ -5,10 +5,12 @@ description: Single shared key-value head
 
 # Multi-Query Attention (MQA)
 
-<!-- SHOT-MISMATCH: caption="KV cache row — 8× smaller for MQA vs MHA" expected=[cache,row,smaller,mqa,mha] matched=[] -->
-<Shot src="/cli-journeys/keyframes/first-plan/frame-007.png"
-      caption="KV cache row — 8× smaller for MQA vs MHA"
-      size="small" align="right" />
+<ShotGallery
+  title="MQA memory footprint vs MHA"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/first-plan/frame-007.png","caption":"KV cache row — 8× smaller for MQA vs MHA"},
+    {"src":"/cli-journeys/keyframes/first-plan/frame-010.png","caption":"Component breakdown: the MQA KV band is barely visible at the same context length"}
+  ]' />
 
 <RecordingEmbed tape="planner-gui-launch" kind="gui" caption="Planner GUI: MQA memory breakdown — single shared KV head flattens the KV band" />
 
@@ -17,12 +19,6 @@ description: Single shared key-value head
 <RecordingEmbed tape="first-plan" kind="cli" caption="CLI plan: MQA vs MHA stacked chart — shared KV head dominates the space savings (scriptable)" />
 
 Extreme KV cache compression: all query heads share a single K, V head.
-
-<!-- SHOT-MISMATCH: caption="Component breakdown: MQA's KV band is barely visible at the same context length" expected=[component,breakdown,mqa,band,barely,visible,same,context,length] matched=[] -->
-<Shot src="/cli-journeys/keyframes/first-plan/frame-010.png"
-      caption="Component breakdown: MQA's KV band is barely visible at the same context length"
-      size="small" align="left"
-      :annotations='[{"bbox":[120,220,360,28],"label":"KV = 1/num_heads of MHA","color":"#cba6f7","position":"bottom-right"}]' />
 
 ## Formula
 

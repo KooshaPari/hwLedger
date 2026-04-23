@@ -10,17 +10,13 @@ This page documents the **planner-gui-launch** journey, which exercises core Pla
 
 ## Keyframe walkthrough
 
-<Shot src="/gui-journeys/planner-gui-launch/keyframes/frame_001.png"
-      caption="Launching Planner — splash as the AppDriver attaches"
-      size="small" align="right" />
-
-<Shot src="/gui-journeys/planner-gui-launch/keyframes/frame_002.png"
-      caption="Planner screen — sequence length slider default at 4096 tokens"
-      size="small" align="left" />
-
-<Shot src="/gui-journeys/planner-gui-launch/keyframes/frame_004.png"
-      caption="Slider dragged to 6000 tokens — memory breakdown recalculates"
-      size="small" align="right" />
+<ShotGallery
+  title="Planner launch → slider interaction"
+  :shots='[
+    {"src":"/gui-journeys/planner-gui-launch/keyframes/frame_001.png","caption":"Launching Planner — splash as the AppDriver attaches"},
+    {"src":"/gui-journeys/planner-gui-launch/keyframes/frame_002.png","caption":"Planner screen — sequence length slider default at 4096 tokens"},
+    {"src":"/gui-journeys/planner-gui-launch/keyframes/frame_004.png","caption":"Slider dragged to 6000 tokens — memory breakdown recalculates"}
+  ]' />
 
 ## Steps
 

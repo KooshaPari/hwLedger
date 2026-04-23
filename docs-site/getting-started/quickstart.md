@@ -9,19 +9,18 @@ Five minutes from zero to your first capacity plan.
 
 ## 1. Install
 
-<Shot src="/cli-journeys/keyframes/install-cargo/frame-003.png"
-      caption="cargo install — download + compile starts"
-      size="small" align="right" />
+<ShotGallery
+  title="Install — cargo install + verify"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/install-cargo/frame-003.png","caption":"cargo install — download + compile starts"},
+    {"src":"/cli-journeys/keyframes/install-cargo/frame-004.png","caption":"hwledger --version succeeds"}
+  ]' />
 
 ```bash
 cargo install --path crates/hwledger-cli --root /tmp/hwl-install
 export PATH="/tmp/hwl-install/bin:$PATH"
 hwledger --version
 ```
-
-<Shot src="/cli-journeys/keyframes/install-cargo/frame-004.png"
-      caption="hwledger --version succeeds"
-      size="small" align="left" />
 
 <RecordingEmbed tape="install-cargo" kind="cli" caption="CLI install — cargo install + verify in one shot (install is a CLI-only operation)" />
 
@@ -61,15 +60,12 @@ hwledger plan tests/golden/deepseek-v3.json --seq 32768 --users 2
 hwledger probe list
 ```
 
-<!-- SHOT-MISMATCH: caption="Detected CUDA device 0" expected=[detected,cuda,device] matched=[] -->
-<Shot src="/cli-journeys/keyframes/probe-list/frame-002.png"
-      caption="Detected CUDA device 0"
-      size="medium" align="right"
-      :annotations='[{"bbox":[40,120,480,20],"label":"Device 0","color":"#cba6f7"}]' />
-
-<Shot src="/cli-journeys/keyframes/probe-watch/frame-003.png"
-      caption="probe watch — live header"
-      size="small" align="left" />
+<ShotGallery
+  title="Probe local GPUs — list + watch"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/probe-list/frame-002.png","caption":"Detected CUDA device 0"},
+    {"src":"/cli-journeys/keyframes/probe-watch/frame-003.png","caption":"probe watch — live header"}
+  ]' />
 
 <RecordingEmbed tape="probe-gui-watch" kind="gui" caption="Probe GUI: live per-backend telemetry pane in the native desktop app" />
 

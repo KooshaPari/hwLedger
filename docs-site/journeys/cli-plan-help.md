@@ -10,20 +10,13 @@ When you run `hwledger plan --help`, you get:
 - Examples of common queries
 - Exit codes on failure
 
-<Shot src="/cli-journeys/keyframes/plan-help/frame-001.png"
-      caption="Usage line"
-      size="small" align="right"
-      :annotations='[{"bbox":[40,60,520,20],"label":"Usage"}]' />
-
-<!-- SHOT-MISMATCH: caption="—attention-kind flag" expected=[--attention-kind,flag] matched=[] -->
-<Shot src="/cli-journeys/keyframes/plan-help/frame-005.png"
-      caption="--attention-kind flag"
-      size="small" align="left"
-      :annotations='[{"bbox":[60,260,400,20],"label":"--attention-kind"}]' />
-
-<Shot src="/cli-journeys/keyframes/plan-help/frame-009.png"
-      caption="--json and --hf tail"
-      size="small" align="right" />
+<ShotGallery
+  title="plan --help walkthrough"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/plan-help/frame-001.png","caption":"Usage line"},
+    {"src":"/cli-journeys/keyframes/plan-help/frame-005.png","caption":"--attention-kind flag"},
+    {"src":"/cli-journeys/keyframes/plan-help/frame-009.png","caption":"--json and --hf tail"}
+  ]' />
 
 Watch as the planner analyzes your GPU in real-time and recommends:
 - **Quantization** (FP16, INT8, INT4) based on VRAM

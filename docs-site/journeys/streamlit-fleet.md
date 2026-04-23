@@ -12,13 +12,12 @@ Narrative beats:
 
 This is deliberate: the governance rule (NFR-007, and the global "Optionality and Failure Behavior" policy) is that connectivity failures must be **clear and loud**, never silently fall back to stale data.
 
-<Shot src="/cli-journeys/keyframes/fleet-audit/frame-003.png"
-      caption="CLI counterpart — hwledger fleet audit invocation"
-      size="small" align="right" />
-
-<Shot src="/cli-journeys/keyframes/fleet-register/frame-011.png"
-      caption="hwledger fleet status — same summary the Streamlit page consumes"
-      size="small" align="left" />
+<ShotGallery
+  title="CLI parallel of Streamlit Fleet"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/fleet-audit/frame-003.png","caption":"CLI counterpart — hwledger fleet audit invocation"},
+    {"src":"/cli-journeys/keyframes/fleet-register/frame-011.png","caption":"hwledger fleet status — same summary the Streamlit page consumes"}
+  ]' />
 
 <JourneyViewer manifest="/streamlit-journeys/manifests/streamlit-fleet/manifest.verified.json" />
 

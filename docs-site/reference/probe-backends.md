@@ -1,12 +1,12 @@
 # Probe backend reference — Apple Silicon (Metal / IOKit)
 
-<Shot src="/cli-journeys/keyframes/probe-list/frame-002.png"
-      caption="Metal backend — device 0 detected"
-      size="small" align="right" />
-
-<Shot src="/cli-journeys/keyframes/probe-watch/frame-003.png"
-      caption="probe watch — live refresh"
-      size="small" align="left" />
+<ShotGallery
+  title="Probe backend — list → watch → watch header"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/probe-list/frame-002.png","caption":"Metal backend — device 0 detected"},
+    {"src":"/cli-journeys/keyframes/probe-watch/frame-003.png","caption":"probe watch — live refresh"},
+    {"src":"/cli-journeys/keyframes/probe-watch/frame-003.png","caption":"Watch header: refresh interval, attached device count, last-tick timestamp"}
+  ]' />
 
 <RecordingEmbed tape="probe-gui-watch" kind="gui" caption="Probe GUI: live per-backend telemetry pane in the native desktop app (primary UI)" />
 
@@ -15,11 +15,6 @@
 <RecordingEmbed tape="probe-list" kind="cli" caption="CLI probe list: all four backends in one run — scripting / CI path" />
 
 <RecordingEmbed tape="probe-watch" kind="cli" caption="CLI probe watch: per-backend live refresh, no subprocess involved" />
-
-<Shot src="/cli-journeys/keyframes/probe-watch/frame-003.png"
-      caption="Watch header: refresh interval, attached device count, last-tick timestamp"
-      size="small" align="right"
-      :annotations='[{"bbox":[40,60,480,24],"label":"2s tick","color":"#f9e2af","position":"top-right"}]' />
 
 The `hwledger-probe` crate exposes a trait-based `GpuProbe` abstraction with four concrete backends. This page documents the Apple Silicon (Metal / IOKit) backend in detail, including the IOKit key matrix and chip-support table.
 
