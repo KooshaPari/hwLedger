@@ -16,12 +16,33 @@ from lib.ffi import (
 )
 from lib.charts import stacked_bar_chart, gauge_chart
 from lib.tokens import LOG_TICKS, fmt_tokens, ticks_up_to
+from lib.perf_model import estimate_throughput
+from lib.cost_model import fine_tune_overhead_mb
 
 
 st.set_page_config(page_title="Planner - hwLedger", layout="wide")
 
 st.title("Memory Planner")
 st.markdown("Plan LLM inference memory requirements in real-time.")
+
+# Mode tab — inference vs fine-tune. Fine-tune mode adds optimizer-state VRAM
+# via lib.cost_model.fine_tune_overhead_mb() (AdamW = 4x weights, LoRA = 5%).
+_mode_tabs = st.radio(
+    "Mode",
+    options=["Inference", "Fine-tune (LoRA)", "Fine-tune (Full AdamW)"],
+    horizontal=True,
+    key="planner_mode",
+    help=(
+        "Inference: forward-pass only. "
+        "Fine-tune adds optimizer state + gradients. "
+        "LoRA is the cheap path (~5% overhead); full AdamW is ~4-8x weights."
+    ),
+)
+_mode_key = {
+    "Inference": "inference",
+    "Fine-tune (LoRA)": "lora",
+    "Fine-tune (Full AdamW)": "adamw",
+}[_mode_tabs]
 
 if not is_available():
     st.error(
@@ -284,6 +305,47 @@ with st.sidebar:
         help="Quantization for model weights",
     )
 
+    st.markdown("---")
+    st.subheader("Hardware & Offload")
+
+    gpu_kind = st.selectbox(
+        "GPU Kind",
+        options=["A100", "H100", "L40S", "B200", "M3_Ultra", "RTX_4090"],
+        index=1,
+        help="Target GPU — drives bandwidth-bound TPS and capacity status.",
+    )
+    gpu_capacity_gb = st.slider(
+        "GPU Capacity (GB)",
+        min_value=8,
+        max_value=192,
+        value={"A100": 80, "H100": 80, "L40S": 48, "B200": 180,
+               "M3_Ultra": 192, "RTX_4090": 24}.get(gpu_kind, 80),
+        step=4,
+        help="Per-GPU VRAM. Scale up for SXM/NVL; tensor-parallel splits not modelled here.",
+    )
+    cpu_nvme_offload = st.toggle(
+        "CPU/NVMe Offload",
+        value=False,
+        help=(
+            "Enable when weights exceed GPU capacity. PCIe Gen4 x16 tops out "
+            "near 32 GB/s vs HBM ~3.3 TB/s on H100 — expect major TPS hit."
+        ),
+    )
+
+    # Per-slider tips & tricks sidebar (QoL from apxml).
+    with st.expander("Tips & Tricks"):
+        st.markdown(
+            "- **Batch 1** is great for single-user chat; **>=8** for "
+            "throughput-optimised deployments.\n"
+            "- **KV-Q4** saves ~4x KV memory at near-zero quality cost "
+            "(see KIVI, Liu 2024).\n"
+            "- **Fine-tune mode** adds 4-8x weight VRAM for AdamW; use LoRA "
+            "to stay near inference footprint.\n"
+            "- Long-context over 32K benefits from **paged attention** or "
+            "**MLA** — see the What-If page.\n"
+            "- Docs: `docs-site/math/gqa.md`, `kv-cache.md`, `mla.md`."
+        )
+
 # Main content
 col1, col2 = st.columns([2, 1])
 
@@ -352,8 +414,28 @@ with col1:
         st.plotly_chart(fig_heat, use_container_width=True, key="layer_heatmap")
 
 with col2:
+    # Apply fine-tune overhead on top of the FFI inference plan.
+    # Keeps the Rust FFI C ABI untouched (backward-compat) by computing the
+    # optimizer-state contribution client-side in Python.
+    ft_overhead_mb = 0.0
+    if _mode_key in ("lora", "adamw"):
+        ft_overhead_mb = fine_tune_overhead_mb(result.weights_mb, optimizer=_mode_key)
+    adjusted_total_mb = result.total_mb + ft_overhead_mb
+    adjusted_total_gb = adjusted_total_mb / 1024.0
+
+    # Throughput + status via perf_model.
+    tps_est = estimate_throughput(
+        model_size_gb=adjusted_total_gb,
+        attention_kind=result.attention_kind,
+        gpu_kind=gpu_kind,
+        gpu_capacity_gb=gpu_capacity_gb,
+        concurrent_users=concurrent_users,
+        seq_len=seq_len,
+        cpu_offload=cpu_nvme_offload,
+    )
+
     # Metrics
-    st.metric("Total Memory", f"{result.total_gb:.2f} GB")
+    st.metric("Total Memory", f"{adjusted_total_gb:.2f} GB")
     st.metric("Effective Batch", result.effective_batch)
     # Attention-kind badge (closes P1 parity gap).
     badge_color = {
@@ -374,13 +456,101 @@ with col2:
         "kv_mb": result.kv_mb,
         "prefill_mb": result.prefill_mb,
         "runtime_mb": result.runtime_mb,
+        "ft_overhead_mb": ft_overhead_mb,
+        "adjusted_total_mb": adjusted_total_mb,
         "config_json": config_str,
         "seq_len": seq_len,
         "concurrent_users": concurrent_users,
         "batch_size": batch_size,
         "kv_quant": kv_quants[kv_quant],
         "weight_quant": weight_quants[weight_quant],
+        "mode": _mode_key,
+        "gpu_kind": gpu_kind,
+        "gpu_capacity_gb": gpu_capacity_gb,
+        "cpu_nvme_offload": cpu_nvme_offload,
+        "tps": tps_est.tps,
+        "ttft_ms": tps_est.ttft_ms,
+        "attention_kind": result.attention_kind,
     }
+
+# ---------------------------------------------------------------------------
+# Capacity, throughput, and status row (apxml-inspired outputs).
+# ---------------------------------------------------------------------------
+st.divider()
+st.subheader("Capacity & Throughput")
+
+capacity_remaining_gb = max(0.0, gpu_capacity_gb - adjusted_total_gb)
+over_by_gb = max(0.0, adjusted_total_gb - gpu_capacity_gb)
+
+# VRAM percentage bar — hard-capped display at 150% so over-budget is visible.
+st.progress(min(1.0, tps_est.vram_pct / 100.0),
+            text=f"VRAM usage: {tps_est.vram_pct:.1f}% of {gpu_capacity_gb} GB")
+
+if over_by_gb > 0:
+    st.caption(
+        f"Over capacity by **{over_by_gb:.2f} GB** — enable CPU/NVMe offload, "
+        "reduce seq_len, or quantize further."
+    )
+else:
+    st.caption(f"Capacity remaining: **{capacity_remaining_gb:.2f} GB**.")
+
+# Status badge — green / amber / red.
+_status_meta = {
+    "ready": ("#16a34a", "Ready"),
+    "offload_required": ("#d97706", "Offload Required"),
+    "oom_risk": ("#dc2626", "OOM Risk"),
+}[tps_est.status]
+st.markdown(
+    f"<div style='display:inline-block;padding:6px 14px;border-radius:6px;"
+    f"background:{_status_meta[0]};color:white;font-weight:600;"
+    f"font-family:ui-monospace,monospace;'>Status · {_status_meta[1]}</div>",
+    unsafe_allow_html=True,
+)
+
+# Throughput row: TPS, TTFT, total throughput.
+tcol1, tcol2, tcol3 = st.columns(3)
+tcol1.metric(
+    "TPS (tokens/sec)",
+    f"{tps_est.tps:.1f}",
+    help=(
+        "Bandwidth-bound decode estimate: "
+        "tps = (bandwidth_GB/s / model_size_GB) * attention_efficiency. "
+        "See lib/perf_model.py — formula cites apxml + DeepSeek-V2 paper."
+    ),
+)
+tcol2.metric(
+    "TTFT (ms)",
+    f"{tps_est.ttft_ms:.0f}",
+    help="Prefill-bound: seq_len * model_size / (bandwidth * 0.6 derate).",
+)
+tcol3.metric(
+    "Total Throughput (tok/s)",
+    f"{tps_est.total_tps:.0f}",
+    help=f"TPS * {concurrent_users} concurrent users.",
+)
+
+with st.expander("Why is my VRAM 110%?"):
+    st.markdown(
+        f"""
+Each memory contributor, measured in MB:
+
+| Component              | MB |
+|------------------------|------:|
+| Weights                | {result.weights_mb:,.0f} |
+| KV cache               | {result.kv_mb:,.0f} |
+| Prefill activations    | {result.prefill_mb:,.0f} |
+| Runtime overhead (CUDA ctx, allocator) | {result.runtime_mb:,.0f} |
+| **Fine-tune overhead** (optimizer/grads) | {ft_overhead_mb:,.0f} |
+| **Total**              | **{adjusted_total_mb:,.0f}** |
+
+**Common escape hatches:**
+- Quantize weights to Int4 (→ 4x reduction on the biggest row).
+- Enable KV-cache Int8 / FP8 (→ 2x reduction on KV row).
+- Reduce `seq_len` or `concurrent_users` (→ linear reduction on KV + prefill).
+- Switch from AdamW to LoRA (→ reduces optimizer state ~80x).
+- Enable CPU/NVMe offload (→ trades TPS for capacity).
+        """
+    )
 
 # Detailed breakdown table
 st.subheader("Memory Breakdown")
