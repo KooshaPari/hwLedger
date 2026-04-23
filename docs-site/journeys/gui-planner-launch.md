@@ -55,12 +55,9 @@ The journey is recorded using hwledger-gui-recorder (ScreenCaptureKit):
 - **Keyframes:** `keyframes/*.png` (I-frame extraction)
 - **Preview:** `preview.gif` (optimized for web)
 
-<video width="1440" height="900" controls>
-  <source src="/gui-journeys/planner-gui-launch/recording.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
-
 <JourneyViewer manifest="/gui-journeys/planner-gui-launch/manifest.verified.json" />
+
+Recording: [`recording.mp4`](https://github.com/KooshaPari/hwLedger/blob/main/docs-site/public/gui-journeys/planner-gui-launch/recording.mp4) (H.264, 1440×900, 30 fps).
 
 ## Execution Requirements
 

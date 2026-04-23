@@ -266,10 +266,10 @@ Each journey follows the same pattern:
 
 ## See Also
 
-- [AppDriver Implementation](/apps/macos/HwLedgerUITests/Sources/Harness/AppDriver.swift)
-- [Journey DSL Reference](/apps/macos/HwLedgerUITests/Sources/Harness/Journey.swift)
-- [Test Suite](/apps/macos/HwLedgerUITests/Tests/PlannerJourneyTests.swift)
-- [Harness README](/apps/macos/HwLedgerUITests/README.md)
+- [AppDriver Implementation](https://github.com/KooshaPari/hwLedger/blob/main/apps/macos/HwLedgerUITests/Sources/Harness/AppDriver.swift)
+- [Journey DSL Reference](https://github.com/KooshaPari/hwLedger/blob/main/apps/macos/HwLedgerUITests/Sources/Harness/Journey.swift)
+- [Test Suite](https://github.com/KooshaPari/hwLedger/blob/main/apps/macos/HwLedgerUITests/Tests/PlannerJourneyTests.swift)
+- [Harness README](https://github.com/KooshaPari/hwLedger/blob/main/apps/macos/HwLedgerUITests/README.md)
 
 ---
 
