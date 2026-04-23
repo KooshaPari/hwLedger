@@ -349,12 +349,16 @@ pub fn check_assets(root: &Path) -> Result<Vec<Finding>> {
             {
                 continue;
             }
-            let resolved = if let Some(rest) = src.strip_prefix('/') {
-                root.join(rest)
+            let (resolved, public_resolved) = if let Some(rest) = src.strip_prefix('/') {
+                // Absolute `/foo/bar` resolves either from the docs root
+                // directly, or from `root/public/foo/bar` via VitePress.
+                (root.join(rest), Some(root.join("public").join(rest)))
             } else {
-                dir.join(src)
+                (dir.join(src), None)
             };
-            if !resolved.exists() {
+            if !resolved.exists()
+                && !public_resolved.as_ref().map(|p| p.exists()).unwrap_or(false)
+            {
                 let line = 1 + text[..cap.get(0).unwrap().start()]
                     .bytes()
                     .filter(|b| *b == b'\n')
@@ -461,14 +465,17 @@ pub fn check_links(root: &Path) -> Result<Vec<Finding>> {
             if path_part.is_empty() {
                 continue;
             }
-            let base = if let Some(rest) = path_part.strip_prefix('/') {
-                root.join(rest)
+            let (base, public_base) = if let Some(rest) = path_part.strip_prefix('/') {
+                // Absolute links like `/foo/bar` resolve either from the docs
+                // root directly, or via VitePress public-dir passthrough from
+                // `root/public/foo/bar`.
+                (root.join(rest), Some(root.join("public").join(rest)))
             } else {
-                dir.join(path_part)
+                (dir.join(path_part), None)
             };
             // VitePress rewrites `/foo/bar` → `foo/bar.md` or `foo/bar/index.md`.
             // Accept the link if any of these forms exists on disk.
-            let candidates = [
+            let mut candidates: Vec<PathBuf> = vec![
                 base.clone(),
                 base.with_extension("md"),
                 base.join("index.md"),
@@ -481,6 +488,11 @@ pub fn check_links(root: &Path) -> Result<Vec<Finding>> {
                     p
                 },
             ];
+            if let Some(pb) = public_base {
+                candidates.push(pb.clone());
+                candidates.push(pb.with_extension("md"));
+                candidates.push(pb.join("index.md"));
+            }
             if !candidates.iter().any(|c| c.exists()) {
                 let line = 1 + text[..cap.get(0).unwrap().start()]
                     .bytes()

@@ -53,6 +53,6 @@ bash docs-site/scripts/sync-journey-artefacts.sh
 ## Source
 
 - Test: [`apps/macos/HwLedgerUITests/Tests/FleetMapJourneyTests.swift`](https://github.com/KooshaPari/hwLedger/blob/main/apps/macos/HwLedgerUITests/Tests/FleetMapJourneyTests.swift)
-- Manifest: [`docs-site/public/gui-journeys/fleet-gui-map/manifest.json`](https://github.com/KooshaPari/hwLedger/blob/main/docs-site/public/gui-journeys/fleet-gui-map/manifest.json)
-- Verified manifest: [`docs-site/public/gui-journeys/fleet-gui-map/manifest.verified.json`](https://github.com/KooshaPari/hwLedger/blob/main/docs-site/public/gui-journeys/fleet-gui-map/manifest.verified.json)
-- Recording: [`recording.mp4`](https://github.com/KooshaPari/hwLedger/blob/main/docs-site/public/gui-journeys/fleet-gui-map/recording.mp4) · [`preview.gif`](https://github.com/KooshaPari/hwLedger/blob/main/docs-site/public/gui-journeys/fleet-gui-map/preview.gif)
+- Manifest: [`docs-site/public/gui-journeys/fleet-gui-map/manifest.json`](/gui-journeys/fleet-gui-map/manifest.json)
+- Verified manifest: [`docs-site/public/gui-journeys/fleet-gui-map/manifest.verified.json`](/gui-journeys/fleet-gui-map/manifest.verified.json)
+- Recording: [`fleet-gui-map.rich.mp4`](/gui-journeys/fleet-gui-map/fleet-gui-map.rich.mp4) · [`preview.gif`](/gui-journeys/fleet-gui-map/preview.gif)

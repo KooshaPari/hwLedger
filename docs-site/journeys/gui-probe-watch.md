@@ -58,6 +58,6 @@ bash docs-site/scripts/sync-journey-artefacts.sh
 ## Source
 
 - Test: [`apps/macos/HwLedgerUITests/Tests/ProbeJourneyTests.swift`](https://github.com/KooshaPari/hwLedger/blob/main/apps/macos/HwLedgerUITests/Tests/ProbeJourneyTests.swift)
-- Manifest: [`docs-site/public/gui-journeys/probe-gui-watch/manifest.json`](https://github.com/KooshaPari/hwLedger/blob/main/docs-site/public/gui-journeys/probe-gui-watch/manifest.json)
-- Verified manifest: [`docs-site/public/gui-journeys/probe-gui-watch/manifest.verified.json`](https://github.com/KooshaPari/hwLedger/blob/main/docs-site/public/gui-journeys/probe-gui-watch/manifest.verified.json)
-- Recording: [`recording.mp4`](https://github.com/KooshaPari/hwLedger/blob/main/docs-site/public/gui-journeys/probe-gui-watch/recording.mp4) · [`preview.gif`](https://github.com/KooshaPari/hwLedger/blob/main/docs-site/public/gui-journeys/probe-gui-watch/preview.gif)
+- Manifest: [`docs-site/public/gui-journeys/probe-gui-watch/manifest.json`](/gui-journeys/probe-gui-watch/manifest.json)
+- Verified manifest: [`docs-site/public/gui-journeys/probe-gui-watch/manifest.verified.json`](/gui-journeys/probe-gui-watch/manifest.verified.json)
+- Recording: [`probe-gui-watch.rich.mp4`](/gui-journeys/probe-gui-watch/probe-gui-watch.rich.mp4) · [`preview.gif`](/gui-journeys/probe-gui-watch/preview.gif)
