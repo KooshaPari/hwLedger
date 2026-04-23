@@ -41,6 +41,7 @@
       "blind_eval": "skip",
       "index": 0,
       "intent": "App opens on Planner, cursor moves to sidebar and clicks 'Fleet' - viewport fades in the empty fleet map.",
+      "judge_status": "pending",
       "screenshot_path": "keyframes/frame_001.png",
       "slug": "launch-app"
     },
@@ -48,6 +49,7 @@
       "blind_eval": "skip",
       "index": 1,
       "intent": "Fleet map canvas is live: grid backdrop visible, 'Waiting for agents...' label centered, fleet server URL shown top-right.",
+      "judge_status": "pending",
       "screenshot_path": "keyframes/frame_002.png",
       "slug": "map-empty"
     },
@@ -55,6 +57,7 @@
       "blind_eval": "skip",
       "index": 2,
       "intent": "First agent node pops in at top-right of the canvas, green status ring, hostname 'kirin-01' label, hover tooltip forming.",
+      "judge_status": "pending",
       "screenshot_path": "keyframes/frame_003.png",
       "slug": "first-agent"
     },
@@ -62,6 +65,7 @@
       "blind_eval": "skip",
       "index": 3,
       "intent": "Three more agents fade in across the map; connection lines between them pulse briefly to indicate gossip handshake.",
+      "judge_status": "pending",
       "screenshot_path": "keyframes/frame_004.png",
       "slug": "more-agents"
     },
@@ -69,6 +73,7 @@
       "blind_eval": "skip",
       "index": 4,
       "intent": "Cursor clicks the 'kirin-01' node; node scales up slightly, selection ring flashes, right-side panel starts sliding in.",
+      "judge_status": "pending",
       "screenshot_path": "keyframes/frame_005.png",
       "slug": "click-node"
     },
@@ -76,6 +81,7 @@
       "blind_eval": "skip",
       "index": 5,
       "intent": "Host detail panel is fully open: 'kirin-01', 2x H100 80GB, uptime 3d 4h, 47 ledger entries, last heartbeat 1.2s ago.",
+      "judge_status": "pending",
       "screenshot_path": "keyframes/frame_006.png",
       "slug": "host-panel-open"
     }

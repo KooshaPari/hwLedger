@@ -49,6 +49,7 @@
       "blind_eval": "skip",
       "index": 0,
       "intent": "App opens on Planner; default config shows Llama-3.1-8B at 4096 tokens, memory bar half-full.",
+      "judge_status": "pending",
       "screenshot_path": "keyframes/frame_001.png",
       "slug": "launch-app"
     },
@@ -56,6 +57,7 @@
       "blind_eval": "skip",
       "index": 1,
       "intent": "User clicks 'Load fixture...' in toolbar; dropdown lists 4 fixtures; cursor hovers 'DeepSeek-V3 @ 32k / 8 users'.",
+      "judge_status": "pending",
       "screenshot_path": "keyframes/frame_002.png",
       "slug": "load-fixture"
     },
@@ -63,6 +65,7 @@
       "blind_eval": "skip",
       "index": 2,
       "intent": "Fixture loads: seq-len slider jumps to 32768, users slider to 8, stacked bar recomputes showing 71.4 GB VRAM total.",
+      "judge_status": "pending",
       "screenshot_path": "keyframes/frame_003.png",
       "slug": "fixture-loaded"
     },
@@ -70,6 +73,7 @@
       "blind_eval": "skip",
       "index": 3,
       "intent": "User clicks 'Export' button; menu slides down with options 'vLLM flags', 'llama.cpp args', 'MLX JSON', 'TorchServe'.",
+      "judge_status": "pending",
       "screenshot_path": "keyframes/frame_004.png",
       "slug": "open-export-menu"
     },
@@ -77,6 +81,7 @@
       "blind_eval": "skip",
       "index": 4,
       "intent": "Cursor hits 'vLLM flags'; menu collapses, modal sheet begins sliding up from bottom of the detail pane.",
+      "judge_status": "pending",
       "screenshot_path": "keyframes/frame_005.png",
       "slug": "choose-vllm"
     },
@@ -84,6 +89,7 @@
       "blind_eval": "skip",
       "index": 5,
       "intent": "Modal shows monospaced flag string: --model deepseek-v3 --max-model-len 32768 --max-num-seqs 8 --gpu-memory-utilization 0.92 --dtype bf16 ...",
+      "judge_status": "pending",
       "screenshot_path": "keyframes/frame_006.png",
       "slug": "flag-string-shown"
     },
@@ -91,6 +97,7 @@
       "blind_eval": "skip",
       "index": 6,
       "intent": "Cursor clicks 'Copy' on the modal; button goes green-checked, haptic-style pulse animates outward.",
+      "judge_status": "pending",
       "screenshot_path": "keyframes/frame_007.png",
       "slug": "click-copy"
     },
@@ -98,6 +105,7 @@
       "blind_eval": "skip",
       "index": 7,
       "intent": "Toast 'Copied vLLM flags (148 chars)' slides up bottom-center; flag string still visible behind it, modal stays open.",
+      "judge_status": "pending",
       "screenshot_path": "keyframes/frame_008.png",
       "slug": "copied-toast"
     }
