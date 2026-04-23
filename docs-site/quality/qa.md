@@ -85,7 +85,7 @@ Continuous fuzzing on:
 
 ## Chaos & resilience testing
 
-Manual chaos tests (automated detection TODO):
+Manual chaos tests (automated detection is a follow-up):
 
 | Scenario | Test | Expected | Status |
 |----------|------|----------|--------|

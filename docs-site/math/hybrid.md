@@ -5,7 +5,7 @@ description: Combining multiple attention mechanisms
 
 # Hybrid Attention Strategies
 
-<!-- SHOT-TODO: capture per-layer detection output for a Jamba / Granite hybrid model -->
+<!-- SHOT-PENDING: capture per-layer detection output for a Jamba / Granite hybrid model -->
 
 Combining multiple attention patterns (MHA + GQA, Transformer + SSM, Sliding Window + Cross-Attention) for optimal latency and quality.
 

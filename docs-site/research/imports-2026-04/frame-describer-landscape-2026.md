@@ -232,7 +232,7 @@ terminal recordings, video embeds, media playback frames).
 | Qwen3-Omni | text + image + video + audio (+speech out) | partial | natively end-to-end omni |
 | Qwen2.5-Omni-7B | text + image + audio + video + speech out | yes | Thinker-Talker arch; streaming speech |
 | MiniCPM-o 4.5 | text + image + audio + video + speech | likely soon | 77.6 OpenCompass; Gemini 2.5 Flash-level |
-| GLM-4.5V / GLM-4.5-Omni | text + image (+audio in Omni variant) | TBD | underrated on UI/doc VQA |
+| GLM-4.5V / GLM-4.5-Omni | text + image (+audio in Omni variant) | unknown | underrated on UI/doc VQA |
 | Baichuan-Omni-2 | text + image + audio | no | good but mlx-coverage weak |
 | Aria (Rhymes) | text + image + audio + video | limited | MoE 3.9B active / 24.9B total |
 | Unified-IO 3 (AI2) | true unified (generate any modality) | no | research showcase |

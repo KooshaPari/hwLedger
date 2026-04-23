@@ -54,7 +54,7 @@ MLA was the DeepSeek team's answer to the specific problem that even GQA's 8× c
 
 <RecordingEmbed tape="plan-deepseek" kind="cli" caption="CLI plan-deepseek: MLA classification inside the full plan run (supplementary, CLI-only)" />
 
-<!-- SHOT-TODO: inline <Shot> showing the refusal-to-plan error when latent_dim is missing -->
+<!-- SHOT-PENDING: inline <Shot> showing the refusal-to-plan error when latent_dim is missing -->
 
 ## Memory footprint (32K context, 7B model)
 

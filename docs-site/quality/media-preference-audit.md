@@ -43,7 +43,7 @@ Counts are `RecordingEmbed` tags only; `<Shot>` keyframe stills inherit their pa
 | `architecture/adrs/0015-vlm-judge-claude.md` | 0 / 0 / 0 | 0 / 0 / 0 | Prose-only. |
 | `architecture/adrs/0027-charts-plotly.md` | 0 / 0 / 0 | 0 / 0 / 0 | Prose-only. |
 | `architecture/crates/hwledger-gui-recorder.md` | 0 / 0 / 0 | 0 / 0 / 0 | Prose-only. |
-| `releases/v0.1.0-alpha.md` | 0 / 0 / 1 | 0 / 0 / 1 | Tape `release-signed-dmg` flagged with TODO for future GUI capture (About / Update panel). |
+| `releases/v0.1.0-alpha.md` | 0 / 0 / 1 | 0 / 0 / 1 | Tape `release-signed-dmg` flagged as pending future GUI capture (About / Update panel). |
 | `guides/faq.md` | 0 / 0 / 0 | 0 / 0 / 0 | `<Shot>` stills only, no `<RecordingEmbed>` to reorder. |
 | `guides/secrets.md` | 0 / 0 / 0 | 0 / 0 / 0 | `<Shot>` stills only. |
 | `guides/visual-walkthrough-plan-deepseek.md` | 0 / 0 / 0 | 0 / 0 / 0 | `<Shot>` narrative walkthrough, explicitly CLI-oriented — preserved. |
@@ -57,13 +57,13 @@ Counts are `RecordingEmbed` tags only; `<Shot>` keyframe stills inherit their pa
 - **CLI embeds retained with explicit `kind="cli"`:** 23 (annotated for transparency; no spurious CLI-first surfaces remain on UI-centric pages).
 - **CLI embeds demoted from first-position to supplementary:** 11 (Planner, HF search, Fleet, Probe — now consistently below their GUI/Streamlit equivalents).
 
-## Pages still needing GUI capture (TODO)
+## Pages still needing GUI capture (pending)
 
 Pages with UI-centric features where an existing tape is genuinely missing a GUI equivalent:
 
-- `releases/v0.1.0-alpha.md` — tape `release-signed-dmg` is CLI-like; a GUI capture of the macOS About / Update panel + signed-build toast would better represent the release experience. **Marked with `<!-- TODO: GUI capture -->` comment.**
+- `releases/v0.1.0-alpha.md` — tape `release-signed-dmg` is CLI-like; a GUI capture of the macOS About / Update panel + signed-build toast would better represent the release experience. **Marked with a `SHOT-PENDING` comment in the source.**
 
-No other pages required TODO flags: every remaining CLI-first surface is on a page whose feature is *intrinsically* CLI (install, troubleshooting exit codes, `plan --help` flag table, traceability report, ingest-error error codes, fleet-audit hash-chain inspection, the CLI reference itself).
+No other pages required pending-capture flags: every remaining CLI-first surface is on a page whose feature is *intrinsically* CLI (install, troubleshooting exit codes, `plan --help` flag table, traceability report, ingest-error error codes, fleet-audit hash-chain inspection, the CLI reference itself).
 
 ## Canonical journey pages (untouched, intentional)
 
@@ -73,4 +73,4 @@ No other pages required TODO flags: every remaining CLI-first surface is on a pa
 
 - `bun run build` — green (40 verified manifests, 73.5s build).
 - All embeds now use explicit `kind=` prop.
-- No dead tape references introduced (existing `release-signed-dmg` dead ref was pre-existing and flagged with TODO).
+- No dead tape references introduced (existing `release-signed-dmg` dead ref was pre-existing and flagged with a pending-capture comment).

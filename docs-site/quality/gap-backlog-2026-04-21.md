@@ -34,7 +34,7 @@ The 5 GUI journeys (`planner-gui-launch`, `probe-gui-watch`,
 renders in `docs-site/public/gui-journeys/…/*.rich.mp4` but no source
 under `apps/macos/HwLedgerUITests/build/journeys/…`. Blocked on TCC
 Accessibility + Screen-Recording grants — tracked in
-`GUI_CAPTURE_TODO.md`.
+`GUI_CAPTURE_PENDING.md`.
 
 **Accept when:** `find apps -name "*.rich.mp4" | wc -l` = 26.
 

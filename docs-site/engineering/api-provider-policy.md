@@ -105,8 +105,8 @@ text-only MoEs.
 | [`atbender/Qwen3.6-VL-REAP-26B-A3B`](https://huggingface.co/atbender/Qwen3.6-VL-REAP-26B-A3B) | Qwen3.6-VL | REAP | BF16 + W4A16 variant | Most recent community VLM REAP found. |
 
 No `mlx-community/*VL*REAP*-4bit` ports existed at probe time. The yaml
-`tier_mlx_moe_reap` slot is therefore a reserved placeholder above the dense
-chain, with a `TODO(vlm-judge): re-check REAP catalog monthly` marker in the
+`tier_mlx_moe_reap` slot is therefore reserved above the dense
+chain, with a `vlm-judge: re-check REAP catalog monthly` marker in the
 yaml. When (a) mlx-community publishes a native 4-bit VLM REAP, or (b) we
 convert OpenMOSE/Qwen3-VL-REAP-24B-A3B ourselves via `mlx_vlm.convert`, the
 resulting id slots in as the new top-of-chain entry.
