@@ -119,8 +119,9 @@ This brief surveys the 2026 state of the art for building an automated user-jour
 1. Create `docs/.vitepress/theme/components/JourneyViewer.vue` (Vue 3 SFC):
    - Props: `journeyId: string`
    - Render:
-     - `<video src="...mp4" controls />` (MP4 playback)
-     - `<img src="...gif" alt="..." />` (GIF fallback)
+     - a `video` element pointing at the MP4 recording (controls enabled)
+     - an `img` element pointing at the GIF fallback
+
      - Keyframe gallery: horizontal scroll of PNGs with timestamps
      - Verification badge: "PASS" (green) / "FAIL" (red) from verification.json
      - Intent vs. VLM description in side-by-side Markdown blocks
