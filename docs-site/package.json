@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "vue": "^3.5.0",
-    "@phenotype/journey-viewer": "file:../vendor/phenotype-journeys/phenotype-journey-viewer-0.1.0.tgz"
+    "@phenotype/journey-viewer": "file:../vendor/phenotype-journeys/phenotype-journey-viewer-0.1.1.tgz"
   },
   "devDependencies": {
     "gray-matter": "^4.0.3",
