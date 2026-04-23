@@ -48,6 +48,18 @@ pub enum BlindEvalMode {
     Skip,
 }
 
+/// Self-reported describer confidence for a step (see ADR-0038 +
+/// `phenotype_journey_core::Confidence`). Populated by the frame-describer
+/// pass from lexical hedging in its own VLM output; absent on older manifests
+/// or when the describer skipped the step.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Confidence {
+    High,
+    Medium,
+    Low,
+}
+
 /// Per-step manifest fragment used by the journey gate. We only decode the
 /// subset we need (blind-eval mode + slug for diagnostics); the real manifest
 /// carries many more fields (annotations, descriptions, bboxes, …).
@@ -62,6 +74,9 @@ pub struct ManifestStep {
     /// per-family accessibility walker. Advisory on GUI/Streamlit journeys.
     #[serde(default)]
     pub structural_path: Option<String>,
+    /// Self-reported describer confidence; `None` on older manifests.
+    #[serde(default)]
+    pub judge_confidence: Option<Confidence>,
 }
 
 /// Parsed shape of a verified journey manifest.
@@ -102,6 +117,21 @@ impl JourneyManifest {
     /// structural data (the accessibility walker was skipped or failed).
     pub fn missing_structural_count(&self) -> usize {
         self.steps.iter().filter(|s| s.structural_path.as_deref().is_none_or(str::is_empty)).count()
+    }
+
+    /// True when the majority of steps (strict >50%) that carry a populated
+    /// `judge_confidence` report `Low`. Drives the `NEEDS_REVIEW` gate on
+    /// journeys whose describer is systematically uncertain — see ADR-0038.
+    /// A journey with zero confidence-tagged steps returns `false`
+    /// (back-compat with manifests that predate the rollout).
+    pub fn majority_low_confidence(&self) -> bool {
+        let tagged: Vec<Confidence> =
+            self.steps.iter().filter_map(|s| s.judge_confidence).collect();
+        if tagged.is_empty() {
+            return false;
+        }
+        let low = tagged.iter().filter(|c| **c == Confidence::Low).count();
+        low * 2 > tagged.len()
     }
 }
 
@@ -190,6 +220,11 @@ pub enum JourneyStatus {
     /// default under `--strict-journeys`, but upgradable to hard failure via
     /// `--no-skip-allowed`.
     NeedsCapture,
+    /// The journey verified and passed score/intent gates, but a majority of
+    /// its confidence-tagged steps report `Low` describer confidence. Advisory
+    /// (warning-class like `NeedsCapture`) — does NOT fail the default gate,
+    /// but surfaced so reviewers can re-capture or tighten intents.
+    NeedsReview,
 }
 
 /// Report produced by [`evaluate`].
@@ -214,10 +249,18 @@ impl JourneyReport {
     /// to a hard failure should check [`JourneyReport::has_needs_capture`]
     /// separately (see `--no-skip-allowed` in the CLI).
     pub fn has_failures(&self) -> bool {
-        self.rows
-            .iter()
-            .any(|r| !matches!(r.status, JourneyStatus::Ok | JourneyStatus::NeedsCapture))
-            || !self.orphan_journeys.is_empty()
+        self.rows.iter().any(|r| {
+            !matches!(
+                r.status,
+                JourneyStatus::Ok | JourneyStatus::NeedsCapture | JourneyStatus::NeedsReview
+            )
+        }) || !self.orphan_journeys.is_empty()
+    }
+
+    /// True when any row is `NeedsReview` — advisory flag (see
+    /// `JourneyManifest::majority_low_confidence`).
+    pub fn has_needs_review(&self) -> bool {
+        self.rows.iter().any(|r| r.status == JourneyStatus::NeedsReview)
     }
 
     /// True when any row is `NeedsCapture` — used by `--no-skip-allowed` to
@@ -334,6 +377,19 @@ pub fn evaluate(frs: &[FrSpec], scan: &JourneyScan) -> JourneyReport {
                 JourneyStatus::NotPassed
             } else if score < MIN_JOURNEY_SCORE {
                 JourneyStatus::LowScore
+            } else if best.majority_low_confidence() {
+                // OK-score but describer systematically uncertain → advisory
+                // review flag (ADR-0038). Non-blocking.
+                report.warnings.push(format!(
+                    "{} [{}]: journey {} verified (score={:.2}) but majority of \
+                     confidence-tagged steps report LOW describer confidence \
+                     — NEEDS_REVIEW (advisory, non-blocking)",
+                    fr.id,
+                    kind.as_str(),
+                    best.id,
+                    score
+                ));
+                JourneyStatus::NeedsReview
             } else {
                 if !text_passed {
                     report.warnings.push(format!(
@@ -385,6 +441,7 @@ pub fn render_markdown(report: &JourneyReport) -> String {
                 JourneyStatus::LowScore => "LOW_SCORE",
                 JourneyStatus::NotPassed => "NOT_PASSED",
                 JourneyStatus::NeedsCapture => "NEEDS_CAPTURE",
+                JourneyStatus::NeedsReview => "NEEDS_REVIEW",
             };
             md.push_str(&format!(
                 "| **{}** | {} | {} | {} | {} | {} |\n",
@@ -473,6 +530,7 @@ mod tests {
                     BlindEvalMode::Honest
                 },
                 structural_path: None,
+                judge_confidence: None,
             })
             .collect();
         m
@@ -640,6 +698,7 @@ mod tests {
                 slug: format!("step-{}", i),
                 blind_eval: BlindEvalMode::Honest,
                 structural_path: None,
+                judge_confidence: None,
             })
             .collect();
         let scan = JourneyScan { manifests: vec![m], warnings: vec![] };
@@ -663,6 +722,7 @@ mod tests {
                 slug: format!("step-{}", i),
                 blind_eval: BlindEvalMode::Honest,
                 structural_path: Some(format!("keyframes/frame_{:03}.structural.json", i + 1)),
+                judge_confidence: None,
             })
             .collect();
         let scan = JourneyScan { manifests: vec![m], warnings: vec![] };
@@ -689,5 +749,48 @@ mod tests {
         assert!(md.contains("## Journey coverage"));
         assert!(md.contains("FR-PLAN-003"));
         assert!(md.contains("cli-plan"));
+    }
+
+    /// Traces to: FR-TRACE-003 — majority-Low describer confidence surfaces
+    /// as `NEEDS_REVIEW` (advisory, non-blocking) per ADR-0038.
+    #[test]
+    fn test_majority_low_confidence_surfaces_needs_review() {
+        let frs = vec![fr("FR-PLAN-003", vec![JourneyKind::Cli])];
+        let mut m = manifest("cli-plan", JourneyKind::Cli, vec!["FR-PLAN-003"], 0.92, true);
+        // 3 steps: 2 Low + 1 High → majority-Low → NEEDS_REVIEW.
+        m.steps = vec![
+            ManifestStep {
+                slug: "s0".into(),
+                judge_confidence: Some(Confidence::Low),
+                ..Default::default()
+            },
+            ManifestStep {
+                slug: "s1".into(),
+                judge_confidence: Some(Confidence::Low),
+                ..Default::default()
+            },
+            ManifestStep {
+                slug: "s2".into(),
+                judge_confidence: Some(Confidence::High),
+                ..Default::default()
+            },
+        ];
+        let rep = evaluate(&frs, &JourneyScan { manifests: vec![m], warnings: vec![] });
+        assert_eq!(rep.rows[0].status, JourneyStatus::NeedsReview);
+        assert!(rep.has_needs_review());
+        // Advisory — does NOT fail the gate.
+        assert!(!rep.has_failures());
+    }
+
+    /// Traces to: FR-TRACE-003 — no confidence tags → behaves exactly like
+    /// today (OK status, no spurious NEEDS_REVIEW).
+    #[test]
+    fn test_no_confidence_tags_back_compat_ok() {
+        let frs = vec![fr("FR-PLAN-003", vec![JourneyKind::Cli])];
+        let mut m = manifest("cli-plan", JourneyKind::Cli, vec!["FR-PLAN-003"], 0.92, true);
+        m.steps = vec![ManifestStep { slug: "s0".into(), ..Default::default() }];
+        let rep = evaluate(&frs, &JourneyScan { manifests: vec![m], warnings: vec![] });
+        assert_eq!(rep.rows[0].status, JourneyStatus::Ok);
+        assert!(!rep.has_needs_review());
     }
 }

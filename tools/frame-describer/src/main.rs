@@ -149,6 +149,60 @@ This is NOT a placeholder, stub, or synthetic test frame — do not say 'placeho
 'stub', 'frame N', 'image N', 'test image', or 'no content'. \
 Do not guess application context you cannot see.";
 
+/// Classify the describer's self-reported confidence from the lexical hedging
+/// in its own output (`blind_description` text).
+///
+/// Keyword heuristic only — documented in ADR-0038 as the placeholder
+/// implementation ahead of a future log-probability or ML-based scorer.
+/// Matches the `phenotype_journey_core::Confidence` enum serialisation
+/// (`"high" | "medium" | "low"`). Case-insensitive; falls through to
+/// `Medium` when no markers are present (most plain descriptions read as
+/// moderately confident).
+pub(crate) fn classify_confidence(blind: &str) -> &'static str {
+    let b = blind.to_ascii_lowercase();
+    const LOW: &[&str] = &[
+        "i'm not sure",
+        "not sure",
+        "possibly",
+        "might be",
+        "maybe",
+        "cannot tell",
+        "can't tell",
+        "unclear",
+        "hard to tell",
+        "difficult to tell",
+    ];
+    const HIGH: &[&str] = &[
+        "i'm confident",
+        "clearly",
+        "definitely",
+        "obviously",
+        "the image shows",
+        "this is a",
+        "i can see",
+    ];
+    const MED: &[&str] = &[
+        "it appears",
+        "appears to",
+        "looks like",
+        "seems to",
+        "seems like",
+        "likely",
+        "probably",
+    ];
+    // Low beats Medium beats High when multiple markers appear — err toward
+    // flagging for review.
+    if LOW.iter().any(|k| b.contains(k)) {
+        "low"
+    } else if MED.iter().any(|k| b.contains(k)) {
+        "medium"
+    } else if HIGH.iter().any(|k| b.contains(k)) {
+        "high"
+    } else {
+        "medium"
+    }
+}
+
 #[derive(Parser, Debug)]
 #[command(
     name = "hwledger-frame-describer",
@@ -511,6 +565,10 @@ async fn run(cli: Cli) -> Result<()> {
             step_obj.insert(
                 "judge_score".into(),
                 serde_json::json!(round_f64(report.overlap, 4)),
+            );
+            step_obj.insert(
+                "judge_confidence".into(),
+                serde_json::Value::String(classify_confidence(&blind).into()),
             );
             step_obj.insert(
                 "judge_status".into(),
@@ -926,6 +984,36 @@ fn mlx_describe(model: &str, image: &Path) -> Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn classify_confidence_buckets() {
+        // High: assertive / declarative.
+        assert_eq!(
+            classify_confidence("The image shows a dashboard with a stacked-bar chart."),
+            "high"
+        );
+        assert_eq!(
+            classify_confidence("I can see the hwLedger CLI output with 3 lines."),
+            "high"
+        );
+        // Medium: hedged but still substantive.
+        assert_eq!(
+            classify_confidence("It appears to be a settings panel with a toggle row."),
+            "medium"
+        );
+        // Low: explicit uncertainty.
+        assert_eq!(
+            classify_confidence("I'm not sure what this frame shows — possibly a modal?"),
+            "low"
+        );
+        // Low beats High when both markers appear (err toward review).
+        assert_eq!(
+            classify_confidence("The image shows a panel, but I'm not sure what it does."),
+            "low"
+        );
+        // Default (no markers) → medium.
+        assert_eq!(classify_confidence("A dark window with two columns."), "medium");
+    }
 
     #[test]
     fn mlx_available_returns_false_without_python() {

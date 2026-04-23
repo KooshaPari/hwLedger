@@ -155,6 +155,10 @@ fn main() -> Result<()> {
                         "real capture pending (blind_eval: skip; macOS TCC)".to_string(),
                         args.no_skip_allowed,
                     ),
+                    JourneyStatus::NeedsReview => (
+                        "majority-LOW describer confidence (advisory; ADR-0038)".to_string(),
+                        false,
+                    ),
                 };
                 let level = if is_hard { "FAIL" } else { "WARN" };
                 eprintln!("  - {level} {} [{}] ({})", row.fr, row.kind, reason);
