@@ -481,7 +481,7 @@ pub async fn openrouter_describe(
         prompt,
         &[
             ("HTTP-Referer", "https://github.com/KooshaPari/hwLedger"),
-            ("X-Title", "hwledger-vlm-judge"),
+            ("X-Title", "hwledger-frame-describer"),
         ],
     )
     .await

@@ -148,9 +148,10 @@ Run locally with `act` or `gh workflow run journey-rich-render.yml`.
 
 The Remotion components in `tools/journey-remotion/src/components/` (CalloutBox, CaptionBar, TitleCard, FrameStill) are inlined from the [dino scripts/video pattern](https://github.com/KooshaPari/dino/tree/main/scripts/video); see `/Users/kooshapari/CodeProjects/Phenotype/repos/phenotype-journeys/remotion/borrowed/PROVENANCE.md` for license and attribution details.
 
-## VLM judge backends
+## Frame-describer backends
 
-`tools/vlm-judge` blind-describes every keyframe and scores the description
+`tools/frame-describer` (previously `tools/vlm-judge`, renamed 2026-04-22 per
+ADR-0038) blind-describes every keyframe and scores the description
 against the step `intent` (agreement module, Jaccard on stemmed tokens). It
 writes `blind_description`, `judge_score`, `judge_status`, `judge_backend`
 and `passed` into each `manifest.verified.json` step.
@@ -174,11 +175,11 @@ when a forced backend is unavailable — no silent degradation.
 ```bash
 # Primary (Claude)
 ANTHROPIC_API_KEY=sk-ant-… \
-  cargo run --release -p hwledger-vlm-judge -- \
+  cargo run --release -p hwledger-frame-describer -- \
     --root docs-site/public --judge claude
 
 # Local fallback (MLX on Apple Silicon)
 pip install mlx-vlm     # one-time; first run downloads the model
-cargo run --release -p hwledger-vlm-judge -- \
+cargo run --release -p hwledger-frame-describer -- \
   --root docs-site/public --judge mlx
 ```

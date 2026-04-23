@@ -35,10 +35,15 @@ no longer hold in 2026:
 ## Decision
 
 1. **Rename the architectural concept** from "VLM judge" to **frame-describer**.
-   The crate rename (`tools/vlm-judge/` → `tools/frame-describer/`) is
-   tracked as a mechanical follow-up commit so that the `tools/vlm-judge`
-   binary, the `providers.mlx.models.vlm:` key, and the ADR-0015 references
-   can all be migrated together without churning this commit's diff.
+   **Status: complete (2026-04-22).** The crate, binary, and workspace
+   member were renamed (`tools/vlm-judge/` → `tools/frame-describer/`;
+   `hwledger-vlm-judge` → `hwledger-frame-describer`) on the
+   `backlog-close-2026-04-22` branch. A thin `exec`-only shim at
+   `tools/vlm-judge/vlm-judge` preserves back-compat for stale consumers
+   and will be removed once no callers reference the old path (tracked
+   inline in `tools/vlm-judge/README.md`). ADR-0015 and
+   `providers.mlx.models.vlm:` retain their historical names as
+   intentional back-references; only the code path was renamed.
 
 2. **Adopt a two-stage pipeline.**
    - **Stage 1 — Parser.** `microsoft/OmniParser-v2.0` by default

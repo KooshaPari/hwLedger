@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Back-compat shim: `tools/vlm-judge/` was renamed to `tools/frame-describer/`
+# per ADR-0038 (2026-04-22). ≤5-line shell glue is allowed under the scripting
+# hierarchy for exec-only wrappers; a Rust binary cannot shadow its own rename.
+exec hwledger-frame-describer "$@"

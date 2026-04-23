@@ -30,7 +30,7 @@ members = [
     "tools/journey-record",
     "tools/streamlit-recorder",
     "tools/shot-linter",
-    "tools/vlm-judge",
+    "tools/frame-describer",
     "tools/cli-ansi-parse",
     "apps/windows/hwledger-tauri/src-tauri",
 ]

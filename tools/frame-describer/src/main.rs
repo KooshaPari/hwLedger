@@ -1,4 +1,4 @@
-//! hwledger-vlm-judge
+//! hwledger-frame-describer
 //!
 //! Walk every `manifest.verified.json` under one or more roots, blind-describe
 //! each step's keyframe via Claude Sonnet 4.6 (multimodal) or a local MLX VLM
@@ -151,7 +151,7 @@ Do not guess application context you cannot see.";
 
 #[derive(Parser, Debug)]
 #[command(
-    name = "hwledger-vlm-judge",
+    name = "hwledger-frame-describer",
     about = "Blind-describe journey keyframes via Claude or local MLX VLM and score agreement with per-step intent.",
     version
 )]
@@ -1028,7 +1028,7 @@ Peak memory: 4.567 GB\n";
 
     /// Integration smoke test: if MLX is actually installed AND the model is
     /// cached, describe a real keyframe. Ignored by default; run with
-    /// `cargo test -p hwledger-vlm-judge -- --ignored mlx_live`.
+    /// `cargo test -p hwledger-frame-describer -- --ignored mlx_live`.
     #[test]
     #[ignore]
     fn mlx_live_describe_smoke() {

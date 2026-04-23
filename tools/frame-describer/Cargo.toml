@@ -1,5 +1,5 @@
 [package]
-name = "hwledger-vlm-judge"
+name = "hwledger-frame-describer"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -7,7 +7,7 @@ repository.workspace = true
 authors.workspace = true
 
 [[bin]]
-name = "hwledger-vlm-judge"
+name = "hwledger-frame-describer"
 path = "src/main.rs"
 
 [dependencies]

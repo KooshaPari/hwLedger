@@ -308,12 +308,19 @@ fn run_single(
     Ok(())
 }
 
-/// Shell out to the sibling `hwledger-vlm-judge` binary as a post-render
+/// Shell out to the sibling `hwledger-frame-describer` binary as a post-render
 /// phase. Best-effort: a failure here logs but does not abort the render run.
+/// (Also accepts the legacy `hwledger-vlm-judge` name as a fallback for
+/// developers with stale installs.)
 fn invoke_vlm_judge(root: &Path, judge: &str) -> anyhow::Result<()> {
-    let bin_name = "hwledger-vlm-judge";
+    let bin_name = "hwledger-frame-describer";
+    let legacy_name = "hwledger-vlm-judge";
     let candidates: Vec<PathBuf> = std::iter::once(PathBuf::from(bin_name))
         .chain(std::env::current_exe().ok().and_then(|p| p.parent().map(|dir| dir.join(bin_name))))
+        .chain(std::iter::once(PathBuf::from(legacy_name)))
+        .chain(
+            std::env::current_exe().ok().and_then(|p| p.parent().map(|dir| dir.join(legacy_name))),
+        )
         .collect();
     let mut last_err: Option<String> = None;
     for cand in &candidates {
@@ -333,7 +340,7 @@ fn invoke_vlm_judge(root: &Path, judge: &str) -> anyhow::Result<()> {
         }
     }
     eprintln!(
-        "[journey-render] vlm-judge phase skipped ({}): install `hwledger-vlm-judge` (cargo build -p hwledger-vlm-judge)",
+        "[journey-render] frame-describer phase skipped ({}): install `hwledger-frame-describer` (cargo build -p hwledger-frame-describer)",
         last_err.unwrap_or_else(|| "binary not found".into())
     );
     Ok(())
