@@ -2,23 +2,19 @@
 
 The fleet ledger tracks heterogeneous hardware (local NVIDIA/AMD, Apple Silicon, cloud rentals) with a shared event-sourced audit log, cost model, and dispatch planner.
 
-<Shot src="/cli-journeys/keyframes/fleet-register/frame-001.png"
-      caption="fleet register — bootstrap"
-      size="small" align="right" />
+<ShotGallery
+  title="Register — bootstrap a device"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/fleet-register/frame-001.png","caption":"fleet register — bootstrap"},
+    {"src":"/cli-journeys/keyframes/fleet-register/frame-003.png","caption":"Host added"}
+  ]' />
 
-<!-- SHOT-MISMATCH: caption="Host added" expected=[host,added] matched=[] -->
-<Shot src="/cli-journeys/keyframes/fleet-register/frame-003.png"
-      caption="Host added"
-      size="small" align="left"
-      :annotations='[{"bbox":[80,160,360,24],"label":"host added","color":"#a6e3a1"}]' />
-
-<Shot src="/cli-journeys/keyframes/fleet-audit/frame-002.png"
-      caption="audit — attestation hash"
-      size="small" align="right" />
-
-<Shot src="/cli-journeys/keyframes/fleet-audit/frame-005.png"
-      caption="audit summary"
-      size="small" align="left" />
+<ShotGallery
+  title="Audit — verify attestation chain"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/fleet-audit/frame-002.png","caption":"audit — attestation hash"},
+    {"src":"/cli-journeys/keyframes/fleet-audit/frame-005.png","caption":"audit summary"}
+  ]' />
 
 ## Architecture
 
@@ -76,24 +72,19 @@ Devices are registered with:
 
 <RecordingEmbed tape="fleet-audit" kind="cli" caption="CLI `fleet audit`: inspect the hash-chained audit log — CLI-native reason-of-record for audit-chain review" />
 
-<!-- SHOT-MISMATCH: caption="Register step 2 — labels applied (tenant, env, gpu-class)" expected=[register,step,labels,applied,tenant,env,gpu-class] matched=[] -->
-<Shot src="/cli-journeys/keyframes/fleet-register/frame-002.png"
-      caption="Register step 2 — labels applied (tenant, env, gpu-class)"
-      size="small" align="left"
-      :annotations='[{"bbox":[60,160,440,28],"label":"labels","color":"#cba6f7","position":"top-left"}]' />
+<ShotGallery
+  title="Register — labels + first ledger event"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/fleet-register/frame-002.png","caption":"Register step 2 — labels applied (tenant, env, gpu-class)"},
+    {"src":"/cli-journeys/keyframes/fleet-register/frame-006.png","caption":"Register step 6 — first event written, ledger head advances"}
+  ]' />
 
-<Shot src="/cli-journeys/keyframes/fleet-register/frame-006.png"
-      caption="Register step 6 — first event written, ledger head advances"
-      size="small" align="right" />
-
-<Shot src="/cli-journeys/keyframes/fleet-audit/frame-003.png"
-      caption="Audit: per-agent row with last-seen, backend, and hash verdict"
-      size="small" align="left"
-      :annotations='[{"bbox":[40,200,560,28],"label":"verdict: PASS","color":"#a6e3a1","position":"bottom-left"}]' />
-
-<Shot src="/cli-journeys/keyframes/fleet-audit/frame-006.png"
-      caption="Audit summary: total events, chain length, verification duration"
-      size="small" align="right" />
+<ShotGallery
+  title="Audit — per-agent verdicts and summary"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/fleet-audit/frame-003.png","caption":"Audit: per-agent row with last-seen, backend, and hash verdict"},
+    {"src":"/cli-journeys/keyframes/fleet-audit/frame-006.png","caption":"Audit summary: total events, chain length, verification duration"}
+  ]' />
 
 ### Event Log
 

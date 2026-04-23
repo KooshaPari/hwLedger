@@ -5,7 +5,7 @@
     "": {
       "name": "hwledger-docs",
       "dependencies": {
-        "@phenotype/journey-viewer": "file:../vendor/phenotype-journeys/phenotype-journey-viewer-0.1.0.tgz",
+        "@phenotype/journey-viewer": "file:../vendor/phenotype-journeys/phenotype-journey-viewer-0.1.1.tgz",
         "vue": "^3.5.0",
       },
       "devDependencies": {
@@ -134,7 +134,7 @@
 
     "@nodelib/fs.walk": ["@nodelib/fs.walk@1.2.8", "", { "dependencies": { "@nodelib/fs.scandir": "2.1.5", "fastq": "^1.6.0" } }, "sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg=="],
 
-    "@phenotype/journey-viewer": ["@phenotype/journey-viewer@../vendor/phenotype-journeys/phenotype-journey-viewer-0.1.0.tgz", { "peerDependencies": { "vitepress": "^1.0.0", "vue": "^3.4.0" } }, "sha512-l974kE6eGihKrVaWFSkATCOqgJHJEh3sLu7SQwJEAEgIrc7dfUBYldSt41eUy1WTtcDP8r3nlsiuapH/ATnNCg=="],
+    "@phenotype/journey-viewer": ["@phenotype/journey-viewer@../vendor/phenotype-journeys/phenotype-journey-viewer-0.1.1.tgz", { "peerDependencies": { "vitepress": "^1.0.0", "vue": "^3.4.0" } }, "sha512-7v9FZVJVpZZw3chGObWwtzz28UQgL2cJN31++ffG3WUXwmh1XXG3L32mdHIGFTTaTETLBXmDcznJ0EnF5wysIQ=="],
 
     "@pkgjs/parseargs": ["@pkgjs/parseargs@0.11.0", "", {}, "sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg=="],
 

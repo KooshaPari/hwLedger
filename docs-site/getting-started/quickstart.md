@@ -27,26 +27,25 @@ hwledger --version
 
 ## 2. Plan your first model
 
-<!-- SHOT-MISMATCH: caption="plan command invoked" expected=[plan,command,invoked] matched=[] -->
-<Shot src="/cli-journeys/keyframes/first-plan/frame-001.png"
-      caption="plan command invoked"
-      size="small" align="right" />
-
 Pass any HF-style `config.json`:
 
 ```bash
 hwledger plan tests/golden/deepseek-v3.json --seq 32768 --users 2
 ```
 
-<!-- SHOT-MISMATCH: caption="VRAM fits — coloured pass line" expected=[vram,fits,coloured,pass] matched=[] -->
-<Shot src="/cli-journeys/keyframes/first-plan/frame-005.png"
-      caption="VRAM fits — coloured pass line"
-      size="medium" align="left"
-      :annotations='[{"bbox":[80,180,400,24],"label":"fits","color":"#a6e3a1"}]' />
+> **OCR note:** two frames in this section (`first-plan/frame-001.png`,
+> `first-plan/frame-005.png`) failed automated OCR; the captions describe
+> elements visible in the frames.
 
-<Shot src="/cli-journeys/keyframes/first-plan/frame-010.png"
-      caption="Component breakdown: weights / KV / activations"
-      size="small" align="right" />
+<ShotGallery
+  title="Plan invocation + VRAM breakdown"
+  :shots='[
+    {"src":"/cli-journeys/keyframes/first-plan/frame-001.png","caption":"plan command invoked"},
+    {"src":"/cli-journeys/keyframes/first-plan/frame-005.png","caption":"VRAM fits — coloured pass line"},
+    {"src":"/cli-journeys/keyframes/first-plan/frame-010.png","caption":"Component breakdown: weights / KV / activations"},
+    {"src":"/cli-journeys/keyframes/plan-deepseek/frame-002.png","caption":"Architecture classified as MLA (latent_dim=512)"},
+    {"src":"/cli-journeys/keyframes/plan-deepseek/frame-003.png","caption":"hwledger plan — MLA VRAM breakdown, deepseek config detected"}
+  ]' />
 
 <RecordingEmbed tape="planner-gui-launch" kind="gui" caption="Planner GUI: launch the native macOS planner and run your first plan (primary UI)" />
 
@@ -55,15 +54,6 @@ hwledger plan tests/golden/deepseek-v3.json --seq 32768 --users 2
 <RecordingEmbed tape="first-plan" kind="cli" caption="CLI plan: colored VRAM breakdown with live classification (scriptable)" />
 
 <RecordingEmbed tape="plan-deepseek" kind="cli" caption="CLI end-to-end DeepSeek-V3 plan — the same flow the Visual Walkthrough covers, inline here for a glance" />
-
-<Shot src="/cli-journeys/keyframes/plan-deepseek/frame-002.png"
-      caption="Architecture classified as MLA (latent_dim=512)"
-      size="small" align="left"
-      :annotations='[{"bbox":[120,340,220,28],"label":"MLA","color":"#89b4fa","position":"center-bottom"}]' />
-
-<Shot src="/cli-journeys/keyframes/plan-deepseek/frame-003.png"
-      caption="hwledger plan — MLA VRAM breakdown, deepseek config detected"
-      size="small" align="right" />
 
 ## 3. Probe local GPUs
 
