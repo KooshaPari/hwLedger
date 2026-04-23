@@ -44,5 +44,6 @@
     "overall_score": 0.92,
     "timestamp": "2026-04-21T04:31:06Z"
   },
-  "voiceover_sha256": "9336ad1a6b41bcb310fd4ebc7cb34075901d25ec663221a305e77b68d763eed7"
+  "voiceover_sha256": "9336ad1a6b41bcb310fd4ebc7cb34075901d25ec663221a305e77b68d763eed7",
+  "keyframes_root": "recordings/streamlit-probe"
 }
