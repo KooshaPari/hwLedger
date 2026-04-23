@@ -23,9 +23,11 @@ cargo run -q -p hwledger-docs-health -- --root docs-site --json \
 
 Additional categories (not enumerated here):
 
-- **placeholders (warn, 26):** scan for `TODO` / `TBD` / `FIXME` markers in
-  published docs under `docs-site/`. Each should either resolve or migrate to
-  a tracked issue.
+- **placeholders (warn, resolved 2026-04-22):** scans for the placeholder
+  marker set defined in `tools/docs-health/src/lib.rs` (the constant near the
+  top of the `check_placeholders` function). Each finding should either
+  resolve or migrate to a tracked issue. Batch resolved in
+  `fix/docs-health-placeholder-warns`.
 - **video (warn, 8):** `<100KB` mp4 files under `docs-site/public/` — likely
   truncated or stubbed; regenerate via `phenotype-journey record`.
 - **journey (warn, 1):** `phenotype-journey` missing on PATH in current env.

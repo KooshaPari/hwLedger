@@ -63,7 +63,7 @@ Assumption (unknown): I could not, within this brief's budget, surface a named c
 | **Dioxus Native / Blitz (wgpu)** | Rust | 15–40 MB | ~300–700 ms | Same | Trivial | **Weak** (no UIA yet from wgpu canvas) | Unknown — wgpu renderer is pre-production |
 | **Flutter Windows** | Dart | 25–60 MB | ~400–900 ms | Cert via SignTool; MSIX via flutter plugin | `dart:ffi` → `cdylib` (mature via `flutter_rust_bridge`) | Windows a11y is the weakest Flutter target | High |
 | **Electron** | TS | 90–200 MB | 600–1500 ms | First-class (electron-builder) | `node-ffi` / N-API via `napi-rs` | UIA via Chromium | Very high |
-| **electrobun** | TS + Zig/Bun | ~10–15 MB (claim) | TBD | Immature | `bun:ffi` | TBD | Unknown — sibling agent covering |
+| **electrobun** | TS + Zig/Bun | ~10–15 MB (claim) | not yet measured | Immature | `bun:ffi` | not yet measured | Unknown — sibling agent covering |
 | **PWA / raw WebView2 shell** | HTML/JS | <5 MB | <200 ms | Only need cert if packaged as MSIX | HTTP to a local Rust sidecar; no direct dylib | Browser defaults | Medium |
 
 Sizes/times are **order-of-magnitude** estimates from published benchmarks; do not quote as spec.

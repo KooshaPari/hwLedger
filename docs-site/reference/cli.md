@@ -100,7 +100,7 @@ hwledger probe --json | jq '.gpus[].vram_free_gb'
     {"src":"/cli-journeys/keyframes/ingest-error/frame-001.png","caption":"ingest — fail-loud error path (E-INGEST-02)"}
   ]' />
 
-<!-- SHOT-TODO: capture a successful HF ingest run -->
+<!-- SHOT-PENDING: capture a successful HF ingest run -->
 
 Download and cache models from HuggingFace or Ollama.
 

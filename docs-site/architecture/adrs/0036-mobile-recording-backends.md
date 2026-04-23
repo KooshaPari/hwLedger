@@ -1,6 +1,6 @@
 # ADR 0036 — Mobile + WearOS recording backends (Android / iOS / WearOS)
 
-Constrains: FR-JOURNEY-001..006, forward-compat to FR-WEAR-00x (TBD)
+Constrains: FR-JOURNEY-001..006, forward-compat to FR-WEAR-00x (to be assigned)
 Extends: PlayCua ADR-003 (desktop capture stacks), hwLedger ADR-0021 (cross-platform desktop)
 
 Date: 2026-04-22
@@ -133,8 +133,8 @@ ships.
   SwiftUI path — ADR-0021).
 - The `hwledger-journey-record` binary grows a `--platform` enum but stays
   a ≤200-LOC pre-flight + dispatch wrapper; no capture logic leaks in.
-- WearOS remains an explicit TODO in docs and a loud runtime error — not a
-  silent no-op (per global "fail clearly, not silently" policy).
+- WearOS remains an explicitly deferred surface in docs and a loud runtime
+  error — not a silent no-op (per global "fail clearly, not silently" policy).
 
 ## Revisit when
 

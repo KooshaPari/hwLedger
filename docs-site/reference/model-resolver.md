@@ -12,7 +12,7 @@ Traces to: **FR-HF-001**
       caption="Resolver accepts an HF repo id and dispatches"
       size="small" align="right" />
 
-<!-- SHOT-TODO: capture ambiguous-input disambiguation prompt -->
+<!-- SHOT-PENDING: capture ambiguous-input disambiguation prompt -->
 
 Every client of hwLedger — the CLI, the Streamlit app, the SwiftUI GUI, and the
 C ABI used by third-party bindings — funnels user input through a single

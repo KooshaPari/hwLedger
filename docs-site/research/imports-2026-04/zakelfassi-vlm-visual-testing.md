@@ -52,9 +52,9 @@ techniques we did not previously encode.
    disappeared}` beats pixel-level PNG diffing for UI PR review. hwLedger's
    journey harness already does per-frame blind descriptions; the natural
    extension is a *between-frame delta* pass that feeds pairs of consecutive
-   frames to the VLM and asks for the delta in one or two sentences. **Seeded
-   as TODO** in `tools/vlm-judge` — not implemented in this commit because
-   it changes the manifest schema.
+   frames to the VLM and asks for the delta in one or two sentences. **Tracked
+   as a follow-up** in `tools/vlm-judge` — not implemented in this commit
+   because it changes the manifest schema.
 
 ## Model recommendation from the post (for reference)
 
