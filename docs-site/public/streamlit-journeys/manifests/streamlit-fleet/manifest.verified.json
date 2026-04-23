@@ -44,5 +44,6 @@
     "overall_score": 0.92,
     "timestamp": "2026-04-21T04:31:06Z"
   },
-  "voiceover_sha256": "50e3d7ac366073206e9d92149e234d0eb975b8884835b11ec2d8af5bdd6681a8"
+  "voiceover_sha256": "50e3d7ac366073206e9d92149e234d0eb975b8884835b11ec2d8af5bdd6681a8",
+  "keyframes_root": "recordings/streamlit-fleet"
 }
