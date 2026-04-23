@@ -1,0 +1,28 @@
+[package]
+name = "hwledger-user-story-macros"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Batch 2 of the user-story-as-test framework: #[user_story_test] proc-macro + PTY recorder runtime."
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = { version = "2", features = ["full", "extra-traits"] }
+quote = "1"
+proc-macro2 = "1"
+serde_yaml = "0.9"
+serde_json = { workspace = true }
+serde = { workspace = true }
+
+[dev-dependencies]
+hwledger-user-story-runtime = { path = "../hwledger-user-story-runtime" }
+trybuild = "1"
+tempfile = "3"
+
+[package.metadata.docs.rs]
+all-features = true
