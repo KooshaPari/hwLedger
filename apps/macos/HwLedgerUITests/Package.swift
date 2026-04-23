@@ -31,6 +31,11 @@ let package = Package(
             dependencies: ["HwLedgerGuiRecorder"],
             path: "Sources/Harness"
         ),
+        .target(
+            name: "PhenotypeRecord",
+            dependencies: [],
+            path: "Sources/PhenotypeRecord"
+        ),
         .executableTarget(
             name: "HwLedgerUITestRunner",
             dependencies: [
@@ -43,9 +48,16 @@ let package = Package(
             name: "HwLedgerUITests",
             dependencies: [
                 "HwLedgerUITestHarness",
+                "PhenotypeRecord",
                 .product(name: "Testing", package: "swift-testing")
             ],
-            path: "Tests"
+            path: "Tests",
+            exclude: ["PhenotypeRecordUnitTests"]
+        ),
+        .testTarget(
+            name: "PhenotypeRecordUnitTests",
+            dependencies: ["PhenotypeRecord"],
+            path: "Tests/PhenotypeRecordUnitTests"
         )
     ]
 )
