@@ -5,57 +5,33 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: rust-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  CARGO_TERM_COLOR: always
-  RUSTFLAGS: "-D warnings"
-
 jobs:
+  # fmt / clippy / build / test delegated to org-canonical reusable workflow.
   # Skipping macOS + Windows runners on free tier; local quality gates cover them.
   # See ~/.claude/CLAUDE.md GitHub Actions Billing Constraint section.
-  fmt:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt
-      - run: cargo fmt --all -- --check
+  ci:
+    name: Rust CI
+    uses: KooshaPari/template-commons/.github/workflows/reusable-rust-ci.yml@main
+    with:
+      rust-version: stable
+      enable-coverage: false
 
-  clippy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo clippy --workspace --all-targets -- -D warnings
-
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo test --workspace --all-features --no-fail-fast
-
-  secrets:
-    runs-on: ubuntu-latest
+  security:
+    name: Security Audit
     # Only scan on PRs (BASE/HEAD diff) or when explicitly dispatched; push runs
     # often have BASE==HEAD which trufflehog rejects.
     if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
-    steps:
-      - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-      - name: trufflehog verified-only
-        uses: trufflesecurity/trufflehog@main
-        with:
-          extra_args: --only-verified
+    uses: KooshaPari/template-commons/.github/workflows/reusable-security-scan.yml@main
+    with:
+      language: rust
+    secrets:
+      SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
   # macOS XCFramework + release pipeline runs LOCALLY via lefthook, not CI.
   # See lefthook.yml + scripts/release.sh. Rationale: macos-latest runners are
