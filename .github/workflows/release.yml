@@ -21,12 +21,34 @@ jobs:
       - name: Publish to crates.io
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          CRATE: ${{ inputs.crate }}
         run: |
-          if [ -n "${{ inputs.crate }}" ]; then
-            cargo publish -p "${{ inputs.crate }}" --no-verify
+          set -e
+          if [ -n "$CRATE" ]; then
+            cargo publish -p "$CRATE" --no-verify
           else
-            for name in $(cargo metadata --format-version=1 --no-deps | jq -r '.packages[] | select(.publish != []) | .name'); do
+            # Generate list of publishable crates
+            crates=$(cargo metadata --format-version=1 --no-deps | jq -r '.packages[] | select(.publish != []) | .name')
+            
+            # Track if any publish succeeded
+            published_any=false
+            
+            for name in $crates; do
               echo "Publishing $name"
-              cargo publish -p "$name" --no-verify || echo "  skip $name (likely path-dep or already published)"
+              if cargo publish -p "$name" --no-verify; then
+                published_any=true
+              else
+                # Only tolerate "already published" errors
+                if cargo search "$name" --limit 1 | grep -q "^$name ="; then
+                  echo "  skip $name (already published)"
+                else
+                  echo "  ERROR: failed to publish $name"
+                  exit 1
+                fi
+              fi
             done
+            
+            if [ "$published_any" = false ] && [ -n "$crates" ]; then
+              echo "WARNING: No new crates were published (all already published)"
+            fi
           fi
