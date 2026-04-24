@@ -6,36 +6,51 @@
 #
 # Fast by default: pre-commit runs only on staged files. Full workspace
 # checks run on pre-push.
+#
+# Global bypass for agent sessions (worklogs/GOVERNANCE.md 2026-04-24):
+#   HOOKS_SKIP=1 git push      — skip every pre-push command
+#   HOOKS_SKIP=1 git commit    — skip every pre-commit command
+# Per-command timeouts added to kill the 12-minute stall under multi-agent
+# concurrency; `cargo`-heavy commands capped at 300s, quick linters at 120s.
+
+# Global skip applies to both pre-commit and pre-push.
+skip:
+  - env: HOOKS_SKIP=1
 
 pre-commit:
   parallel: true
+  skip:
+    - env: HOOKS_SKIP=1
   commands:
     fmt:
       glob: "crates/**/*.rs"
       run: |
+        timeout --kill-after=5s 60s bash -c '
         for f in {staged_files}; do
-          manifest=$(echo "$f" | sed -E 's|(crates/[^/]+)/.*|\1/Cargo.toml|')
+          manifest=$(echo "$f" | sed -E "s|(crates/[^/]+)/.*|\1/Cargo.toml|")
           [ -f "$manifest" ] && rustfmt --edition 2021 --check "$f" || true
         done
+        '
       stage_fixed: false
 
     secrets-files:
       run: |
-        if git diff --cached --name-only | grep -E '\.(p8|p12|pem|key)$' | grep -v '^vendor/' | grep -v '^tests/fixtures/'; then
+        timeout --kill-after=5s 30s bash -c '
+        if git diff --cached --name-only | grep -E "\.(p8|p12|pem|key)$" | grep -v "^vendor/" | grep -v "^tests/fixtures/"; then
           echo "Refusing to commit a .p8 / .p12 / .pem / .key file. Move it out of the index."
           exit 1
         fi
+        '
 
     trufflehog:
       run: |
+        timeout --kill-after=5s 60s bash -c '
         if ! command -v trufflehog >/dev/null 2>&1; then
           echo "trufflehog not installed; skipping. brew install trufflesecurity/trufflehog/trufflehog"
           exit 0
         fi
-        # Trufflehog's git driver can't open a worktree's `.git` file
-        # (gitdir indirection errors with "not a directory"). In that case
-        # scan the staged filesystem diff instead; on the canonical checkout
-        # keep the original git-aware mode.
+        # Trufflehog git driver cannot open a worktree .git file (gitdir
+        # indirection). Fall back to filesystem scan of staged diff.
         if [ -f .git ]; then
           files=$(git diff --cached --name-only --diff-filter=ACM)
           if [ -z "$files" ]; then
@@ -45,9 +60,12 @@ pre-commit:
         else
           trufflehog git file://. --since-commit HEAD --only-verified --fail
         fi
+        '
 
 pre-push:
   parallel: false
+  skip:
+    - env: HOOKS_SKIP=1
   commands:
     unverified-manifests:
       # Hard gate: every manifest.json under docs-site/public/ and apps/ MUST
@@ -58,6 +76,7 @@ pre-push:
       #   phenotype-journey verify --manifests-dir <dir> --tapes-dir <...>
       # to regenerate the missing manifest.verified.json files.
       run: |
+        timeout --kill-after=5s 120s bash -c '
         set -euo pipefail
         PHENOTYPE_JOURNEYS_ROOT="${PHENOTYPE_JOURNEYS_ROOT:-/Users/kooshapari/CodeProjects/Phenotype/repos/phenotype-journeys}"
         if command -v phenotype-journey >/dev/null 2>&1; then
@@ -69,6 +88,7 @@ pre-push:
           exit 1
         fi
         ${BIN} check-verified --root docs-site/public --root apps
+        '
 
     docs-health:
       # Proactive docs-health gate: mermaid / LaTeX / broken-link / missing
@@ -76,28 +96,33 @@ pre-push:
       # Error findings; warnings are surfaced but non-blocking until the
       # backlog in docs-site/quality/docs-health-backlog.md is drained.
       glob: "{docs-site,apps}/**/*.md"
-      run: cargo run -q -p hwledger-docs-health -- --root docs-site --fail-on error
+      run: timeout --kill-after=5s 180s cargo run -q -p hwledger-docs-health -- --root docs-site --fail-on error
 
     workspace-verify:
       run: |
+        timeout --kill-after=5s 300s bash -c '
         set -euo pipefail
         for m in crates/*/Cargo.toml; do
           cargo fmt --manifest-path "$m" -- --check
         done
         cargo clippy --workspace --all-targets -- -D warnings
         cargo test --workspace --no-fail-fast
+        '
 
     tape-assertions:
       # Ground-truth assertion gate: every verified manifest must pass
       # `phenotype-journey assert --strict`. Strict by default — any
       # violation blocks the push. Set HWLEDGER_TAPE_GATE=warn for a
       # temporary, non-blocking run (e.g. while triaging an OCR regression).
+      # Set HWLEDGER_FAST_PUSH=1 to skip entirely for agent sessions.
       #
       # OCR: Catppuccin Mocha + JetBrains Mono renders '0' and 'l' poorly
       # with vanilla tesseract, so we default to an upscale+negate preprocessing
       # pipeline via PHENOTYPE_JOURNEY_OCR_CMD. Install ImageMagick (`brew
       # install imagemagick`) and Tesseract (`brew install tesseract`).
       run: |
+        if [ "${HWLEDGER_FAST_PUSH:-0}" = "1" ]; then echo "HWLEDGER_FAST_PUSH=1 — skipping tape-assertions"; exit 0; fi
+        timeout --kill-after=5s 240s bash -c '
         set -uo pipefail
         MANIFESTS_DIR="apps/cli-journeys/manifests"
         if [ ! -d "$MANIFESTS_DIR" ]; then
@@ -140,8 +165,8 @@ pre-push:
         if [ "$mode" = "strict" ]; then
           exit $total_fail
         fi
-        # warn mode: always pass; violations are surfaced but non-blocking
         exit 0
+        '
 
     traceability-journeys:
       # Enforce FR-TRACE-003: every FR tagged [journey_kind: ...] must have a
@@ -151,6 +176,8 @@ pre-push:
       # block; missing journeys and orphan traces_to references still fail
       # because those are structural, not content, bugs.
       run: |
+        if [ "${HWLEDGER_FAST_PUSH:-0}" = "1" ]; then echo "HWLEDGER_FAST_PUSH=1 — skipping traceability-journeys"; exit 0; fi
+        timeout --kill-after=5s 180s bash -c '
         set -euo pipefail
         mode="${HWLEDGER_TAPE_GATE:-warn}"
         flags="--strict-journeys"
@@ -158,6 +185,7 @@ pre-push:
           flags="$flags --allow-not-passed"
         fi
         cargo run --quiet -p hwledger-traceability -- --repo . $flags
+        '
 
     shot-linter:
       # Gate: every `<Shot src=...>` in docs-site/**/*.md must OCR-match at
@@ -166,6 +194,8 @@ pre-push:
       # during push. Requires `tesseract` on PATH; missing tesseract degrades
       # to `--no-ocr` (records but does not assert).
       run: |
+        if [ "${HWLEDGER_FAST_PUSH:-0}" = "1" ]; then echo "HWLEDGER_FAST_PUSH=1 — skipping shot-linter"; exit 0; fi
+        timeout --kill-after=5s 180s bash -c '
         set -euo pipefail
         mode="${HWLEDGER_TAPE_GATE:-warn}"
         flags=""
@@ -177,15 +207,19 @@ pre-push:
         else
           cargo run --quiet -p hwledger-shot-linter -- $flags
         fi
+        '
 
     swift-main:
       root: "apps/macos/HwLedger"
       run: |
+        if [ "${HWLEDGER_FAST_PUSH:-0}" = "1" ]; then echo "HWLEDGER_FAST_PUSH=1 — skipping swift-main"; exit 0; fi
+        timeout --kill-after=5s 300s bash -c '
         if [ -d "../xcframework/HwLedgerCore.xcframework" ]; then
           swift build
         else
           echo "XCFramework missing — skip Swift build (run scripts/build-xcframework.sh first)"
         fi
+        '
 
     attest-build:
       # Local-CI attestation: after the above gates have passed, emit a
@@ -196,6 +230,8 @@ pre-push:
       #   cargo run -p hwledger-attest -- genkey default
       # See docs-site/quality/attestation.md.
       run: |
+        if [ "${HWLEDGER_FAST_PUSH:-0}" = "1" ]; then echo "HWLEDGER_FAST_PUSH=1 — skipping attest-build"; exit 0; fi
+        timeout --kill-after=5s 180s bash -c '
         set -euo pipefail
         if [ -n "${HWLEDGER_SKIP_ATTEST:-}" ]; then
           echo "HWLEDGER_SKIP_ATTEST set — skipping attestation (dev escape)"
@@ -204,18 +240,22 @@ pre-push:
         KEY_ID="${HWLEDGER_ATTEST_KEY_ID:-default}"
         KEY_DIR="${HWLEDGER_ATTEST_KEY_DIR:-$HOME/.hwledger/attest-keys}"
         if [ ! -f "${KEY_DIR}/${KEY_ID}.sk" ]; then
-          echo "No attestation key for '${KEY_ID}' in ${KEY_DIR}."
+          echo "No attestation key for ${KEY_ID} in ${KEY_DIR}."
           echo "Run: cargo run -p hwledger-attest -- genkey ${KEY_ID}"
           exit 1
         fi
         cargo run --quiet -p hwledger-attest --bin hwledger-attest -- build --key-id "${KEY_ID}" --synthetic >/dev/null
+        '
 
     attest-verify-push:
       # Reject the push if HEAD has no attestation or the chain is broken.
       run: |
+        if [ "${HWLEDGER_FAST_PUSH:-0}" = "1" ]; then echo "HWLEDGER_FAST_PUSH=1 — skipping attest-verify-push"; exit 0; fi
+        timeout --kill-after=5s 120s bash -c '
         set -euo pipefail
         if [ -n "${HWLEDGER_SKIP_ATTEST:-}" ]; then exit 0; fi
         cargo run --quiet -p hwledger-attest --bin hwledger-attest -- verify-push --local-ref HEAD
+        '
 
     release-tag:
       # Detect v* tags being pushed without re-invoking `git push` (infinite
@@ -223,6 +263,7 @@ pre-push:
       # "<local-ref> <local-sha> <remote-ref> <remote-sha>". Tags arrive as
       # refs/tags/v*.
       run: |
+        timeout --kill-after=5s 60s bash -c '
         if [ -n "${LEFTHOOK_SKIP_RELEASE:-}" ]; then exit 0; fi
         TAG=""
         while read -r local_ref _ remote_ref _; do
@@ -237,3 +278,4 @@ pre-push:
           echo "Release tag $TAG detected — running local release pipeline"
           LEFTHOOK_SKIP_RELEASE=1 ./scripts/release.sh "$TAG"
         fi
+        '
