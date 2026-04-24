@@ -1,0 +1,31 @@
+name: openapi-drift-check
+
+on:
+  pull_request:
+    paths:
+      - 'openapi.yaml'
+      - 'crates/hwledger-server/**'
+      - '.github/workflows/openapi-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'openapi.yaml'
+      - 'crates/hwledger-server/**'
+
+permissions:
+  contents: read
+
+jobs:
+  drift:
+    # Gated off: hwledger-server is a large mTLS workspace binary and no
+    # `--dump-openapi` flag exists yet. Re-enable once utoipa annotations
+    # land and a dump subcommand is wired. Pattern: AgilePlus#366.
+    if: ${{ false }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Dump generated OpenAPI
+        run: cargo run -p hwledger-server --bin hwledger-server -- --dump-openapi > openapi.generated.yaml
+      - name: Compare with committed seed
+        run: diff -u openapi.yaml openapi.generated.yaml
