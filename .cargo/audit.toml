@@ -1,0 +1,22 @@
+# cargo-audit configuration for hwLedger
+#
+# Ignored advisories must be justified inline. Re-evaluate on each touch.
+
+[advisories]
+ignore = [
+    # RUSTSEC-2023-0071 — RSA Marvin Attack (timing sidechannel, CVSS 5.9 medium)
+    #
+    # rsa is pulled in via:
+    #   1. russh / russh-keys (SSH key handling for hwledger-server/agent)
+    #   2. sqlx-mysql (compiled by sqlx 0.8 macros regardless of features)
+    #   3. internal-russh-forked-ssh-key
+    #
+    # Upstream rsa crate has no fixed release. The Marvin Attack is a remote
+    # timing sidechannel that requires precise network-level measurements; it
+    # is not exploitable across the threat models used here (local agent,
+    # authenticated SSH with rotated keys, no untrusted MySQL clients).
+    #
+    # Risk acceptance: tracked. Revisit when rsa publishes a constant-time
+    # fix or when russh switches to a non-rsa key path.
+    "RUSTSEC-2023-0071",
+]
