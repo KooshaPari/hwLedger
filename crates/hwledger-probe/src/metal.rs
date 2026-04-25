@@ -290,7 +290,7 @@ impl PerfStats {
     fn from_cf(dict: &CFDictionary<CFString, CFType>) -> Self {
         let (keys, values) = dict.get_keys_and_values();
         let mut entries = Vec::with_capacity(keys.len());
-        for (k, v) in keys.into_iter().zip(values.into_iter()) {
+        for (k, v) in keys.into_iter().zip(values) {
             let key_cf = unsafe { CFString::wrap_under_get_rule(k as CFStringRef) };
             let key = key_cf.to_string();
             // Try to coerce value to CFNumber → f64.
