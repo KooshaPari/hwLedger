@@ -3008,6 +3008,7 @@ dependencies = [
  "hwledger-probe",
  "p256",
  "pem",
+ "phenotype-health",
  "rand 0.8.6",
  "rcgen",
  "reqwest 0.12.28",
@@ -3464,6 +3465,7 @@ dependencies = [
  "hwledger-fleet-proto",
  "hwledger-ledger",
  "p256",
+ "phenotype-health",
  "rand 0.8.6",
  "rcgen",
  "reqwest 0.12.28",
@@ -5351,6 +5353,17 @@ dependencies = [
  "sha2",
  "thiserror 2.0.18",
  "uuid",
+]
+
+[[package]]
+name = "phenotype-health"
+version = "0.2.0"
+source = "git+https://github.com/KooshaPari/phenoShared.git?branch=main#713f72759ea167f12d3e76864f036fc368db7a6e"
+dependencies = [
+ "chrono",
+ "serde",
+ "thiserror 2.0.18",
+ "tokio",
 ]
 
 [[package]]
