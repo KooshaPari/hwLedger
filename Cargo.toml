@@ -148,6 +148,7 @@ hwledger-attest = { path = "crates/hwledger-attest" }
 # files upstream. See docs/adr/0005-shared-crate-reuse.md for the contract.
 phenotype-event-sourcing = { path = "vendor/phenotype-event-sourcing" }
 phenotype-health = { git = "https://github.com/KooshaPari/phenoShared.git", branch = "main" }
+phenotype-error-core = { git = "https://github.com/KooshaPari/phenoShared.git", branch = "main" }
 
 # CLI framework & utilities
 clap = { version = "4", features = ["derive", "env", "string", "wrap_help"] }
