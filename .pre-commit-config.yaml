@@ -46,7 +46,7 @@ repos:
         args:
           - -c
           - |
-            if git diff --cached --diff-filter=ACM -U0 | grep -E "^\+" | grep -v "^(\+\+\+)" | grep -qE "(#\[allow\(|// *clippy::allow|# noqa|# nolint)"; then
+            if git diff --cached --diff-filter=ACM -U0 | grep -E "^\+" | grep -vE "^\+\+\+" | grep -qE "(#!?\[(allow|expect)\(|// *clippy::allow|# noqa|# nolint)"; then
               echo "ERROR: New linter suppressions detected. Fix the code instead."
               exit 1
             fi
