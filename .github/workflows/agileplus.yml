@@ -11,6 +11,9 @@ on:
       - '.github/workflows/agileplus.yml'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   agileplus-status:
     name: Track hwledger-v1-macos-mvp Feature State
