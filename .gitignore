@@ -73,6 +73,3 @@ docs-site/public/*/keyframes/*/manifest.rich.json
 
 # Worktree directories (org policy)
 .worktrees/
-
-# Worktree directories (org policy)
-.worktrees/
