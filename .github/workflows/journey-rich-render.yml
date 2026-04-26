@@ -20,6 +20,9 @@ on:
       - 'apps/cli-journeys/**/scene-spec.json'
       - 'apps/streamlit/journeys/**/scene-spec.json'
 
+permissions:
+  contents: read
+
 jobs:
   render:
     # Self-hosted only. The Phenotype org does not run hosted runners.
