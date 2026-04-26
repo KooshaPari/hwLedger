@@ -58,6 +58,13 @@ Extraction is a separate, reviewed ADR — never implicit.
 - **Copy-paste the minimum needed** — would reintroduce the error-enum proliferation explicitly eliminated in the 2026-03-29 Phase-1 LOC-reduction. Rejected.
 - **Publish each shared crate to crates.io before each hwLedger change** — too slow a cadence for development; reserve for release time.
 
+## Realized
+
+- 2026-04-25: `phenotype-health` adopted via **git dep** (`KooshaPari/phenoShared` `main` branch) rather than path/submodule. Wired into both `hwledger-server` and `hwledger-agent` `Cargo.toml` as workspace dep `phenotype-health.workspace = true`. This satisfies the ≥3-consumer floor for `phenotype-health` (TestingKit + hwledger-server + hwledger-agent).
+- Rationale for git over path: hwLedger CI builds reproducibly from the canonical fork without requiring a sibling-checkout of the parent `repos/` workspace, addressing the OSS-distribution open item flagged in the original Consequences section. Local dev override remains available via `[patch."https://github.com/KooshaPari/phenoShared"]`.
+- The original "no submodule vendoring; rely on sibling checkout" decision still holds for crates not yet wired; the git-dep route supersedes it for `phenotype-health` and is the preferred path for future shared-crate adoptions.
+- Handler implementation (actual `/health` endpoint wiring) is out of scope for this declaration PR — tracked separately.
+
 ## References
 
 - Workspace CLAUDE.md: `PHENOTYPE_SHARED_REUSE_PROTOCOL`.

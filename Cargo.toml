@@ -147,6 +147,7 @@ hwledger-attest = { path = "crates/hwledger-attest" }
 # land via `cargo add` when first used, after those crates get proper Cargo.toml
 # files upstream. See docs/adr/0005-shared-crate-reuse.md for the contract.
 phenotype-event-sourcing = { path = "vendor/phenotype-event-sourcing" }
+phenotype-health = { git = "https://github.com/KooshaPari/phenoShared.git", branch = "main" }
 
 # CLI framework & utilities
 clap = { version = "4", features = ["derive", "env", "string", "wrap_help"] }

@@ -27,6 +27,7 @@ anyhow.workspace = true
 chrono.workspace = true
 hwledger-fleet-proto = { path = "../hwledger-fleet-proto" }
 hwledger-probe = { path = "../hwledger-probe" }
+phenotype-health.workspace = true
 dirs.workspace = true
 pem.workspace = true
 time.workspace = true
