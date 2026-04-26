@@ -2,6 +2,8 @@
 
 _LLM capacity planner + fleet ledger + desktop inference runtime._
 
+**Not a financial ledger.** hwLedger tracks hardware fleet audit and provenance for machine learning workloads. It provides per-layer VRAM estimation for LLMs, reconciles predictions against live telemetry from inference engines (MLX, mistral.rs, llama.cpp, vLLM, TGI), and maintains an event-sourced audit log for heterogeneous compute fleets (Apple Silicon, NVIDIA/AMD, cloud rentals).
+
 **Status:** pre-alpha, Phase 0 bootstrap. See [PLAN.md](./PLAN.md) for the implementation roadmap.
 
 hwLedger is an Apache-2.0 desktop app + agent/server pair that:
@@ -16,14 +18,16 @@ hwLedger is an Apache-2.0 desktop app + agent/server pair that:
 
 ## Quickstart
 
-Install the CLI from source — this is the fastest path to a working hwLedger today:
+**Install the CLI from source** — this is the fastest path to a working hwLedger today:
 
 ```bash
 cargo install --path crates/hwledger-cli
 hwledger --help
 ```
 
-> **macOS DMG note:** Native macOS DMG distribution is currently blocked on Apple Developer certificate renewal — use the Streamlit fallback at `apps/streamlit/` or the CLI above for now.
+**Web fallback (no compilation needed):** A Streamlit web interface is available at [`apps/streamlit/`](./apps/streamlit/) — run `cargo run -p hwledger-devtools -- up` to launch it locally on `localhost:8501` along with the API server.
+
+> **macOS DMG note:** Native macOS DMG distribution is currently blocked on Apple Developer certificate renewal — see [WP21 Apple Developer secrets](./docs/reports/WP21-APPLE-DEV-SECRETS.md) for setup instructions. Use the Streamlit fallback or CLI above for now.
 
 ## Why
 
