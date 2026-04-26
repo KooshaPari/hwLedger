@@ -14,6 +14,9 @@ env:
   CARGO_TERM_COLOR: always
   RUSTFLAGS: "-D warnings"
 
+permissions:
+  contents: read
+
 jobs:
   # Skipping macOS + Windows runners on free tier; local quality gates cover them.
   # See ~/.claude/CLAUDE.md GitHub Actions Billing Constraint section.

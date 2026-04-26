@@ -17,6 +17,9 @@ on:
     branches: ["**"]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   verify-attestation:
     # Prefer a self-hosted runner if one is registered. If not, ubuntu-latest

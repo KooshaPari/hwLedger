@@ -15,6 +15,9 @@ concurrency:
   group: ci-local-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: [self-hosted, self-hosted-mac]
