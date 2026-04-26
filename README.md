@@ -14,6 +14,17 @@ hwLedger is an Apache-2.0 desktop app + agent/server pair that:
 
 > _A hobbyist-sized fleet with enterprise bones._
 
+## Quickstart
+
+Install the CLI from source — this is the fastest path to a working hwLedger today:
+
+```bash
+cargo install --path crates/hwledger-cli
+hwledger --help
+```
+
+> **macOS DMG note:** Native macOS DMG distribution is currently blocked on Apple Developer certificate renewal — use the Streamlit fallback at `apps/streamlit/` or the CLI above for now.
+
 ## Why
 
 Every existing public VRAM calculator (HF Accelerate, can-it-run-llm, LM Studio's gauge) gets MoE and MLA wrong — they under-count KV cache and over-count MoE throughput. hwLedger's math core is architecture-keyed: it dispatches per `AttentionKind` (MHA / GQA / MQA / MLA / Sliding / SSM / Hybrid / Sink) and treats resident-vs-active parameters separately for MoE. See [PLAN.md §5](./PLAN.md#5-math-core-51-is-the-products-soul).
@@ -32,7 +43,7 @@ See the component diagram in [PLAN.md §4.1](./PLAN.md#41-component-map).
 One-liner to build FFI + launch server, docs-site, and Streamlit:
 
 ```bash
-cargo run -p hwledger-dev-harness -- up
+cargo run -p hwledger-devtools -- up
 ```
 
 See [docs-site/getting-started/dev-setup.md](./docs-site/getting-started/dev-setup.md) for ports, log locations, and troubleshooting (FFI auto-build, Swift "engine missing" sheet, streamlit hot-reload).
