@@ -1,0 +1,48 @@
+# cargo-deny config for hwLedger
+#
+# Every advisory ignore below MUST carry a specific RUSTSEC ID and a concrete
+# justification (per repo policy: no silent suppressions, no wildcard ignores).
+# Re-evaluate on every Tauri / dep bump and on each touch of this file.
+
+[advisories]
+version = 2
+yanked = "deny"
+
+# Cluster: unmaintained crates pulled in transitively by tauri 2.10.3
+# (latest as of 2026-04). No upstream fix available; tracking for Tauri 2.11+
+# which is expected to migrate proc-macro-error -> proc-macro-error2 and the
+# gtk3 stack to gtk4-rs. Re-evaluate on each Tauri upgrade.
+# Upstream tracking: https://github.com/tauri-apps/tauri/issues
+ignore = [
+    # --- Tauri 2.10.3 transitive cluster ---
+    { id = "RUSTSEC-2024-0370", reason = "proc-macro-error unmaintained -- transitive via tauri 2.10.3 -> glib-macros 0.18.5 (gtk3 stack); no upstream fix in Tauri 2.10.x" },
+    { id = "RUSTSEC-2024-0411", reason = "gdkwayland-sys unmaintained (gtk3-rs archived) -- transitive via tauri 2.10.3 -> tao 0.34.8" },
+    { id = "RUSTSEC-2024-0412", reason = "gdk unmaintained (gtk3-rs archived) -- transitive via tauri 2.10.3 -> wry 0.54.4 -> gdkx11" },
+    { id = "RUSTSEC-2024-0413", reason = "atk unmaintained (gtk3-rs archived) -- transitive via tauri 2.10.3 -> muda 0.17.2 -> gtk 0.18.2" },
+    { id = "RUSTSEC-2024-0414", reason = "gdkx11-sys unmaintained (gtk3-rs archived) -- transitive via tauri 2.10.3 -> wry 0.54.4 -> gdkx11" },
+    { id = "RUSTSEC-2024-0415", reason = "gtk unmaintained (gtk3-rs archived; use gtk4-rs) -- transitive via tauri 2.10.3 -> muda 0.17.2" },
+    { id = "RUSTSEC-2024-0416", reason = "atk-sys unmaintained (gtk3-rs archived) -- transitive via tauri 2.10.3 -> muda -> gtk -> atk" },
+    { id = "RUSTSEC-2024-0417", reason = "gdkx11 unmaintained (gtk3-rs archived) -- transitive via tauri 2.10.3 -> wry 0.54.4" },
+    { id = "RUSTSEC-2024-0418", reason = "gdk-sys unmaintained (gtk3-rs archived) -- transitive via tauri 2.10.3 -> wry -> gdkx11 -> gdk" },
+    { id = "RUSTSEC-2024-0419", reason = "gtk3-macros unmaintained (gtk3-rs archived) -- transitive via tauri 2.10.3 -> muda -> gtk" },
+    { id = "RUSTSEC-2024-0420", reason = "gtk-sys unmaintained (gtk3-rs archived) -- transitive via tauri 2.10.3 -> muda -> gtk" },
+    { id = "RUSTSEC-2025-0057", reason = "fxhash unmaintained (use rustc-hash) -- transitive via tauri 2.10.3 -> tauri-utils -> kuchikiki -> selectors" },
+    { id = "RUSTSEC-2025-0075", reason = "unic-char-range unmaintained (unic project archived) -- transitive via tauri 2.10.3 -> tauri-utils -> urlpattern -> unic-ucd-ident chain" },
+    { id = "RUSTSEC-2025-0080", reason = "unic-common unmaintained (unic project archived) -- transitive via tauri 2.10.3 -> tauri-utils -> urlpattern -> unic-ucd-version" },
+    { id = "RUSTSEC-2025-0081", reason = "unic-char-property unmaintained (unic project archived) -- transitive via tauri 2.10.3 -> tauri-utils -> urlpattern -> unic-ucd-ident" },
+    { id = "RUSTSEC-2025-0098", reason = "unic-ucd-version unmaintained (unic project archived) -- transitive via tauri 2.10.3 -> tauri-utils -> urlpattern" },
+    { id = "RUSTSEC-2025-0100", reason = "unic-ucd-ident unmaintained (unic project archived) -- transitive via tauri 2.10.3 -> tauri-utils -> urlpattern" },
+
+    # --- Non-Tauri unmaintained transitive deps (separate cluster, separate fix paths) ---
+    # These are NOT from Tauri but are surfaced by the same cargo-deny W-92 sweep.
+    # Each tracked separately for a future targeted-bump or migration.
+    { id = "RUSTSEC-2017-0008", reason = "serial 0.4.0 unmaintained -- transitive via portable-pty 0.8.1 -> hwledger-user-story-runtime (dev-only test runtime); migrate portable-pty to a maintained alternative or replace user-story runtime" },
+    { id = "RUSTSEC-2024-0375", reason = "atty 0.2.14 unmaintained (use std::io::IsTerminal) -- transitive via clap 3.2.25 -> cbindgen 0.26.0 (build dep) and via hwledger-cli; bump cbindgen + clap once compatible" },
+    { id = "RUSTSEC-2024-0384", reason = "instant 0.1.13 unmaintained -- transitive via backoff 0.4.0 -> hwledger-release; resolved when backoff is replaced (see RUSTSEC-2025-0012)" },
+    { id = "RUSTSEC-2025-0012", reason = "backoff 0.4.0 unmaintained (use backon) -- direct dep of hwledger-release; tracked for migration to `backon` crate" },
+    { id = "RUSTSEC-2025-0119", reason = "number_prefix 0.4.0 unmaintained (use unit-prefix) -- transitive via indicatif 0.17.11 -> hf-hub 0.3.2 -> hwledger-ingest; resolved when indicatif/hf-hub bump" },
+    { id = "RUSTSEC-2025-0134", reason = "rustls-pemfile 2.2.0 unmaintained (use rustls-pki-types PemObject) -- transitive via axum-server 0.7.3 -> hwledger-server; resolved when axum-server bumps to a rustls-pki-types-based release" },
+
+    # --- Pre-existing accepted vulnerability (mirrors .cargo/audit.toml) ---
+    { id = "RUSTSEC-2023-0071", reason = "rsa Marvin Attack (timing sidechannel, CVSS 5.9 medium) -- transitive via russh/russh-keys/sqlx-mysql/internal-russh-forked-ssh-key. No fixed upstream release. Not exploitable under current threat model (local agent, authenticated SSH with rotated keys, no untrusted MySQL clients). Mirrors justification in .cargo/audit.toml; revisit when rsa publishes constant-time fix or russh switches to a non-rsa key path." },
+]
