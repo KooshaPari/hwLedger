@@ -236,7 +236,7 @@ Per global CLAUDE.md: agent-driven timescales (tool calls / minutes / parallel s
 |----|------|------|---------|
 | P0.1 | Cargo workspace, CI (cargo fmt/clippy/test), rustfmt+clippy.toml, CODEOWNERS | 6 tool calls | — |
 | P0.2 | AgilePlus spec created; PR #0 with PLAN/PRD/ADR/CHARTER | 4 tool calls | P0.1 |
-| P0.3 | Vendor/submodule `phenotype-event-sourcing`, `phenotype-error-core`, `phenotype-config-core`, `phenotype-health`, `phenotype-cache-adapter` | 3 tool calls | P0.1 |
+| P0.3 | Vendor/submodule `phenotype-event-sourcing`, `phenotype-error-core`, `phenotype-config-core`, `phenotype-health`, `phenotype-cache-adapter` — `phenotype-event-sourcing` vendored; `phenotype-health` adopted via phenoShared git dep (2026-04-25) for `hwledger-server` + `hwledger-agent`; remaining three pending first-use wiring | 3 tool calls | P0.1 |
 | P0.4 | oMlx fork created in `sidecars/omlx-fork`, CI sanity build | 5 tool calls | P0.1, §12-Q2 |
 
 ### Phase 1 — Math core (predecessors: P0)

@@ -30,6 +30,7 @@ chrono.workspace = true
 reqwest.workspace = true
 hwledger-fleet-proto = { path = "../hwledger-fleet-proto" }
 hwledger-ledger = { path = "../hwledger-ledger" }
+phenotype-health.workspace = true
 axum-server = { version = "0.7", features = ["tls-rustls"] }
 time = "0.3"
 x509-parser = "0.16"
