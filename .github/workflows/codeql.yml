@@ -8,6 +8,9 @@ on:
   schedule:
     - cron: '17 4 * * 1'
 
+permissions:
+  contents: read
+
 jobs:
   analyze:
     uses: KooshaPari/phenoShared/.github/workflows/reusable/codeql.yml@30358ce629168f0e1ec3699706cb73d1f77cb751
