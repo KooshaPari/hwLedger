@@ -70,3 +70,9 @@ vendor/**/target
 # hwledger-journey-render transient artifacts (built per-render)
 apps/*/keyframes/*/manifest.rich.json
 docs-site/public/*/keyframes/*/manifest.rich.json
+
+# Worktree directories (org policy)
+.worktrees/
+
+# Worktree directories (org policy)
+.worktrees/
