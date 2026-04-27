@@ -1,9 +1,0 @@
-{
-  "id": "traceability-report",
-  "intent": "Generate a markdown traceability report with coverage data and inspect the output",
-  "recording": "recordings/traceability-report.mp4",
-  "recording_gif": "recordings/traceability-report.gif",
-  "keyframe_count": 4,
-  "passed": true,
-  "steps": [{"index":0,"slug":"frame-0","intent":"Generate a markdown traceability report with coverage data and inspect the output (frame 1)","screenshot_path":"frame-001.png"},{"index":1,"slug":"frame-1","intent":"Generate a markdown traceability report with coverage data and inspect the output (frame 2)","screenshot_path":"frame-002.png"},{"index":2,"slug":"frame-2","intent":"Generate a markdown traceability report with coverage data and inspect the output (frame 3)","screenshot_path":"frame-003.png"},{"index":3,"slug":"frame-3","intent":"Generate a markdown traceability report with coverage data and inspect the output (frame 4)","screenshot_path":"frame-004.png"}]
-}

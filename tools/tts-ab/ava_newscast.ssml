@@ -1,7 +1,0 @@
-<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" xml:lang="en-US">
-  <voice name="en-US-AvaMultilingualNeural">
-    <mstts:express-as style="newscast">
-      You start with a fresh shell and install hwLedger via cargo. The install prints the resolved version plus the path to the binary, which you verify with dash-dash-version. Next, you open the planner help to see the full flag list. Two flags matter most for DeepSeek: dash-dash-context and dash-dash-batch. With those set, the planner runs, detects the MLA attention kind automatically, and breaks down memory across weights, KV cache, and prefill activations. On an H100, DeepSeek-V3 at 32K context needs roughly three hundred and sixty gigabytes in total.
-    </mstts:express-as>
-  </voice>
-</speak>
