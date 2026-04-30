@@ -3008,6 +3008,7 @@ dependencies = [
  "hwledger-probe",
  "p256",
  "pem",
+ "phenotype-health",
  "rand 0.8.6",
  "rcgen",
  "reqwest 0.12.28",
@@ -3145,6 +3146,7 @@ name = "hwledger-core"
 version = "0.0.1"
 dependencies = [
  "criterion",
+ "phenotype-error-core",
  "proptest",
  "serde_json",
  "thiserror 2.0.18",
@@ -3464,6 +3466,7 @@ dependencies = [
  "hwledger-fleet-proto",
  "hwledger-ledger",
  "p256",
+ "phenotype-health",
  "rand 0.8.6",
  "rcgen",
  "reqwest 0.12.28",
@@ -5341,6 +5344,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b4f627cb1b25917193a259e49bdad08f671f8d9708acfd5fe0a8c1455d87220"
 
 [[package]]
+name = "phenotype-error-core"
+version = "0.2.0"
+source = "git+https://github.com/KooshaPari/phenoShared.git?branch=main#fec6d907d7010ebfee862c24d1332db68789984a"
+dependencies = [
+ "anyhow",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "phenotype-event-sourcing"
 version = "0.0.1"
 dependencies = [
@@ -5351,6 +5365,17 @@ dependencies = [
  "sha2",
  "thiserror 2.0.18",
  "uuid",
+]
+
+[[package]]
+name = "phenotype-health"
+version = "0.2.0"
+source = "git+https://github.com/KooshaPari/phenoShared.git?branch=main#fec6d907d7010ebfee862c24d1332db68789984a"
+dependencies = [
+ "chrono",
+ "serde",
+ "thiserror 2.0.18",
+ "tokio",
 ]
 
 [[package]]
