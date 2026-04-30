@@ -1,5 +1,7 @@
 # hwLedger
 
+[![AI Slop Inside](https://sladge.net/badge.svg)](https://sladge.net)
+
 _LLM capacity planner + fleet ledger + desktop inference runtime._
 
 **Not a financial ledger.** hwLedger tracks hardware fleet audit and provenance for machine learning workloads. It provides per-layer VRAM estimation for LLMs, reconciles predictions against live telemetry from inference engines (MLX, mistral.rs, llama.cpp, vLLM, TGI), and maintains an event-sourced audit log for heterogeneous compute fleets (Apple Silicon, NVIDIA/AMD, cloud rentals).
