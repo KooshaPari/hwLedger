@@ -105,6 +105,8 @@ export default withMermaid(defineConfig({
   base: process.env.GITHUB_ACTIONS ? '/hwLedger/' : '/',
   lang: 'en-US',
   cleanUrls: true,
+  // Avoid per-page git history scans in media-heavy worktrees.
+  lastUpdated: false,
   srcDir: '.',
 
   // VitePress's built-in `math: true` already wires markdown-it-mathjax3.

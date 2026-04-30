@@ -25,19 +25,29 @@ const requiredMediaPages = [
 ];
 
 function existsNonEmpty(file) {
-  try {
-    return fs.statSync(file).size > 0;
-  } catch {
-    return false;
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    try {
+      return fs.statSync(file).size > 0;
+    } catch {
+      if (attempt < 4) {
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 100);
+      }
+    }
   }
+  return false;
 }
 
 function sizeOf(file) {
-  try {
-    return fs.statSync(file).size;
-  } catch {
-    return 0;
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    try {
+      return fs.statSync(file).size;
+    } catch {
+      if (attempt < 4) {
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 100);
+      }
+    }
   }
+  return 0;
 }
 
 function hasMuxedAudioStream(file) {

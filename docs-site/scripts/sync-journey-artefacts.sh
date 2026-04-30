@@ -22,6 +22,29 @@ fi
 PHENOTYPE_JOURNEYS_ROOT="${PHENOTYPE_JOURNEYS_ROOT:-/Users/kooshapari/CodeProjects/Phenotype/repos/phenotype-journeys}"
 if command -v phenotype-journey >/dev/null 2>&1; then BIN=(phenotype-journey); else BIN=(cargo run --quiet --manifest-path "${PHENOTYPE_JOURNEYS_ROOT}/Cargo.toml" --bin phenotype-journey --); fi
 
+has_gui_media() {
+  [ -d "$1" ] && find "$1" -type f \( \
+    -name '*.png' -o \
+    -name '*.jpg' -o \
+    -name '*.jpeg' -o \
+    -name '*.gif' -o \
+    -name '*.mp4' \
+  \) -print -quit | grep -q .
+}
+
+has_verified_gui_media() {
+  [ -d "$1" ] && find "$1" -type f \( \
+    -name 'manifest.verified.json' -o \
+    -name '*.rich.mp4' \
+  \) -print -quit | grep -q .
+}
+
+if ! has_gui_media "$SRC" && has_verified_gui_media "$DST"; then
+  echo "GUI journey source has manifests but no media; preserving verified docs assets in $DST"
+  node "${REPO_ROOT}/docs-site/scripts/normalize-gui-journeys.mjs" "${REPO_ROOT}/docs-site"
+  exit 0
+fi
+
 GENERATED_BACKUP="$(mktemp -d)"
 trap 'rm -rf "$GENERATED_BACKUP"' EXIT
 if [ -d "$DST" ]; then
