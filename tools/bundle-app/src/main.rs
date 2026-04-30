@@ -59,6 +59,12 @@ struct Cli {
         default_value = "Developer ID Application: Koosha Paridehpour (GCT2BN8WLL)"
     )]
     codesign_identity: String,
+    /// Disable SwiftPM's internal sandbox for nested sandboxed agent runs.
+    #[arg(long, default_value_t = false)]
+    disable_swiftpm_sandbox: bool,
+    /// Optional SwiftPM scratch path for reusing an existing dependency checkout.
+    #[arg(long, env = "SWIFTPM_SCRATCH_PATH")]
+    swiftpm_scratch_path: Option<PathBuf>,
 }
 
 fn main() -> Result<()> {
@@ -97,9 +103,19 @@ fn run(cli: Cli) -> Result<()> {
 
     // 1. swift build
     eprintln!("{} swift build -c {cfg}", "build:".cyan().bold());
-    run_cmd(Command::new("swift").args(["build", "-c", cfg]).current_dir(&hwledger_src))?;
+    let mut swift_build = Command::new("swift");
+    swift_build.args(["build", "-c", cfg]);
+    if cli.disable_swiftpm_sandbox {
+        swift_build.arg("--disable-sandbox");
+    }
+    if let Some(path) = cli.swiftpm_scratch_path.as_ref() {
+        swift_build.arg("--scratch-path").arg(path);
+    }
+    run_cmd(swift_build.current_dir(&hwledger_src))?;
 
-    let exec_path = hwledger_src.join(format!(".build/{cfg}/HwLedgerApp"));
+    let swiftpm_build_root =
+        cli.swiftpm_scratch_path.clone().unwrap_or_else(|| hwledger_src.join(".build"));
+    let exec_path = swiftpm_build_root.join(cfg).join("HwLedgerApp");
     if !exec_path.is_file() {
         bail!("executable not found at {}", exec_path.display());
     }
@@ -117,7 +133,7 @@ fn run(cli: Cli) -> Result<()> {
     make_executable(&exec_dst)?;
 
     // 3. Embed Sparkle.framework
-    let sparkle_src = hwledger_src.join(format!(".build/{cfg}/Sparkle.framework"));
+    let sparkle_src = swiftpm_build_root.join(cfg).join("Sparkle.framework");
     if sparkle_src.is_dir() {
         let sparkle_dst_dir = bundle_dir.join("Contents/Frameworks");
         std::fs::create_dir_all(&sparkle_dst_dir)?;
@@ -160,6 +176,7 @@ fn run(cli: Cli) -> Result<()> {
         let entitlements = project_root.parent().unwrap().join("HwLedger/entitlements.plist");
         run_cmd(
             Command::new("codesign")
+                .arg("--force")
                 .args(["--sign", &cli.codesign_identity])
                 .args(["--options", "runtime"])
                 .arg("--timestamp")

@@ -11,6 +11,7 @@ public class ScreenCaptureRecorder {
     private var assetWriter: AVAssetWriter?
     private var videoInput: AVAssetWriterInput?
     private var pixelBufferAdaptor: AVAssetWriterInputPixelBufferAdaptor?
+    private var streamOutput: StreamOutput?
     private var isRecording = false
     private var recordingDenied = false
 
@@ -86,13 +87,19 @@ public class ScreenCaptureRecorder {
             throw RecorderError.startFailed("Window not found for app: \(appIdentifier)")
         }
 
-        // Get main display
+        // Get main display for the application-scoped content filter.
         guard let mainDisplay = availableContent.displays.first else {
             throw RecorderError.startFailed("No display found")
         }
 
-        // Create content filter
-        let contentFilter = SCContentFilter(display: mainDisplay, including: [targetWindow.owningApplication!], exceptingWindows: [])
+        // Create content filter for the target app. The display-based
+        // initializer is stable under SwiftPM tests; frames are still
+        // scoped by the target owning application.
+        let contentFilter = SCContentFilter(
+            display: mainDisplay,
+            including: [targetWindow.owningApplication!],
+            exceptingWindows: []
+        )
 
         // Configure stream
         let streamConfig = SCStreamConfiguration()
@@ -124,18 +131,20 @@ public class ScreenCaptureRecorder {
             throw RecorderError.startFailed("Cannot start writing")
         }
 
-        assetWriter.startSession(atSourceTime: CMTime.zero)
-
-        // Create stream delegate
-        let delegate = StreamDelegate(assetWriter: assetWriter, videoInput: videoInput)
+        // Create stream output. Without this, ScreenCaptureKit starts a
+        // stream but no sample buffers ever reach the writer, producing
+        // zero-frame or black recordings.
+        let output = StreamOutput(assetWriter: assetWriter, videoInput: videoInput)
 
         // Create and start stream
-        let stream = SCStream(filter: contentFilter, configuration: streamConfig, delegate: delegate)
+        let stream = SCStream(filter: contentFilter, configuration: streamConfig, delegate: output)
+        try stream.addStreamOutput(output, type: .screen, sampleHandlerQueue: output.queue)
         try await stream.startCapture()
 
         self.stream = stream
         self.assetWriter = assetWriter
         self.videoInput = videoInput
+        self.streamOutput = output
         self.isRecording = true
     }
 
@@ -147,6 +156,9 @@ public class ScreenCaptureRecorder {
         isRecording = false
 
         if let stream = stream {
+            if let streamOutput = streamOutput {
+                try? stream.removeStreamOutput(streamOutput, type: .screen)
+            }
             try await stream.stopCapture()
             self.stream = nil
         }
@@ -156,15 +168,18 @@ public class ScreenCaptureRecorder {
             await assetWriter.finishWriting()
             self.assetWriter = nil
             self.videoInput = nil
+            self.streamOutput = nil
         }
     }
 }
 
 // MARK: - Stream Delegate
 
-private class StreamDelegate: NSObject, SCStreamDelegate {
+private final class StreamOutput: NSObject, SCStreamDelegate, SCStreamOutput {
     let assetWriter: AVAssetWriter
     let videoInput: AVAssetWriterInput
+    let queue = DispatchQueue(label: "com.kooshapari.hwLedger.gui-recorder")
+    private var didStartSession = false
 
     init(assetWriter: AVAssetWriter, videoInput: AVAssetWriterInput) {
         self.assetWriter = assetWriter
@@ -173,6 +188,26 @@ private class StreamDelegate: NSObject, SCStreamDelegate {
 
     nonisolated func stream(_ stream: SCStream, didStopWithError error: Error) {
         NSLog("SCK stream error: %@", error.localizedDescription)
+    }
+
+    nonisolated func stream(
+        _ stream: SCStream,
+        didOutputSampleBuffer sampleBuffer: CMSampleBuffer,
+        of outputType: SCStreamOutputType
+    ) {
+        guard outputType == .screen,
+              sampleBuffer.isValid,
+              CMSampleBufferDataIsReady(sampleBuffer),
+              videoInput.isReadyForMoreMediaData else {
+            return
+        }
+
+        if !didStartSession {
+            assetWriter.startSession(atSourceTime: sampleBuffer.presentationTimeStamp)
+            didStartSession = true
+        }
+
+        _ = videoInput.append(sampleBuffer)
     }
 }
 

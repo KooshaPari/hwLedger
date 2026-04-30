@@ -34,10 +34,15 @@ public final class AppDriver {
     /// - Parameter appPath: Path to HwLedger.app (e.g., "/path/to/HwLedger.app")
     public init(appPath: String) throws {
         let workspace = NSWorkspace.shared
-        let url = URL(fileURLWithPath: appPath)
+        let url = URL(fileURLWithPath: appPath, relativeTo: URL(fileURLWithPath: FileManager.default.currentDirectoryPath))
+            .standardizedFileURL
 
         let config = NSWorkspace.OpenConfiguration()
         config.createsNewApplicationInstance = true
+        config.environment = ProcessInfo.processInfo.environment.merging([
+            "HWLEDGER_DISABLE_SPARKLE": "1",
+            "HWLEDGER_UI_TEST": "1"
+        ]) { _, testValue in testValue }
 
         var launchedApp: NSRunningApplication?
         let semaphore = DispatchSemaphore(value: 0)
@@ -50,7 +55,11 @@ public final class AppDriver {
         }
 
         let result = semaphore.wait(timeout: .now() + 5.0)
-        guard result == .timedOut ? false : true, let app = launchedApp else {
+        if result == .timedOut || launchedApp == nil {
+            launchedApp = try Self.launchExecutableFallback(bundleURL: url, environment: config.environment)
+        }
+
+        guard let app = launchedApp else {
             throw launchError ?? AppDriverError.launchFailed
         }
 
@@ -287,6 +296,40 @@ public final class AppDriver {
     }
 
     // MARK: - Private Helpers
+
+    /// LaunchServices can reject isolated worktree bundles even when the
+    /// app contains a valid executable. Fall back to launching the bundle's
+    /// executable directly so local journey regeneration is not coupled to
+    /// Spotlight indexing.
+    private static func launchExecutableFallback(
+        bundleURL: URL,
+        environment: [String: String]
+    ) throws -> NSRunningApplication {
+        let executableURL = bundleURL
+            .appendingPathComponent("Contents")
+            .appendingPathComponent("MacOS")
+            .appendingPathComponent("HwLedger")
+        guard FileManager.default.isExecutableFile(atPath: executableURL.path) else {
+            throw AppDriverError.launchFailed
+        }
+
+        let process = Process()
+        process.executableURL = executableURL
+        process.currentDirectoryURL = bundleURL.deletingLastPathComponent()
+        process.environment = environment
+        try process.run()
+
+        let start = Date()
+        while Date().timeIntervalSince(start) < 5 {
+            if let runningApp = NSRunningApplication(processIdentifier: process.processIdentifier) {
+                return runningApp
+            }
+            Thread.sleep(forTimeInterval: 0.1)
+        }
+
+        process.terminate()
+        throw AppDriverError.launchFailed
+    }
 
     /// Recursively find a descendant element matching an accessibility identifier.
     private func findDescendant(
