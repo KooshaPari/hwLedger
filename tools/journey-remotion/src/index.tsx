@@ -30,9 +30,9 @@ const HEIGHT = 800;
 
 const RemotionRoot: React.FC = () => (
   <>
-    <Composition<Record<string, unknown>, JourneyRichProps>
+    <Composition
       id="JourneyRich"
-      component={JourneyRich as React.ComponentType<Record<string, unknown>>}
+      component={JourneyRich}
       defaultProps={{
         journeyId: "placeholder",
         manifest: PLACEHOLDER_MANIFEST,
@@ -47,9 +47,9 @@ const RemotionRoot: React.FC = () => (
         return { durationInFrames: totalFrames(m, FPS) };
       }}
     />
-    <Composition<Record<string, unknown>, JourneyCliProps>
+    <Composition
       id="JourneyCli"
-      component={JourneyCli as React.ComponentType<Record<string, unknown>>}
+      component={JourneyCli}
       defaultProps={{
         journeyId: "placeholder",
         manifest: PLACEHOLDER_MANIFEST,
@@ -64,9 +64,9 @@ const RemotionRoot: React.FC = () => (
         return { durationInFrames: cliTotalFrames(m, FPS) };
       }}
     />
-    <Composition<Record<string, unknown>, JourneySlideshowProps>
+    <Composition
       id="JourneySlideshow"
-      component={JourneySlideshow as React.ComponentType<Record<string, unknown>>}
+      component={JourneySlideshow}
       defaultProps={{
         journeyId: "placeholder",
         manifest: PLACEHOLDER_MANIFEST,

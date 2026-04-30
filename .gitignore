@@ -70,6 +70,7 @@ vendor/**/target
 # hwledger-journey-render transient artifacts (built per-render)
 apps/*/keyframes/*/manifest.rich.json
 docs-site/public/*/keyframes/*/manifest.rich.json
+tools/journey-remotion/public/audio/**
 
 # Worktree directories (org policy)
 .worktrees/

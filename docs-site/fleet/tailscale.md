@@ -7,6 +7,10 @@ description: Zero-config mesh networking for fleet
 
 Optional integration with Tailscale for automatic agent discovery, mTLS cert generation, and private network connectivity.
 
+<RecordingEmbed tape="settings-gui-mtls" kind="gui" caption="Settings mTLS: certificate generation path used with private fleet networks" />
+
+<RecordingEmbed tape="fleet-register" kind="cli" caption="CLI Fleet Register: tailnet-ready bootstrap path for agents" />
+
 ## Overview
 
 Tailscale provides:

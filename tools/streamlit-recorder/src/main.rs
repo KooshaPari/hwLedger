@@ -57,7 +57,7 @@ fn run(cli: Cli) -> Result<()> {
     std::fs::create_dir_all(&manifests_dir)?;
     std::fs::create_dir_all(&pw_output_dir)?;
 
-    for tool in ["ffmpeg", "npx"] {
+    for tool in ["npx"] {
         if which(tool).is_none() {
             bail!("required tool '{tool}' not on PATH");
         }
@@ -223,6 +223,7 @@ fn install_playwright(journeys_root: &Path) -> Result<()> {
 }
 
 fn convert_videos(recordings_dir: &Path, manifests_dir: &Path, pw_output_dir: &Path) -> Result<()> {
+    let ffmpeg_available = command_usable("ffmpeg");
     let mut webms: Vec<PathBuf> = Vec::new();
     if let Ok(entries) = std::fs::read_dir(pw_output_dir) {
         for e in entries.flatten() {
@@ -267,20 +268,33 @@ fn convert_videos(recordings_dir: &Path, manifests_dir: &Path, pw_output_dir: &P
                     v.display(),
                     target_mp4.display()
                 );
-                run_cmd(
-                    Command::new("ffmpeg")
-                        .args(["-y", "-loglevel", "error", "-i"])
-                        .arg(v)
-                        .args(["-c:v", "libx264", "-pix_fmt", "yuv420p", "-movflags", "+faststart"])
-                        .arg(&target_mp4),
-                )?;
-                run_cmd(
-                    Command::new("ffmpeg")
-                        .args(["-y", "-loglevel", "error", "-i"])
-                        .arg(v)
-                        .args(["-vf", "fps=10,scale=800:-1:flags=lanczos"])
-                        .arg(&target_gif),
-                )?;
+                if ffmpeg_available {
+                    run_cmd(
+                        Command::new("ffmpeg")
+                            .args(["-y", "-loglevel", "error", "-i"])
+                            .arg(v)
+                            .args([
+                                "-c:v",
+                                "libx264",
+                                "-pix_fmt",
+                                "yuv420p",
+                                "-movflags",
+                                "+faststart",
+                            ])
+                            .arg(&target_mp4),
+                    )?;
+                    run_cmd(
+                        Command::new("ffmpeg")
+                            .args(["-y", "-loglevel", "error", "-i"])
+                            .arg(v)
+                            .args(["-vf", "fps=10,scale=800:-1:flags=lanczos"])
+                            .arg(&target_gif),
+                    )?;
+                } else {
+                    eprintln!(
+                        "[record-all] {slug}: ffmpeg unavailable; keeping Playwright WebM and relying on Remotion rich render"
+                    );
+                }
             } else {
                 eprintln!(
                     "[record-all] {slug}: no playwright video found; skipping mp4/gif conversion"
@@ -317,6 +331,16 @@ fn which(tool: &str) -> Option<PathBuf> {
         }
     }
     None
+}
+
+fn command_usable(tool: &str) -> bool {
+    Command::new(tool)
+        .arg("-version")
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status()
+        .map(|status| status.success())
+        .unwrap_or(false)
 }
 
 fn run_cmd(cmd: &mut Command) -> Result<()> {

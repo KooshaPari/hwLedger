@@ -1,7 +1,49 @@
 {
-  "id": "settings-gui-mtls",
-  "passed": false,
-  "pending_record": true,
-  "reason": "Screen Recording + Accessibility permission must be granted to Terminal/Xcode. Then re-run: cd apps/macos/HwLedgerUITests && swift test --filter settings_gui_mtls",
-  "steps": []
+  "failure" : "elementNotFound(\"settings-scroll-view\")",
+  "finished_at" : "2026-04-30T14:30:34Z",
+  "id" : "settings-gui-mtls",
+  "passed" : false,
+  "recording" : true,
+  "recording_denied" : false,
+  "started_at" : "2026-04-30T14:30:23Z",
+  "steps" : [
+    {
+      "index" : 0,
+      "intent" : "App launches on Planner; cursor drifts down sidebar to 'Settings', click transitions detail pane.",
+      "native_height" : 666,
+      "native_width" : 900,
+      "screenshot_path" : "05-launch-app.png",
+      "slug" : "launch-app"
+    },
+    {
+      "index" : 1,
+      "intent" : "Settings screen visible: System, Fleet Server, Logging sections stacked; ScrollView reveals 'mTLS Admin' header below.",
+      "slug" : "settings-open"
+    },
+    {
+      "index" : 2,
+      "intent" : "User scrolls down; 'mTLS Admin' section comes into view with CA fingerprint display and two buttons: 'Generate Cert', 'Copy PEM'.",
+      "slug" : "scroll-to-mtls"
+    },
+    {
+      "index" : 3,
+      "intent" : "Cursor clicks 'Generate Admin Cert'; button shows spinner, status line reads 'issuing cert, CN=admin@local ...'.",
+      "slug" : "click-generate"
+    },
+    {
+      "index" : 4,
+      "intent" : "Cert block populates: PEM text area fills with '-----BEGIN CERTIFICATE-----' and monospaced base64; SHA256 thumbprint row appears.",
+      "slug" : "cert-issued"
+    },
+    {
+      "index" : 5,
+      "intent" : "Cursor taps 'Copy PEM'; button briefly inverts colour, toast slides up reading 'Copied admin cert to clipboard'.",
+      "slug" : "click-copy"
+    },
+    {
+      "index" : 6,
+      "intent" : "Toast still on screen, PEM text area unchanged; status footer shows 'Last issued: just now - valid 90d'.",
+      "slug" : "toast-visible"
+    }
+  ]
 }

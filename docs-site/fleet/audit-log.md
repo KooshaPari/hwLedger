@@ -7,6 +7,10 @@ description: Cryptographic forensics trail
 
 Append-only ledger backed by hwledger-ledger (event-sourcing library with SHA-256 hash chains) for forensic audit trails and compliance.
 
+<RecordingEmbed tape="fleet-audit" kind="cli" caption="CLI audit log review with hash-chain verification" />
+
+<RecordingEmbed tape="traceability-strict" kind="cli" caption="Strict traceability run showing the same fail-closed evidence posture" />
+
 ## Hash chain mechanics
 
 Every event is appended with cryptographic linkage:

@@ -1,34 +1,25 @@
 {
   "failure" : "elementNotFound(\"fleet-map-canvas\")",
-  "finished_at" : "2026-04-30T12:17:13Z",
+  "finished_at" : "2026-04-30T14:30:32Z",
   "id" : "fleet-gui-map",
   "passed" : false,
   "recording" : true,
   "recording_denied" : false,
-  "started_at" : "2026-04-30T12:17:02Z",
+  "started_at" : "2026-04-30T14:30:22Z",
   "steps" : [
     {
       "index" : 0,
       "intent" : "App opens on Planner, cursor moves to sidebar and clicks 'Fleet' - viewport fades in the empty fleet map.",
-      "native_height" : 666,
-      "native_width" : 900,
-      "screenshot_path" : "01-fleet-map-empty-state-awaiting-first-agent.png",
       "slug" : "launch-app"
     },
     {
       "index" : 1,
       "intent" : "Fleet map canvas is live: grid backdrop visible, 'Waiting for agents...' label centered, fleet server URL shown top-right.",
-      "native_height" : 666,
-      "native_width" : 900,
-      "screenshot_path" : "02-fleet-map-populated-with-agent-nodes.png",
       "slug" : "map-empty"
     },
     {
       "index" : 2,
       "intent" : "First agent node pops in at top-right of the canvas, green status ring, hostname 'kirin-01' label, hover tooltip forming.",
-      "native_height" : 666,
-      "native_width" : 900,
-      "screenshot_path" : "03-fleet-map-with-host-detail-panel-open-for-kirin-01.png",
       "slug" : "first-agent"
     },
     {

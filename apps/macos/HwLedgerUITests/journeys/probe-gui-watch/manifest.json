@@ -1,7 +1,44 @@
 {
-  "id": "probe-gui-watch",
-  "passed": false,
-  "pending_record": true,
-  "reason": "Screen Recording + Accessibility permission must be granted to Terminal/Xcode. Then re-run: cd apps/macos/HwLedgerUITests && swift test --filter probe_gui_watch",
-  "steps": []
+  "failure" : "elementNotFound(\"probe-device-row-0\")",
+  "finished_at" : "2026-04-30T14:30:34Z",
+  "id" : "probe-gui-watch",
+  "passed" : false,
+  "recording" : true,
+  "recording_denied" : false,
+  "started_at" : "2026-04-30T14:30:22Z",
+  "steps" : [
+    {
+      "index" : 0,
+      "intent" : "App window appears, sidebar highlights Probe; main pane still blank while telemetry subscription opens.",
+      "native_height" : 666,
+      "native_width" : 900,
+      "screenshot_path" : "04-launch-app.png",
+      "slug" : "launch-app"
+    },
+    {
+      "index" : 1,
+      "intent" : "First telemetry row animates in - GPU 0, VRAM 41.2 \/ 48.0 GB, utilisation 63%, sparkline starts drawing.",
+      "slug" : "first-row-arrives"
+    },
+    {
+      "index" : 2,
+      "intent" : "Live stream fills 4 device rows; utilisation sparkline rolls smoothly, temp climbs 58C to 64C over ~5s.",
+      "slug" : "stream-running"
+    },
+    {
+      "index" : 3,
+      "intent" : "Cursor hovers GPU 0 row, highlight ring appears; status pill flips from 'streaming' to 'selected'.",
+      "slug" : "hover-device"
+    },
+    {
+      "index" : 4,
+      "intent" : "Row expands: per-process breakdown table slides down, shows 3 CUDA ctx entries, power budget bar at 72%.",
+      "slug" : "expand-detail"
+    },
+    {
+      "index" : 5,
+      "intent" : "Final frame with detail panel fully open, live values still ticking in header while expanded view stays pinned.",
+      "slug" : "final-detail-open"
+    }
+  ]
 }

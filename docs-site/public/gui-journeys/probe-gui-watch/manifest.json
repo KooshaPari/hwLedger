@@ -1,33 +1,28 @@
 {
-  "finished_at" : "2026-04-30T12:18:09Z",
+  "failure" : "elementNotFound(\"probe-device-row-0\")",
+  "finished_at" : "2026-04-30T14:30:34Z",
   "id" : "probe-gui-watch",
-  "passed" : true,
+  "passed" : false,
   "recording" : true,
   "recording_denied" : false,
-  "started_at" : "2026-04-30T12:18:02Z",
+  "started_at" : "2026-04-30T14:30:22Z",
   "steps" : [
     {
       "index" : 0,
       "intent" : "App window appears, sidebar highlights Probe; main pane still blank while telemetry subscription opens.",
       "native_height" : 666,
       "native_width" : 900,
-      "screenshot_path" : "01-probe-screen-with-first-live-telemetry-row-visible.png",
+      "screenshot_path" : "04-launch-app.png",
       "slug" : "launch-app"
     },
     {
       "index" : 1,
       "intent" : "First telemetry row animates in - GPU 0, VRAM 41.2 \/ 48.0 GB, utilisation 63%, sparkline starts drawing.",
-      "native_height" : 666,
-      "native_width" : 900,
-      "screenshot_path" : "02-probe-after-5s-of-live-telemetry-streaming.png",
       "slug" : "first-row-arrives"
     },
     {
       "index" : 2,
       "intent" : "Live stream fills 4 device rows; utilisation sparkline rolls smoothly, temp climbs 58C to 64C over ~5s.",
-      "native_height" : 666,
-      "native_width" : 900,
-      "screenshot_path" : "03-device-detail-panel-expanded-with-per-process-rows.png",
       "slug" : "stream-running"
     },
     {

@@ -4,6 +4,12 @@ Four client implementations, each backed by the shared C FFI ABI (`hwledger-ffi`
 
 ## Overview
 
+<RecordingEmbed tape="planner-gui-launch" kind="gui" caption="macOS SwiftUI client: Planner launch, slider interaction, and verified keyframes" />
+
+<RecordingEmbed tape="streamlit-planner" kind="streamlit" caption="Streamlit web client: same planner workflow through the browser surface" />
+
+<RecordingEmbed tape="first-plan" kind="cli" caption="CLI client: scriptable memory-planning path with Remotion narration" />
+
 | Client | Platform | Status | FFI | Hot-Reload | Install |
 |--------|----------|--------|-----|-----------|---------|
 | **CLI** | Unix/macOS/Windows | Stable | Direct | N/A | `cargo install --path crates/hwledger-cli` |

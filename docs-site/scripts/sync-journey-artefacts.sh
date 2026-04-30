@@ -10,6 +10,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SRC="${REPO_ROOT}/apps/macos/HwLedgerUITests/journeys"
 RECORDINGS_SRC="${REPO_ROOT}/apps/macos/HwLedgerUITests/recordings"
 LEGACY_SRC="${REPO_ROOT}/apps/macos/build/journeys"
+DIST_SRC="${REPO_ROOT}/docs-site/.vitepress/dist/gui-journeys"
 DST="${REPO_ROOT}/docs-site/public/gui-journeys"
 if [ ! -d "$SRC" ] || [ -z "$(ls -A "$SRC" 2>/dev/null)" ]; then
   SRC="$RECORDINGS_SRC"
@@ -38,11 +39,31 @@ if [ -d "$DST" ]; then
 fi
 
 "${BIN[@]}" sync --from "$SRC" --to "$DST" --kind gui-journeys
-node "${REPO_ROOT}/docs-site/scripts/normalize-gui-journeys.mjs" "${REPO_ROOT}/docs-site"
 if [ -d "$GENERATED_BACKUP" ]; then
   while IFS= read -r -d '' generated; do
     rel="${generated#"$GENERATED_BACKUP"/}"
-    mkdir -p "$DST/$(dirname "$rel")"
-    cp "$generated" "$DST/$rel"
-	  done < <(find "$GENERATED_BACKUP" -type f -print0)
+    target="$DST/$rel"
+    if [ -s "$target" ]; then
+      continue
+    fi
+    mkdir -p "$(dirname "$target")"
+    cp "$generated" "$target"
+		  done < <(find "$GENERATED_BACKUP" -type f -print0)
 fi
+for manifest in "$DST"/*/manifest.json; do
+  [ -f "$manifest" ] || continue
+  id="$(basename "$(dirname "$manifest")")"
+  target="$DST/$id/$id.rich.mp4"
+  if [ ! -s "$target" ]; then
+    if [ -s "$RECORDINGS_SRC/$id/recording.rich.mp4" ]; then
+      cp "$RECORDINGS_SRC/$id/recording.rich.mp4" "$target"
+    elif [ -s "$DIST_SRC/$id/$id.rich.mp4" ]; then
+      cp "$DIST_SRC/$id/$id.rich.mp4" "$target"
+    fi
+  fi
+  silent="$DST/$id/$id.silent.mp4"
+  if [ ! -s "$silent" ] && [ -s "$DIST_SRC/$id/$id.silent.mp4" ]; then
+    cp "$DIST_SRC/$id/$id.silent.mp4" "$silent"
+  fi
+done
+node "${REPO_ROOT}/docs-site/scripts/normalize-gui-journeys.mjs" "${REPO_ROOT}/docs-site"

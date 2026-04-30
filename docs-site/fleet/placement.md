@@ -8,6 +8,10 @@ description: "How hwLedger ranks hosts for a given plan: fit score, cost score, 
 When you ask the fleet for a host, hwLedger ranks every candidate with a single
 blended score and returns the top N.
 
+<RecordingEmbed tape="fleet-gui-map" kind="gui" caption="GUI Fleet Map: selected host detail and placement context" />
+
+<RecordingEmbed tape="fleet-audit" kind="cli" caption="CLI Fleet Audit: host availability and hash-chain evidence feeding placement review" />
+
 ## Formula
 
 $$

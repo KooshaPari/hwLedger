@@ -47,6 +47,10 @@ pub struct JourneyStep {
     /// Preserve opaque verification-ground-truth assertions without modelling them.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub assertions: Option<serde_json::Value>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub native_width: Option<u32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub native_height: Option<u32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -73,10 +77,12 @@ pub struct VoiceoverSpec {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct RichManifest {
+    #[serde(default)]
     pub id: String,
+    #[serde(default)]
     pub intent: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub recording: Option<String>,
+    pub recording: Option<serde_json::Value>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub recording_gif: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]

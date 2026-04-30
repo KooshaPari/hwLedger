@@ -1,21 +1,11 @@
 {
-  "failure": "elementNotFound(\"settings-mtls-generate-button\")",
-  "finished_at": "2026-04-30T12:18:21Z",
+  "failure": "elementNotFound(\"settings-scroll-view\")",
+  "finished_at": "2026-04-30T14:30:34Z",
   "id": "settings-gui-mtls",
-  "keyframe_count": 7,
-  "media_validation": {
-    "keyframes": 7,
-    "mode": "local-gui-keyframe-normalization",
-    "rich_required": true
-  },
   "passed": false,
   "recording": true,
-  "recording_audio_voiceover": "audio/settings-gui-mtls.voiceover.wav",
   "recording_denied": false,
-  "recording_rich": "settings-gui-mtls.rich.mp4",
-  "recording_rich_manifest_sha256": "4f7e1ea61f81c224f5ebf2a7953da3bc49d5198271d1bef3ee156b7d5faa30c1",
-  "recording_rich_sha256": "c2c3fce868bf92caca7afae76efb5ef4c8d150ea8b435e490bcd1a75e7ebf7fa",
-  "started_at": "2026-04-30T12:18:19Z",
+  "started_at": "2026-04-30T14:30:23Z",
   "steps": [
     {
       "index": 0,
@@ -28,45 +18,47 @@
     {
       "index": 1,
       "intent": "Settings screen visible: System, Fleet Server, Logging sections stacked; ScrollView reveals 'mTLS Admin' header below.",
-      "native_height": 666,
-      "native_width": 900,
-      "screenshot_path": "keyframes/frame_002.png",
-      "slug": "settings-open"
+      "slug": "settings-open",
+      "screenshot_path": "keyframes/frame_002.png"
     },
     {
       "index": 2,
       "intent": "User scrolls down; 'mTLS Admin' section comes into view with CA fingerprint display and two buttons: 'Generate Cert', 'Copy PEM'.",
-      "native_height": 666,
-      "native_width": 900,
-      "screenshot_path": "keyframes/frame_003.png",
-      "slug": "scroll-to-mtls"
+      "slug": "scroll-to-mtls",
+      "screenshot_path": "keyframes/frame_003.png"
     },
     {
       "index": 3,
       "intent": "Cursor clicks 'Generate Admin Cert'; button shows spinner, status line reads 'issuing cert, CN=admin@local ...'.",
-      "native_height": 666,
-      "native_width": 900,
-      "screenshot_path": "keyframes/frame_004.png",
-      "slug": "click-generate"
+      "slug": "click-generate",
+      "screenshot_path": "keyframes/frame_004.png"
     },
     {
       "index": 4,
       "intent": "Cert block populates: PEM text area fills with '-----BEGIN CERTIFICATE-----' and monospaced base64; SHA256 thumbprint row appears.",
-      "screenshot_path": "keyframes/frame_005.png",
-      "slug": "cert-issued"
+      "slug": "cert-issued",
+      "screenshot_path": "keyframes/frame_005.png"
     },
     {
       "index": 5,
       "intent": "Cursor taps 'Copy PEM'; button briefly inverts colour, toast slides up reading 'Copied admin cert to clipboard'.",
-      "screenshot_path": "keyframes/frame_006.png",
-      "slug": "click-copy"
+      "slug": "click-copy",
+      "screenshot_path": "keyframes/frame_006.png"
     },
     {
       "index": 6,
       "intent": "Toast still on screen, PEM text area unchanged; status footer shows 'Last issued: just now - valid 90d'.",
-      "screenshot_path": "keyframes/frame_007.png",
-      "slug": "toast-visible"
+      "slug": "toast-visible",
+      "screenshot_path": "keyframes/frame_007.png"
     }
   ],
-  "voiceover_sha256": "1a4a4ed6babad1bd9b81d5a242622cffcf133d748eda39be774f6d1606a4cd06"
+  "keyframe_count": 7,
+  "recording_rich": "settings-gui-mtls.rich.mp4",
+  "recording_rich_manifest_sha256": "29483168fb3b45c3824aed2c1b92c275abac3df42b2c8c65e4baab8ecc4e88be",
+  "recording_rich_sha256": "78b889d49a7f1e87cc4b106c8a1742a7d0bf8466a36e9a108724f2617eb02023",
+  "media_validation": {
+    "mode": "local-gui-keyframe-normalization",
+    "keyframes": 7,
+    "rich_required": true
+  }
 }

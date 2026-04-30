@@ -25,5 +25,6 @@
       "intent": "Summary dataframe at the bottom: one row per device with ID, name, backend, and VRAM in GB.",
       "screenshot_path": "frame-003.png"
     }
-  ]
+  ],
+  "keyframes_root": "recordings/streamlit-probe"
 }

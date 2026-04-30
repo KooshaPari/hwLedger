@@ -47,6 +47,7 @@ import type {
 } from "../types";
 
 export interface JourneySlideshowProps {
+  [key: string]: unknown;
   journeyId: string;
   manifest: RichManifest;
   keyframeBase: string;
@@ -224,10 +225,9 @@ export const JourneySlideshow: React.FC<JourneySlideshowProps> = ({
   const stepFrames = Math.round(fps * STEP_SECONDS);
   const steps = (manifest.steps || []).filter((s) => !!s.screenshot_path);
 
-  const voiceoverSrc =
-    manifest.voiceover?.backend === "piper" && manifest.voiceover?.audio
-      ? staticFile(manifest.voiceover.audio)
-      : null;
+  const voiceoverSrc = manifest.voiceover?.audio
+    ? staticFile(manifest.voiceover.audio)
+    : null;
 
   // Layout: intro, then steps with CROSSFADE_FRAMES of overlap between
   // consecutive slides so transitions visibly cross-fade.

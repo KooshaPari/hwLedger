@@ -18,9 +18,9 @@
  *
  * Voiceover:
  *   `manifest.voiceover.audio` is mounted once as an <Audio> track when the
- *   backend is piper / edge-tts / edge. The Rust driver concatenates one
- *   utterance per step into a single WAV so timing roughly aligns with the
- *   step durations (which are synthesised from `target_content_seconds`).
+ *   Rust driver emits `manifest.voiceover.audio`. The driver concatenates
+ *   one utterance per step into a single WAV so timing roughly aligns with
+ *   the step durations (which are synthesised from `target_content_seconds`).
  */
 import React from "react";
 import {
@@ -37,6 +37,7 @@ import { StepBadge } from "../components/StepBadge";
 import type { RichManifest, SceneSpec } from "../types";
 
 export interface JourneyCliProps {
+  [key: string]: unknown;
   journeyId: string;
   manifest: RichManifest;
   /** Base URL (via staticFile prefix) where keyframe PNGs live. */
@@ -46,6 +47,9 @@ export interface JourneyCliProps {
 const INTRO_SECONDS = 1.5;
 const OUTRO_SECONDS = 2.0;
 const DEFAULT_STEP_FRAMES = 90; // 3s @ 30fps — only used when no scene spec
+
+const basename = (value: string | undefined): string =>
+  (value ?? "").split(/[\\/]/).filter(Boolean).pop() ?? "";
 
 export const JourneyCli: React.FC<JourneyCliProps> = ({
   journeyId,
@@ -76,14 +80,9 @@ export const JourneyCli: React.FC<JourneyCliProps> = ({
   });
   const endOfScenes = cursor;
 
-  const voiceoverBackend = manifest.voiceover?.backend;
-  const voiceoverSrc =
-    (voiceoverBackend === "piper" ||
-      voiceoverBackend === "edge-tts" ||
-      voiceoverBackend === "edge") &&
-    manifest.voiceover?.audio
-      ? staticFile(manifest.voiceover.audio)
-      : null;
+  const voiceoverSrc = manifest.voiceover?.audio
+    ? staticFile(manifest.voiceover.audio)
+    : null;
 
   return (
     <AbsoluteFill style={{ background: "#000" }}>
@@ -98,7 +97,7 @@ export const JourneyCli: React.FC<JourneyCliProps> = ({
         if (!step) return null;
         // CLI keyframes are raw terminal screenshots — no annotated variant
         // is produced, so always load the raw frame.
-        const rawName = step.screenshot_path;
+        const rawName = basename(step.screenshot_path);
         const src = staticFile(`${keyframeBase}/${rawName}`);
         // CaptionBar visibility is gated by this <Sequence>; inside the
         // sequence the <CaptionBar> sees a relative frame starting at 0, so

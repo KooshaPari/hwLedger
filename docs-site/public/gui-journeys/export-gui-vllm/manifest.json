@@ -1,42 +1,36 @@
 {
   "failure" : "elementNotFound(\"stacked-bar\")",
-  "finished_at" : "2026-04-30T12:18:36Z",
+  "finished_at" : "2026-04-30T14:30:31Z",
   "id" : "export-gui-vllm",
   "passed" : false,
   "recording" : true,
   "recording_denied" : false,
-  "started_at" : "2026-04-30T12:18:30Z",
+  "started_at" : "2026-04-30T14:30:23Z",
   "steps" : [
     {
       "index" : 0,
       "intent" : "App opens on Planner; default config shows Llama-3.1-8B at 4096 tokens, memory bar half-full.",
       "native_height" : 666,
       "native_width" : 900,
-      "screenshot_path" : "01-planner-at-default-launch-state.png",
+      "screenshot_path" : "05-launch-app.png",
       "slug" : "launch-app"
     },
     {
       "index" : 1,
       "intent" : "User clicks 'Load fixture...' in toolbar; dropdown lists 4 fixtures; cursor hovers 'DeepSeek-V3 @ 32k \/ 8 users'.",
-      "native_height" : 666,
-      "native_width" : 900,
-      "screenshot_path" : "02-planner-after-loading-deepseek-v3-fixture.png",
+      "native_height" : 106,
+      "native_width" : 214,
+      "screenshot_path" : "06-load-fixture.png",
       "slug" : "load-fixture"
     },
     {
       "index" : 2,
       "intent" : "Fixture loads: seq-len slider jumps to 32768, users slider to 8, stacked bar recomputes showing 71.4 GB VRAM total.",
-      "native_height" : 666,
-      "native_width" : 900,
-      "screenshot_path" : "03-export-modal-with-vllm-flag-string.png",
       "slug" : "fixture-loaded"
     },
     {
       "index" : 3,
       "intent" : "User clicks 'Export' button; menu slides down with options 'vLLM flags', 'llama.cpp args', 'MLX JSON', 'TorchServe'.",
-      "native_height" : 666,
-      "native_width" : 900,
-      "screenshot_path" : "04-copied-toast-after-vllm-flag-copy.png",
       "slug" : "open-export-menu"
     },
     {

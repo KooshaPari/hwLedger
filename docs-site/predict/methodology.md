@@ -1,5 +1,9 @@
 # Methodology
 
+<RecordingEmbed tape="streamlit-what-if" kind="streamlit" caption="Methodology in practice: candidate technique sweep with confidence-aware verdicts" />
+
+<RecordingEmbed tape="what-if-gui" kind="gui" caption="Native What-If review surface for visual validation of the same prediction path" />
+
 ## Where every number comes from
 
 ### 1. Benchmark corpus (`data/benchmarks.yaml`)

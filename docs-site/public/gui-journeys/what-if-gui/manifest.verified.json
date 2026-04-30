@@ -1,21 +1,11 @@
 {
-  "failure": "elementNotFound(\"what-if-picker-row-0\")",
-  "finished_at": "2026-04-30T12:19:43Z",
+  "failure": "elementNotFound(\"what-if-baseline-button\")",
+  "finished_at": "2026-04-30T14:30:24Z",
   "id": "what-if-gui",
-  "keyframe_count": 7,
-  "media_validation": {
-    "keyframes": 7,
-    "mode": "local-gui-keyframe-normalization",
-    "rich_required": true
-  },
   "passed": false,
   "recording": true,
-  "recording_audio_voiceover": "audio/what-if-gui.voiceover.wav",
   "recording_denied": false,
-  "recording_rich": "what-if-gui.rich.mp4",
-  "recording_rich_manifest_sha256": "2b44966ca46ed6510bebf9f87552fe9af892ab09bfc6bbecc863de1455d84a33",
-  "recording_rich_sha256": "5e2f485a4151d8862d77dc7aef9350ebf1668afb143a50de3c623ffcd0b1aed3",
-  "started_at": "2026-04-30T12:19:37Z",
+  "started_at": "2026-04-30T14:30:22Z",
   "steps": [
     {
       "index": 0,
@@ -36,35 +26,41 @@
     {
       "index": 2,
       "intent": "User opens baseline picker and selects first option",
-      "native_height": 666,
-      "native_width": 900,
-      "screenshot_path": "keyframes/frame_003.png",
-      "slug": "pick-baseline"
+      "slug": "pick-baseline",
+      "screenshot_path": "keyframes/frame_003.png"
     },
     {
       "index": 3,
       "intent": "User opens candidate picker and selects second option",
-      "screenshot_path": "keyframes/frame_004.png",
-      "slug": "pick-candidate"
+      "slug": "pick-candidate",
+      "screenshot_path": "keyframes/frame_004.png"
     },
     {
       "index": 4,
       "intent": "User toggles INT4 and LoRA technique chips",
-      "screenshot_path": "keyframes/frame_005.png",
-      "slug": "select-techniques"
+      "slug": "select-techniques",
+      "screenshot_path": "keyframes/frame_005.png"
     },
     {
       "index": 5,
       "intent": "User taps Run prediction",
-      "screenshot_path": "keyframes/frame_006.png",
-      "slug": "run-prediction"
+      "slug": "run-prediction",
+      "screenshot_path": "keyframes/frame_006.png"
     },
     {
       "index": 6,
       "intent": "Baseline + candidate memory bars rendered alongside verdict card",
-      "screenshot_path": "keyframes/frame_007.png",
-      "slug": "verify-bars"
+      "slug": "verify-bars",
+      "screenshot_path": "keyframes/frame_007.png"
     }
   ],
-  "voiceover_sha256": "71b7e672cd7bc1eff8938b5c58be22286021f67978aa56089c4c7e15f3d4d1fc"
+  "keyframe_count": 7,
+  "recording_rich": "what-if-gui.rich.mp4",
+  "recording_rich_manifest_sha256": "fd3f3fef6a7d8fdd9e28edeea7c42d71105547891d7c5d9c0de8027524630216",
+  "recording_rich_sha256": "4c40c559f53fca6eac8b17be3c87e0bb83ec03aa50fd62a9f9bd13b05977691e",
+  "media_validation": {
+    "mode": "local-gui-keyframe-normalization",
+    "keyframes": 7,
+    "rich_required": true
+  }
 }

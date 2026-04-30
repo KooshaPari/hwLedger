@@ -11,7 +11,11 @@ Outcome:
 - Docs build now runs a media coverage audit.
 - macOS AVSpeech voiceover conversion no longer requires the broken Homebrew
   `ffmpeg` path.
+- Unsigned local macOS debug bundles now get an ad-hoc signature after
+  `install_name_tool` mutates the executable, avoiding invalid-signature
+  bundles for local journey work.
 
-Remaining blocker: Remotion Chromium cannot launch inside the nested sandbox, so
-full rich/TTS regeneration was validated to the point of invocation but not
-completed for the unreferenced `what-if-gui` capture.
+Remaining blocker: LaunchServices in the current sandbox still refuses the local
+debug bundle with `kLSNoExecutableErr`, even though the bundle plist, executable,
+and ad-hoc signature validate. GUI journey regeneration should be rerun from a
+non-sandboxed Terminal session with Accessibility and Screen Recording grants.

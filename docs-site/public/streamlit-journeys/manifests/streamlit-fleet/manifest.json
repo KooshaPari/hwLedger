@@ -25,5 +25,6 @@
       "intent": "Refresh clicked; the error banner re-renders, confirming the retry path is explicit and visible to the operator.",
       "screenshot_path": "frame-003.png"
     }
-  ]
+  ],
+  "keyframes_root": "recordings/streamlit-fleet"
 }

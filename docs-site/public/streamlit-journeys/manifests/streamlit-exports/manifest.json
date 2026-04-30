@@ -37,5 +37,6 @@
       "intent": "MLX click: Apple Silicon deploy config serialised as JSON, completing the export triple.",
       "screenshot_path": "frame-005.png"
     }
-  ]
+  ],
+  "keyframes_root": "recordings/streamlit-exports"
 }

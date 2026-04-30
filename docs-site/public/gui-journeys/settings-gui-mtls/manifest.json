@@ -1,42 +1,33 @@
 {
-  "failure" : "elementNotFound(\"settings-mtls-generate-button\")",
-  "finished_at" : "2026-04-30T12:18:21Z",
+  "failure" : "elementNotFound(\"settings-scroll-view\")",
+  "finished_at" : "2026-04-30T14:30:34Z",
   "id" : "settings-gui-mtls",
   "passed" : false,
   "recording" : true,
   "recording_denied" : false,
-  "started_at" : "2026-04-30T12:18:19Z",
+  "started_at" : "2026-04-30T14:30:23Z",
   "steps" : [
     {
       "index" : 0,
       "intent" : "App launches on Planner; cursor drifts down sidebar to 'Settings', click transitions detail pane.",
       "native_height" : 666,
       "native_width" : 900,
-      "screenshot_path" : "01-settings-screen-top-of-scroll.png",
+      "screenshot_path" : "05-launch-app.png",
       "slug" : "launch-app"
     },
     {
       "index" : 1,
       "intent" : "Settings screen visible: System, Fleet Server, Logging sections stacked; ScrollView reveals 'mTLS Admin' header below.",
-      "native_height" : 666,
-      "native_width" : 900,
-      "screenshot_path" : "02-mtls-admin-section-in-view.png",
       "slug" : "settings-open"
     },
     {
       "index" : 2,
       "intent" : "User scrolls down; 'mTLS Admin' section comes into view with CA fingerprint display and two buttons: 'Generate Cert', 'Copy PEM'.",
-      "native_height" : 666,
-      "native_width" : 900,
-      "screenshot_path" : "03-admin-cert-pem-visible-after-issuance.png",
       "slug" : "scroll-to-mtls"
     },
     {
       "index" : 3,
       "intent" : "Cursor clicks 'Generate Admin Cert'; button shows spinner, status line reads 'issuing cert, CN=admin@local ...'.",
-      "native_height" : 666,
-      "native_width" : 900,
-      "screenshot_path" : "04-copied-toast-showing-after-pem-copy.png",
       "slug" : "click-generate"
     },
     {

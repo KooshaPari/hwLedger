@@ -406,7 +406,7 @@ pub fn render_all(
         let mut plan = RenderPlan::new(
             resolved.journey_id.clone(),
             resolved.manifest_path.clone(),
-            staged,
+            staged.clone(),
             remotion_root.to_path_buf(),
             resolved.output_mp4.clone(),
         );
@@ -457,7 +457,9 @@ pub fn render_all(
                 // (see audio_only_remix path above).
                 let silent_cache = silent_cache_path(&resolved.output_mp4);
                 let _ = cache_silent_copy(&resolved.output_mp4, &silent_cache);
-                let voiceover_rel = voiceover_audio_relpath(&resolved.journey_id);
+                let voiceover_rel = read_voiceover_audio_rel(&staged.join("manifest.rich.json"))
+                    .unwrap_or_else(|| voiceover_audio_relpath(&resolved.journey_id));
+                let _ = publish_voiceover_audio(remotion_root, root, &voiceover_rel);
                 if let Err(e) = write_manifest_enrichment(
                     &resolved.manifest_path,
                     &rel,
@@ -625,11 +627,23 @@ fn cache_silent_copy(rich: &Path, silent: &Path) -> Result<(), std::io::Error> {
     if silent.exists() {
         return Ok(());
     }
+    if std::process::Command::new("ffmpeg")
+        .arg("-version")
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .status()
+        .map(|s| !s.success())
+        .unwrap_or(true)
+    {
+        return Ok(());
+    }
     let status = std::process::Command::new("ffmpeg")
         .args(["-y", "-i"])
         .arg(rich)
         .args(["-an", "-c:v", "copy"])
         .arg(silent)
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
         .status()?;
     if !status.success() {
         return Err(std::io::Error::other(format!(
@@ -642,6 +656,29 @@ fn cache_silent_copy(rich: &Path, silent: &Path) -> Result<(), std::io::Error> {
 
 fn voiceover_audio_relpath(journey_id: &str) -> String {
     format!("audio/{journey_id}.voiceover.wav")
+}
+
+fn read_voiceover_audio_rel(rich_manifest: &Path) -> Option<String> {
+    let raw = std::fs::read(rich_manifest).ok()?;
+    let value: serde_json::Value = serde_json::from_slice(&raw).ok()?;
+    value.get("voiceover").and_then(|v| v.get("audio")).and_then(|v| v.as_str()).map(str::to_string)
+}
+
+fn publish_voiceover_audio(
+    remotion_root: &Path,
+    public_root: &Path,
+    rel: &str,
+) -> Result<(), std::io::Error> {
+    let source = remotion_root.join("public").join(rel);
+    if !source.exists() {
+        return Ok(());
+    }
+    let target = public_root.join(rel);
+    if let Some(parent) = target.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    std::fs::copy(source, target)?;
+    Ok(())
 }
 
 /// Audio-only re-mux: re-synthesise the voiceover via `render_voiceover_only`

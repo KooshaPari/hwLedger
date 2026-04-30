@@ -25,6 +25,7 @@ import { AnnotationOverlay } from "../components/AnnotationOverlay";
 import type { CalloutPosition, RichManifest, SceneSpec } from "../types";
 
 export interface JourneyRichProps {
+  [key: string]: unknown;
   journeyId: string;
   manifest: RichManifest;
   /** Base URL (via staticFile prefix) where annotated keyframes live.
@@ -33,6 +34,9 @@ export interface JourneyRichProps {
 }
 
 const DEFAULT_SCENE_FRAMES = 90; // 3s at 30fps
+
+const basename = (value: string | undefined): string =>
+  (value ?? "").split(/[\\/]/).filter(Boolean).pop() ?? "";
 
 export const JourneyRich: React.FC<JourneyRichProps> = ({
   journeyId,
@@ -64,14 +68,9 @@ export const JourneyRich: React.FC<JourneyRichProps> = ({
   });
   const endOfScenes = cursor;
 
-  const voiceoverBackend = manifest.voiceover?.backend;
-  const voiceoverSrc =
-    (voiceoverBackend === "piper" ||
-      voiceoverBackend === "edge-tts" ||
-      voiceoverBackend === "edge") &&
-    manifest.voiceover?.audio
-      ? staticFile(manifest.voiceover.audio)
-      : null;
+  const voiceoverSrc = manifest.voiceover?.audio
+    ? staticFile(manifest.voiceover.audio)
+    : null;
 
   return (
     <AbsoluteFill style={{ background: "#000" }}>
@@ -89,7 +88,7 @@ export const JourneyRich: React.FC<JourneyRichProps> = ({
         if (!step) return null;
         // Use annotated PNG if produced; fall back to raw frame.
         const annotatedName = `frame-${String(spec.step + 1).padStart(3, "0")}.annotated.png`;
-        const rawName = step.screenshot_path;
+        const rawName = basename(step.screenshot_path);
         const annotatedPath = `${keyframeBase}/${annotatedName}`;
         const rawPath = `${keyframeBase}/${rawName}`;
         const hasAnnotated = (manifest.annotated_keyframes || []).includes(annotatedName);

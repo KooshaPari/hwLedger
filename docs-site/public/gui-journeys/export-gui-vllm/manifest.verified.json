@@ -1,11 +1,11 @@
 {
   "failure": "elementNotFound(\"stacked-bar\")",
-  "finished_at": "2026-04-30T12:18:36Z",
+  "finished_at": "2026-04-30T14:30:31Z",
   "id": "export-gui-vllm",
   "passed": false,
   "recording": true,
   "recording_denied": false,
-  "started_at": "2026-04-30T12:18:30Z",
+  "started_at": "2026-04-30T14:30:23Z",
   "steps": [
     {
       "index": 0,
@@ -18,26 +18,22 @@
     {
       "index": 1,
       "intent": "User clicks 'Load fixture...' in toolbar; dropdown lists 4 fixtures; cursor hovers 'DeepSeek-V3 @ 32k / 8 users'.",
-      "native_height": 666,
-      "native_width": 900,
+      "native_height": 106,
+      "native_width": 214,
       "screenshot_path": "keyframes/frame_002.png",
       "slug": "load-fixture"
     },
     {
       "index": 2,
       "intent": "Fixture loads: seq-len slider jumps to 32768, users slider to 8, stacked bar recomputes showing 71.4 GB VRAM total.",
-      "native_height": 666,
-      "native_width": 900,
-      "screenshot_path": "keyframes/frame_003.png",
-      "slug": "fixture-loaded"
+      "slug": "fixture-loaded",
+      "screenshot_path": "keyframes/frame_003.png"
     },
     {
       "index": 3,
       "intent": "User clicks 'Export' button; menu slides down with options 'vLLM flags', 'llama.cpp args', 'MLX JSON', 'TorchServe'.",
-      "native_height": 666,
-      "native_width": 900,
-      "screenshot_path": "keyframes/frame_004.png",
-      "slug": "open-export-menu"
+      "slug": "open-export-menu",
+      "screenshot_path": "keyframes/frame_004.png"
     },
     {
       "index": 4,
@@ -66,6 +62,8 @@
   ],
   "keyframe_count": 8,
   "recording_rich": "export-gui-vllm.rich.mp4",
+  "recording_rich_manifest_sha256": "8a777231318c756ed379793e1999124af90ff877836b5c0cd518d3ab3ef4a842",
+  "recording_rich_sha256": "0a96ad68c9bb54a141e445ee789eeff2c3e6d013b4b22ba8e13a09729da4ef7f",
   "media_validation": {
     "mode": "local-gui-keyframe-normalization",
     "keyframes": 8,

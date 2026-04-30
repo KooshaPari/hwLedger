@@ -1,0 +1,26 @@
+{
+  "id": "hf-search-deepseek",
+  "intent": "Search Hugging Face for DeepSeek V3, then generate a sizing plan for deepseek-ai/DeepSeek-V3.",
+  "keyframe_count": 3,
+  "passed": true,
+  "steps": [
+    {
+      "index": 0,
+      "slug": "search-query",
+      "intent": "Run an anonymous Hugging Face search for DeepSeek V3 and inspect the top repositories.",
+      "screenshot_path": "frame-001.png"
+    },
+    {
+      "index": 1,
+      "slug": "search-plan",
+      "intent": "Generate a memory sizing plan for deepseek-ai/DeepSeek-V3 at 8192 tokens.",
+      "screenshot_path": "frame-002.png"
+    },
+    {
+      "index": 2,
+      "slug": "exit-code",
+      "intent": "Confirm the CLI journey completed successfully.",
+      "screenshot_path": "frame-003.png"
+    }
+  ]
+}

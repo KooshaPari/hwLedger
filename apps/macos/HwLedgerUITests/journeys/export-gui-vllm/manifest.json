@@ -1,7 +1,57 @@
 {
-  "id": "export-gui-vllm",
-  "passed": false,
-  "pending_record": true,
-  "reason": "Screen Recording + Accessibility permission must be granted to Terminal/Xcode. Then re-run: cd apps/macos/HwLedgerUITests && swift test --filter export_gui_vllm",
-  "steps": []
+  "failure" : "elementNotFound(\"stacked-bar\")",
+  "finished_at" : "2026-04-30T14:30:31Z",
+  "id" : "export-gui-vllm",
+  "passed" : false,
+  "recording" : true,
+  "recording_denied" : false,
+  "started_at" : "2026-04-30T14:30:23Z",
+  "steps" : [
+    {
+      "index" : 0,
+      "intent" : "App opens on Planner; default config shows Llama-3.1-8B at 4096 tokens, memory bar half-full.",
+      "native_height" : 666,
+      "native_width" : 900,
+      "screenshot_path" : "05-launch-app.png",
+      "slug" : "launch-app"
+    },
+    {
+      "index" : 1,
+      "intent" : "User clicks 'Load fixture...' in toolbar; dropdown lists 4 fixtures; cursor hovers 'DeepSeek-V3 @ 32k \/ 8 users'.",
+      "native_height" : 106,
+      "native_width" : 214,
+      "screenshot_path" : "06-load-fixture.png",
+      "slug" : "load-fixture"
+    },
+    {
+      "index" : 2,
+      "intent" : "Fixture loads: seq-len slider jumps to 32768, users slider to 8, stacked bar recomputes showing 71.4 GB VRAM total.",
+      "slug" : "fixture-loaded"
+    },
+    {
+      "index" : 3,
+      "intent" : "User clicks 'Export' button; menu slides down with options 'vLLM flags', 'llama.cpp args', 'MLX JSON', 'TorchServe'.",
+      "slug" : "open-export-menu"
+    },
+    {
+      "index" : 4,
+      "intent" : "Cursor hits 'vLLM flags'; menu collapses, modal sheet begins sliding up from bottom of the detail pane.",
+      "slug" : "choose-vllm"
+    },
+    {
+      "index" : 5,
+      "intent" : "Modal shows monospaced flag string: --model deepseek-v3 --max-model-len 32768 --max-num-seqs 8 --gpu-memory-utilization 0.92 --dtype bf16 ...",
+      "slug" : "flag-string-shown"
+    },
+    {
+      "index" : 6,
+      "intent" : "Cursor clicks 'Copy' on the modal; button goes green-checked, haptic-style pulse animates outward.",
+      "slug" : "click-copy"
+    },
+    {
+      "index" : 7,
+      "intent" : "Toast 'Copied vLLM flags (148 chars)' slides up bottom-center; flag string still visible behind it, modal stays open.",
+      "slug" : "copied-toast"
+    }
+  ]
 }

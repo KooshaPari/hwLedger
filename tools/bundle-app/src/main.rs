@@ -179,7 +179,8 @@ fn run(cli: Cli) -> Result<()> {
         }
         eprintln!("  signed + verified");
     } else {
-        eprintln!("{} codesigning disabled", "sign:".yellow());
+        eprintln!("{} using ad-hoc local signature", "sign:".yellow());
+        ad_hoc_sign_bundle(&bundle_dir)?;
     }
 
     eprintln!();
@@ -187,6 +188,14 @@ fn run(cli: Cli) -> Result<()> {
     eprintln!("Location:   {}", bundle_dir.display());
     eprintln!("Executable: {}", exec_dst.display());
     Ok(())
+}
+
+fn ad_hoc_sign_bundle(bundle_dir: &Path) -> Result<()> {
+    if which("codesign").is_none() {
+        return Ok(());
+    }
+    run_cmd(Command::new("codesign").args(["--force", "--deep", "--sign", "-"]).arg(bundle_dir))
+        .context("ad-hoc codesign failed")
 }
 
 fn script_dir() -> Result<PathBuf> {

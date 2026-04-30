@@ -1,10 +1,10 @@
 {
-  "finished_at": "2026-04-30T12:09:31Z",
+  "finished_at": "2026-04-30T14:33:07Z",
   "id": "planner-gui-launch",
   "passed": true,
   "recording": true,
   "recording_denied": false,
-  "started_at": "2026-04-30T12:09:29Z",
+  "started_at": "2026-04-30T14:33:03Z",
   "steps": [
     {
       "index": 0,
@@ -25,18 +25,24 @@
     {
       "index": 2,
       "intent": "Planner model input is rendered",
-      "slug": "verify-model-input",
-      "screenshot_path": "keyframes/frame_003.png"
+      "native_height": 666,
+      "native_width": 900,
+      "screenshot_path": "keyframes/frame_003.png",
+      "slug": "verify-model-input"
     },
     {
       "index": 3,
       "intent": "Plan button is rendered",
-      "slug": "verify-plan-button",
-      "screenshot_path": "keyframes/frame_004.png"
+      "native_height": 666,
+      "native_width": 900,
+      "screenshot_path": "keyframes/frame_004.png",
+      "slug": "verify-plan-button"
     }
   ],
   "keyframe_count": 4,
   "recording_rich": "planner-gui-launch.rich.mp4",
+  "recording_rich_manifest_sha256": "544f4ab44aa9c6b46f741081fb5c90182a4f572cd53dd99ec7d5548bfc04a166",
+  "recording_rich_sha256": "85205830449a18885d764018d3ffd58e2c3196c73d75cccfd6122643375306c4",
   "media_validation": {
     "mode": "local-gui-keyframe-normalization",
     "keyframes": 4,

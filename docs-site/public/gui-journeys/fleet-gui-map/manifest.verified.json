@@ -1,35 +1,29 @@
 {
   "failure": "elementNotFound(\"fleet-map-canvas\")",
-  "finished_at": "2026-04-30T12:17:13Z",
+  "finished_at": "2026-04-30T14:30:32Z",
   "id": "fleet-gui-map",
   "passed": false,
   "recording": true,
   "recording_denied": false,
-  "started_at": "2026-04-30T12:17:02Z",
+  "started_at": "2026-04-30T14:30:22Z",
   "steps": [
     {
       "index": 0,
       "intent": "App opens on Planner, cursor moves to sidebar and clicks 'Fleet' - viewport fades in the empty fleet map.",
-      "native_height": 666,
-      "native_width": 900,
-      "screenshot_path": "keyframes/frame_001.png",
-      "slug": "launch-app"
+      "slug": "launch-app",
+      "screenshot_path": "keyframes/frame_001.png"
     },
     {
       "index": 1,
       "intent": "Fleet map canvas is live: grid backdrop visible, 'Waiting for agents...' label centered, fleet server URL shown top-right.",
-      "native_height": 666,
-      "native_width": 900,
-      "screenshot_path": "keyframes/frame_002.png",
-      "slug": "map-empty"
+      "slug": "map-empty",
+      "screenshot_path": "keyframes/frame_002.png"
     },
     {
       "index": 2,
       "intent": "First agent node pops in at top-right of the canvas, green status ring, hostname 'kirin-01' label, hover tooltip forming.",
-      "native_height": 666,
-      "native_width": 900,
-      "screenshot_path": "keyframes/frame_003.png",
-      "slug": "first-agent"
+      "slug": "first-agent",
+      "screenshot_path": "keyframes/frame_003.png"
     },
     {
       "index": 3,
@@ -52,6 +46,8 @@
   ],
   "keyframe_count": 6,
   "recording_rich": "fleet-gui-map.rich.mp4",
+  "recording_rich_manifest_sha256": "33ef1ff3f140418e35270dda3eee2e7788b05c87b881ae85b989fd08c7eb9444",
+  "recording_rich_sha256": "cbf565d4e2aa8ebf8e37a0e7bb863ee2ff588da1953abb8ea9e8c01ab346e821",
   "media_validation": {
     "mode": "local-gui-keyframe-normalization",
     "keyframes": 6,

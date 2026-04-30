@@ -1,11 +1,11 @@
 {
-  "failure": "elementNotFound(\"hf-search-use-0\")",
-  "finished_at": "2026-04-30T12:18:48Z",
+  "failure": "elementNotFound(\"hf-search-input\")",
+  "finished_at": "2026-04-30T14:39:05Z",
   "id": "hf-search-gui",
   "passed": false,
   "recording": true,
   "recording_denied": false,
-  "started_at": "2026-04-30T12:18:45Z",
+  "started_at": "2026-04-30T14:38:56Z",
   "steps": [
     {
       "index": 0,
@@ -26,10 +26,8 @@
     {
       "index": 2,
       "intent": "User types 'llama' into the search input",
-      "native_height": 666,
-      "native_width": 900,
-      "screenshot_path": "keyframes/frame_003.png",
-      "slug": "enter-query"
+      "slug": "enter-query",
+      "screenshot_path": "keyframes/frame_003.png"
     },
     {
       "index": 3,
@@ -52,6 +50,8 @@
   ],
   "keyframe_count": 6,
   "recording_rich": "hf-search-gui.rich.mp4",
+  "recording_rich_manifest_sha256": "10439ffa32938ff68b05ccfe83679573827402dfe54cb782f2da316c1155ec16",
+  "recording_rich_sha256": "4e750571d06bb480287da3be301c50b8813ec45538576701a4296b5c4e812234",
   "media_validation": {
     "mode": "local-gui-keyframe-normalization",
     "keyframes": 6,

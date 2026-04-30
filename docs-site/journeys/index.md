@@ -102,6 +102,8 @@ for progress. In the meantime, watch the Streamlit equivalent:
 | [Fleet Map agent discovery](./gui-fleet-map.md) | Fleet Map canvas, agent node spawn, host detail side panel |
 | [Settings mTLS admin cert](./gui-settings-mtls.md) | Generate admin client cert, Copy PEM, "Copied" toast |
 | [Planner export to vLLM flags](./gui-export-vllm.md) | Load fixture, Export > vLLM flags, copy generated flag string |
+| [HF Search handoff](./gui-hf-search.md) | Anonymous HF search and Planner handoff |
+| [What-If technique sweep](./gui-what-if.md) | Technique comparison bars and verdict card |
 
 ### More journeys to come
 

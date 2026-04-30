@@ -13,6 +13,12 @@ Every number in this section has a source you can update. If it looks stale or
 wrong, open `crates/hwledger-predict/data/benchmarks.yaml` and fix it — the CLI,
 FFI, Streamlit and (eventually) SwiftUI UI all re-read from the same corpus.
 
+<RecordingEmbed tape="what-if-gui" kind="gui" caption="macOS What-If: technique comparison bars and verdict card" />
+
+<RecordingEmbed tape="streamlit-what-if" kind="streamlit" caption="Streamlit What-If: browser workflow over the same prediction core" />
+
+<RecordingEmbed tape="plan-mla-deepseek" kind="cli" caption="CLI prediction-adjacent sizing: MLA context sweep used as the terminal reference path" />
+
 ## Philosophy
 
 Predictions are **stale the moment they're written**. We guarantee three things:

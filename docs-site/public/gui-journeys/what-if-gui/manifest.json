@@ -1,18 +1,18 @@
 {
-  "failure" : "elementNotFound(\"what-if-picker-row-0\")",
-  "finished_at" : "2026-04-30T12:19:43Z",
+  "failure" : "elementNotFound(\"what-if-baseline-button\")",
+  "finished_at" : "2026-04-30T14:30:24Z",
   "id" : "what-if-gui",
   "passed" : false,
   "recording" : true,
   "recording_denied" : false,
-  "started_at" : "2026-04-30T12:19:37Z",
+  "started_at" : "2026-04-30T14:30:22Z",
   "steps" : [
     {
       "index" : 0,
       "intent" : "App launches on default screen",
       "native_height" : 666,
       "native_width" : 900,
-      "screenshot_path" : "01-what-if-screen-first-paint.png",
+      "screenshot_path" : "04-launch-app.png",
       "slug" : "launch-app"
     },
     {
@@ -20,15 +20,12 @@
       "intent" : "User clicks 'What-If' in the sidebar",
       "native_height" : 666,
       "native_width" : 900,
-      "screenshot_path" : "02-techniques-selected.png",
+      "screenshot_path" : "05-navigate-what-if.png",
       "slug" : "navigate-what-if"
     },
     {
       "index" : 2,
       "intent" : "User opens baseline picker and selects first option",
-      "native_height" : 666,
-      "native_width" : 900,
-      "screenshot_path" : "03-what-if-bars-verdict-card-rendered.png",
       "slug" : "pick-baseline"
     },
     {

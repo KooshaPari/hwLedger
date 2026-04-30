@@ -7,6 +7,10 @@ description: Central orchestration daemon
 
 Axum-based REST + WebSocket daemon that orchestrates agents, distributes inference jobs, and logs all activity to the append-only event ledger.
 
+<RecordingEmbed tape="streamlit-fleet" kind="streamlit" caption="Streamlit Fleet: browser view over server state, transports, and devices" />
+
+<RecordingEmbed tape="fleet-audit" kind="cli" caption="CLI `fleet audit`: server-side ledger and health inspection path" />
+
 ## Routes
 
 | Method | Path | Purpose |

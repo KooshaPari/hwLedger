@@ -7,6 +7,10 @@ description: Query remote GPUs without agent installation
 
 For environments where installing the hwledger-agent binary is not possible, the fleet server can query remote GPU state via SSH using only `nvidia-smi` or `rocm-smi`.
 
+<RecordingEmbed tape="fleet-register" kind="cli" caption="CLI Fleet Register: baseline device bootstrap before choosing agentless SSH mode" />
+
+<RecordingEmbed tape="probe-list" kind="cli" caption="CLI Probe List: GPU inventory output parsed by agentless checks" />
+
 ## Flow
 
 1. **User registers via SSH**: `hwledger fleet register-ssh --host user@remote.box --key ~/.ssh/id_ed25519`

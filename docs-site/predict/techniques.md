@@ -2,6 +2,10 @@
 
 Mirror of [`crates/hwledger-predict/src/techniques.rs`](https://github.com/KooshaPari/hwLedger/blob/main/crates/hwledger-predict/src/techniques.rs).
 
+<RecordingEmbed tape="what-if-gui" kind="gui" caption="Technique selection in the native What-If UI" />
+
+<RecordingEmbed tape="streamlit-what-if" kind="streamlit" caption="Technique sweep in the Streamlit client" />
+
 Factors are **multiplicative** relative to baseline. `mem_factor = 0.28`
 means "uses 28% of baseline memory" (i.e. 72% reduction). Stacking techniques
 multiplies factors.

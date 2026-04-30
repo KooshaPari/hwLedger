@@ -1,18 +1,18 @@
 {
-  "failure" : "elementNotFound(\"hf-search-use-0\")",
-  "finished_at" : "2026-04-30T12:18:48Z",
+  "failure" : "elementNotFound(\"hf-search-input\")",
+  "finished_at" : "2026-04-30T14:39:05Z",
   "id" : "hf-search-gui",
   "passed" : false,
   "recording" : true,
   "recording_denied" : false,
-  "started_at" : "2026-04-30T12:18:45Z",
+  "started_at" : "2026-04-30T14:38:56Z",
   "steps" : [
     {
       "index" : 0,
       "intent" : "App launches on default screen",
       "native_height" : 666,
       "native_width" : 900,
-      "screenshot_path" : "01-hf-search-screen-first-paint.png",
+      "screenshot_path" : "04-launch-app.png",
       "slug" : "launch-app"
     },
     {
@@ -20,15 +20,12 @@
       "intent" : "User clicks 'HF Search' in the sidebar",
       "native_height" : 666,
       "native_width" : 900,
-      "screenshot_path" : "02-hf-search-results-with-llama.png",
+      "screenshot_path" : "05-navigate-hf-search.png",
       "slug" : "navigate-hf-search"
     },
     {
       "index" : 2,
       "intent" : "User types 'llama' into the search input",
-      "native_height" : 666,
-      "native_width" : 900,
-      "screenshot_path" : "03-planner-opened-with-selected-repo-id.png",
       "slug" : "enter-query"
     },
     {

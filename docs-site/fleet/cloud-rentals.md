@@ -7,6 +7,10 @@ description: Vast, RunPod, Lambda, Modal pricing & integration
 
 hwLedger integrates with major GPU rental platforms to query pricing, availability, and automatically spin up instances.
 
+<RecordingEmbed tape="streamlit-fleet" kind="streamlit" caption="Streamlit Fleet: provider/device inventory and transport settings" />
+
+<RecordingEmbed tape="fleet-audit" kind="cli" caption="CLI audit path used after rentals are registered into the fleet ledger" />
+
 ## Supported providers
 
 | Provider | Pricing API | Launch API | Shutdown API | Spot | Interruptibility |

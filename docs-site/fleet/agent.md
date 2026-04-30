@@ -7,6 +7,10 @@ description: Lightweight daemon for remote inference
 
 Lightweight binary deployed on remote boxes (rentals, private machines, servers) that registers with the fleet server, maintains heartbeat, and executes inference jobs.
 
+<RecordingEmbed tape="fleet-register" kind="cli" caption="CLI `fleet register`: agent/device bootstrap path" />
+
+<RecordingEmbed tape="fleet-gui-map" kind="gui" caption="GUI Fleet Map: registered agents and host detail panel" />
+
 ## Bootstrap flow
 
 1. **Agent binary starts**: reads `~/.config/hwledger/agent.toml`

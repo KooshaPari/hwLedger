@@ -3,6 +3,10 @@
 The full corpus lives in [`crates/hwledger-predict/data/benchmarks.yaml`](https://github.com/KooshaPari/hwLedger/blob/main/crates/hwledger-predict/data/benchmarks.yaml).
 Loaded at compile time via `include_str!`, consumed by CLI, FFI, and UI.
 
+<RecordingEmbed tape="streamlit-what-if" kind="streamlit" caption="Benchmark-backed What-If run in the web client" />
+
+<RecordingEmbed tape="plan-mla-deepseek" kind="cli" caption="CLI sizing path that consumes the same model and hardware corpus" />
+
 > **If a number looks wrong**, edit the YAML. Tests in
 > `hwledger-predict` verify every row carries a citation and the file parses.
 

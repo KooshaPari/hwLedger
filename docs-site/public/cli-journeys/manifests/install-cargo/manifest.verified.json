@@ -4,11 +4,10 @@
   "keyframe_count": 4,
   "passed": true,
   "recording": "recordings/install-cargo.mp4",
-  "recording_audio_voiceover": "audio/install-cargo.voiceover.wav",
   "recording_gif": "recordings/install-cargo.gif",
   "recording_rich": "recordings/install-cargo/install-cargo.rich.mp4",
-  "recording_rich_manifest_sha256": "929f34ae8b5a2465aef966aacf5632e90338d23090a43d0b1070a096cec579cb",
-  "recording_rich_sha256": "e267c3b9622d0f524ff6a88233f4584fb4edc847525448169c449beaa02e3a6e",
+  "recording_rich_manifest_sha256": "308cbcdc372e3f813ae37991de2cd33ca01b530b8617537ca61ae2e995047599",
+  "recording_rich_sha256": "156ebb0af6cbf08b3628397b740eecf9140bd84881bd874b22a64564d23435ae",
   "steps": [
     {
       "annotations": [
@@ -34,7 +33,6 @@
       "blind_description": "Terminal showing monospaced output with a block of numeric columns. (frame slug: frame-0)",
       "index": 0,
       "intent": "Terminal prompt, about to run cargo install",
-      "judge_status": "pending",
       "screenshot_path": "frame-001.png",
       "slug": "frame-0"
     },
@@ -42,7 +40,6 @@
       "blind_description": "Command-line prompt with recently-emitted lines of hex-coloured log output. (frame slug: frame-1)",
       "index": 1,
       "intent": "Install hwledger from source with cargo, then verify version and help (frame 2)",
-      "judge_status": "pending",
       "screenshot_path": "frame-002.png",
       "slug": "frame-1"
     },
@@ -50,7 +47,6 @@
       "blind_description": "Dark terminal displaying a table of CLI results and a blinking cursor at the bottom. (frame slug: frame-2)",
       "index": 2,
       "intent": "Install hwledger from source with cargo, then verify version and help (frame 3)",
-      "judge_status": "pending",
       "screenshot_path": "frame-003.png",
       "slug": "frame-2"
     },
@@ -78,7 +74,6 @@
       "blind_description": "Shell session showing a command header and a paragraph of structured stdout. (frame slug: frame-3)",
       "index": 3,
       "intent": "hwledger-cli --help prints subcommand summary (plan, ingest, probe, fleet, completions, version) with options; trailing __EXIT sentinel",
-      "judge_status": "pending",
       "screenshot_path": "frame-004.png",
       "slug": "frame-3"
     }
@@ -94,6 +89,5 @@
     "mode": "mock",
     "overall_score": 0.92,
     "timestamp": "2026-04-21T08:21:22Z"
-  },
-  "voiceover_sha256": "daf00e670803fbce7f67ec16989cd82e5508c9d31417c4837c8f6cb4abf84d17"
+  }
 }
