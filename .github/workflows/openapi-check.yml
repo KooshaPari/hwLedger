@@ -23,7 +23,7 @@ jobs:
     if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - uses: dtolnay/rust-toolchain@stable
       - name: Dump generated OpenAPI
         run: cargo run -p hwledger-server --bin hwledger-server -- --dump-openapi > openapi.generated.yaml

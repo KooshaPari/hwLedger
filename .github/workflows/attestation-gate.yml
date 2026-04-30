@@ -26,7 +26,7 @@ jobs:
     # is used; the job only needs ~60s of compute to verify one signature.
     runs-on: ${{ vars.ATTEST_RUNNER || 'ubuntu-latest' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           fetch-depth: 0
       - name: Install Rust toolchain
