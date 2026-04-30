@@ -1,53 +1,36 @@
 {
-  "failure": null,
-  "finished_at": "2026-04-19T06:30:15Z",
-  "id": "planner-gui-launch",
-  "passed": true,
-  "recording": true,
-  "recording_denied": false,
-  "started_at": "2026-04-19T06:30:00Z",
-  "steps": [
+  "finished_at" : "2026-04-30T12:09:31Z",
+  "id" : "planner-gui-launch",
+  "passed" : true,
+  "recording" : true,
+  "recording_denied" : false,
+  "started_at" : "2026-04-30T12:09:29Z",
+  "steps" : [
     {
-      "blind_eval": "honest",
-      "index": 0,
-      "intent": "App launches and shows Planner screen",
-      "screenshot_path": null,
-      "slug": "launch-app"
+      "index" : 0,
+      "intent" : "App launches and shows Planner screen",
+      "native_height" : 666,
+      "native_width" : 900,
+      "screenshot_path" : "01-planner-screen-at-launch-with-default-config.png",
+      "slug" : "launch-app"
     },
     {
-      "blind_eval": "honest",
-      "index": 1,
-      "intent": "Planner screen at launch with default config",
-      "screenshot_path": null,
-      "slug": "launch-planner"
+      "index" : 1,
+      "intent" : "User drags seq-len slider from 4096 to 6000 tokens",
+      "native_height" : 666,
+      "native_width" : 900,
+      "screenshot_path" : "02-planner-after-adjusting-seq-len-slider-to-6000-tokens.png",
+      "slug" : "adjust-seq-len"
     },
     {
-      "blind_eval": "honest",
-      "index": 2,
-      "intent": "User drags seq-len slider from 4096 to 6000 tokens",
-      "screenshot_path": null,
-      "slug": "adjust-seq-len"
+      "index" : 2,
+      "intent" : "Planner model input is rendered",
+      "slug" : "verify-model-input"
     },
     {
-      "blind_eval": "honest",
-      "index": 3,
-      "intent": "Planner after adjusting seq-len slider to 6000 tokens",
-      "screenshot_path": null,
-      "slug": "slider-adjusted"
-    },
-    {
-      "blind_eval": "honest",
-      "index": 4,
-      "intent": "Memory breakdown stacked bar is rendered",
-      "screenshot_path": null,
-      "slug": "verify-stacked-bar"
-    },
-    {
-      "blind_eval": "honest",
-      "index": 5,
-      "intent": "Attention kind label shows the attention pattern type",
-      "screenshot_path": null,
-      "slug": "verify-attention-label"
+      "index" : 3,
+      "intent" : "Plan button is rendered",
+      "slug" : "verify-plan-button"
     }
   ]
 }

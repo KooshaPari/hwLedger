@@ -35,7 +35,7 @@ struct ProbeJourneyTests {
             "launch-app",
             intent: "App window appears, sidebar highlights Probe; main pane still blank while telemetry subscription opens."
         ) {
-            _ = try appDriver.waitForElement(id: "attention-kind-label", timeout: 10.0)
+            _ = try appDriver.waitForElement(id: "seq-len-slider", timeout: 10.0)
         }
 
         // Step 2: Navigate to the Probe / telemetry screen. Sidebar row is a

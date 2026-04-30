@@ -9,10 +9,12 @@ public class Journey {
     public let id: String
     private var steps: [(slug: String, intent: String, closure: () async throws -> Void)] = []
     private var screenshots: [String] = []
+    private var stepScreenshotPaths: [String?] = []
     /// Parallel to `screenshots`: the structural-snapshot sibling file (if
     /// captured). `nil` placeholder for steps that did not produce one.
     /// Traces to: Tier 0 structural-capture (macOS family).
     private var structuralPaths: [String?] = []
+    private var stepStructuralPaths: [String?] = []
     private var startTime: Date = Date()
     private var finishTime: Date?
     private var passed: Bool = false
@@ -33,6 +35,8 @@ public class Journey {
     /// downstream Remotion `CursorOverlay` can scale coordinates from the
     /// capture-time window into the composition canvas.
     private var nativeSizes: [CGSize?] = []
+    private var stepNativeSizes: [CGSize?] = []
+    private var currentStepIndex: Int?
     /// Optional accessibility source for structural-capture. When set, every
     /// `screenshot(...)` call also writes a `.structural.json` sibling next
     /// to the PNG via `AccessibilitySnapshot.writeSibling`. When nil, the
@@ -102,7 +106,7 @@ public class Journey {
         let filename = String(format: "%02d-%@.png", index + 1, formatSlug(intent))
         let filepath = journeyDirectory.appendingPathComponent(filename)
 
-        let pngData = try appDriver.screenshot()
+        let pngData = try await appDriver.screenshot()
         try pngData.write(to: filepath)
         screenshots.append(filename)
 
@@ -125,7 +129,15 @@ public class Journey {
 
         // Record the main-window bounds at capture time. Best-effort; a
         // nil value simply omits the native dims for this step.
-        nativeSizes.append(appDriver.mainWindowBounds()?.size)
+        let nativeSize = appDriver.mainWindowBounds()?.size
+        nativeSizes.append(nativeSize)
+
+        if let stepIndex = currentStepIndex {
+            ensureStepCaptureCapacity(through: stepIndex)
+            stepScreenshotPaths[stepIndex] = filename
+            stepStructuralPaths[stepIndex] = structuralFilename
+            stepNativeSizes[stepIndex] = nativeSize
+        }
     }
 
     /// Post-step hook: explicitly request a structural snapshot tied to the
@@ -144,6 +156,12 @@ public class Journey {
             structuralPaths.append(nil)
         }
         structuralPaths[index] = sibling.lastPathComponent
+        let filename = screenshots[index]
+        for stepIndex in stepScreenshotPaths.indices
+            where stepScreenshotPaths[stepIndex] == filename
+        {
+            stepStructuralPaths[stepIndex] = sibling.lastPathComponent
+        }
     }
 
     /// Add an assertion to the journey. Throws if assertion fails.
@@ -156,20 +174,35 @@ public class Journey {
     /// Execute the journey and record the manifest.
     func run() async throws {
         startTime = Date()
+        stepScreenshotPaths = Array(repeating: nil, count: steps.count)
+        stepStructuralPaths = Array(repeating: nil, count: steps.count)
+        stepNativeSizes = Array(repeating: nil, count: steps.count)
 
         do {
-            for stepData in steps {
+            for (index, stepData) in steps.enumerated() {
+                currentStepIndex = index
                 try await stepData.closure()
-                // Screenshot is captured within the step closure via the step DSL
+                if stepScreenshotPaths[index] == nil {
+                    try await screenshot(intent: stepData.slug)
+                }
             }
+            currentStepIndex = nil
             passed = true
         } catch {
+            currentStepIndex = nil
             failureReason = String(describing: error)
+            finishTime = Date()
+            await finalizeArtifacts()
+            try? writeManifest()
             throw error
         }
 
         finishTime = Date()
+        await finalizeArtifacts()
+        try? writeManifest()
+    }
 
+    private func finalizeArtifacts() async {
         // Stop recording if active (after journey, not in defer)
         if let recorder = screenRecorder {
             do {
@@ -202,13 +235,13 @@ public class Journey {
         let manifest = JourneyManifest(
             id: id,
             steps: steps.enumerated().map { index, step in
-                let size = nativeSizes.indices.contains(index) ? nativeSizes[index] : nil
+                let size = stepNativeSizes.indices.contains(index) ? stepNativeSizes[index] : nil
                 return JourneyStep(
                     index: index,
                     slug: step.slug,
                     intent: step.intent,
-                    screenshot_path: screenshots.indices.contains(index) ? screenshots[index] : nil,
-                    structural_path: structuralPaths.indices.contains(index) ? structuralPaths[index] : nil,
+                    screenshot_path: stepScreenshotPaths.indices.contains(index) ? stepScreenshotPaths[index] : nil,
+                    structural_path: stepStructuralPaths.indices.contains(index) ? stepStructuralPaths[index] : nil,
                     native_width: size.map { Int($0.width) },
                     native_height: size.map { Int($0.height) }
                 )
@@ -235,6 +268,18 @@ public class Journey {
         text.lowercased()
             .replacingOccurrences(of: "[^a-z0-9]+", with: "-", options: .regularExpression)
             .trimmingCharacters(in: CharacterSet(charactersIn: "-"))
+    }
+
+    private func ensureStepCaptureCapacity(through index: Int) {
+        while stepScreenshotPaths.count <= index {
+            stepScreenshotPaths.append(nil)
+        }
+        while stepStructuralPaths.count <= index {
+            stepStructuralPaths.append(nil)
+        }
+        while stepNativeSizes.count <= index {
+            stepNativeSizes.append(nil)
+        }
     }
 }
 

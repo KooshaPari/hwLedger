@@ -30,7 +30,7 @@ struct FleetMapJourneyTests {
             "launch-app",
             intent: "App opens on Planner, cursor moves to sidebar and clicks 'Fleet' - viewport fades in the empty fleet map."
         ) {
-            _ = try appDriver.waitForElement(id: "attention-kind-label", timeout: 10.0)
+            _ = try appDriver.waitForElement(id: "seq-len-slider", timeout: 10.0)
             try appDriver.tapButton(identifier: "sidebar-fleet")
             _ = try appDriver.waitForElement(id: "fleet-map-canvas", timeout: 10.0)
         }

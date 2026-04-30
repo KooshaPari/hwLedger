@@ -29,7 +29,7 @@ struct WhatIfJourneyTests {
 
         journey.step("launch-app", intent: "App launches on default screen") {
             do {
-                _ = try appDriver.waitForElement(id: "attention-kind-label", timeout: 10.0)
+                _ = try appDriver.waitForElement(id: "seq-len-slider", timeout: 10.0)
             } catch {
                 print("DIAGNOSTIC: Accessibility permission may be missing.")
                 throw error

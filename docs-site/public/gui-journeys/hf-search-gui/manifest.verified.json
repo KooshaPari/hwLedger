@@ -1,0 +1,60 @@
+{
+  "failure": "elementNotFound(\"hf-search-use-0\")",
+  "finished_at": "2026-04-30T12:18:48Z",
+  "id": "hf-search-gui",
+  "passed": false,
+  "recording": true,
+  "recording_denied": false,
+  "started_at": "2026-04-30T12:18:45Z",
+  "steps": [
+    {
+      "index": 0,
+      "intent": "App launches on default screen",
+      "native_height": 666,
+      "native_width": 900,
+      "screenshot_path": "keyframes/frame_001.png",
+      "slug": "launch-app"
+    },
+    {
+      "index": 1,
+      "intent": "User clicks 'HF Search' in the sidebar",
+      "native_height": 666,
+      "native_width": 900,
+      "screenshot_path": "keyframes/frame_002.png",
+      "slug": "navigate-hf-search"
+    },
+    {
+      "index": 2,
+      "intent": "User types 'llama' into the search input",
+      "native_height": 666,
+      "native_width": 900,
+      "screenshot_path": "keyframes/frame_003.png",
+      "slug": "enter-query"
+    },
+    {
+      "index": 3,
+      "intent": "Debounced search populates at least one result row",
+      "slug": "wait-for-results",
+      "screenshot_path": "keyframes/frame_004.png"
+    },
+    {
+      "index": 4,
+      "intent": "User taps the first row's 'Use this model' action; Planner receives repo-id",
+      "slug": "use-first-result",
+      "screenshot_path": "keyframes/frame_005.png"
+    },
+    {
+      "index": 5,
+      "intent": "Planner screen rendered with selected repo-id",
+      "slug": "verify-planner",
+      "screenshot_path": "keyframes/frame_006.png"
+    }
+  ],
+  "keyframe_count": 6,
+  "recording_rich": "hf-search-gui.rich.mp4",
+  "media_validation": {
+    "mode": "local-gui-keyframe-normalization",
+    "keyframes": 6,
+    "rich_required": true
+  }
+}

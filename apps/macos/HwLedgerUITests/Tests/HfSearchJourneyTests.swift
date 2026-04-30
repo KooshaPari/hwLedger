@@ -30,7 +30,7 @@ struct HfSearchJourneyTests {
 
         journey.step("launch-app", intent: "App launches on default screen") {
             do {
-                _ = try appDriver.waitForElement(id: "attention-kind-label", timeout: 10.0)
+                _ = try appDriver.waitForElement(id: "seq-len-slider", timeout: 10.0)
             } catch {
                 print("DIAGNOSTIC: Accessibility permission may be missing. Add Terminal/Xcode under System Settings > Privacy & Security > Accessibility.")
                 throw error
@@ -58,8 +58,8 @@ struct HfSearchJourneyTests {
             try appDriver.tapButton(identifier: "hf-search-use-0")
         }
 
-        journey.step("verify-planner", intent: "Planner screen rendered (attention-kind-label visible)") {
-            _ = try appDriver.waitForElement(id: "attention-kind-label", timeout: 5.0)
+        journey.step("verify-planner", intent: "Planner screen rendered with selected repo-id") {
+            _ = try appDriver.waitForElement(id: "seq-len-slider", timeout: 5.0)
         }
         try await journey.screenshot(intent: "Planner opened with selected repo-id")
 

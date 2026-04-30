@@ -1,0 +1,55 @@
+{
+  "failure" : "elementNotFound(\"what-if-picker-row-0\")",
+  "finished_at" : "2026-04-30T12:19:43Z",
+  "id" : "what-if-gui",
+  "passed" : false,
+  "recording" : true,
+  "recording_denied" : false,
+  "started_at" : "2026-04-30T12:19:37Z",
+  "steps" : [
+    {
+      "index" : 0,
+      "intent" : "App launches on default screen",
+      "native_height" : 666,
+      "native_width" : 900,
+      "screenshot_path" : "01-what-if-screen-first-paint.png",
+      "slug" : "launch-app"
+    },
+    {
+      "index" : 1,
+      "intent" : "User clicks 'What-If' in the sidebar",
+      "native_height" : 666,
+      "native_width" : 900,
+      "screenshot_path" : "02-techniques-selected.png",
+      "slug" : "navigate-what-if"
+    },
+    {
+      "index" : 2,
+      "intent" : "User opens baseline picker and selects first option",
+      "native_height" : 666,
+      "native_width" : 900,
+      "screenshot_path" : "03-what-if-bars-verdict-card-rendered.png",
+      "slug" : "pick-baseline"
+    },
+    {
+      "index" : 3,
+      "intent" : "User opens candidate picker and selects second option",
+      "slug" : "pick-candidate"
+    },
+    {
+      "index" : 4,
+      "intent" : "User toggles INT4 and LoRA technique chips",
+      "slug" : "select-techniques"
+    },
+    {
+      "index" : 5,
+      "intent" : "User taps Run prediction",
+      "slug" : "run-prediction"
+    },
+    {
+      "index" : 6,
+      "intent" : "Baseline + candidate memory bars rendered alongside verdict card",
+      "slug" : "verify-bars"
+    }
+  ]
+}

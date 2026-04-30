@@ -28,7 +28,7 @@ struct SettingsMTLSJourneyTests {
             "launch-app",
             intent: "App launches on Planner; cursor drifts down sidebar to 'Settings', click transitions detail pane."
         ) {
-            _ = try appDriver.waitForElement(id: "attention-kind-label", timeout: 10.0)
+            _ = try appDriver.waitForElement(id: "seq-len-slider", timeout: 10.0)
             try appDriver.tapButton(identifier: "sidebar-settings")
         }
 

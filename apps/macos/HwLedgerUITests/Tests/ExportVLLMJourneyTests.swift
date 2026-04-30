@@ -28,7 +28,7 @@ struct ExportVLLMJourneyTests {
             "launch-app",
             intent: "App opens on Planner; default config shows Llama-3.1-8B at 4096 tokens, memory bar half-full."
         ) {
-            _ = try appDriver.waitForElement(id: "attention-kind-label", timeout: 10.0)
+            _ = try appDriver.waitForElement(id: "seq-len-slider", timeout: 10.0)
         }
         try await journey.screenshot(intent: "Planner at default launch state")
 

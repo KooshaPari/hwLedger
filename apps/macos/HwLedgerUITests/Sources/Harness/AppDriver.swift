@@ -2,6 +2,7 @@ import Foundation
 import AppKit
 import ApplicationServices
 import CoreGraphics
+import ScreenCaptureKit
 
 /// Real AppDriver using macOS Accessibility Framework (AXUIElement + CGEvent).
 /// Drives SwiftUI apps via the public Accessibility API (available since macOS 10.2).
@@ -15,7 +16,7 @@ import CoreGraphics
 ///
 /// Implementation notes:
 /// - Traversal is depth-limited (20 levels) to prevent infinite loops
-/// - Screenshots are captured via CGWindowListCreateImage scoped to app window
+/// - Screenshots are captured via ScreenCaptureKit scoped to the app window
 /// - Sliders are set via AXValue attribute; fallback to keyboard simulation
 /// - Text input uses CGEventCreateKeyboardEvent for unicode support
 public final class AppDriver {
@@ -197,10 +198,15 @@ public final class AppDriver {
     }
 
     /// Capture a screenshot of the app's window (not full screen).
-    /// Uses CGWindowListCreateImage scoped to the app's main window.
-    /// Falls back to full-screen capture if window ID cannot be determined.
+    /// Uses ScreenCaptureKit's single-shot window capture first. Falls back
+    /// to the older CGWindow path only when ScreenCaptureKit is unavailable
+    /// or cannot resolve the window.
     /// - Returns: PNG image data
-    public func screenshot() throws -> Data {
+    public func screenshot() async throws -> Data {
+        if let pngData = try? await screenshotWithScreenCaptureKit() {
+            return pngData
+        }
+
         guard let windowID = try getMainWindowID() else {
             // Fallback: full-screen capture
             return try screenshotFullScreen()
@@ -223,6 +229,49 @@ public final class AppDriver {
             throw AppDriverError.screenshotFailed
         }
 
+        return pngData
+    }
+
+    private func screenshotWithScreenCaptureKit() async throws -> Data {
+        let content = try await SCShareableContent.current
+        guard let targetWindow = content.windows.first(where: { window in
+            window.owningApplication?.processID == app.processIdentifier
+                && window.isOnScreen
+                && window.windowLayer == 0
+        }) else {
+            throw AppDriverError.windowNotFound
+        }
+
+        let filter = SCContentFilter(desktopIndependentWindow: targetWindow)
+        let scale = backingScaleFactor(for: targetWindow)
+        let config = SCStreamConfiguration()
+        config.width = max(1, Int(targetWindow.frame.width * scale))
+        config.height = max(1, Int(targetWindow.frame.height * scale))
+        config.scalesToFit = false
+        config.showsCursor = false
+        config.captureResolution = .best
+
+        let cgImage = try await SCScreenshotManager.captureImage(
+            contentFilter: filter,
+            configuration: config
+        )
+        return try pngData(from: cgImage)
+    }
+
+    private func backingScaleFactor(for window: SCWindow) -> CGFloat {
+        for screen in NSScreen.screens where screen.frame.intersects(window.frame) {
+            return screen.backingScaleFactor
+        }
+        return NSScreen.main?.backingScaleFactor ?? 2.0
+    }
+
+    private func pngData(from cgImage: CGImage) throws -> Data {
+        let nsImage = NSImage(cgImage: cgImage, size: .zero)
+        guard let tiffData = nsImage.tiffRepresentation,
+              let bitmapRep = NSBitmapImageRep(data: tiffData),
+              let pngData = bitmapRep.representation(using: .png, properties: [:]) else {
+            throw AppDriverError.screenshotFailed
+        }
         return pngData
     }
 

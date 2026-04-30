@@ -1,0 +1,50 @@
+{
+  "failure" : "elementNotFound(\"hf-search-use-0\")",
+  "finished_at" : "2026-04-30T12:18:48Z",
+  "id" : "hf-search-gui",
+  "passed" : false,
+  "recording" : true,
+  "recording_denied" : false,
+  "started_at" : "2026-04-30T12:18:45Z",
+  "steps" : [
+    {
+      "index" : 0,
+      "intent" : "App launches on default screen",
+      "native_height" : 666,
+      "native_width" : 900,
+      "screenshot_path" : "01-hf-search-screen-first-paint.png",
+      "slug" : "launch-app"
+    },
+    {
+      "index" : 1,
+      "intent" : "User clicks 'HF Search' in the sidebar",
+      "native_height" : 666,
+      "native_width" : 900,
+      "screenshot_path" : "02-hf-search-results-with-llama.png",
+      "slug" : "navigate-hf-search"
+    },
+    {
+      "index" : 2,
+      "intent" : "User types 'llama' into the search input",
+      "native_height" : 666,
+      "native_width" : 900,
+      "screenshot_path" : "03-planner-opened-with-selected-repo-id.png",
+      "slug" : "enter-query"
+    },
+    {
+      "index" : 3,
+      "intent" : "Debounced search populates at least one result row",
+      "slug" : "wait-for-results"
+    },
+    {
+      "index" : 4,
+      "intent" : "User taps the first row's 'Use this model' action; Planner receives repo-id",
+      "slug" : "use-first-result"
+    },
+    {
+      "index" : 5,
+      "intent" : "Planner screen rendered with selected repo-id",
+      "slug" : "verify-planner"
+    }
+  ]
+}

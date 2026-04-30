@@ -93,7 +93,7 @@ impl RenderPlan {
     }
 }
 
-/// Synthesise a per-journey voiceover WAV via edge-tts (Microsoft cloud).
+/// Synthesise a per-journey voiceover MP3 via edge-tts (Microsoft cloud).
 /// Returns the public-relative path suitable for `manifest.voiceover.audio`.
 ///
 /// Voice defaults to `en-US-AriaNeural` (the current CLI default, tied to
@@ -109,13 +109,7 @@ pub fn synthesise_voiceover_edge_tts(plan: &RenderPlan) -> Result<String, Render
     let raw = std::fs::read_to_string(&plan.manifest_path)?;
     let rich: RichManifest = serde_json::from_str(&raw)
         .map_err(|e| RenderError::BadManifest(format!("manifest parse: {e}")))?;
-    let tmp_dir = plan.remotion_root.join("public").join("audio").join(&plan.journey_id);
-    std::fs::create_dir_all(&tmp_dir)?;
-    let mut parts: Vec<PathBuf> = Vec::new();
-    let intro = format!("{}. {}", plan.journey_id.replace('-', " "), rich.intent);
-    let intro_wav = tmp_dir.join("000-intro.wav");
-    edge_tts_one(&voice, &intro, &intro_wav)?;
-    parts.push(intro_wav);
+    let mut lines = vec![format!("{}. {}", plan.journey_id.replace('-', " "), rich.intent)];
     for (i, step) in rich.steps.iter().enumerate() {
         let line = step
             .description
@@ -125,42 +119,20 @@ pub fn synthesise_voiceover_edge_tts(plan: &RenderPlan) -> Result<String, Render
         if line.trim().is_empty() {
             continue;
         }
-        let out = tmp_dir.join(format!("{i:03}-step.wav"));
-        edge_tts_one(&voice, &line, &out)?;
-        parts.push(out);
+        lines.push(format!("Step {}. {line}", i + 1));
     }
-    let list_path = tmp_dir.join("concat.txt");
-    let mut list = String::new();
-    for p in &parts {
-        list.push_str(&format!("file '{}'\n", p.display()));
-    }
-    std::fs::write(&list_path, list)?;
-    let out_wav = plan
+    let out_mp3 = plan
         .remotion_root
         .join("public")
         .join("audio")
-        .join(format!("{}.voiceover.wav", plan.journey_id));
-    if let Some(parent) = out_wav.parent() {
+        .join(format!("{}.voiceover.mp3", plan.journey_id));
+    if let Some(parent) = out_mp3.parent() {
         std::fs::create_dir_all(parent)?;
     }
-    let status = Command::new("ffmpeg")
-        .args(["-y", "-f", "concat", "-safe", "0", "-i"])
-        .arg(&list_path)
-        .args(["-ar", "22050", "-ac", "1", "-c:a", "pcm_s16le"])
-        .arg(&out_wav)
-        .status()?;
-    if !status.success() {
-        return Err(RenderError::BadManifest("ffmpeg concat failed (edge-tts)".into()));
-    }
-    Ok(format!("audio/{}.voiceover.wav", plan.journey_id))
-}
-
-fn edge_tts_one(voice: &str, text: &str, out_wav: &Path) -> Result<(), RenderError> {
-    // edge-tts writes MP3; transcode to WAV PCM for concat-compat with piper.
-    let tmp_mp3 = out_wav.with_extension("mp3");
+    let narration = lines.join("\n\n");
     let out = Command::new("edge-tts")
-        .args(["--voice", voice, "--text", text, "--write-media"])
-        .arg(&tmp_mp3)
+        .args(["--voice", &voice, "--text", &narration, "--write-media"])
+        .arg(&out_mp3)
         .output()?;
     if !out.status.success() {
         return Err(RenderError::BadManifest(format!(
@@ -168,17 +140,7 @@ fn edge_tts_one(voice: &str, text: &str, out_wav: &Path) -> Result<(), RenderErr
             String::from_utf8_lossy(&out.stderr)
         )));
     }
-    let status = Command::new("ffmpeg")
-        .args(["-y", "-i"])
-        .arg(&tmp_mp3)
-        .args(["-ar", "22050", "-ac", "1", "-c:a", "pcm_s16le"])
-        .arg(out_wav)
-        .status()?;
-    if !status.success() {
-        return Err(RenderError::BadManifest("ffmpeg transcode (edge->wav) failed".into()));
-    }
-    let _ = std::fs::remove_file(&tmp_mp3);
-    Ok(())
+    Ok(format!("audio/{}.voiceover.mp3", plan.journey_id))
 }
 
 /// Synthesise a per-journey voiceover WAV via Piper, concatenating one
@@ -685,15 +647,7 @@ fn render_voiceover_python(
     if let Some(parent) = out_wav.parent() {
         std::fs::create_dir_all(parent)?;
     }
-    let status = Command::new("ffmpeg")
-        .args(["-y", "-i"])
-        .arg(&raw_wav)
-        .args(["-ar", "22050", "-ac", "1", "-c:a", "pcm_s16le"])
-        .arg(&out_wav)
-        .status()?;
-    if !status.success() {
-        return Err(RenderError::BadManifest("ffmpeg transcode (engine->wav) failed".into()));
-    }
+    normalize_audio_to_wav(&raw_wav, &out_wav, "engine->wav")?;
     Ok(format!("audio/{}.voiceover.wav", plan.journey_id))
 }
 
@@ -733,13 +687,16 @@ pub fn synthesise_voiceover_indextts2(plan: &RenderPlan) -> Result<String, Rende
     std::fs::write(&script_txt, &text)?;
     let raw_wav = tmp_dir.join("engine-raw.wav");
     let start = std::time::Instant::now();
-    let out = Command::new(&python)
-        .env("INDEXTTS_ROOT", &root)
+    let mut cmd = Command::new(&python);
+    cmd.env("INDEXTTS_ROOT", &root)
+        .env("MPLCONFIGDIR", tts_cache_dir("matplotlib")?)
+        .env("NUMBA_CACHE_DIR", tts_cache_dir("numba")?)
+        .env("XDG_CACHE_HOME", tts_cache_dir("xdg")?)
         .arg(&driver)
         .arg(&script_txt)
         .arg(&ref_wav)
-        .arg(&raw_wav)
-        .output()?;
+        .arg(&raw_wav);
+    let out = cmd.output()?;
     if !out.status.success() {
         return Err(RenderError::BadManifest(format!(
             "indextts2 driver failed: {}",
@@ -755,15 +712,7 @@ pub fn synthesise_voiceover_indextts2(plan: &RenderPlan) -> Result<String, Rende
     if let Some(parent) = out_wav.parent() {
         std::fs::create_dir_all(parent)?;
     }
-    let status = Command::new("ffmpeg")
-        .args(["-y", "-i"])
-        .arg(&raw_wav)
-        .args(["-ar", "22050", "-ac", "1", "-c:a", "pcm_s16le"])
-        .arg(&out_wav)
-        .status()?;
-    if !status.success() {
-        return Err(RenderError::BadManifest("ffmpeg transcode (indextts->wav) failed".into()));
-    }
+    normalize_audio_to_wav(&raw_wav, &out_wav, "indextts->wav")?;
     Ok(format!("audio/{}.voiceover.wav", plan.journey_id))
 }
 
@@ -781,9 +730,9 @@ pub fn synthesise_voiceover_kittentts(plan: &RenderPlan) -> Result<String, Rende
     render_voiceover_python(plan, &python, &driver, &[])
 }
 
-/// Synthesise narration via macOS `say` -> AIFF -> ffmpeg WAV. 5-line glue is
-/// not acceptable here (the per-step concat mirrors the Piper path), so it's
-/// implemented in Rust.
+/// Synthesise narration via macOS `say` -> AIFF -> WAV. The conversion uses
+/// `afconvert` first so the local voiceover path does not depend on a working
+/// Homebrew ffmpeg install.
 pub fn synthesise_voiceover_avspeech(plan: &RenderPlan) -> Result<String, RenderError> {
     if !macos() {
         return Err(RenderError::BadManifest("avspeech requires macOS".into()));
@@ -793,41 +742,24 @@ pub fn synthesise_voiceover_avspeech(plan: &RenderPlan) -> Result<String, Render
         .map_err(|e| RenderError::BadManifest(format!("manifest parse: {e}")))?;
     let tmp_dir = plan.remotion_root.join("public").join("audio").join(&plan.journey_id);
     std::fs::create_dir_all(&tmp_dir)?;
-    let mut parts: Vec<PathBuf> = Vec::new();
-    let lines = std::iter::once(format!("{}. {}", plan.journey_id.replace('-', " "), rich.intent))
-        .chain(rich.steps.iter().map(|step| {
-            step.description
-                .clone()
-                .or_else(|| step.blind_description.clone())
-                .unwrap_or_else(|| step.intent.clone())
-        }));
-    for (i, line) in lines.enumerate() {
+    let mut text = format!("{}. {}\n\n", plan.journey_id.replace('-', " "), rich.intent);
+    for line in rich.steps.iter().map(|step| {
+        step.description
+            .clone()
+            .or_else(|| step.blind_description.clone())
+            .unwrap_or_else(|| step.intent.clone())
+    }) {
         if line.trim().is_empty() {
             continue;
         }
-        let aiff = tmp_dir.join(format!("{i:03}-say.aiff"));
-        let wav = tmp_dir.join(format!("{i:03}-step.wav"));
-        let status = Command::new("say").arg("-o").arg(&aiff).arg(&line).status()?;
-        if !status.success() {
-            return Err(RenderError::BadManifest("say failed".into()));
-        }
-        let status = Command::new("ffmpeg")
-            .args(["-y", "-i"])
-            .arg(&aiff)
-            .args(["-ar", "22050", "-ac", "1", "-c:a", "pcm_s16le"])
-            .arg(&wav)
-            .status()?;
-        if !status.success() {
-            return Err(RenderError::BadManifest("ffmpeg (say->wav) failed".into()));
-        }
-        parts.push(wav);
+        text.push_str(&line);
+        text.push_str("\n\n");
     }
-    let list_path = tmp_dir.join("concat.txt");
-    let mut list = String::new();
-    for p in &parts {
-        list.push_str(&format!("file '{}'\n", p.display()));
+    let aiff = tmp_dir.join("avspeech.aiff");
+    let status = Command::new("say").arg("-o").arg(&aiff).arg(&text).status()?;
+    if !status.success() {
+        return Err(RenderError::BadManifest("say failed".into()));
     }
-    std::fs::write(&list_path, list)?;
     let out_wav = plan
         .remotion_root
         .join("public")
@@ -836,16 +768,55 @@ pub fn synthesise_voiceover_avspeech(plan: &RenderPlan) -> Result<String, Render
     if let Some(parent) = out_wav.parent() {
         std::fs::create_dir_all(parent)?;
     }
-    let status = Command::new("ffmpeg")
-        .args(["-y", "-f", "concat", "-safe", "0", "-i"])
-        .arg(&list_path)
-        .args(["-c", "copy"])
-        .arg(&out_wav)
-        .status()?;
-    if !status.success() {
-        return Err(RenderError::BadManifest("ffmpeg concat (avspeech) failed".into()));
-    }
+    normalize_audio_to_wav(&aiff, &out_wav, "avspeech")?;
     Ok(format!("audio/{}.voiceover.wav", plan.journey_id))
+}
+
+fn normalize_audio_to_wav(input: &Path, output: &Path, label: &str) -> Result<(), RenderError> {
+    if try_afconvert(input, output)? {
+        return Ok(());
+    }
+    if try_ffmpeg_audio_convert(input, output)? {
+        return Ok(());
+    }
+    if input.extension().and_then(|e| e.to_str()).is_some_and(|e| e.eq_ignore_ascii_case("wav")) {
+        std::fs::copy(input, output)?;
+        return Ok(());
+    }
+    Err(RenderError::BadManifest(format!("audio transcode ({label}) failed")))
+}
+
+fn try_afconvert(input: &Path, output: &Path) -> Result<bool, RenderError> {
+    let status = Command::new("afconvert")
+        .args(["-f", "WAVE", "-d", "LEI16@22050"])
+        .arg(input)
+        .arg(output)
+        .status();
+    match status {
+        Ok(status) => Ok(status.success()),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(false),
+        Err(e) => Err(e.into()),
+    }
+}
+
+fn try_ffmpeg_audio_convert(input: &Path, output: &Path) -> Result<bool, RenderError> {
+    let status = Command::new("ffmpeg")
+        .args(["-y", "-i"])
+        .arg(input)
+        .args(["-ar", "22050", "-ac", "1", "-c:a", "pcm_s16le"])
+        .arg(output)
+        .status();
+    match status {
+        Ok(status) => Ok(status.success()),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(false),
+        Err(e) => Err(e.into()),
+    }
+}
+
+fn tts_cache_dir(name: &str) -> Result<PathBuf, RenderError> {
+    let dir = std::env::temp_dir().join("hwledger-tts-cache").join(name);
+    std::fs::create_dir_all(&dir)?;
+    Ok(dir)
 }
 
 /// Locate a driver script in the nearest `tools/tts-ab` directory. Walks up
