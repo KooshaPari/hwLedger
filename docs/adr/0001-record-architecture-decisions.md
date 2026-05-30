@@ -18,3 +18,11 @@ We will use Architecture Decision Records (ADRs) as described by Michael Nygard.
 ## Reference
 - Michael Nygard, "Documenting Architecture Decisions": https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions
 - joelparkerhenderson/architecture-decision-record: https://github.com/joelparkerhenderson/architecture-decision-record
+
+---
+
+## Rich Media Stubs
+
+<!-- RICH-MEDIA-STUB type="annotated-screenshot" subject="hwLedger component map — Rust workspace crate dependency graph" journey="" status="TODO" -->
+> **[RICH MEDIA PLACEHOLDER]** *Annotated screenshot of the crate dependency diagram from PLAN.md §4.1.*
+<!-- END-RICH-MEDIA-STUB -->
