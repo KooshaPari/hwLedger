@@ -89,3 +89,63 @@ WP21 deliverables (macOS distribution):
 ## License
 
 Apache-2.0. See [LICENSE](./LICENSE).
+
+---
+
+## Rich Media Stubs
+
+<!-- RICH-MEDIA-STUB type="annotated-screenshot" subject="hwLedger CLI quickstart — first hwledger --help output" journey="" status="TODO" -->
+> **[RICH MEDIA PLACEHOLDER]** *Annotated screenshot of the terminal after `cargo install` + `hwledger --help`, highlighting key subcommands.*
+<!-- END-RICH-MEDIA-STUB -->
+
+<!-- RICH-MEDIA-STUB type="recording-gif" subject="VRAM plan slider UI — live per-layer breakdown" journey="first-plan" status="TODO" -->
+> **[RICH MEDIA PLACEHOLDER]** *GIF of the VRAM slider moving across quantization levels, showing per-layer VRAM numbers updating in real time.*
+<!-- END-RICH-MEDIA-STUB -->
+
+<!-- RICH-MEDIA-STUB type="recording-gif" subject="Fleet register — adding a new device to the ledger" journey="fleet-register" status="TODO" -->
+> **[RICH MEDIA PLACEHOLDER]** *GIF walkthrough of the fleet-register journey: discover device → confirm spec → ledger entry created.*
+<!-- END-RICH-MEDIA-STUB -->
+
+<!-- RICH-MEDIA-STUB type="recording-mp4" subject="Traceability report — audit log + provenance chain view" journey="traceability-report" status="TODO" -->
+> **[RICH MEDIA PLACEHOLDER]** *Full video of the traceability-report journey showing the event-sourced audit log panel.*
+<!-- END-RICH-MEDIA-STUB -->
+
+<!-- RICH-MEDIA-STUB type="recording-mp4" subject="VRAM reconcile — prediction vs live telemetry diff" journey="vram-reconcile" status="TODO" -->
+> **[RICH MEDIA PLACEHOLDER]** *Video of the vram-reconcile journey showing prediction table vs live telemetry from mlx/llama.cpp.*
+<!-- END-RICH-MEDIA-STUB -->
+
+<!-- RICH-MEDIA-STUB type="recording-gif" subject="Inference run — local Apple Silicon sidecar in action" journey="inference-run" status="TODO" -->
+> **[RICH MEDIA PLACEHOLDER]** *GIF of the inference-run journey: model load, first token, throughput gauge.*
+<!-- END-RICH-MEDIA-STUB -->
+
+<!-- RICH-MEDIA-STUB type="recording-mp4" subject="Fleet probe — SSH agentless hardware scan" journey="fleet-probe" status="TODO" -->
+> **[RICH MEDIA PLACEHOLDER]** *Video of fleet-probe scanning a remote node and populating hardware specs.*
+<!-- END-RICH-MEDIA-STUB -->
+
+<!-- RICH-MEDIA-STUB type="annotated-screenshot" subject="Cost model — spot-price-aware fleet dispatch view" journey="cost-model" status="TODO" -->
+> **[RICH MEDIA PLACEHOLDER]** *Annotated screenshot of the cost-model panel showing Vast.ai/RunPod spot prices vs local cost.*
+<!-- END-RICH-MEDIA-STUB -->
+
+<!-- RICH-MEDIA-STUB type="recording-mp4" subject="Audit log — event-sourced ledger timeline" journey="audit-log" status="TODO" -->
+> **[RICH MEDIA PLACEHOLDER]** *Video of the audit-log journey scrolling through timestamped hardware events.*
+<!-- END-RICH-MEDIA-STUB -->
+
+<!-- RICH-MEDIA-STUB type="recording-gif" subject="Fleet dispatch — assign model run to cheapest fleet node" journey="fleet-dispatch" status="TODO" -->
+> **[RICH MEDIA PLACEHOLDER]** *GIF of fleet-dispatch: model selected → cheapest node identified → job dispatched.*
+<!-- END-RICH-MEDIA-STUB -->
+
+<!-- RICH-MEDIA-STUB type="recording-gif" subject="Model ingest — HuggingFace / GGUF config auto-parse" journey="model-ingest" status="TODO" -->
+> **[RICH MEDIA PLACEHOLDER]** *GIF of pasting a HF model ID and watching architecture type + per-layer params populate.*
+<!-- END-RICH-MEDIA-STUB -->
+
+<!-- RICH-MEDIA-STUB type="recording-gif" subject="Telemetry sync — live GPU stats from vLLM/TGI" journey="telemetry-sync" status="TODO" -->
+> **[RICH MEDIA PLACEHOLDER]** *GIF of the telemetry-sync panel refreshing GPU utilisation and memory stats.*
+<!-- END-RICH-MEDIA-STUB -->
+
+<!-- RICH-MEDIA-STUB type="recording-mp4" subject="KV-cache plan — sliding window + GQA breakdown" journey="kv-cache-plan" status="TODO" -->
+> **[RICH MEDIA PLACEHOLDER]** *Video of the kv-cache-plan journey showing MLA vs GQA KV memory comparison.*
+<!-- END-RICH-MEDIA-STUB -->
+
+<!-- RICH-MEDIA-STUB type="annotated-screenshot" subject="Spot price scan — cloud rental comparison table" journey="spot-price-scan" status="TODO" -->
+> **[RICH MEDIA PLACEHOLDER]** *Annotated screenshot of the spot-price-scan results table across Vast/RunPod/Lambda.*
+<!-- END-RICH-MEDIA-STUB -->
