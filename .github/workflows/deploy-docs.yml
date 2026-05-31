@@ -33,10 +33,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Install consumer dependencies first so node_modules/vitepress exists
+          bun install
           # Link @phenotype/docs from the cloned phenodocs workspace
           mkdir -p node_modules/@phenotype
           ln -sf /tmp/phenodocs/packages/docs node_modules/@phenotype/docs
-          bun install
+          # Expose vitepress to phenodocs so its config/index.ts can resolve it
+          mkdir -p /tmp/phenodocs/node_modules
+          ln -sf "$(pwd)/node_modules/vitepress" /tmp/phenodocs/node_modules/vitepress
 
       - name: Build VitePress site
         working-directory: docs
