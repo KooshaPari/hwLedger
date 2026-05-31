@@ -1,0 +1,22 @@
+{
+  "name": "hwledger-docs",
+  "version": "0.1.0",
+  "private": true,
+  "description": "hwLedger documentation site (VitePress)",
+  "type": "module",
+  "scripts": {
+    "docs:dev": "vitepress dev .",
+    "docs:build": "vitepress build .",
+    "docs:preview": "vitepress preview ."
+  },
+  "dependencies": {
+    "vitepress": "^1.5.0",
+    "vue": "^3.5.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
