@@ -4,7 +4,7 @@
 
 Please report security vulnerabilities via GitHub Security Advisories:
 
-- Open a [private security advisory](../../security/advisories/new)
+- Open a [private security advisory](https://github.com/KooshaPari/hwLedger/security/advisories/new)
 - For sensitive issues, contact the repository owner directly
 
 ## Supported Versions

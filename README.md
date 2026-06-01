@@ -6,7 +6,7 @@ _LLM capacity planner + fleet ledger + desktop inference runtime._
 
 **Not a financial ledger.** hwLedger tracks hardware fleet audit and provenance for machine learning workloads. It provides per-layer VRAM estimation for LLMs, reconciles predictions against live telemetry from inference engines (MLX, mistral.rs, llama.cpp, vLLM, TGI), and maintains an event-sourced audit log for heterogeneous compute fleets (Apple Silicon, NVIDIA/AMD, cloud rentals).
 
-**Status:** pre-alpha, Phase 0 bootstrap. See [PLAN.md](./PLAN.md) for the implementation roadmap.
+**Status:** pre-alpha, Phase 0 bootstrap. See PLAN.md for the implementation roadmap.
 
 hwLedger is an Apache-2.0 desktop app + agent/server pair that:
 
@@ -29,11 +29,11 @@ hwledger --help
 
 **Web fallback (no compilation needed):** A Streamlit web interface is available at [`apps/streamlit/`](./apps/streamlit/) — run `cargo run -p hwledger-devtools -- up` to launch it locally on `localhost:8501` along with the API server.
 
-> **macOS DMG note:** Native macOS DMG distribution is currently blocked on Apple Developer certificate renewal — see [WP21 Apple Developer secrets](./docs/reports/WP21-APPLE-DEV-SECRETS.md) for setup instructions. Use the Streamlit fallback or CLI above for now.
+> **macOS DMG note:** Native macOS DMG distribution is currently blocked on Apple Developer certificate renewal. Use the Streamlit fallback or CLI above for now.
 
 ## Why
 
-Every existing public VRAM calculator (HF Accelerate, can-it-run-llm, LM Studio's gauge) gets MoE and MLA wrong — they under-count KV cache and over-count MoE throughput. hwLedger's math core is architecture-keyed: it dispatches per `AttentionKind` (MHA / GQA / MQA / MLA / Sliding / SSM / Hybrid / Sink) and treats resident-vs-active parameters separately for MoE. See [PLAN.md §5](./PLAN.md#5-math-core-51-is-the-products-soul).
+Every existing public VRAM calculator (HF Accelerate, can-it-run-llm, LM Studio's gauge) gets MoE and MLA wrong — they under-count KV cache and over-count MoE throughput. hwLedger's math core is architecture-keyed: it dispatches per `AttentionKind` (MHA / GQA / MQA / MLA / Sliding / SSM / Hybrid / Sink) and treats resident-vs-active parameters separately for MoE. See PLAN.md for the math core design rationale (§5).
 
 ## Architecture
 
@@ -42,7 +42,7 @@ Every existing public VRAM calculator (HF Accelerate, can-it-run-llm, LM Studio'
 - **Native apps**: `apps/macos/` (SwiftUI + UniFFI + XCFramework), `apps/windows/` (WinUI 3 + .NET 9 + csbindgen), `apps/linux-qt/` (Qt 6 + cxx-qt + QML), `apps/linux-slint/` (Rust-native)
 - **Fleet wire**: Axum + rustls mTLS for agents; russh + deadpool for SSH agentless; reqwest for Vast/RunPod/Lambda/Modal; `tailscale status --json` for tailnet discovery
 
-See the component diagram in [PLAN.md §4.1](./PLAN.md#41-component-map).
+See PLAN.md for the component map (§4.1).
 
 ## Dev setup
 
@@ -52,16 +52,16 @@ One-liner to build FFI + launch server, docs-site, and Streamlit:
 cargo run -p hwledger-devtools -- up
 ```
 
-See [docs-site/getting-started/dev-setup.md](./docs-site/getting-started/dev-setup.md) for ports, log locations, and troubleshooting (FFI auto-build, Swift "engine missing" sheet, streamlit hot-reload).
+See docs-site/getting-started/ for ports, log locations, and troubleshooting (FFI auto-build, Swift "engine missing" sheet, streamlit hot-reload).
 
 ## Documentation
 
-- [PLAN.md](./PLAN.md) — phased WBS + DAG + risks + reuse opportunities
-- [PRD.md](./PRD.md) — product requirements (forthcoming)
-- [ADR.md](./ADR.md) — index of architecture decisions (see `docs/adr/`)
-- [CHARTER.md](./CHARTER.md) — scope + principles (forthcoming)
-- [AGENTS.md](./AGENTS.md) — AI-agent operating notes (forthcoming)
-- [docs/research/](./docs/research/) — archived Haiku research briefs (oMlx, MLX IPC, inference engines, KV cache formulas, config ingestion, GPU telemetry, Swift/WinUI/Qt FFI, fleet wire, competitor survey)
+- **PLAN.md** — phased WBS + DAG + risks + reuse opportunities (forthcoming)
+- **PRD.md** — product requirements (forthcoming)
+- **ADR.md** — index of architecture decisions (see `docs/adr/`)
+- **CHARTER.md** — scope + principles (forthcoming)
+- [AGENTS.md](./AGENTS.md) — AI-agent operating notes
+- **docs/research/** — archived Haiku research briefs (forthcoming)
 
 ## Development status
 
