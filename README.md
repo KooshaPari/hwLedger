@@ -1,3 +1,6 @@
+> **Work state:** SCAFFOLD · **Progress:** `███░░░░░░░ 25%`
+> LLM capacity planner + fleet ledger + desktop inference runtime (Rust core + per-OS native GUIs). Pre-alpha Phase 0; ambitious 11-crate plan, 42 files committed so far (mostly docs/scaffold). · updated 2026-06-02
+
 # hwLedger
 
 [![AI Slop Inside](https://sladge.net/badge.svg)](https://sladge.net)
