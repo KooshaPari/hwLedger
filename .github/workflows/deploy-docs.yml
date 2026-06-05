@@ -38,7 +38,7 @@ jobs:
       - name: Install dependencies
         working-directory: docs
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           # Install consumer dependencies first so node_modules/vitepress exists
           bun install
