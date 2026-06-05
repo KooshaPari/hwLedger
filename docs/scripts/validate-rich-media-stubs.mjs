@@ -52,7 +52,8 @@ if (stubs.length === 0) {
 }
 
 const journeys = new Set(stubs.map((stub) => stub.journey).filter(Boolean));
-const missingJourneyNames = [...journeys].filter((journey) => !text.includes(journey));
+const textWithoutStubs = text.replace(/<!-- RICH-MEDIA-STUB\s+[^>]*-->/g, '');
+const missingJourneyNames = [...journeys].filter((journey) => !textWithoutStubs.includes(journey));
 for (const journey of missingJourneyNames) {
   failures.push(`journey ${journey}: not referenced elsewhere in ${relative(docsRoot, traceabilityPath)}`);
 }
