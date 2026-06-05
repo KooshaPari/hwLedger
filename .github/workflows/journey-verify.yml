@@ -1,0 +1,63 @@
+name: Journey Verify
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    paths:
+      - 'docs/journeys/**'
+      - 'docs/operations/journey-traceability.md'
+      - 'docs/governance/journeys.md'
+  pull_request:
+    paths:
+      - 'docs/journeys/**'
+      - 'docs/operations/journey-traceability.md'
+      - 'docs/governance/journeys.md'
+jobs:
+  verify:
+    name: phenotype-journey verify
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # v-latest
+        with:
+          toolchain: stable
+
+      - name: Cache phenotype-journey-core
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v-latest
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            phenotype-journeys/target
+          key: ${{ runner.os }}-phenotype-journey-core-${{ hashFiles('phenotype-journeys/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-phenotype-journey-core-
+
+      - name: Build phenotype-journey CLI
+        working-directory: phenotype-journeys
+        run: cargo build --release --bin phenotype-journey
+
+      - name: Verify journey manifests
+        run: |
+          set -euo pipefail
+          if [ ! -x phenotype-journeys/target/release/phenotype-journey ]; then
+            echo "phenotype-journey binary not built; skipping verify" && exit 0
+          fi
+          for manifest in docs/journeys/manifests/*.journey.yaml; do
+            [ -e "$manifest" ] || continue
+            echo "Verifying $manifest"
+            ./phenotype-journeys/target/release/phenotype-journey verify \
+              --manifest "$manifest" \
+              --docs-root docs/journeys
+          done

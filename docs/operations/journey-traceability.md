@@ -8,7 +8,7 @@ Document key flows with journey manifests in `docs/journeys/manifests/`.
 
 ## Status
 
-- [ ] Identify key user-facing flows
+- [x] Identify key user-facing flows
 - [ ] Record VHS tapes for each flow
 - [ ] Author manifests in `docs/journeys/manifests/`
 - [ ] Run `phenotype-journey verify` in CI
