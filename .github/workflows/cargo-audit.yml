@@ -34,4 +34,4 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5@11bd71901bbe5b1630ceea73d27597364c9af683
       - uses: rustsec/audit-check@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ github.token }}
