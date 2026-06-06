@@ -1,15 +1,7 @@
 name: Journey Verify
+
 on:
   workflow_dispatch:
-
-permissions:
-  contents: read
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-on:
   push:
     paths:
       - 'docs/journeys/**'
@@ -20,6 +12,14 @@ on:
       - 'docs/journeys/**'
       - 'docs/operations/journey-traceability.md'
       - 'docs/governance/journeys.md'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     name: phenotype-journey verify
@@ -27,6 +27,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v4
+
+      - name: Checkout phenotype-journeys toolchain
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v4
+        with:
+          repository: KooshaPari/phenotype-journeys
+          path: phenotype-journeys
+          ref: f6426af97b42325452df3b7c1681f29a6be52002
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # v-latest
@@ -52,7 +59,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ ! -x phenotype-journeys/target/release/phenotype-journey ]; then
-            echo "phenotype-journey binary not built; skipping verify" && exit 0
+            echo "phenotype-journey binary not built" && exit 1
           fi
           for manifest in docs/journeys/manifests/*.journey.yaml; do
             [ -e "$manifest" ] || continue

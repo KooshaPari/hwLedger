@@ -21,7 +21,7 @@ steps:
         - "Usage:"
         - "Commands:"
       must_contain_regex:
-        - "(plan|ingest|probe|fleet|ledger)"
+        - "(plan|ingest|probe|fleet|ledger-fleet|ledger)"
       must_not_contain:
         - "error:"
       ocr_required: true
