@@ -11,7 +11,7 @@ hero:
       link: /adr/0001-record-architecture-decisions
     - theme: alt
       text: Journeys
-      link: /journeys/journey-traceability
+      link: /operations/journey-traceability
 
 features:
   - title: Architecture Decision Records

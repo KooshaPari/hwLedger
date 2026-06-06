@@ -58,10 +58,28 @@ Minimum gates before marking a journey complete:
 - journey manifest validation via `phenotype-journey verify` when available;
 - eval verdict linked to the FR/NFR IDs in the manifest.
 
+## Specs
+
+Functional requirements referenced above live as standalone FR spec files so
+they can be linked from plans, PRs, and journeys without duplicating content:
+
+- [FR-HWL-CAPACITY-001 — Capacity Fit Estimate](../specs/FR-HWL-CAPACITY-001.md)
+- [FR-HWL-FLEET-001 — Fleet Ledger Compare](../specs/FR-HWL-FLEET-001.md)
+- [FR-HWL-INFERENCE-001 — Local Runtime Health](../specs/FR-HWL-INFERENCE-001.md)
+
+## Manifests
+
+Per-flow manifests live under `docs/journeys/manifests/`:
+
+- `capacity-fit-estimate.md`
+- `fleet-ledger-compare.md`
+- `local-runtime-health.md`
+
 ## Status
 
 - [x] Identify initial user-facing flows
 - [x] Stub rich media embeds for expected screenshots/GIFs/evals
-- [ ] Author manifests in `docs/journeys/manifests/`
+- [x] Author FR spec files under `docs/specs/`
+- [x] Author manifests in `docs/journeys/manifests/`
 - [ ] Record journey captures for each flow
 - [ ] Run `phenotype-journey verify` in CI
