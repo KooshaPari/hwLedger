@@ -1,0 +1,38 @@
+id: hwledger-cli-help
+intent: Install hwledger CLI and run `hwledger --help` to confirm subcommand surface renders cleanly
+keyframe_count: 3
+passed: false
+recording: cli-journeys/recordings/hwledger-cli-help.gif
+recording_gif: cli-journeys/recordings/hwledger-cli-help.gif
+steps:
+  - index: 1
+    slug: install-complete
+    assertions:
+      must_contain:
+        - "Installed"
+        - "hwledger"
+      must_not_contain:
+        - "error:"
+      ocr_required: true
+  - index: 2
+    slug: help-header
+    assertions:
+      must_contain:
+        - "Usage:"
+        - "Commands:"
+      must_contain_regex:
+        - "(plan|ingest|probe|fleet|ledger)"
+      must_not_contain:
+        - "error:"
+      ocr_required: true
+  - index: 3
+    slug: help-flags
+    assertions:
+      must_contain:
+        - "Flags:"
+      must_contain_regex:
+        - "(--config|--format|--verbose)"
+      must_not_contain:
+        - "error:"
+      expected_exit: 0
+      ocr_required: true
