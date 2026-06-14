@@ -1,0 +1,47 @@
+# hwLedger
+
+LLM capacity planner + fleet ledger + desktop inference runtime.
+
+## Overview
+
+hwLedger tracks hardware fleet audit and provenance for machine learning workloads. It provides per-layer VRAM estimation for LLMs, reconciles predictions against live telemetry from inference engines (MLX, mistral.rs, llama.cpp, vLLM, TGI), and maintains an event-sourced audit log for heterogeneous compute fleets (Apple Silicon, NVIDIA/AMD, cloud rentals).
+
+## Stack
+
+- Core: Rust workspace (11 crates: `hwledger-core`, `-arch`, `-ingest`, `-probe`, `-inference`, `-ledger`, `-fleet-proto`, `-agent`, `-server`, `-cli`, `-ffi`)
+- Sidecar: `sidecars/omlx-fork/` — fork of oMlx with SSD-paged KV cache for Apple Silicon
+- Native GUIs: SwiftUI (macOS), WinUI 3 (Windows), Qt 6 + Slint (Linux)
+- Fleet wire: Axum + rustls mTLS, russh, deadpool, reqwest, tailscale
+- Web fallback: Streamlit (`apps/streamlit/`)
+- License: MIT
+
+## Key Commands
+
+```bash
+# CLI (fastest path)
+cargo install --path crates/hwledger-cli
+hwledger --help
+
+# Dev server + docs + streamlit
+cargo run -p hwledger-devtools -- up
+
+# Build / test / lint
+cargo build --workspace
+cargo test --workspace
+cargo clippy --workspace -- -D warnings
+cargo fmt
+```
+
+## Status
+
+Pre-alpha, Phase 0 bootstrap. See `PLAN.md` for the implementation roadmap.
+
+## Governance
+
+- Tracked in AgilePlus: feature `hwledger-v1-macos-mvp`
+- Branch discipline: feature work in `.worktrees/<topic>/`; canonical repo stays on `main`
+- Reference docs: `PLAN.md`, `ADR.md`, `PRD.md`, `CHARTER.md`, `CLAUDE.md`, `AGENTS.md`
+
+## Repository
+
+https://github.com/KooshaPari/hwLedger

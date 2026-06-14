@@ -2,31 +2,46 @@
 
 ## Project Overview
 
-Hardware wallet ledger companion app — bridges hardware security devices with the Ledger ecosystem.
+LLM capacity planner + fleet ledger + desktop inference runtime.
+
+Not a financial ledger. hwLedger tracks hardware fleet audit and provenance for machine learning workloads. It provides per-layer VRAM estimation for LLMs, reconciles predictions against live telemetry from inference engines (MLX, mistral.rs, llama.cpp, vLLM, TGI), and maintains an event-sourced audit log for heterogeneous compute fleets (Apple Silicon, NVIDIA/AMD, cloud rentals).
 
 ## Stack
 
-- Language: Rust (per GitHub language detection)
-- Platform: Desktop / Embedded
-- Build system: Cargo (verify `Cargo.toml`)
+| Layer | Technology |
+|-------|------------|
+| Core | Rust workspace (`hwledger-core`, `-arch`, `-ingest`, `-probe`, `-inference`, `-ledger`, `-fleet-proto`, `-agent`, `-server`, `-cli`, `-ffi`) |
+| Sidecar | `sidecars/omlx-fork/` — fat fork of [jundot/omlx](https://github.com/jundot/omlx), Apache-2.0 |
+| Native GUIs | SwiftUI (macOS), WinUI 3 (.NET 9), Qt 6 + Slint (Linux) |
+| Fleet wire | Axum, rustls mTLS, russh, deadpool, reqwest, tailscale |
+| Web fallback | Streamlit (`apps/streamlit/`) |
+| License | MIT |
 
 ## Key Commands
 
 ```bash
-# Verify project structure
-ls -la Cargo.toml Cargo.lock rust-toolchain.toml 2>/dev/null
+# CLI (fastest path)
+cargo install --path crates/hwledger-cli
+hwledger --help
 
-# Build
-cargo build --release
+# FFI + server + streamlit (one-liner)
+cargo run -p hwledger-devtools -- up
+
+# Build workspace
+cargo build --workspace
 
 # Test
-cargo test
+cargo test --workspace
 
 # Lint
-cargo clippy
+cargo clippy --workspace -- -D warnings
+cargo fmt
 ```
 
 ## Notes
 
-- **Active** — verify language and build system locally before running commands
-- Hardware wallet integration — may require device/USB access for full testing
+- **Active** — pre-alpha Phase 0 bootstrap; verify build system locally before running commands
+- 11-crate Rust workspace with per-OS native GUIs over a shared FFI core
+- Tracked in AgilePlus: feature `hwledger-v1-macos-mvp`
+- Reference docs: `PLAN.md`, `PRD.md`, `ADR.md`, `CHARTER.md`, `docs/adr/`, `docs/research/`
+- Branch discipline: feature work goes in `.worktrees/<topic>/`; canonical repo stays on `main`
