@@ -47,6 +47,10 @@ Every existing public VRAM calculator (HF Accelerate, can-it-run-llm, LM Studio'
 
 See the component diagram in [PLAN.md §4.1](./PLAN.md#41-component-map).
 
+## Substrate (per ADR-023 + ADR-035A)
+
+- **[`KooshaPari/pheno-capacity`](https://github.com/KooshaPari/pheno-capacity)** — VRAM estimation, model-fit scoring, Chinchilla tokens, optimizer state. no_std-compatible Rust crate. **Active since 2026-06-18 (L5-105).** Streamlit Planner/WhatIf pages will consume this in Phase 2 (see [docs/integrations/cost-model-migration.md](./docs/integrations/cost-model-migration.md)).
+
 ## Dev setup
 
 One-liner to build FFI + launch server, docs-site, and Streamlit:
