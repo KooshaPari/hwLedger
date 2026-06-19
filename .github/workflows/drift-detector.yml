@@ -1,0 +1,135 @@
+name: drift-detector
+# Weekly app-substrate drift detector (ADR-043, ADR-044 backup path).
+#
+# Scans this CONDITIONAL app repo weekly (Wed 09:00 PDT) and files a
+# `drift-detector@phenotype` issue on any drift hit (score >= 1.5 per ADR-043).
+# This is the GitHub Actions BACKUP for the heavy-runner cron (ADR-044 §2.2):
+# Actions runs only when the heavy-runner is unavailable.
+#
+# === HWLEDGER PRECEDENT NOTE ===
+# HwLedger is the FIRST drift-detector hit already actioned: per ADR-035, the
+# `pheno-capacity` math lib (VRAM estimation, model-fit) was extracted in v7.
+# ADR-035A is the follow-up tracking `phenotype-fleet-wire` (the deferred hit,
+# score ~7). When this workflow files a new issue, reviewers should check the
+# `pheno-capacity` precedent for the extraction pattern (Port trait + adapter +
+# test triple), then propose either:
+#   (a) extract the new capability into a new `pheno-*-lib` crate, OR
+#   (b) merge into an existing fleet crate (preferred if the new code overlaps).
+#
+# Per AGENTS.md "App substrate triage" HwLedger is CONDITIONAL (was PAUSED):
+# federated service work is allowed, lib extraction is the explicit next step.
+#
+# Action reference strategy: the drift detector is a Python CLI
+# (`pheno-drift-detector/pheno_drift_detector.py`), not a packaged GitHub
+# Action. We download the raw script via curl from `KooshaPari/pheno-drift-detector@main`
+# and run it with python3.
+#
+# See:
+#   - docs/adr/2026-06-18/ADR-043-app-substrate-drift-detector.md
+#   - docs/adr/2026-06-15/ADR-035-hwledger-reclassification.md (pheno-capacity extraction)
+#   - docs/adr/2026-06-15/ADR-035A-hwledger-fleet-wire-deferred.md
+#   - findings/2026-06-18-L8-009-app-substrate-drift.md
+#   - findings/2026-06-17-L5-105-hwledger-reclassification.md
+
+on:
+  schedule:
+    - cron: '0 16 * * 3'  # Wed 09:00 PDT (= 16:00 UTC during PDT)
+  workflow_dispatch:
+    inputs:
+      detector_sha:
+        description: 'pheno-drift-detector commit SHA to pin (default: main HEAD)'
+        required: false
+        default: 'main'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  drift-detect:
+    name: pheno-drift-detector scan (HwLedger precedent)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout app repo (full history for stability scoring)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Download pheno-drift-detector CLI
+        env:
+          DETECTOR_REF: ${{ github.event.inputs.detector_sha || 'main' }}
+        run: |
+          mkdir -p .drift-detector
+          curl -fsSL \
+            "https://raw.githubusercontent.com/KooshaPari/pheno-drift-detector/${DETECTOR_REF}/pheno_drift_detector.py" \
+            -o .drift-detector/pheno_drift_detector.py
+          python3 .drift-detector/pheno_drift_detector.py --help >/dev/null
+
+      - name: Run pheno-drift-detector scan
+        env:
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          mkdir -p findings
+          python3 .drift-detector/pheno_drift_detector.py scan \
+            --root . \
+            --format gh-issues \
+            --out "findings/drift-hits-${RUN_ID}.md" \
+            || EXIT=$?
+          # Exit 0 = no hits (clean run)
+          # Exit 2 = hits found (expected; we file an issue below)
+          # Exit 1 = scan error (fail the workflow)
+          echo "exit_code=${EXIT:-0}" >> "$GITHUB_ENV"
+          if [ "${EXIT:-0}" = "1" ]; then
+            echo "drift-detector scan failed"
+            exit 1
+          fi
+
+      - name: Upload artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: drift-detector-output
+          path: findings/drift-hits-*.md
+          if-no-files-found: ignore
+
+      - name: File drift-detector issue on hit
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          OUT="findings/drift-hits-${RUN_ID}.md"
+          if [ ! -s "$OUT" ]; then
+            echo "No drift hits — skipping issue filing."
+            exit 0
+          fi
+          HITS=$(grep -c '^## Drift detected' "$OUT" || echo 0)
+          # Prepend an HwLedger-specific header so reviewers see the ADR-035/035A
+          # precedent immediately on the filed issue.
+          TMP="findings/drift-hits-${RUN_ID}.with-context.md"
+          {
+            echo "<!-- drift-detector@phenotype — HwLedger ADR-035 precedent -->"
+            echo ""
+            echo "> **HwLedger precedent (ADR-035 + ADR-035A):**"
+            echo "> This repo is in the CONDITIONAL bucket per AGENTS.md."
+            echo "> The first drift-detector hit (\`pheno-capacity\` math lib) was"
+            echo "> already extracted per ADR-035 — use that PR as the extraction"
+            echo "> pattern reference (Port trait + adapter + test triple)."
+            echo "> ADR-035A tracks the deferred \`phenotype-fleet-wire\` hit; if this"
+            echo "> issue overlaps, mark it \`duplicate of #<ADR-035A issue>\`."
+            echo ""
+            cat "$OUT"
+          } > "$TMP"
+          mv "$TMP" "$OUT"
+          TITLE="drift-detector: ${HITS} hit(s) in $(basename $GITHUB_REPOSITORY) @ $(date -u +%Y-%m-%d)"
+          gh issue create \
+            --repo "$GITHUB_REPOSITORY" \
+            --label "drift-detector" \
+            --title "$TITLE" \
+            --body-file "$OUT"
