@@ -1,0 +1,7 @@
+# Default owner for everything in this repo
+* @KooshaPari
+
+# Specific paths can override the default below
+# /.github/    @KooshaPari
+# /docs/       @KooshaPari
+# /*.rs        @KooshaPari
