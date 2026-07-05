@@ -15,7 +15,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: TruffleHog OSS
-        uses: trufflesecurity/trufflehog@75add79b929b263dae147d2e5bcf0daf292165cf # pinned
+        uses: trufflesecurity/trufflehog@f2cd191b97098913a07522227d2b5e40e57252f4 # pinned
         with:
           path: ./
           base_depth: 1
