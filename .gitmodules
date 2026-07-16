@@ -1,0 +1,5 @@
+[submodule "sidecars/omlx-fork"]
+	path = sidecars/omlx-fork
+	url = /Users/kooshapari/CodeProjects/Phenotype/repos/phenotype-omlx
+	branch = main
+	active = true
