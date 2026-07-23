@@ -154,18 +154,25 @@ pub fn call_tool(name: &str, params: &Value) -> Result<Value, McpError> {
 // individual tool stubs
 // ---------------------------------------------------------------------------
 
-fn require_string<'a>(obj: &'a serde_json::Map<String, Value>, key: &str) -> Result<&'a str, McpError> {
+fn require_string<'a>(
+    obj: &'a serde_json::Map<String, Value>,
+    key: &str,
+) -> Result<&'a str, McpError> {
     obj.get(key)
         .and_then(|v| v.as_str())
         .ok_or_else(|| McpError::invalid_params(format!("missing or non-string `{key}`")))
 }
 
-fn optional_u64(obj: &serde_json::Map<String, Value>, key: &str, default: u64) -> Result<u64, McpError> {
+fn optional_u64(
+    obj: &serde_json::Map<String, Value>,
+    key: &str,
+    default: u64,
+) -> Result<u64, McpError> {
     match obj.get(key) {
         None => Ok(default),
-        Some(v) => v
-            .as_u64()
-            .ok_or_else(|| McpError::invalid_params(format!("`{key}` must be a non-negative integer"))),
+        Some(v) => v.as_u64().ok_or_else(|| {
+            McpError::invalid_params(format!("`{key}` must be a non-negative integer"))
+        }),
     }
 }
 

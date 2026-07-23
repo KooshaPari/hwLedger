@@ -105,7 +105,10 @@ mod tests {
     fn messages_are_stable_strings() {
         assert_eq!(McpError::parse("x").message(), "Parse error");
         assert_eq!(McpError::invalid_request("x").message(), "Invalid Request");
-        assert_eq!(McpError::method_not_found("x").message(), "Method not found");
+        assert_eq!(
+            McpError::method_not_found("x").message(),
+            "Method not found"
+        );
         assert_eq!(McpError::invalid_params("x").message(), "Invalid params");
         assert_eq!(McpError::internal("x").message(), "Internal error");
     }

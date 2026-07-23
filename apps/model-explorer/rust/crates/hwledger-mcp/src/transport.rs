@@ -53,7 +53,10 @@ pub fn handle_message(
     let request: Value = match serde_json::from_str(input) {
         Ok(v) => v,
         Err(e) => {
-            return Ok(Some(framing_error_response(e.to_string(), McpError::parse(e.to_string()))));
+            return Ok(Some(framing_error_response(
+                e.to_string(),
+                McpError::parse(e.to_string()),
+            )));
         }
     };
 
@@ -283,7 +286,10 @@ mod tests {
             "similar_models",
             "models_for_use_case",
         ] {
-            assert!(names.contains(&expected), "missing tool `{expected}` in {names:?}");
+            assert!(
+                names.contains(&expected),
+                "missing tool `{expected}` in {names:?}"
+            );
         }
     }
 
@@ -359,13 +365,13 @@ mod tests {
             "jsonrpc": "2.0",
             "method": "notifications/initialized"
         }"#;
-        let resp = handle_message(&server, &mut state, req)
-            .expect("notifications must not raise");
+        let resp = handle_message(&server, &mut state, req).expect("notifications must not raise");
         assert!(resp.is_none(), "notifications must produce no response");
         assert!(state.initialized, "notification must flip state");
 
         // And the missing-`id` variant of every other notification, too.
-        let req2 = r#"{"jsonrpc":"2.0","method":"notifications/cancelled","params":{"reason":"user"}}"#;
+        let req2 =
+            r#"{"jsonrpc":"2.0","method":"notifications/cancelled","params":{"reason":"user"}}"#;
         let resp2 = handle_message(&server, &mut state, req2).expect("must not raise");
         assert!(resp2.is_none());
     }
