@@ -228,9 +228,12 @@ pub fn run_stdio<R: BufRead, W: Write>(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::backend::MockBackend;
+    use std::sync::Arc;
 
     fn fresh() -> (McpServer, McpState) {
-        (McpServer::new(), McpState::new())
+        let backend: Arc<dyn crate::backend::Backend> = Arc::new(MockBackend::new());
+        (McpServer::new(), McpState::new(backend))
     }
 
     fn as_str(val: &Value) -> String {
@@ -313,12 +316,13 @@ mod tests {
         assert_eq!(content.len(), 1);
         assert_eq!(content[0]["type"], "text");
 
-        // The text payload is a JSON-encoded stub; it must round-trip.
+        // The text payload is a JSON-encoded value; it must round-trip
+        // and carry the request's `query` / `limit` fields back.
         let inner: Value =
             serde_json::from_str(content[0]["text"].as_str().unwrap()).expect("text re-parses");
         assert_eq!(inner["query"], "tiny llm");
         assert_eq!(inner["limit"], 5);
-        assert_eq!(inner["stub"], true);
+        assert!(inner["results"].is_array());
     }
 
     #[test]
