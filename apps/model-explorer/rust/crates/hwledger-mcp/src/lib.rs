@@ -2,7 +2,8 @@
 //!
 //! This crate implements just enough of the Model Context Protocol
 //! specification to be a useful tool provider for an LLM client connected
-//! over stdio. It deliberately bypasses the upstream `rmcp` SDK to avoid a
+//! over either stdio (`transport`) or HTTP+SSE (`transport_http`). It
+//! deliberately bypasses the upstream `rmcp` SDK to avoid a
 //! `PointeeSized` compatibility issue with Rust 1.95; the whole transport
 //! layer is ~200 lines of straightforward `serde_json` + `std::io`.
 //!
@@ -19,14 +20,19 @@
 //! * `McpServer` / `McpState` (this module) — request validation +
 //!   dispatch.
 //! * [`transport`]        — stdio read/write loop and per-message handler.
+//! * [`transport_http`]   — axum router exposing POST `/mcp` (per-request
+//!   JSON-RPC) and GET `/sse` (Server-Sent Events for streaming
+//!   notifications), reusing the same `McpServer::dispatch` core.
 //!
 //! Round-trip flow for a single request:
 //!
-//! 1. Client sends one JSON-RPC 2.0 request on stdin.
-//! 2. [`transport::handle_message`] parses it, validates the envelope, and
+//! 1. Client sends one JSON-RPC 2.0 request (stdin line or POST `/mcp`
+//!    body).
+//! 2. The transport layer parses it, validates the envelope, and
 //!    dispatches to the matching method on `McpServer`.
 //! 3. `McpServer` returns either a `result` value or an `error` object.
-//! 4. The response (if any) is serialised and written to stdout.
+//! 4. The response (if any) is serialised and written back (stdout or
+//!    HTTP response body).
 #![deny(missing_docs)]
 #![deny(rust_2018_idioms)]
 
@@ -34,6 +40,7 @@ pub mod backend;
 pub mod error;
 pub mod tools;
 pub mod transport;
+pub mod transport_http;
 
 use std::sync::Arc;
 
