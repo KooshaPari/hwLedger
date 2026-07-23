@@ -4,7 +4,7 @@
 //! [`TantivyStore::commit`], and [`TantivyStore::search`] behave correctly
 //! against a real Tantivy index on disk.
 
-use hwledger_search_index::TantivyStore;
+use hwledger_search_index::{IndexedDoc, TantivyStore};
 use tempfile::TempDir;
 
 fn fixture_store() -> (TempDir, TantivyStore) {
@@ -18,40 +18,40 @@ fn open_then_search_qwen_returns_qwen_family_at_rank_zero() {
     let (_dir, store) = fixture_store();
 
     store
-        .upsert(
-            "qwen/Qwen2.5-7B-Instruct",
-            "Qwen2.5 7B Instruct",
-            "qwen",
-            "instruct",
-            "qwen2",
-            "gqa",
-            "gguf gptq",
-            "Qwen2.5 is the latest series of large language models from Alibaba.",
-        )
+        .upsert(&IndexedDoc {
+            id: "qwen/Qwen2.5-7B-Instruct",
+            name: "Qwen2.5 7B Instruct",
+            org: "qwen",
+            kind: "instruct",
+            family: "qwen2",
+            arch: "gqa",
+            quants: "gguf gptq",
+            card_snippet: "Qwen2.5 is the latest series of large language models from Alibaba.",
+        })
         .expect("upsert qwen");
     store
-        .upsert(
-            "meta-llama/Llama-3-8B-Instruct",
-            "Llama 3 8B Instruct",
-            "meta-llama",
-            "instruct",
-            "llama",
-            "gqa",
-            "gguf",
-            "Meta's Llama 3 instruction-tuned model.",
-        )
+        .upsert(&IndexedDoc {
+            id: "meta-llama/Llama-3-8B-Instruct",
+            name: "Llama 3 8B Instruct",
+            org: "meta-llama",
+            kind: "instruct",
+            family: "llama",
+            arch: "gqa",
+            quants: "gguf",
+            card_snippet: "Meta's Llama 3 instruction-tuned model.",
+        })
         .expect("upsert llama");
     store
-        .upsert(
-            "mistralai/Mistral-7B-Instruct-v0.3",
-            "Mistral 7B Instruct v0.3",
-            "mistralai",
-            "instruct",
-            "mistral",
-            "sma",
-            "gguf gptq awq",
-            "Mistral 7B base fine-tuned for instruction following.",
-        )
+        .upsert(&IndexedDoc {
+            id: "mistralai/Mistral-7B-Instruct-v0.3",
+            name: "Mistral 7B Instruct v0.3",
+            org: "mistralai",
+            kind: "instruct",
+            family: "mistral",
+            arch: "sma",
+            quants: "gguf gptq awq",
+            card_snippet: "Mistral 7B base fine-tuned for instruction following.",
+        })
         .expect("upsert mistral");
 
     store.commit().expect("commit");
@@ -81,40 +81,40 @@ fn search_quants_token_returns_hit_whose_quants_include_gguf() {
     let (_dir, store) = fixture_store();
 
     store
-        .upsert(
-            "a/Model-A",
-            "Model A",
-            "a",
-            "instruct",
-            "fam",
-            "gqa",
-            "safetensors",
-            "model a body",
-        )
+        .upsert(&IndexedDoc {
+            id: "a/Model-A",
+            name: "Model A",
+            org: "a",
+            kind: "instruct",
+            family: "fam",
+            arch: "gqa",
+            quants: "safetensors",
+            card_snippet: "model a body",
+        })
         .expect("upsert a");
     store
-        .upsert(
-            "b/Model-B",
-            "Model B",
-            "b",
-            "instruct",
-            "fam",
-            "gqa",
-            "gguf",
-            "model b body",
-        )
+        .upsert(&IndexedDoc {
+            id: "b/Model-B",
+            name: "Model B",
+            org: "b",
+            kind: "instruct",
+            family: "fam",
+            arch: "gqa",
+            quants: "gguf",
+            card_snippet: "model b body",
+        })
         .expect("upsert b");
     store
-        .upsert(
-            "c/Model-C",
-            "Model C",
-            "c",
-            "instruct",
-            "fam",
-            "gqa",
-            "gptq",
-            "model c body",
-        )
+        .upsert(&IndexedDoc {
+            id: "c/Model-C",
+            name: "Model C",
+            org: "c",
+            kind: "instruct",
+            family: "fam",
+            arch: "gqa",
+            quants: "gptq",
+            card_snippet: "model c body",
+        })
         .expect("upsert c");
 
     store.commit().expect("commit");
@@ -144,16 +144,16 @@ fn upsert_with_same_id_overwrites_cleanly() {
 
     // First version
     store
-        .upsert(
-            "shared/id",
-            "Original Name",
-            "org",
-            "base",
-            "fam",
-            "gqa",
-            "gguf",
-            "original card body",
-        )
+        .upsert(&IndexedDoc {
+            id: "shared/id",
+            name: "Original Name",
+            org: "org",
+            kind: "base",
+            family: "fam",
+            arch: "gqa",
+            quants: "gguf",
+            card_snippet: "original card body",
+        })
         .expect("upsert v1");
     store.commit().expect("commit v1");
 
@@ -165,16 +165,16 @@ fn upsert_with_same_id_overwrites_cleanly() {
 
     // Overwrite with a different name + body
     store
-        .upsert(
-            "shared/id",
-            "Renamed Name",
-            "org",
-            "instruct",
-            "fam",
-            "gqa",
-            "gptq",
-            "replacement card body",
-        )
+        .upsert(&IndexedDoc {
+            id: "shared/id",
+            name: "Renamed Name",
+            org: "org",
+            kind: "instruct",
+            family: "fam",
+            arch: "gqa",
+            quants: "gptq",
+            card_snippet: "replacement card body",
+        })
         .expect("upsert v2");
     store.commit().expect("commit v2");
 

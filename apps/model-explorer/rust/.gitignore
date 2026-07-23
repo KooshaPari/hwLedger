@@ -5,3 +5,6 @@ target/
 # Library workspaces typically don't track their lockfile; skip it so the
 # sidebar can choose when to refresh dependencies.
 Cargo.lock
+# Operator-local tantivy index cache. `seed build` populates this directory
+# by default; contributors regenerate it on demand. Never commit the cache.
+hwledger-index/

@@ -1,7 +1,7 @@
 //! Quantization tagger.
 //!
-//! Scans the list of `tree_entries` (file paths) on a [`RawModel`] and
-//! classifies them by suffix / filename token so downstream indexers can
+//! Scans the list of `tree_entries` (file paths) on a
+//! [`RawModel`](hwledger_search_core::RawModel) and classifies them by suffix / filename token so downstream indexers can
 //! facet over `gguf / gptq / awq / exl2 / safetensors` without re-doing the
 //! string match.
 //!

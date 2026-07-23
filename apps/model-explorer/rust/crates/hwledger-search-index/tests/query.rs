@@ -4,7 +4,7 @@
 //! touching the (yet-to-land) LanceDB vector index.
 
 use hwledger_search_core::Query;
-use hwledger_search_index::{run_hybrid, TantivyStore};
+use hwledger_search_index::{run_hybrid, IndexedDoc, TantivyStore};
 use tempfile::TempDir;
 
 fn block_on<F: std::future::Future>(f: F) -> F::Output {
@@ -16,40 +16,40 @@ fn seeded_store() -> (TempDir, TantivyStore) {
     let store = TantivyStore::open(dir.path()).expect("open");
 
     store
-        .upsert(
-            "qwen/Qwen2.5-7B-Instruct",
-            "Qwen2.5 7B Instruct",
-            "qwen",
-            "instruct",
-            "qwen2",
-            "gqa",
-            "gguf gptq",
-            "Qwen2.5 is the latest series of large language models from Alibaba.",
-        )
+        .upsert(&IndexedDoc {
+            id: "qwen/Qwen2.5-7B-Instruct",
+            name: "Qwen2.5 7B Instruct",
+            org: "qwen",
+            kind: "instruct",
+            family: "qwen2",
+            arch: "gqa",
+            quants: "gguf gptq",
+            card_snippet: "Qwen2.5 is the latest series of large language models from Alibaba.",
+        })
         .expect("upsert qwen");
     store
-        .upsert(
-            "meta-llama/Llama-3-8B-Instruct",
-            "Llama 3 8B Instruct",
-            "meta-llama",
-            "instruct",
-            "llama",
-            "gqa",
-            "gguf",
-            "Meta's Llama 3 instruction-tuned model.",
-        )
+        .upsert(&IndexedDoc {
+            id: "meta-llama/Llama-3-8B-Instruct",
+            name: "Llama 3 8B Instruct",
+            org: "meta-llama",
+            kind: "instruct",
+            family: "llama",
+            arch: "gqa",
+            quants: "gguf",
+            card_snippet: "Meta's Llama 3 instruction-tuned model.",
+        })
         .expect("upsert llama");
     store
-        .upsert(
-            "mistralai/Mistral-7B-Instruct-v0.3",
-            "Mistral 7B Instruct v0.3",
-            "mistralai",
-            "instruct",
-            "mistral",
-            "sma",
-            "gguf gptq awq",
-            "Mistral 7B base fine-tuned for instruction following.",
-        )
+        .upsert(&IndexedDoc {
+            id: "mistralai/Mistral-7B-Instruct-v0.3",
+            name: "Mistral 7B Instruct v0.3",
+            org: "mistralai",
+            kind: "instruct",
+            family: "mistral",
+            arch: "sma",
+            quants: "gguf gptq awq",
+            card_snippet: "Mistral 7B base fine-tuned for instruction following.",
+        })
         .expect("upsert mistral");
 
     store.commit().expect("commit");

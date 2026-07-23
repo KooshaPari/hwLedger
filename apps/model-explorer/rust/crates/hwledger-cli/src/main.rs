@@ -15,7 +15,7 @@
 //! Every subcommand accepts `--json` to print a structured payload instead of
 //! a comfy-table for scripting / piping.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result};
 use clap::{Args, Parser, Subcommand, ValueEnum};
@@ -198,7 +198,7 @@ fn init_tracing() {
         .try_init();
 }
 
-fn handle_model(action: ModelAction, index_dir: &PathBuf, json: bool) -> Result<()> {
+fn handle_model(action: ModelAction, index_dir: &Path, json: bool) -> Result<()> {
     match action {
         ModelAction::Search(args) => cmd_model_search(args, index_dir, json),
         ModelAction::Detail { id } => cmd_model_detail(&id, index_dir, json),
@@ -214,7 +214,7 @@ fn handle_model(action: ModelAction, index_dir: &PathBuf, json: bool) -> Result<
 // `model search`
 // ---------------------------------------------------------------------------
 
-fn cmd_model_search(args: SearchArgs, index_dir: &PathBuf, json: bool) -> Result<()> {
+fn cmd_model_search(args: SearchArgs, index_dir: &Path, json: bool) -> Result<()> {
     let store = open_or_create_store(index_dir)?;
     let mut facets = Facets::default();
     for raw in &args.kind {
@@ -246,7 +246,7 @@ fn cmd_model_search(args: SearchArgs, index_dir: &PathBuf, json: bool) -> Result
 // `model detail`
 // ---------------------------------------------------------------------------
 
-fn cmd_model_detail(id: &str, index_dir: &PathBuf, json: bool) -> Result<()> {
+fn cmd_model_detail(id: &str, index_dir: &Path, json: bool) -> Result<()> {
     let store = open_or_create_store(index_dir)?;
     let canonical = canonicalize_id(id);
     let hits = store.search(&canonical, 1).context("tantivy search failed")?;
@@ -302,7 +302,7 @@ fn cmd_model_detail(id: &str, index_dir: &PathBuf, json: bool) -> Result<()> {
 // `model quants`
 // ---------------------------------------------------------------------------
 
-fn cmd_model_quants(id: &str, index_dir: &PathBuf, json: bool) -> Result<()> {
+fn cmd_model_quants(id: &str, index_dir: &Path, json: bool) -> Result<()> {
     let store = open_or_create_store(index_dir)?;
     let canonical = canonicalize_id(id);
     let quants = store.quants_for_id(&canonical).unwrap_or_default();
@@ -332,7 +332,7 @@ fn cmd_model_quants(id: &str, index_dir: &PathBuf, json: bool) -> Result<()> {
 fn cmd_model_similar(
     id: &str,
     limit: usize,
-    index_dir: &PathBuf,
+    index_dir: &Path,
     json: bool,
 ) -> Result<()> {
     let store = open_or_create_store(index_dir)?;
@@ -372,7 +372,7 @@ fn cmd_model_for_use_case(
     use_case: UseCase,
     text: &str,
     limit: usize,
-    index_dir: &PathBuf,
+    index_dir: &Path,
     json: bool,
 ) -> Result<()> {
     let store = open_or_create_store(index_dir)?;
@@ -420,7 +420,7 @@ fn cmd_model_for_use_case(
 // `model-ask`
 // ---------------------------------------------------------------------------
 
-fn cmd_model_ask(question: &str, limit: usize, index_dir: &PathBuf, json: bool) -> Result<()> {
+fn cmd_model_ask(question: &str, limit: usize, index_dir: &Path, json: bool) -> Result<()> {
     let store = open_or_create_store(index_dir)?;
     let q = Query::text(question).with_limit(limit);
     let hits = run_hybrid_blocking(&store, &q)?;
@@ -460,7 +460,7 @@ fn cmd_model_ask(question: &str, limit: usize, index_dir: &PathBuf, json: bool) 
 // `seed …`
 // ---------------------------------------------------------------------------
 
-fn handle_seed(action: SeedAction, index_dir: &PathBuf, json: bool) -> Result<()> {
+fn handle_seed(action: SeedAction, index_dir: &Path, json: bool) -> Result<()> {
     match action {
         SeedAction::Build { queries, size, append } => {
             cmd_seed_build(queries, size, append, index_dir, json)
@@ -473,7 +473,7 @@ fn cmd_seed_build(
     queries: Vec<String>,
     size: usize,
     append: bool,
-    index_dir: &PathBuf,
+    index_dir: &Path,
     json: bool,
 ) -> Result<()> {
     if !append && index_dir.exists() {
@@ -516,7 +516,7 @@ fn cmd_seed_build(
     Ok(())
 }
 
-fn cmd_seed_expand(seeds: Vec<String>, index_dir: &PathBuf, json: bool) -> Result<()> {
+fn cmd_seed_expand(seeds: Vec<String>, index_dir: &Path, json: bool) -> Result<()> {
     // Treat both "no flag passed" and "blank entries from `,,` / `--seeds ""`"
     // as "no seeds". Clap's `value_delimiter` collapses `--seeds ""` to an
     // empty string element, which would otherwise silently no-op.

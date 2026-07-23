@@ -8,7 +8,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::error::IndexError;
-use crate::tantivy_store::TantivyStore;
+use crate::tantivy_store::{IndexedDoc, TantivyStore};
 
 /// One row to be indexed. Mirrors a typical model card: id, name, org, kind,
 /// family, arch, the list of quantization formats it ships, and a short
@@ -54,22 +54,25 @@ impl IndexedModel {
 ///
 /// This is a thin wrapper over [`TantivyStore::upsert`]; the wrapper exists
 /// so callers don't have to remember to join the `quants` array with spaces
-/// before handing it off.
+/// before handing it off. Internally it constructs a borrowed
+/// [`IndexedDoc`] from the owned [`IndexedModel`] — no per-field
+/// re-allocation is needed beyond joining the quant list.
 pub fn upsert_model(store: &TantivyStore, model: &IndexedModel) -> Result<(), IndexError> {
     if model.id.is_empty() {
         return Err(IndexError::InvalidArgs("model.id is empty".into()));
     }
     let quants_joined = model.quants.join(" ");
-    store.upsert(
-        &model.id,
-        &model.name,
-        &model.org,
-        &model.kind,
-        &model.family,
-        &model.arch,
-        &quants_joined,
-        &model.card_snippet,
-    )
+    let doc = IndexedDoc {
+        id: &model.id,
+        name: &model.name,
+        org: &model.org,
+        kind: &model.kind,
+        family: &model.family,
+        arch: &model.arch,
+        quants: &quants_joined,
+        card_snippet: &model.card_snippet,
+    };
+    store.upsert(&doc)
 }
 
 #[cfg(test)]

@@ -17,7 +17,7 @@ use crate::tantivy_store::TantivyStore;
 /// The v1 implementation:
 ///
 /// 1. Asks Tantivy for `k * 2` BM25 hits on the free-text `q.text`.
-/// 2. Filters by [`Facets::kinds`] (if any). The v1 schema only wires up
+/// 2. Filters by [`Facets::kinds`](hwledger_search_core::Facets::kinds) (if any). The v1 schema only wires up
 ///    `kind`, so the only facet dimension honored today is `kinds` — the
 ///    others (`modalities`, `arch_kinds`, `attention_kinds`, numeric
 ///    ranges, `license`, `provenance`, `quants`) are accepted but skipped
@@ -83,6 +83,8 @@ pub async fn run_hybrid(
     Ok(results)
 }
 
-/// Re-export [`IndexHit`] so callers only need `use hwledger_search_index::*`
-/// (we keep the type in [`crate::tantivy_store`]).
+/// Re-export [`IndexHit`] so callers only need `use hwledger_search_index::*`.
+///
+/// The type lives in the `tantivy_store` module alongside the store that
+/// produces it; this re-export keeps the public crate surface flat.
 pub use crate::tantivy_store::IndexHit;

@@ -15,6 +15,16 @@
 //! [`IndexHit`] is the crate-local result row; the higher-level
 //! [`crate::query::run_hybrid`] converts these into the
 //! `hwledger_search_core::FusedResult` shape.
+//!
+//! ## Payload shape
+//!
+//! [`TantivyStore::upsert`] takes a single [`IndexedDoc`] payload rather
+//! than a long positional argument list. This is the schema-mirroring type
+//! that the crate exposes; the higher-level [`crate::ingest::IndexedModel`]
+//! in this same crate is the transport type that callers (CLI, ingest,
+//! MCP) construct before handing it to [`crate::ingest::upsert_model`].
+//! `IndexedModel` -> `IndexedDoc` is a one-field (`Vec<String>` -> joined
+//! `Cow<str>`) conversion.
 
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
@@ -49,6 +59,50 @@ impl IndexHit {
             score,
         }
     }
+}
+
+/// Schema-mirroring payload for a single doc to upsert.
+///
+/// This is the type [`TantivyStore::upsert`] accepts. It is intentionally
+/// `&str`-based (not `String`) so the caller doesn't have to allocate per
+/// field; `quants` is whitespace-separated so Tantivy's default tokenizer
+/// indexes each format as its own token (e.g. `"gguf gptq awq"` -> three
+/// queryable tokens).
+///
+/// Construct via struct-literal syntax — there is intentionally no
+/// `::new()` constructor, both to avoid a redundant API surface and to
+/// keep the call-site field labels visible:
+///
+/// ```ignore
+/// store.upsert(&IndexedDoc {
+///     id: "qwen/Qwen2.5-7B-Instruct",
+///     name: "Qwen2.5 7B Instruct",
+///     org: "qwen",
+///     kind: "instruct",
+///     family: "qwen2",
+///     arch: "gqa",
+///     quants: "gguf gptq",
+///     card_snippet: "Qwen2.5 is the latest series of large language models from Alibaba.",
+/// })?;
+/// ```
+#[derive(Debug, Clone, PartialEq)]
+pub struct IndexedDoc<'a> {
+    /// Stable primary key (e.g. `"qwen/Qwen2.5-7B-Instruct"`).
+    pub id: &'a str,
+    /// Human-readable display name.
+    pub name: &'a str,
+    /// Owner / publisher (e.g. `"qwen"`, `"meta-llama"`).
+    pub org: &'a str,
+    /// Coarse model kind (e.g. `"instruct"`, `"base"`).
+    pub kind: &'a str,
+    /// Architecture family (e.g. `"qwen2"`, `"llama"`).
+    pub family: &'a str,
+    /// Attention block flavor (e.g. `"gqa"`, `"mha"`).
+    pub arch: &'a str,
+    /// Quantization formats the model ships in, whitespace-separated.
+    pub quants: &'a str,
+    /// First ~2000 chars of the model card body, for free-text recall.
+    pub card_snippet: &'a str,
 }
 
 /// Holds the resolved schema field handles, plus the running Tantivy objects.
@@ -199,23 +253,15 @@ impl TantivyStore {
         &self.schema
     }
 
-    /// Replace (or insert) the document whose `id` equals `id`.
+    /// Replace (or insert) the document identified by `doc.id`.
     ///
-    /// Implementation note: tantivy's "update" model is `delete_term` +
-    /// `add_document`. The delete only takes effect after `commit()`; we
-    /// commit lazily — see [`TantivyStore::commit`].
-    pub fn upsert(
-        &self,
-        id: &str,
-        name: &str,
-        org: &str,
-        kind: &str,
-        family: &str,
-        arch: &str,
-        quants: &str,
-        card_snippet: &str,
-    ) -> Result<(), IndexError> {
-        if id.is_empty() {
+    /// The payload is a borrowed [`IndexedDoc`]; this keeps the public
+    /// signature a single argument after `&self` and avoids forcing
+    /// callers to allocate per-field `String`s. Tantivy's "update" model
+    /// is `delete_term` + `add_document`; the delete only takes effect
+    /// after [`commit`](Self::commit).
+    pub fn upsert(&self, doc: &IndexedDoc<'_>) -> Result<(), IndexError> {
+        if doc.id.is_empty() {
             return Err(IndexError::InvalidArgs("id is empty".into()));
         }
 
@@ -229,43 +275,46 @@ impl TantivyStore {
 
         // Delete-by-id before add; the delete will be visible at the next
         // commit, at which point we'll have only the new doc.
-        let id_term = Term::from_field_text(self.fields.id, id);
+        let id_term = Term::from_field_text(self.fields.id, doc.id);
         writer.delete_term(id_term);
 
-        let mut doc = TantivyDocument::default();
-        doc.add_text(self.fields.id, id);
-        doc.add_text(self.fields.name, name);
-        doc.add_text(self.fields.org, org);
-        doc.add_text(self.fields.kind, kind);
-        doc.add_text(self.fields.family, family);
-        doc.add_text(self.fields.arch, arch);
-        doc.add_text(self.fields.quants, quants);
-        doc.add_text(self.fields.card_snippet, card_snippet);
+        let mut tantivy_doc = TantivyDocument::default();
+        tantivy_doc.add_text(self.fields.id, doc.id);
+        tantivy_doc.add_text(self.fields.name, doc.name);
+        tantivy_doc.add_text(self.fields.org, doc.org);
+        tantivy_doc.add_text(self.fields.kind, doc.kind);
+        tantivy_doc.add_text(self.fields.family, doc.family);
+        tantivy_doc.add_text(self.fields.arch, doc.arch);
+        tantivy_doc.add_text(self.fields.quants, doc.quants);
+        tantivy_doc.add_text(self.fields.card_snippet, doc.card_snippet);
 
-        writer.add_document(doc)?;
+        writer.add_document(tantivy_doc)?;
 
         // Sidecar refresh: replace this id's kind + quants so a follow-up
         // post-filter lookup is O(1).
         if let Ok(mut kinds_map) = self.kinds.lock() {
-            kinds_map.insert(id.to_string(), kind.to_string());
+            kinds_map.insert(doc.id.to_string(), doc.kind.to_string());
         }
         if let Ok(mut quants_map) = self.quants.lock() {
-            let split: Vec<String> = quants
+            let split: Vec<String> = doc
+                .quants
                 .split_whitespace()
                 .map(|s| s.to_string())
                 .collect();
-            quants_map.insert(id.to_string(), split);
+            quants_map.insert(doc.id.to_string(), split);
         }
         Ok(())
     }
 
-    /// Look up the (untokenized) `kind` string we stored at [`upsert`] time.
+    /// Look up the (untokenized) `kind` string we stored at
+    /// [`upsert`](Self::upsert) time.
     #[must_use]
     pub fn kind_for_id(&self, id: &str) -> Option<String> {
         self.kinds.lock().ok().and_then(|m| m.get(id).cloned())
     }
 
-    /// Look up the list of quantization tags we stored at [`upsert`] time.
+    /// Look up the list of quantization tags we stored at
+    /// [`upsert`](Self::upsert) time.
     #[must_use]
     pub fn quants_for_id(&self, id: &str) -> Option<Vec<String>> {
         self.quants.lock().ok().and_then(|m| m.get(id).cloned())

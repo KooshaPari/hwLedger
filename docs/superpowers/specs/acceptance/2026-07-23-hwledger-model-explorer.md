@@ -11,9 +11,9 @@
 
 This skeleton defines what *done* means for the model-explorer bootstrap.
 Each phase lists its delivery surface, the acceptance criteria, the
-autograder gates, and the doc touch-points. Phases 1–7 are already
-shipped in commits `d9e2856 → 232f2c2`; this skeleton is the single
-source of truth for whether a later change keeps the contract intact.
+autograder gates, and the doc touch-points. Phases 1–10 are all shipped
+in commits `d9e2856 → b9520a1`; this skeleton is the single source of
+truth for whether a later change keeps the contract intact.
 
 ## 1. Scope
 
@@ -243,25 +243,37 @@ Each phase must satisfy **all** of:
   - `docs(operations): Model Explorer operator runbook`
   - `docs(web): apps/model-explorer README`
 
-### Phase 9 — `hwledger-server` + `hwledger-mcp` *(scaffolded; future)*
+### Phase 9 — `hwledger-server` + `hwledger-mcp` *(shipped, `eed7961`/`273feed`/`9aaccd1`)*
 
-**Acceptance criteria (target)**
+**Surface:**
+- `apps/model-explorer/rust/crates/hwledger-server/`
+- `apps/model-explorer/rust/crates/hwledger-mcp/`
+- `apps/model-explorer/server/` (Hono proxy)
 
-- [ ] `hwledger-server` exposes `run_hybrid` over Axum with the same
+**Acceptance criteria**
+
+- [x] `hwledger-server` exposes `run_hybrid` over Axum with the same
       JSON contract as the CLI's `--json` output.
-- [ ] `hwledger-mcp` exposes the same engine as MCP tools
-      (`model_search`, `model_detail`, etc.).
-- [ ] Both binaries share `HWLEDGER_INDEX`, `HF_TOKEN`, `HF_HUB_URL`.
+- [x] `hwledger-mcp` exposes the same engine as MCP tools
+      (`model_search`, `model_detail`, `model_quants`, `model_similar`,
+      `model_for_use_case`, `model_ask`) over JSON-RPC 2.0 on stdio.
+- [x] A Hono proxy under `apps/model-explorer/server/` fronts the Axum
+      service for the web app and any external HTTP consumer.
+- [x] Both binaries share `HWLEDGER_INDEX`, `HF_TOKEN`, `HF_HUB_URL`.
 
-### Phase 10 — Web app *(future)*
+### Phase 10 — Web app *(shipped, `e0db83f`)*
 
-**Acceptance criteria (target)**
+**Surface:** `apps/model-explorer/web/`
 
-- [ ] `apps/model-explorer/web/` ships a TypeScript front-end that
-      consumes `hwledger-server` over HTTP.
-- [ ] The web README is the canonical dev-onboarding doc for the
-      front-end (already authored in Phase 8; updated as the app
-      grows).
+**Acceptance criteria**
+
+- [x] `apps/model-explorer/web/` ships a Svelte 5 + SvelteKit
+      TypeScript front-end that consumes `hwledger-server` (via the Hono
+      proxy) over HTTP.
+- [x] Three-pane search layout: query input + facet sidebar on the
+      left, hit list in the middle, model detail panel on the right.
+- [x] The web README is the canonical dev-onboarding doc for the
+      front-end (authored in Phase 8, updated as the app grows).
 
 ## 4. Deferred work — contract reservation
 
@@ -317,8 +329,8 @@ error, not a lint warning.
 - [x] Phase 6 — `search-evals`
 - [x] Phase 7 — `cli`
 - [x] Phase 8 — operator docs (ADR + runbook + acceptance skeleton + web README)
-- [ ] Phase 9 — server + MCP binaries
-- [ ] Phase 10 — web app
+- [x] Phase 9 — server + MCP binaries (`hwledger-server` Axum + Hono proxy; `hwledger-mcp` JSON-RPC over stdio)
+- [x] Phase 10 — web app (Svelte 5 + SvelteKit three-pane search UI)
 - [ ] Deferred 3 — ORT embedder backend (seam landed)
 - [ ] Deferred 4 — LanceDB dense index + RRF fusion (seam landed)
 
@@ -334,3 +346,13 @@ error, not a lint warning.
 | 2026-07-23 | `feat(search-tags)` — Phase 2 landed. | `4500e76` |
 | 2026-07-23 | `feat(search-ingest)` — Phase 4 landed. | `a2cc835` |
 | 2026-07-23 | `feat(cli)` — Phase 7 landed. | `232f2c2` |
+| 2026-07-23 | `feat(search-skills)` — built-in AgenticFitRerank + LlmSummarizer + default registry. | `38ea86d` |
+| 2026-07-23 | `docs(adr)` — ADR-037 Model Explorer search layer. | `2df9ebf` |
+| 2026-07-23 | `docs(operations)` — Model Explorer operator runbook. | `9c32155` |
+| 2026-07-23 | `docs(web)` — `apps/model-explorer` README. | `5e46d79` |
+| 2026-07-23 | `feat(mcp)` — `hwledger-mcp` JSON-RPC 2.0 server (Phase 9). | `eed7961` |
+| 2026-07-23 | `feat(server)` — standalone `hwledger-server` Axum binary (Phase 9). | `273feed` |
+| 2026-07-23 | `feat(server)` — Hono proxy in front of Axum for the web app (Phase 9). | `9aaccd1` |
+| 2026-07-23 | `feat(web)` — Svelte 5 + SvelteKit three-pane search UI (Phase 10). | `e0db83f` |
+| 2026-07-23 | `style(mcp)` — rustfmt pass on `hwledger-mcp`. | `b9520a1` |
+| 2026-07-23 | `chore(search-index)` — introduce `IndexedDoc` payload struct + autograder cleanups (PathBuf→Path, let-unit-value, if-same-then-else, doc links); gates green. | (this turn) |

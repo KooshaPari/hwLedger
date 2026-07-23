@@ -57,7 +57,7 @@ fn cli_bin() -> Command {
 #[test]
 fn model_search_finds_indexed_rows() {
     let dir = TempDir::new().unwrap();
-    let _store = build_fixture_index(dir.path());
+    build_fixture_index(dir.path());
 
     cli_bin()
         .args([
@@ -72,7 +72,7 @@ fn model_search_finds_indexed_rows() {
 #[test]
 fn model_search_json_emits_envelope() {
     let dir = TempDir::new().unwrap();
-    let _store = build_fixture_index(dir.path());
+    build_fixture_index(dir.path());
 
     let out: Vec<u8> = cli_bin()
         .args([
@@ -94,7 +94,7 @@ fn model_search_json_emits_envelope() {
 #[test]
 fn model_detail_reports_kind_and_quants() {
     let dir = TempDir::new().unwrap();
-    let _store = build_fixture_index(dir.path());
+    build_fixture_index(dir.path());
 
     cli_bin()
         .args([
@@ -111,7 +111,7 @@ fn model_detail_reports_kind_and_quants() {
 #[test]
 fn model_quants_lists_known_formats() {
     let dir = TempDir::new().unwrap();
-    let _store = build_fixture_index(dir.path());
+    build_fixture_index(dir.path());
 
     cli_bin()
         .args([
@@ -128,7 +128,7 @@ fn model_quants_lists_known_formats() {
 #[test]
 fn model_similar_excludes_self() {
     let dir = TempDir::new().unwrap();
-    let _store = build_fixture_index(dir.path());
+    build_fixture_index(dir.path());
 
     let out: Vec<u8> = cli_bin()
         .args([
@@ -150,7 +150,7 @@ fn model_similar_excludes_self() {
 #[test]
 fn model_for_use_case_filters_by_kind() {
     let dir = TempDir::new().unwrap();
-    let _store = build_fixture_index(dir.path());
+    build_fixture_index(dir.path());
 
     cli_bin()
         .args([

@@ -145,8 +145,6 @@ fn infer_kind(tree: &[String]) -> String {
         "adapter".to_string()
     } else if joined.contains("chat_template.json") {
         "chat".to_string()
-    } else if joined.contains("tokenizer.json") {
-        "base".to_string()
     } else {
         "base".to_string()
     }

@@ -20,7 +20,7 @@
 //!
 //! ```ignore
 //! use hwledger_search_index::{
-//!     TantivyStore, IndexHit, IndexError,
+//!     TantivyStore, IndexedDoc, IndexHit, IndexError,
 //!     IndexedModel, upsert_model,
 //!     CollapseRule, collapse_variants, collapse_key,
 //!     run_hybrid,
@@ -37,4 +37,4 @@ pub use collapse::{collapse_key, collapse_variants, CollapseRule, CollapsedHit};
 pub use error::IndexError;
 pub use ingest::{upsert_model, IndexedModel};
 pub use query::{run_hybrid, IndexHit};
-pub use tantivy_store::TantivyStore;
+pub use tantivy_store::{IndexedDoc, TantivyStore};

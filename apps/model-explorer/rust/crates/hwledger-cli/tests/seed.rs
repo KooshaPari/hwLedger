@@ -46,7 +46,7 @@ fn cli_bin() -> Command {
 #[test]
 fn seed_expand_rejects_empty_seed_list() {
     let dir = TempDir::new().unwrap();
-    let _store = build_fixture_index(dir.path());
+    build_fixture_index(dir.path());
 
     // Passing `--seeds ""` should fail before any HF traffic happens.
     cli_bin()
@@ -62,7 +62,7 @@ fn seed_expand_rejects_empty_seed_list() {
 #[test]
 fn seed_expand_returns_seed_ids_in_json_mode() {
     let dir = TempDir::new().unwrap();
-    let _store = build_fixture_index(dir.path());
+    build_fixture_index(dir.path());
 
     // v1 expansion is a no-op stub: the seed list is returned unchanged.
     // We assert the envelope shape, not the contents.
@@ -88,7 +88,7 @@ fn seed_expand_returns_seed_ids_in_json_mode() {
 #[test]
 fn seed_expand_human_mode_prints_summary() {
     let dir = TempDir::new().unwrap();
-    let _store = build_fixture_index(dir.path());
+    build_fixture_index(dir.path());
 
     cli_bin()
         .args([
@@ -104,7 +104,7 @@ fn seed_expand_human_mode_prints_summary() {
 #[test]
 fn seed_build_wipes_existing_index_by_default() {
     let dir = TempDir::new().unwrap();
-    let _store = build_fixture_index(dir.path());
+    build_fixture_index(dir.path());
     assert!(dir.path().join("meta.json").exists());
 
     // Without --append, the CLI should attempt to remove the existing
