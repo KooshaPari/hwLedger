@@ -16,7 +16,7 @@
 //! [`crate::query::run_hybrid`] converts these into the
 //! `hwledger_search_core::FusedResult` shape.
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
 use serde::{Deserialize, Serialize};
@@ -82,6 +82,10 @@ pub struct TantivyStore {
 
     /// Sidecar: per-id `quants` list (split on whitespace).
     quants: Arc<Mutex<std::collections::HashMap<String, Vec<String>>>>,
+
+    /// Directory the index lives in. Cached on open so we can re-read /
+    /// re-write the kind/quants sidecar without going back through tantivy.
+    index_dir: PathBuf,
 }
 
 #[derive(Debug, Clone)]
@@ -169,14 +173,23 @@ impl TantivyStore {
             .reload_policy(ReloadPolicy::OnCommitWithDelay)
             .try_into()?;
 
+        // Reload the sidecar (kind/quants caches) from disk so a freshly
+        // opened handle sees the same per-id metadata that the writer left
+        // behind. Without this, `kind_for_id` / `quants_for_id` would only
+        // return data for ids upserted in this same process — which would
+        // break the CLI's `model detail` path when the index was populated
+        // by a different process (e.g. an integration test fixture).
+        let (kinds, quants) = read_sidecar(path);
+
         Ok(Self {
             schema,
             idx,
             writer: Mutex::new(Some(writer)),
             reader,
             fields,
-            kinds: Arc::new(Mutex::new(std::collections::HashMap::new())),
-            quants: Arc::new(Mutex::new(std::collections::HashMap::new())),
+            kinds: Arc::new(Mutex::new(kinds)),
+            quants: Arc::new(Mutex::new(quants)),
+            index_dir: path.to_path_buf(),
         })
     }
 
@@ -272,6 +285,22 @@ impl TantivyStore {
         // Reload so a follow-up `search()` in the same process observes the
         // commit without waiting for the policy delay.
         self.reader.reload()?;
+
+        // Persist the kind/quants sidecar so a freshly-opened handle sees
+        // the same per-id metadata. We grab *clones* of the two maps and
+        // write them out; the in-memory state stays untouched so we don't
+        // need to hold the mutex across the (slow) disk write.
+        let kinds = self
+            .kinds
+            .lock()
+            .map(|m| m.clone())
+            .map_err(|e| IndexError::Tantivy(format!("sidecar mutex poisoned: {e}")))?;
+        let quants = self
+            .quants
+            .lock()
+            .map(|m| m.clone())
+            .map_err(|e| IndexError::Tantivy(format!("sidecar mutex poisoned: {e}")))?;
+        write_sidecar(&self.index_dir, &kinds, &quants)?;
         Ok(())
     }
 
@@ -336,4 +365,94 @@ impl TantivyStore {
         }
         Ok(hits)
     }
+}
+
+// ---------------------------------------------------------------------------
+// Sidecar persistence
+// ---------------------------------------------------------------------------
+//
+// The kind/quants lookup tables live in `HashMap`s on the TantivyStore
+// handle. They are deliberately kept in-process (per `open`) for speed.
+// But that means a CLI invocation cannot see the sidecar that was written
+// by a prior `seed build` run, unless we persist it on disk.
+//
+// We pick a tiny JSON file at `<index>/sidecar.json` (next to Tantivy's
+// `meta.json`). The format is intentionally explicit and forward-compatible:
+// adding a new field requires a versioned schema bump, not a migration.
+
+/// Sidecar on-disk layout, versioned for forward-compatibility.
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+struct Sidecar {
+    /// Format version. Bump on backwards-incompatible schema changes.
+    #[serde(default = "default_sidecar_version")]
+    version: u32,
+    /// `id -> kind` map.
+    kinds: std::collections::HashMap<String, String>,
+    /// `id -> quants` map.
+    quants: std::collections::HashMap<String, Vec<String>>,
+}
+
+fn default_sidecar_version() -> u32 {
+    1
+}
+
+fn sidecar_path(index_dir: &Path) -> std::path::PathBuf {
+    index_dir.join("sidecar.json")
+}
+
+/// Load the sidecar from `<index_dir>/sidecar.json`. A missing file (or any
+/// read/parse error) yields empty maps — the tantivy index is the source
+/// of truth for the *documents*; the sidecar is only an accelerator.
+fn read_sidecar(
+    index_dir: &Path,
+) -> (
+    std::collections::HashMap<String, String>,
+    std::collections::HashMap<String, Vec<String>>,
+) {
+    let path = sidecar_path(index_dir);
+    let Ok(bytes) = std::fs::read(&path) else {
+        return (Default::default(), Default::default());
+    };
+    let parsed: Result<Sidecar, _> = serde_json::from_slice(&bytes);
+    match parsed {
+        Ok(s) => (s.kinds, s.quants),
+        Err(e) => {
+            // Don't fail the open because of a stale sidecar; just start
+            // with empty maps and let the next commit overwrite.
+            eprintln!(
+                "hwledger-search-index: ignoring unreadable sidecar {}: {e}",
+                path.display()
+            );
+            (Default::default(), Default::default())
+        }
+    }
+}
+
+/// Atomically write the sidecar to `<index_dir>/sidecar.json`. We write
+/// to a sibling `.tmp` file and rename so a reader never observes a
+/// half-written JSON blob.
+fn write_sidecar(
+    index_dir: &Path,
+    kinds: &std::collections::HashMap<String, String>,
+    quants: &std::collections::HashMap<String, Vec<String>>,
+) -> Result<(), IndexError> {
+    let final_path = sidecar_path(index_dir);
+    let tmp_path = final_path.with_extension("json.tmp");
+    let sidecar = Sidecar {
+        version: default_sidecar_version(),
+        kinds: kinds.clone(),
+        quants: quants.clone(),
+    };
+    let bytes = serde_json::to_vec(&sidecar)
+        .map_err(|e| IndexError::Tantivy(format!("sidecar serialize: {e}")))?;
+    std::fs::write(&tmp_path, &bytes)
+        .map_err(|e| IndexError::Tantivy(format!("sidecar write {}: {e}", tmp_path.display())))?;
+    std::fs::rename(&tmp_path, &final_path).map_err(|e| {
+        IndexError::Tantivy(format!(
+            "sidecar rename {} -> {}: {e}",
+            tmp_path.display(),
+            final_path.display()
+        ))
+    })?;
+    Ok(())
 }

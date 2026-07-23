@@ -23,11 +23,13 @@ publish = false
 [workspace.dependencies]
 anyhow = "1"
 async-trait = "0.1"
+assert_cmd = "2"
 clap = { version = "4", features = ["derive"] }
 comfy-table = "7"
 dirs = "5"
 futures = "0.3"
 once_cell = "1"
+predicates = "3"
 regex = "1"
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 serde = { version = "1", features = ["derive"] }
@@ -47,6 +49,9 @@ lancedb = "0.13"
 # `hwledger-search-index`, etc.) depend on `hwledger-search-core`; declared
 # here so the dependency table is the single source of truth.
 hwledger-search-core = { path = "crates/hwledger-search-core" }
+hwledger-search-index = { path = "crates/hwledger-search-index" }
+hwledger-search-ingest = { path = "crates/hwledger-search-ingest" }
+hwledger-cli = { path = "crates/hwledger-cli" }
 
 [profile.dev]
 debug = 1
