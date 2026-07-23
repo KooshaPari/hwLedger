@@ -42,6 +42,11 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 axum = { version = "0.7", features = ["macros"] }
 tantivy = "0.22"
 lancedb = "0.13"
+# Inter-crate workspace paths so all `search-*` crates can refer to one
+# another via `{ workspace = true }`. Other crates (`hwledger-search-rag`,
+# `hwledger-search-index`, etc.) depend on `hwledger-search-core`; declared
+# here so the dependency table is the single source of truth.
+hwledger-search-core = { path = "crates/hwledger-search-core" }
 
 [profile.dev]
 debug = 1
