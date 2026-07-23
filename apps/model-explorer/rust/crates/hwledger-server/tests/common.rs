@@ -37,44 +37,120 @@ pub struct App {
 /// server router against it.
 #[must_use]
 pub fn seeded_app() -> App {
+    seed_with_models(&[
+        (
+            "hf::qwen/Qwen2.5-7B-Instruct",
+            "Qwen2.5 7B Instruct",
+            "qwen",
+            "instruct",
+            "qwen2",
+            "gqa",
+            "gguf gptq",
+            "Qwen2.5 is the latest series of large language models from Alibaba.",
+        ),
+        (
+            "hf::meta-llama/Llama-3-8B-Instruct",
+            "Llama 3 8B Instruct",
+            "meta-llama",
+            "instruct",
+            "llama",
+            "gqa",
+            "gguf",
+            "Meta's Llama 3 instruction-tuned model.",
+        ),
+        (
+            "hf::mistralai/Mistral-7B-Instruct-v0.3",
+            "Mistral 7B Instruct v0.3",
+            "mistralai",
+            "instruct",
+            "mistral",
+            "sma",
+            "gguf gptq awq",
+            "Mistral 7B base fine-tuned for instruction following.",
+        ),
+    ])
+}
+
+/// Spin up a fixture that has at least one model whose `kind` is `agentic`
+/// and one whose `kind` is `coding`, in addition to the standard instruct
+/// rows. Used by the [`AgenticFitRerank`](hwledger_search_skills::AgenticFitRerank)
+/// integration tests so the per-result intent-fit payload the
+/// [`service::search_results`](hwledger_server::service::search_results)
+/// projects is non-trivial for both intents.
+#[must_use]
+pub fn seeded_app_with_use_case_kinds() -> App {
+    seed_with_models(&[
+        (
+            "hf::qwen/Qwen2.5-7B-Instruct",
+            "Qwen2.5 7B Instruct",
+            "qwen",
+            "instruct",
+            "qwen2",
+            "gqa",
+            "gguf gptq",
+            "Qwen2.5 is the latest series of large language models from Alibaba.",
+        ),
+        (
+            "hf::meta-llama/Llama-3-8B-Instruct",
+            "Llama 3 8B Instruct",
+            "meta-llama",
+            "instruct",
+            "llama",
+            "gqa",
+            "gguf",
+            "Meta's Llama 3 instruction-tuned model.",
+        ),
+        (
+            "hf::mistralai/Mistral-7B-Instruct-v0.3",
+            "Mistral 7B Instruct v0.3",
+            "mistralai",
+            "instruct",
+            "mistral",
+            "sma",
+            "gguf gptq awq",
+            "Mistral 7B base fine-tuned for instruction following.",
+        ),
+        (
+            "hf::agent-org/Tool-Use-Agent",
+            "Tool-Use Agent",
+            "agent-org",
+            "agentic",
+            "agentic",
+            "gqa",
+            "gguf",
+            "Agent-style model with strong tool calling capabilities.",
+        ),
+        (
+            "hf::coder-org/CodeLlama-7B",
+            "CodeLlama 7B",
+            "coder-org",
+            "coding",
+            "llama",
+            "gqa",
+            "gguf",
+            "Code completion model fine-tuned for programming tasks.",
+        ),
+    ])
+}
+
+fn seed_with_models(rows: &[(&str, &str, &str, &str, &str, &str, &str, &str)]) -> App {
     let dir = tempfile::tempdir().expect("tempdir");
     let store = TantivyStore::open(dir.path()).expect("open tantivy");
-    store
-        .upsert(&IndexedDoc {
-            id: "hf::qwen/Qwen2.5-7B-Instruct",
-            name: "Qwen2.5 7B Instruct",
-            org: "qwen",
-            kind: "instruct",
-            family: "qwen2",
-            arch: "gqa",
-            quants: "gguf gptq",
-            card_snippet: "Qwen2.5 is the latest series of large language models from Alibaba.",
-        })
-        .expect("upsert qwen");
-    store
-        .upsert(&IndexedDoc {
-            id: "hf::meta-llama/Llama-3-8B-Instruct",
-            name: "Llama 3 8B Instruct",
-            org: "meta-llama",
-            kind: "instruct",
-            family: "llama",
-            arch: "gqa",
-            quants: "gguf",
-            card_snippet: "Meta's Llama 3 instruction-tuned model.",
-        })
-        .expect("upsert llama");
-    store
-        .upsert(&IndexedDoc {
-            id: "hf::mistralai/Mistral-7B-Instruct-v0.3",
-            name: "Mistral 7B Instruct v0.3",
-            org: "mistralai",
-            kind: "instruct",
-            family: "mistral",
-            arch: "sma",
-            quants: "gguf gptq awq",
-            card_snippet: "Mistral 7B base fine-tuned for instruction following.",
-        })
-        .expect("upsert mistral");
+    for row in rows {
+        let (id, name, org, kind, family, arch, quants, card_snippet) = *row;
+        store
+            .upsert(&IndexedDoc {
+                id,
+                name,
+                org,
+                kind,
+                family,
+                arch,
+                quants,
+                card_snippet,
+            })
+            .expect("upsert");
+    }
     store.commit().expect("commit");
 
     let data_dir = dir.path().to_path_buf();

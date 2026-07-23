@@ -18,6 +18,7 @@ path = "src/lib.rs"
 [dependencies]
 hwledger-search-core = { workspace = true }
 hwledger-search-index = { workspace = true }
+hwledger-search-skills = { workspace = true }
 anyhow = { workspace = true }
 async-trait = { workspace = true }
 axum = { workspace = true }

@@ -125,7 +125,9 @@ fn map_service_err(e: hwledger_server::service::ServiceError) -> McpError {
             McpError::invalid_params(e.to_string())
         }
         ServiceError::NotFound(_) => McpError::invalid_params(e.to_string()),
-        ServiceError::Unauthorized | ServiceError::Index(_) => McpError::internal(e.to_string()),
+        ServiceError::Unauthorized
+        | ServiceError::Index(_)
+        | ServiceError::Core(_) => McpError::internal(e.to_string()),
     }
 }
 

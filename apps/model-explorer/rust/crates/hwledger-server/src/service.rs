@@ -22,7 +22,9 @@
 
 use std::sync::Arc;
 
-use hwledger_search_core::{Facets, FusedResult, ModelKind, Query};
+use hwledger_search_core::{
+    CoreError, Facets, FusedResult, ModelKind, Query, SearchContext, SearchIntent,
+};
 use hwledger_search_index::{
     collapse_variants as run_collapse_variants, run_hybrid as search_index_run_hybrid,
     CollapseRule, IndexError, IndexHit, TantivyStore,
@@ -34,12 +36,19 @@ use thiserror::Error;
 ///
 /// We deliberately wrap the backend-specific `IndexError` (which lives in
 /// `hwledger-search-index`) so handlers don't have to care about which
-/// backend failed.
+/// backend failed. [`CoreError`] (from `hwledger-search-core`) covers the
+/// cross-crate primitives — `SearchSkill`s, `SourceAdapter`s — that
+/// don't belong to any specific backend.
 #[derive(Debug, Error)]
 pub enum ServiceError {
     /// Tantivy / index backend rejected the operation.
     #[error("index error: {0}")]
     Index(#[from] IndexError),
+
+    /// A search-core primitive (skill, source adapter) returned an
+    /// unrecoverable error.
+    #[error("core error: {0}")]
+    Core(#[from] CoreError),
 
     /// The caller supplied an invalid id (e.g. empty after `hf::` prefix).
     #[error("invalid id: {0}")]
@@ -64,7 +73,7 @@ impl ServiceError {
     pub fn status(&self) -> axum::http::StatusCode {
         use axum::http::StatusCode;
         match self {
-            Self::Index(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::Index(_) | Self::Core(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Self::InvalidId(_) | Self::BadRequest(_) => StatusCode::BAD_REQUEST,
             Self::NotFound(_) => StatusCode::NOT_FOUND,
             Self::Unauthorized => StatusCode::UNAUTHORIZED,
@@ -209,6 +218,106 @@ pub async fn run_hybrid(
         .await
         .map_err(ServiceError::from)?;
     Ok(hits)
+}
+
+/// Run the BM25+RRF hybrid search and attach the per-result intent-fit
+/// payload needed by the [`AgenticFitRerank`](hwledger_search_skills::AgenticFitRerank)
+/// skill.
+///
+/// v1's tantivy schema doesn't yet carry an `agentic` / `coding` numeric
+/// column, so we project the model's stored `kind` (which is already in
+/// the sidecar cache) into the `payload` field that the skill reads from:
+///
+/// | doc kind | `payload.agentic` | `payload.coding` |
+/// |----------|-------------------|------------------|
+/// | `agentic`| `1.0`             | `0.0`            |
+/// | `coding` | `0.0`             | `1.0`            |
+/// | anything | `0.0`             | `0.0`            |
+///
+/// This is intentionally a thin projection rather than a real fit
+/// estimator — once the `usecase_fit_tagger` lands it will write the
+/// per-model `agentic` / `coding` numerics directly to tantivy and this
+/// function will become a pass-through.
+pub async fn search_results(
+    store: &Arc<TantivyStore>,
+    q: &Query,
+) -> Result<Vec<FusedResult>, ServiceError> {
+    let mut results = run_hybrid(store, q).await?;
+    for r in results.iter_mut() {
+        r.payload = Some(intent_fit_payload(store, &r.id));
+    }
+    Ok(results)
+}
+
+/// Derive the `{ agentic, coding }` JSON payload for `id` from the
+/// per-id `kind` sidecar cache.
+///
+/// Unknown kinds yield an all-zero payload so the rerank skill treats
+/// them as neutral (the policy: 0.6 * score + 0.4 * 0.0 = 0.6 * score).
+fn intent_fit_payload(store: &Arc<TantivyStore>, id: &str) -> serde_json::Value {
+    let kind_str = store.kind_for_id(id).unwrap_or_default();
+    let kind = parse_kind(&kind_str);
+    let agentic = if kind == Some(ModelKind::Agentic) { 1.0_f32 } else { 0.0_f32 };
+    let coding = if kind == Some(ModelKind::Coding) { 1.0_f32 } else { 0.0_f32 };
+    serde_json::json!({
+        "agentic": agentic,
+        "coding": coding,
+    })
+}
+
+/// Classify a free-text query into a [`SearchIntent`].
+///
+/// This is intentionally a keyword-based heuristic — a future phase
+/// will swap in an LLM-backed classifier. The keywords chosen here are
+/// the ones the CLI's `--use-case` flag and `for-use-case` endpoint
+/// already recognize, so a route that auto-detects the intent will
+/// agree with one that was hinted explicitly.
+#[must_use]
+pub fn detect_intent(text: &str) -> SearchIntent {
+    let lowered = text.to_ascii_lowercase();
+    if lowered.contains("agent")
+        || lowered.contains("tool")
+        || lowered.contains("function call")
+        || lowered.contains("tool-use")
+    {
+        return SearchIntent::Agentic;
+    }
+    if lowered.contains("code")
+        || lowered.contains("coding")
+        || lowered.contains("program")
+        || lowered.contains("completion")
+    {
+        return SearchIntent::Coding;
+    }
+    if lowered.contains("reason") || lowered.contains("chain-of-thought") {
+        return SearchIntent::Reasoning;
+    }
+    if lowered.contains("embed") {
+        return SearchIntent::Embedding;
+    }
+    SearchIntent::Generic
+}
+
+/// Lowercase string form for a [`SearchIntent`] — used by the route
+/// layer so the JSON response can surface the resolved intent without
+/// requiring `SearchIntent` to derive `Serialize`.
+#[must_use]
+pub fn intent_label(intent: SearchIntent) -> &'static str {
+    match intent {
+        SearchIntent::Generic => "generic",
+        SearchIntent::Coding => "coding",
+        SearchIntent::Agentic => "agentic",
+        SearchIntent::Reasoning => "reasoning",
+        SearchIntent::Embedding => "embedding",
+    }
+}
+
+/// Build the [`SearchContext`] (query + resolved intent) that every
+/// skill in [`default_registry`](hwledger_search_skills::default_registry)
+/// receives.
+#[must_use]
+pub fn build_search_context(q: &Query) -> SearchContext {
+    SearchContext::new(q.clone(), detect_intent(&q.text))
 }
 
 /// Look up one model by id. Returns a JSON-shaped `serde_json::Value` so
@@ -481,5 +590,36 @@ mod tests {
         assert_eq!(canonicalize_id("org/name"), "hf::org/name");
         assert_eq!(canonicalize_id("hf::org/name"), "hf::org/name");
         assert_eq!(canonicalize_id("mscope::x/y"), "mscope::x/y");
+    }
+
+    #[test]
+    fn detect_intent_classifies_agentic_keywords() {
+        assert_eq!(detect_intent("agent for tool use"), SearchIntent::Agentic);
+        assert_eq!(detect_intent("function calling assistant"), SearchIntent::Agentic);
+        assert_eq!(detect_intent("tool-use ready model"), SearchIntent::Agentic);
+    }
+
+    #[test]
+    fn detect_intent_classifies_coding_keywords() {
+        assert_eq!(detect_intent("code completion model"), SearchIntent::Coding);
+        assert_eq!(detect_intent("programming helper"), SearchIntent::Coding);
+        assert_eq!(detect_intent("Coding assistant"), SearchIntent::Coding);
+    }
+
+    #[test]
+    fn detect_intent_falls_through_to_generic_when_no_keyword_matches() {
+        assert_eq!(detect_intent(""), SearchIntent::Generic);
+        assert_eq!(detect_intent("instruct"), SearchIntent::Generic);
+        assert_eq!(detect_intent("embedding model please"), SearchIntent::Embedding);
+        assert_eq!(detect_intent("reasoning chain-of-thought"), SearchIntent::Reasoning);
+    }
+
+    #[test]
+    fn intent_label_round_trip() {
+        assert_eq!(intent_label(SearchIntent::Generic), "generic");
+        assert_eq!(intent_label(SearchIntent::Coding), "coding");
+        assert_eq!(intent_label(SearchIntent::Agentic), "agentic");
+        assert_eq!(intent_label(SearchIntent::Reasoning), "reasoning");
+        assert_eq!(intent_label(SearchIntent::Embedding), "embedding");
     }
 }
