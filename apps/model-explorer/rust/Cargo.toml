@@ -1,0 +1,47 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/hwledger-search-core",
+    "crates/hwledger-search-tags",
+    "crates/hwledger-search-index",
+    "crates/hwledger-search-ingest",
+    "crates/hwledger-search-rag",
+    "crates/hwledger-search-evals",
+    "crates/hwledger-search-skills",
+    "crates/hwledger-cli",
+    "crates/hwledger-server",
+    "crates/hwledger-mcp",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+authors = ["KooshaPari <koosha@phenotype.io>"]
+publish = false
+
+[workspace.dependencies]
+anyhow = "1"
+async-trait = "0.1"
+clap = { version = "4", features = ["derive"] }
+comfy-table = "7"
+dirs = "5"
+futures = "0.3"
+once_cell = "1"
+regex = "1"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+tempfile = "3"
+thiserror = "1"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "signal"] }
+tower-http = { version = "0.5", features = ["trace", "cors"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+axum = { version = "0.7", features = ["macros"] }
+tantivy = "0.22"
+lancedb = "0.13"
+
+[profile.dev]
+debug = 1
