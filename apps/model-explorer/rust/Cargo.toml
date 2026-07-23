@@ -51,7 +51,9 @@ lancedb = "0.13"
 hwledger-search-core = { path = "crates/hwledger-search-core" }
 hwledger-search-index = { path = "crates/hwledger-search-index" }
 hwledger-search-ingest = { path = "crates/hwledger-search-ingest" }
+hwledger-search-skills = { path = "crates/hwledger-search-skills" }
 hwledger-cli = { path = "crates/hwledger-cli" }
+hwledger-mcp = { path = "crates/hwledger-mcp" }
 
 [profile.dev]
 debug = 1
