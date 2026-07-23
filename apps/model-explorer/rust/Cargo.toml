@@ -52,8 +52,10 @@ hwledger-search-core = { path = "crates/hwledger-search-core" }
 hwledger-search-index = { path = "crates/hwledger-search-index" }
 hwledger-search-ingest = { path = "crates/hwledger-search-ingest" }
 hwledger-search-skills = { path = "crates/hwledger-search-skills" }
+hwledger-search-tags = { path = "crates/hwledger-search-tags" }
 hwledger-cli = { path = "crates/hwledger-cli" }
 hwledger-mcp = { path = "crates/hwledger-mcp" }
+hwledger-server = { path = "crates/hwledger-server" }
 
 [profile.dev]
 debug = 1
