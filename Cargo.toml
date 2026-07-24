@@ -2,6 +2,7 @@
 members = [
   "apps/hwledger-app/src-tauri",
   "crates/hwledger-bench-cockpit",
+  "crates/hwledger-cli",
 ]
 resolver = "2"
 
