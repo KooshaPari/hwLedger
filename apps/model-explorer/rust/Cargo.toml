@@ -39,11 +39,12 @@ tempfile = "3"
 thiserror = "1"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "signal"] }
 tower-http = { version = "0.5", features = ["trace", "cors"] }
+tract-onnx = "0.23"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 axum = { version = "0.7", features = ["macros"] }
 tantivy = "0.22"
-lancedb = "0.13"
+lancedb = "0.31"
 # Inter-crate workspace paths so all `search-*` crates can refer to one
 # another via `{ workspace = true }`. Other crates (`hwledger-search-rag`,
 # `hwledger-search-index`, etc.) depend on `hwledger-search-core`; declared

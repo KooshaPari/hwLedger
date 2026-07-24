@@ -14,6 +14,7 @@ serde_json = { workspace = true }
 thiserror = { workspace = true }
 anyhow = { workspace = true }
 tempfile = { workspace = true }
+lancedb = { workspace = true }
 
 [dev-dependencies]
 futures = { workspace = true }

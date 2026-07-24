@@ -15,6 +15,6 @@ pub mod error;
 pub mod rag;
 
 pub use chunker::{Chunk, Chunker};
-pub use embedder::{Embedder, EmbedderConfig, StubEmbedder};
+pub use embedder::{Embedder, EmbedderConfig, EmbedderImpl, Qwen3Embedder, StubEmbedder};
 pub use error::RagError;
 pub use rag::{retrieve, RagResult, RAGConfig};
