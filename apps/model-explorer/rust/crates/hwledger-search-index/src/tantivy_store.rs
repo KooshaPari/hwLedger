@@ -320,6 +320,21 @@ impl TantivyStore {
         self.quants.lock().ok().and_then(|m| m.get(id).cloned())
     }
 
+    /// Enumerate every indexed model id. Used by the OpenAI-compatible
+    /// `/v1/models` enumeration endpoint.
+    ///
+    /// Implementation note: we walk the sidecar map (not a Tantivy
+    /// `IndexReader::terms()` scan) because the sidecar is O(N) HashMap
+    /// iteration while a Tantivy term scan would be O(N · log N) and
+    /// would require loading every term dictionary.
+    #[must_use]
+    pub fn list_all_ids(&self) -> Vec<String> {
+        self.kinds
+            .lock()
+            .map(|m| m.keys().cloned().collect())
+            .unwrap_or_default()
+    }
+
     /// Flush the writer to disk and force the reader to pick up the new
     /// segment.
     pub fn commit(&self) -> Result<(), IndexError> {
