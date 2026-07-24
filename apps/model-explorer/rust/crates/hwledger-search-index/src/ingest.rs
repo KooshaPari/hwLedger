@@ -40,11 +40,21 @@ impl IndexedModel {
     /// Builder helper: returns `self` with `card_snippet` truncated to the
     /// first 2000 chars (as tantivy's default token stream handles anything
     /// beyond that poorly as a single field anyway).
+    ///
+    /// Truncation is done at a UTF-8 char boundary so multi-byte chars
+    /// (CJK, emoji, accented Latin) never panic on `is_char_boundary`.
     #[must_use]
     pub fn truncated(mut self) -> Self {
         const MAX: usize = 2000;
         if self.card_snippet.len() > MAX {
-            self.card_snippet.truncate(MAX);
+            // Find the largest char boundary ≤ MAX. `floor_char_boundary`
+            // is a safe O(n) scan for non-ASCII content; the 2000-char cap
+            // makes this a constant-time operation in practice.
+            let mut cut = MAX;
+            while cut > 0 && !self.card_snippet.is_char_boundary(cut) {
+                cut -= 1;
+            }
+            self.card_snippet.truncate(cut);
         }
         self
     }
@@ -109,6 +119,26 @@ mod tests {
             card_snippet: long,
         };
         assert_eq!(m.truncated().card_snippet.len(), 2000);
+    }
+
+    #[test]
+    fn truncated_handles_multibyte_utf8() {
+        // Real HF cards include CJK / emoji / accented text. 2000 chars
+        // of multi-byte content must not panic at char boundary.
+        let multibyte: String = "🦀".repeat(1500) + "中文".repeat(500).as_str();
+        let m = IndexedModel {
+            id: "x".into(),
+            name: "x".into(),
+            org: "o".into(),
+            kind: "instruct".into(),
+            family: "f".into(),
+            arch: "gqa".into(),
+            quants: vec!["gguf".into()],
+            card_snippet: multibyte,
+        };
+        let truncated = m.truncated().card_snippet;
+        assert!(truncated.len() <= 2000);
+        assert!(truncated.is_char_boundary(truncated.len()));
     }
 
     #[test]
