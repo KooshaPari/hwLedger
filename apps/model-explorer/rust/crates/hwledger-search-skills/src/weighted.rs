@@ -44,12 +44,17 @@ pub struct WeightedSkill {
 
 impl std::fmt::Debug for WeightedSkill {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("WeightedSkill")
-            .field("name", &self.name)
-            .field("inner_name", &self.inner.name())
-            .field("inner_version", &self.inner.version())
-            .field("weight", &self.weight)
-            .finish()
+        // JSON-style debug output so the wrapper is human-readable when
+        // dumped from a config-file-loaded registry. Operators inspecting
+        // `format!("{reg:?}")` in logs see the same shape they wrote in
+        // skills.toml.
+        write!(
+            f,
+            r#"{{"name": "{}", "inner_name": "{}", "weight": {}}}"#,
+            self.name,
+            self.inner.name(),
+            self.weight,
+        )
     }
 }
 
