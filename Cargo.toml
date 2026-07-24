@@ -1,6 +1,7 @@
 [workspace]
 members = [
   "apps/hwledger-app/src-tauri",
+  "crates/hwledger-bench-cockpit",
 ]
 resolver = "2"
 
