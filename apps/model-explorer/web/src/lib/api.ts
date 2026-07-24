@@ -118,11 +118,17 @@ export class ApiClient {
    * @param question  Free-text question about the model.
    */
   async modelAsk(id: string, question: string): Promise<ModelAskResponse> {
-    return this.#request<ModelAskResponse>(
+    const raw = await this.#request<ModelAskResponse>(
       'POST',
       `/v1/models/${encodeURIComponent(id)}/ask`,
       { question },
     );
+    // Enforce score-descending sort contract so consumers always get
+    // passages in ranked order regardless of upstream ordering.
+    const sorted = (raw.context ?? [])
+      .slice()
+      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+    return { ...raw, context: sorted };
   }
 
   /** Internal request helper. Throws ApiError on non-2xx, returns parsed JSON on 2xx. */

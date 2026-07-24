@@ -291,6 +291,46 @@ The Deferred numbering is project-internal: **3 = ORT**, **4 =
 LanceDB**. They are tracked independently so an operator can see
 exactly what is missing and where the wiring will happen.
 
+## 7b. Rate limiting (HF Hub unverified-account tier)
+
+**Status:** Verified during the live `seed build --size=2000` run on
+2026-07-23. Free-tier / unverified HF accounts (~no CC card, freshly
+created) hit HTTP 429 on every request after the first ~10 within a
+few minutes. The current `HuggingFaceAdapter` does **not** throttle
+itself and does **not** honor `Retry-After` — each 429 is logged at
+`warn!` and counted in `report.errors`, but the loop continues.
+
+**Why it's a deferred item, not a blocker:** the live run still
+ingested 101 real models across 8 curated queries before HF
+started returning 429. The pipeline degrades gracefully — models that
+*did* succeed are committed to Tantivy; rate-limited candidates are
+skipped. The operator can re-run later or upgrade the account.
+
+**Follow-up shape** (when this lands, the design doc should record it):
+
+| Aspect | Recommendation |
+| ------ | -------------- |
+| Flag on `seed build` | `--rate-limit-ms <N>` (default 1000, set to 15000 for free tier) |
+| Backoff on 429 | Honor `Retry-After` header; exponential up to 60s; bail after 5 retries |
+| Concurrency | `--max-concurrent <N>` (default 1 for free tier) |
+| Visibility | `tracing::info!` on every sleep ("rate-limited, sleeping 12s") so operator sees why |
+| Default ON | `--retry-on-429` (default true); `--no-retry-on-429` for CI/no-network |
+| Layer | The wait happens at the HTTP layer in `HuggingFaceAdapter`, not in the seed builder, so `lazy_populate` benefits too |
+| Test | Mock reqwest middleware returns `429 + Retry-After: 5`; assert one retry succeeds |
+
+**Operator workaround today:** upgrade the HF account (free — verify
+email + phone in https://huggingface.co/settings/account — no CC
+needed for verification, only for paid Pro tier). Same token still
+works; just the account tier behind it changes. Free-tier rate limits
+are documented at https://huggingface.co/docs/api-inference/en/rate-limits
+and the verified tier is roughly 20× higher.
+
+A WIP-rate-limit-broken-state was attempted this session; the adapter
+struct shape drifted across multiple patches and the commit was
+abandoned. The work-in-progress was dropped from the tree before
+close-out — see `git log --diff-filter=D --since="2026-07-23"` if
+you need to recover the failed approach as a starting point.
+
 ## 8. Logging & observability
 
 - Logs go to **stderr** by default; `--json` output goes to **stdout**.

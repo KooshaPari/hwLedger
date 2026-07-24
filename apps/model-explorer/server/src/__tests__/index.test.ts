@@ -208,10 +208,10 @@ describe('GET /v1/use-case/:use_case', () => {
   });
 });
 
-describe('POST /v1/model-ask', () => {
+describe('POST /v1/models/:id/ask', () => {
   it('returns a stub answer + context list', async () => {
     const app = makeApp();
-    const res = await app.request('/v1/model-ask', {
+    const res = await app.request('/v1/models/test-model/ask', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ question: 'embedding models', limit: 2 }),
@@ -225,7 +225,7 @@ describe('POST /v1/model-ask', () => {
 
   it('returns 400 on empty question', async () => {
     const app = makeApp();
-    const res = await app.request('/v1/model-ask', {
+    const res = await app.request('/v1/models/test/ask', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ question: '' }),
