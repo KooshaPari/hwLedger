@@ -49,6 +49,45 @@
     }
   }
 
+  // --- keyboard navigation ---
+  let searchInputEl: HTMLInputElement;
+  let resultEls: HTMLOListElement;
+
+  function onKeydown(ev: KeyboardEvent) {
+    const results = $store.response.results;
+    const idx = $store.selectedId ? results.findIndex((r) => r.id === $store.selectedId) : -1;
+
+    if (ev.key === '/' && ev.target !== searchInputEl) {
+      ev.preventDefault();
+      searchInputEl?.focus();
+      searchInputEl?.select();
+      return;
+    }
+    if (ev.key === 'Escape') {
+      store.select(null);
+      searchInputEl?.blur();
+      return;
+    }
+    if (ev.key === 'ArrowDown' || ev.key === 'j') {
+      ev.preventDefault();
+      const next = Math.min(idx + 1, results.length - 1);
+      if (results[next]) store.select(results[next].id);
+      return;
+    }
+    if (ev.key === 'ArrowUp' || ev.key === 'k') {
+      ev.preventDefault();
+      const prev = Math.max(idx - 1, 0);
+      if (results[prev]) store.select(results[prev].id);
+      return;
+    }
+    if (ev.key === 'Enter' && !ev.repeat && $store.selectedId) {
+      // Navigate to the detail page unless already on a form
+      if (ev.target instanceof HTMLInputElement || ev.target instanceof HTMLButtonElement) return;
+      ev.preventDefault();
+      window.location.href = `/models/${encodeURIComponent($store.selectedId)}`;
+    }
+  }
+
   onMount(() => {
     // Kick off an empty search so the page isn't blank.
     store.refresh();
@@ -62,6 +101,8 @@
   <title>Search · hwLedger model explorer</title>
 </svelte:head>
 
+<svelte:window on:keydown={onKeydown} />
+
 <div class="three-pane" data-busy={$store.status === 'loading'}>
   <FacetSidebar {store} />
 
@@ -72,10 +113,11 @@
         autocomplete="off"
         spellcheck="false"
         placeholder="Search models — e.g. ‘llama 8b instruct’, ‘qwen2 coder’, ‘bge embedding’"
-        aria-label="Search models"
+        aria-label="Search models (press / to focus)"
         data-testid="search-input"
         value={queryInput}
         on:input={onSearchInput}
+        bind:this={searchInputEl}
       />
       <button type="submit" data-testid="search-submit">Search</button>
     </form>
@@ -92,7 +134,7 @@
       {:else if $store.response.results.length === 0}
         <div class="results__state">No results.</div>
       {:else}
-        <ol class="results__list">
+        <ol class="results__list" bind:this={resultEls}>
           {#each $store.response.results as row, i (row.id)}
             <li>
               <ResultRow
