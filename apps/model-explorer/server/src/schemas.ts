@@ -76,6 +76,11 @@ export const useCaseSchema = z.enum([
   'embedding',
 ]);
 
+/** API_KEY env-var schema. */
+export const appEnvSchema = z.object({
+  apiKey: z.string().min(1).optional(),
+}).strict();
+
 /** Model id path-param schema. */
 export const modelIdSchema = z
   .string()

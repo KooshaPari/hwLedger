@@ -1,6 +1,7 @@
 import type { Context } from 'hono';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { bearerAuth } from 'hono/bearer-auth';
 import { logger } from 'hono/logger';
 import { prettyJSON } from 'hono/pretty-json';
 import { zValidator } from '@hono/zod-validator';
@@ -19,7 +20,8 @@ import type { HealthResponse } from './contract.js';
  * Hono app factory.
  *
  * The factory takes the upstream Rust URL + a `fetch` override so we can
- * fully stub the network in tests (see `src/__tests__/index.test.ts`).
+ * fully stub the network in tests. Optionally accepts an API key to
+ * protect read endpoints via Bearer auth.
  *
  * Every route validates with Zod, then forwards to the upstream client. On
  * invalid input we return a structured 400 with the Zod issue tree, so the
@@ -40,20 +42,17 @@ export interface AppDeps {
   upstreamTimeoutMs?: number;
   /** Custom `fetch` for tests; defaults to the global `fetch`. */
   fetchImpl?: typeof fetch;
+  /** Optional Bearer API key to protect read endpoints. */
+  apiKey?: string;
 }
 
-type UpstreamKind = 'rust' | 'synthesized';
-
+/** Per-call envelope returned by the upstream client. */
 interface UpstreamEnvelope<T> {
   payload: T;
-  source: UpstreamKind;
+  source: 'rust' | 'synthesized';
+  status: number;
 }
 
-/**
- * `Hono.Context` is parametric, but within `createApp` we always operate on
- * the default (`BlankEnv`, `BlankSchema`) instance, so we alias it once
- * here rather than threading generic parameters through every helper.
- */
 type AnyContext = Context;
 
 function jsonError(
@@ -87,6 +86,11 @@ export function createApp(deps: AppDeps) {
     }),
   );
 
+  // Bearer auth on read endpoints when API_KEY is configured.
+  if (deps.apiKey) {
+    app.use('/v1/*', bearerAuth({ verifyToken: (t) => t === deps.apiKey }));
+  }
+
   // ---- error handling ----
   app.onError((err, c) => {
     if (err instanceof HTTPException) {
@@ -100,7 +104,7 @@ export function createApp(deps: AppDeps) {
     c: AnyContext,
     upstreamResult: UpstreamEnvelope<T>,
   ) {
-    c.header('x-upstream', upstreamResult.source);
+    c.res.headers.set('x-upstream', upstreamResult.source);
     return c.json(upstreamResult.payload);
   }
 
@@ -108,7 +112,7 @@ export function createApp(deps: AppDeps) {
     return modelIdSchema.safeParse(decodeURIComponent(raw));
   }
 
-  // ---- health ----
+  // ---- health (always public) ----
   app.get('/healthz', (c) => {
     const body: HealthResponse = {
       status: 'ok',
