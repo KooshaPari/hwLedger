@@ -207,15 +207,16 @@ export class UpstreamClient {
   // ------------------------- model-ask -------------------------
 
   async modelAsk(
-    req: ModelAskRequest,
+    req: ModelAskRequest & { id: string },
   ): Promise<UpstreamResult<ModelAskResponse>> {
-    const url = `${this.baseUrl}/v1/model-ask`;
+    const url = `${this.baseUrl}/v1/models/${encodeURIComponent(req.id)}/ask`;
+    const { id: _id, ...body } = req;
     const r = await tryFetch<ModelAskResponse>(
       url,
       {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(req),
+        body: JSON.stringify(body),
       },
       this.timeoutMs,
       this.fetchImpl,

@@ -138,9 +138,12 @@ export function createApp(deps: AppDeps) {
   );
 
   // ---- model catch-all ----
-  // Routes by trailing path component. `/v1/models/{id}` → detail,
-  // `/v1/models/{id}/quants` → quants, `/v1/models/{id}/similar` →
-  // "more like this". Anything else → 404.
+  // Routes by trailing path component.
+  //   GET  /v1/models/{id}             → detail
+  //   GET  /v1/models/{id}/quants      → quants
+  //   GET  /v1/models/{id}/similar     → "more like this"
+  //   POST /v1/models/{id}/ask         → model-scoped Q&A
+  // Anything else → 404.
   //
   // We can't use Hono's `:id` parameter because ids contain `/` and
   // Hono's segment parser doesn't tolerate that. Instead we match the
@@ -156,6 +159,9 @@ export function createApp(deps: AppDeps) {
     } else if (rest.endsWith('/similar')) {
       id = rest.slice(0, -'/similar'.length);
       action = 'similar';
+    } else if (rest.endsWith('/ask')) {
+      id = rest.slice(0, -'/ask'.length);
+      action = 'ask';
     } else {
       id = rest;
       action = '';
@@ -178,13 +184,15 @@ export function createApp(deps: AppDeps) {
       const r = await upstream.quants(validId);
       return jsonFromUpstream(c, r);
     }
-    // action === 'similar'
-    const limit = Math.max(
-      1,
-      Math.min(Number(c.req.query('limit') ?? 10) || 10, 50),
-    );
-    const r = await upstream.similar(validId, limit);
-    return jsonFromUpstream(c, r);
+    if (action === 'similar') {
+      const limit = Math.max(
+        1,
+        Math.min(Number(c.req.query('limit') ?? 10) || 10, 50),
+      );
+      const r = await upstream.similar(validId, limit);
+      return jsonFromUpstream(c, r);
+    }
+    return jsonError(c, 404, { error: 'unknown_action', action });
   });
 
   // ---- use case ----
@@ -205,9 +213,13 @@ export function createApp(deps: AppDeps) {
     return jsonFromUpstream(c, r);
   });
 
-  // ---- model-ask ----
+  // ---- model-scoped ask ----
+  // POST /v1/models/{id}/ask — same dispatch trick as the GET catch-all:
+  // ids contain `/` so we register a single route on `/v1/models/*` and
+  // only handle requests whose path ends in `/ask`. Anything else (e.g.
+  // a stray POST to `/v1/models/{id}/quants`) falls through to 404.
   app.post(
-    '/v1/model-ask',
+    '/v1/models/*',
     zValidator('json', modelAskRequestSchema, (result, c) => {
       if (!result.success) {
         return jsonError(c, 400, {
@@ -218,7 +230,20 @@ export function createApp(deps: AppDeps) {
       return undefined;
     }),
     async (c) => {
-      const req = c.req.valid('json');
+      const rest = c.req.path.replace(/^\/v1\/models\//, '');
+      if (!rest.endsWith('/ask')) {
+        return jsonError(c, 404, { error: 'unknown_action', rest });
+      }
+      const id = rest.slice(0, -'/ask'.length);
+      const parsed = parseId(id);
+      if (!parsed.success) {
+        return jsonError(c, 400, {
+          error: 'invalid_id',
+          issues: parsed.error.issues,
+        });
+      }
+      const validId = parsed.data;
+      const req = { ...c.req.valid('json'), id: validId };
       const r = await upstream.modelAsk(req);
       return jsonFromUpstream(c, r);
     },

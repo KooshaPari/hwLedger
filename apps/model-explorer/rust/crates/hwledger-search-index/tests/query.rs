@@ -4,8 +4,35 @@
 //! touching the (yet-to-land) LanceDB vector index.
 
 use hwledger_search_core::Query;
+#[cfg(feature = "lancedb")]
+use hwledger_search_index::LanceStore;
 use hwledger_search_index::{run_hybrid, IndexedDoc, TantivyStore};
 use tempfile::TempDir;
+
+/// One-shot wrapper around `run_hybrid` so tests don't have to branch on
+/// the `lancedb` cargo feature. With the feature OFF the signature is
+/// `(store, q, k)`; with it ON, it's `(store, q, k, Option<&LanceStore>,
+/// &[f32])`. The BM25-only tests in this file always pass `None, &[]` for
+/// the dense side.
+#[cfg(feature = "lancedb")]
+async fn run_hybrid_bm25_only(
+    store: &TantivyStore,
+    q: &Query,
+    k: usize,
+) -> Result<Vec<hwledger_search_core::FusedResult>, hwledger_search_index::IndexError> {
+    run_hybrid(store, q, k, None::<&LanceStore>, &[] as &[f32]).await
+}
+
+/// Feature-off forwarder — the OFF signature is `(store, q, k)` so just
+/// forward the call unchanged.
+#[cfg(not(feature = "lancedb"))]
+async fn run_hybrid_bm25_only(
+    store: &TantivyStore,
+    q: &Query,
+    k: usize,
+) -> Result<Vec<hwledger_search_core::FusedResult>, hwledger_search_index::IndexError> {
+    run_hybrid(store, q, k).await
+}
 
 fn block_on<F: std::future::Future>(f: F) -> F::Output {
     futures::executor::block_on(f)
@@ -61,7 +88,7 @@ fn run_hybrid_returns_up_to_k_results_sorted_by_score_desc() {
     let (_dir, store) = seeded_store();
     let q = Query::text("instruct").with_limit(10);
 
-    let results = block_on(run_hybrid(&store, &q, 2))
+    let results = block_on(run_hybrid_bm25_only(&store, &q, 2))
         .expect("run_hybrid");
 
     assert!(results.len() <= 2, "got {} results, want <=2", results.len());
@@ -87,7 +114,7 @@ fn run_hybrid_returns_empty_vec_when_text_matches_nothing() {
 
     // A nonsense query that won't tokenize to anything we have indexed.
     let q = Query::text("zzzzzzzzzzzzz_unlikely_term_xyzzy");
-    let results = block_on(run_hybrid(&store, &q, 10))
+    let results = block_on(run_hybrid_bm25_only(&store, &q, 10))
         .expect("run_hybrid");
 
     assert!(
@@ -100,7 +127,7 @@ fn run_hybrid_returns_empty_vec_when_text_matches_nothing() {
     // MatchAll-everything surprise at the CLI layer).
     let q_empty = Query::text("");
     let empty_results =
-        block_on(run_hybrid(&store, &q_empty, 10))
+        block_on(run_hybrid_bm25_only(&store, &q_empty, 10))
             .expect("run_hybrid empty");
     assert!(
         empty_results.is_empty(),

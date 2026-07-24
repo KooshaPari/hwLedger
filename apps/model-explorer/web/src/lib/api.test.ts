@@ -8,7 +8,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ApiClient, ApiError } from './api.js';
 import type {
   HealthResponse,
-  ModelAskRequest,
+  ModelAskContext,
+  ModelAskResponse,
   SearchRequest,
   SearchResponse,
   UseCaseSlug,
@@ -158,26 +159,120 @@ describe('ApiClient', () => {
     }
   });
 
-  it('modelAsk() POSTs the question and unwraps answer + candidates', async () => {
-    const req: ModelAskRequest = { question: 'best coder model?', limit: 3 };
+  it('modelAsk(id, question) POSTs the question to /v1/models/:id/ask', async () => {
+    const id = 'hf::Qwen/Qwen2.5-Coder-32B-Instruct';
+    const question = 'best coder model?';
+    const passages: ModelAskContext[] = [
+      {
+        id: 'hf::Qwen/Qwen2.5-Coder-32B-Instruct',
+        score: 0.91,
+        snippet: 'Code-focused variant of Qwen 2.5. Strong on multi-file edits and tool use.',
+        section: 'card.introduction',
+      },
+      {
+        id: 'hf::meta-llama/CodeLlama-34B',
+        score: 0.74,
+        snippet: 'Code Llama is a family of large language models for code generation.',
+        section: 'card.introduction',
+      },
+    ];
+    const body: ModelAskResponse = {
+      id,
+      question,
+      answer: 'Try Qwen2.5-Coder-32B-Instruct.',
+      context: passages,
+    };
+    fetchStub = stagedFetch([{ body }]);
+    client = new ApiClient({ baseUrl: 'http://proxy.test', fetchImpl: fetchStub });
+
+    const r = await client.modelAsk(id, question);
+    const call = fetchStub.calls[0];
+    expect(call.init?.method).toBe('POST');
+    expect(call.url).toBe(
+      `http://proxy.test/v1/models/${encodeURIComponent(id)}/ask`,
+    );
+    expect(call.init?.headers).toMatchObject({
+      accept: 'application/json',
+      'content-type': 'application/json',
+    });
+    expect(JSON.parse(String(call.init?.body))).toEqual({ question });
+    expect(r.id).toBe(id);
+    expect(r.question).toBe(question);
+    expect(r.answer).toContain('Qwen2.5-Coder-32B-Instruct');
+    expect(r.context).toHaveLength(2);
+    expect(r.context[0].score).toBeCloseTo(0.91);
+    expect(r.context[0].section).toBe('card.introduction');
+  });
+
+  it('modelAsk() URL-encodes ids containing slashes and colons', async () => {
     fetchStub = stagedFetch([
       {
         body: {
-          question: 'best coder model?',
-          limit: 3,
-          answer: 'Try Qwen2.5-Coder-32B-Instruct.',
+          id: 'hf::meta-llama/Llama-3.1-8B-Instruct',
+          question: 'q',
+          answer: 'a',
+          context: [],
+        },
+      },
+    ]);
+    client = new ApiClient({ baseUrl: 'http://proxy.test', fetchImpl: fetchStub });
+
+    await client.modelAsk('hf::meta-llama/Llama-3.1-8B-Instruct', 'q');
+    const url = new URL(fetchStub.calls[0].url);
+    expect(url.pathname).toBe(
+      `/v1/models/${encodeURIComponent('hf::meta-llama/Llama-3.1-8B-Instruct')}/ask`,
+    );
+  });
+
+  it('modelAsk() context passages are returned in score-ranked order', async () => {
+    const id = 'hf::x/y';
+    fetchStub = stagedFetch([
+      {
+        body: {
+          id,
+          question: 'rank?',
+          answer: 'top-1',
           context: [
-            { id: 'hf::qwen/Qwen2.5-Coder-32B-Instruct', score: 0.83, snippet: '…' },
+            { id: 'hf::a', score: 0.62, snippet: 'mid', section: 'card.usage' },
+            { id: 'hf::b', score: 0.88, snippet: 'top', section: 'card.introduction' },
+            { id: 'hf::c', score: 0.41, snippet: 'low', section: 'card.evals' },
           ],
         },
       },
     ]);
     client = new ApiClient({ baseUrl: 'http://proxy.test', fetchImpl: fetchStub });
 
-    const r = await client.modelAsk(req);
-    expect(fetchStub.calls[0].init?.method).toBe('POST');
-    expect(JSON.parse(String(fetchStub.calls[0].init?.body))).toEqual(req);
-    expect(r.answer).toContain('Qwen2.5-Coder-32B-Instruct');
-    expect(r.context[0].id).toBe('hf::qwen/Qwen2.5-Coder-32B-Instruct');
+    const r = await client.modelAsk(id, 'rank?');
+    const scores = r.context.map((c) => c.score);
+    // Server contract: passages arrive ranked, so the scores must be
+    // monotonically non-increasing as the UI iterates over them.
+    for (let i = 1; i < scores.length; i++) {
+      expect(scores[i]).toBeLessThanOrEqual(scores[i - 1]);
+    }
+    expect(r.context[0].id).toBe('hf::b');
+    expect(r.context[0].section).toBe('card.introduction');
+  });
+
+  it('modelAsk() throws ApiError on upstream 4xx with parsed body', async () => {
+    const fn = vi.fn(async () =>
+      new Response(
+        JSON.stringify({ error: 'invalid_request', field: 'question' }),
+        { status: 400, headers: { 'content-type': 'application/json' } },
+      ),
+    );
+    client = new ApiClient({
+      baseUrl: 'http://proxy.test',
+      fetchImpl: fn as unknown as typeof fetch,
+    });
+
+    await expect(client.modelAsk('hf::x/y', 'q')).rejects.toBeInstanceOf(ApiError);
+    try {
+      await client.modelAsk('hf::x/y', 'q');
+    } catch (e) {
+      const apiErr = e as ApiError;
+      expect(apiErr.status).toBe(400);
+      expect(apiErr.body).toMatchObject({ error: 'invalid_request' });
+      expect(apiErr.url).toMatch(/\/v1\/models\/hf%3A%3Ax%2Fy\/ask$/);
+    }
   });
 });

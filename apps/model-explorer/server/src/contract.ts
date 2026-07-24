@@ -111,16 +111,35 @@ export interface ModelAskRequest {
   limit?: number;
 }
 
+/**
+ * A single ranked passage in a model's context bundle. The server returns
+ * these in score-descending order so the UI can render them directly as an
+ * ordered list. `section` is a stable label like `"card.introduction"` or
+ * `"card.evals"` so the UI can show *where* each piece of evidence came from.
+ */
 export interface ModelAskContext {
+  /** Source model id the passage was drawn from. */
   id: string;
+  /** Ranking score in `[0, 1]` — higher is more relevant. */
   score: number;
+  /** Short snippet shown to the user. */
   snippet: string;
+  /** Section label inside the model's card / corpus. */
+  section: string;
 }
 
+/**
+ * Response envelope for `POST /v1/models/:id/ask`. The `context` array is the
+ * ranked evidence bundle the UI renders below the answer.
+ */
 export interface ModelAskResponse {
+  /** Echoed model id from the URL path. */
+  id: string;
+  /** Echoed question from the request body. */
   question: string;
-  limit: number;
+  /** Free-text answer (may be empty when the corpus has no matches). */
   answer: string;
+  /** Ranked context-bundle passages used as evidence. */
   context: ModelAskContext[];
 }
 

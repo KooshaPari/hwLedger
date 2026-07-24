@@ -1,6 +1,5 @@
 import type {
   HealthResponse,
-  ModelAskRequest,
   ModelAskResponse,
   ModelDetail,
   QuantsResponse,
@@ -107,8 +106,23 @@ export class ApiClient {
     };
   }
 
-  async modelAsk(req: ModelAskRequest): Promise<ModelAskResponse> {
-    return this.#request<ModelAskResponse>('POST', '/v1/model-ask', req);
+  /**
+   * Ask a natural-language question about a specific model.
+   *
+   * POSTs to `/v1/models/:id/ask` (the id is encoded into the path so the
+   * upstream can scope retrieval to that model's card + corpus) with a
+   * `{ question }` body. The server returns the synthesized answer plus a
+   * ranked context bundle of passages used as evidence.
+   *
+   * @param id      Stable model id (e.g. `hf::meta-llama/Llama-3.1-8B-Instruct`).
+   * @param question  Free-text question about the model.
+   */
+  async modelAsk(id: string, question: string): Promise<ModelAskResponse> {
+    return this.#request<ModelAskResponse>(
+      'POST',
+      `/v1/models/${encodeURIComponent(id)}/ask`,
+      { question },
+    );
   }
 
   /** Internal request helper. Throws ApiError on non-2xx, returns parsed JSON on 2xx. */

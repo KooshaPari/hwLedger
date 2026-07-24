@@ -98,21 +98,49 @@ export const USE_CASES: ReadonlyArray<{
   },
 ] as const;
 
+/**
+ * Request body for `POST /v1/model-ask`.
+ *
+ * The route `POST /v1/models/:id/ask` reuses the same question shape —
+ * the model id is encoded into the path, not the body.
+ */
 export interface ModelAskRequest {
   question: string;
   limit?: number;
 }
 
+/**
+ * A single ranked passage in the model's context bundle. The server
+ * returns these in score-descending order so the UI can render them
+ * directly as an ordered list.
+ */
 export interface ModelAskContext {
+  /** Source model id the passage was drawn from. */
   id: string;
+  /** Ranking score in `[0, 1]` — higher is more relevant. */
   score: number;
+  /** Short snippet shown to the user. */
   snippet: string;
+  /**
+   * Section label inside the model's card / corpus, e.g.
+   * `"card.introduction"` or `"card.evals"`. Rendered verbatim as a
+   * chip beside the snippet.
+   */
+  section: string;
 }
 
+/**
+ * Response envelope for `POST /v1/models/:id/ask`. The `context` array
+ * is the ranked evidence bundle the UI renders below the answer.
+ */
 export interface ModelAskResponse {
+  /** Echoed model id from the URL path. */
+  id: string;
+  /** Echoed question from the request body. */
   question: string;
-  limit: number;
+  /** Free-text answer (may be empty when the corpus has no matches). */
   answer: string;
+  /** Ranked context-bundle passages used as evidence. */
   context: ModelAskContext[];
 }
 

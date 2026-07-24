@@ -19,16 +19,53 @@
 //! [`default_registry`] returns a `SkillRegistry` with both skills
 //! registered in the canonical order
 //! (AgenticFitRerank → LlmSummarizer).
+//!
+//! ## Tier-4: user-defined skill configuration
+//!
+//! Operators can override the default registry by dropping a JSON file at
+//! `$XDG_CONFIG_HOME/hwledger/search-skills.json` (falling back to
+//! `$HOME/.config/hwledger/search-skills.json` when `XDG_CONFIG_HOME` is
+//! unset). The file is an array of entries:
+//!
+//! ```json
+//! [
+//!   { "name": "agentic-fit", "kind": "agentic_fit_rerank", "weight": 1.5 },
+//!   { "name": "llm-summary", "kind": "llm_summarizer",     "weight": 0.5 }
+//! ]
+//! ```
+//!
+//! - `kind` selects the built-in implementation. Today only the two
+//!   built-ins above are recognised.
+//! - `weight` is a non-negative `f32` multiplier applied to the
+//!   skill's rerank **delta** (the score change the skill would have
+//!   produced at weight `1.0`). `0.0` effectively disables the skill;
+//!   `2.0` doubles its impact. Missing or invalid weights are an error.
+//! - `name` is the observability label the wrapper will report via
+//!   `SearchSkill::name`. It does not have to be globally unique — two
+//!   entries with the same `name` are allowed (e.g. for shadow traffic
+//!   experiments) and both will be registered.
+//!
+//! When the file is absent the loader returns the
+//! [`default_registry`] unchanged, so a missing config never breaks a
+//! deployment. See [`load_config`], [`build_registry`], and
+//! [`merge_with_defaults`] for the building blocks.
 
 #![deny(missing_docs)]
 #![deny(rust_2018_idioms)]
 #![allow(clippy::derivable_impls)]
 
 pub mod agentic_fit;
+pub mod config;
 pub mod llm_summarizer;
+pub mod weighted;
 
 pub use agentic_fit::AgenticFitRerank;
+pub use config::{
+    build_registry, default_config_path, load_config, merge_with_defaults, registry_from_default_path,
+    ConfigError, SkillConfigEntry, SkillKind,
+};
 pub use llm_summarizer::LlmSummarizer;
+pub use weighted::WeightedSkill;
 
 pub use hwledger_search_core::{
     CoreError,

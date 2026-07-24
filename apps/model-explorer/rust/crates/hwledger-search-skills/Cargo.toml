@@ -9,4 +9,8 @@ description = "Built-in SearchSkill implementations + default registry (AgenticF
 
 [dependencies]
 hwledger-search-core = { workspace = true }
+serde = { workspace = true }
 serde_json = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
