@@ -32,7 +32,7 @@ use hwledger_search_ingest::{
 mod format;
 mod store;
 
-use format::{print_json, print_table};
+use format::{print_json, print_table, OutputFormat};
 use store::{open_or_create_store, seed_sink_for, write_store, SharedStore};
 
 /// Top-level CLI.
@@ -43,9 +43,16 @@ struct Cli {
     #[arg(long, env = "HWLEDGER_INDEX", global = true, default_value = "./hwledger-index")]
     index: PathBuf,
 
-    /// Emit a machine-readable JSON envelope instead of human output.
+    /// Emit machine-readable output (alias for `--format json`).
+    ///
+    /// Kept as a separate flag for backwards compatibility with v0.1
+    /// scripts. New callers should prefer `--format <human|json>`.
     #[arg(long, global = true)]
     json: bool,
+
+    /// Explicit output format. Wins over `--json` when both are passed.
+    #[arg(long, global = true, value_enum)]
+    format: Option<format::OutputFormat>,
 
     #[command(subcommand)]
     command: Command,
@@ -173,7 +180,7 @@ enum SeedAction {
 fn main() -> Result<()> {
     init_tracing();
     let cli = Cli::parse();
-    let json = cli.json;
+    let json = OutputFormat::resolve(cli.format.as_ref(), cli.json);
 
     match cli.command {
         Command::Model { action } => handle_model(action, &cli.index, json),

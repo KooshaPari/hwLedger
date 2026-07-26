@@ -132,6 +132,15 @@ impl McpServer {
         state.client_info = obj.get("clientInfo").cloned();
 
         // MCP 2024-11-05 protocol version we speak.
+        //
+        // `tools`, `resources`, and `prompts` are all advertised so that
+        // well-behaved MCP clients (e.g. Claude Desktop, Cursor) show the
+        // server's full surface in their UI rather than hiding it
+        // behind an "unsupported" badge. `listChanged: false` (for each
+        // capability) tells the client that the descriptor list is
+        // static for the lifetime of this connection — we don't emit
+        // `notifications/tools/list_changed`, `resources/list_changed`,
+        // or `prompts/list_changed` today.
         Ok(json!({
             "protocolVersion": "2024-11-05",
             "serverInfo": {
@@ -139,7 +148,9 @@ impl McpServer {
                 "version": env!("CARGO_PKG_VERSION"),
             },
             "capabilities": {
-                "tools": {"listChanged": false}
+                "tools": {"listChanged": false},
+                "resources": {"listChanged": false, "subscribe": false},
+                "prompts": {"listChanged": false}
             }
         }))
     }
@@ -188,6 +199,87 @@ impl McpServer {
         }))
     }
 
+    /// Handle the MCP `resources/list` request.
+    ///
+    /// Returns `{ resources: [] }` because the server does not yet register
+    /// any readable resources (the `resources/read` handler is a stub that
+    /// always returns an empty `contents` array). Advertising the
+    /// `resources` capability in `initialize` (see [`Self::handle_initialize`])
+    /// tells the client the method is supported; the empty list tells it
+    /// there is nothing to choose from yet — a spec-compliant shape that
+    /// matches how upstream reference servers report "no resources".
+    pub fn handle_resources_list(&self) -> Result<Value, McpError> {
+        Ok(json!({ "resources": [] }))
+    }
+
+    /// Handle the MCP `resources/read` request.
+    ///
+    /// Per the spec, `params` must be an object containing a `uri`
+    /// string identifying the resource to fetch. The current server
+    /// does not expose any registered resources, so we return an empty
+    /// `contents` array — a spec-compliant "no such resource" shape
+    /// for a server that has nothing to serve. A future iteration can
+    /// populate this from a [`Backend`] method (e.g. fetch a model
+    /// card by URI) without changing the wire format.
+    pub fn handle_resources_read(
+        &self,
+        params: Option<&Value>,
+    ) -> Result<Value, McpError> {
+        let params = params.unwrap_or(&Value::Null);
+        let obj = params.as_object().ok_or_else(|| {
+            McpError::invalid_params("`resources/read` params must be an object")
+        })?;
+
+        let _uri = obj
+            .get("uri")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| {
+                McpError::invalid_params("`resources/read` requires a `uri` string")
+            })?;
+
+        Ok(json!({ "contents": [] }))
+    }
+
+    /// Handle the MCP `prompts/list` request.
+    ///
+    /// Returns `{ prompts: [] }` because the server does not yet
+    /// register any prompt templates. Advertising the `prompts`
+    /// capability in `initialize` (see [`Self::handle_initialize`])
+    /// tells the client the method is supported; the empty list
+    /// tells it there's nothing to choose from yet.
+    pub fn handle_prompts_list(&self) -> Result<Value, McpError> {
+        Ok(json!({ "prompts": [] }))
+    }
+
+    /// Handle the MCP `prompts/get` request.
+    ///
+    /// Per the spec, `params` must be an object containing a `name`
+    /// string identifying the prompt template to render. The current
+    /// server has no registered prompt templates, so the only valid
+    /// outcome is a JSON-RPC `Method not found` (-32601) error
+    /// echoing the requested `name` — that's what the upstream
+    /// reference servers return for an unknown prompt, and it lets
+    /// the client distinguish "unknown prompt" from "valid prompt
+    /// with empty messages".
+    pub fn handle_prompts_get(
+        &self,
+        params: Option<&Value>,
+    ) -> Result<Value, McpError> {
+        let params = params.unwrap_or(&Value::Null);
+        let obj = params
+            .as_object()
+            .ok_or_else(|| McpError::invalid_params("`prompts/get` params must be an object"))?;
+
+        let name = obj
+            .get("name")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| McpError::invalid_params("`prompts/get` requires a `name` string"))?;
+
+        // No prompts registered yet — surface a method-not-found so
+        // clients see a clean error rather than an empty `messages`.
+        Err(McpError::method_not_found(format!("prompts/{name}")))
+    }
+
     /// Handle the `notifications/initialized` notification. Per the spec
     /// this is a notification (no `id`) and we'd return `None`; here we
     /// just flip the state flag.
@@ -211,6 +303,10 @@ impl McpServer {
             "initialize" => self.handle_initialize(state, params),
             "tools/list" => self.handle_tools_list(),
             "tools/call" => self.handle_tools_call(state, params),
+            "resources/list" => self.handle_resources_list(),
+            "resources/read" => self.handle_resources_read(params),
+            "prompts/list" => self.handle_prompts_list(),
+            "prompts/get" => self.handle_prompts_get(params),
             "notifications/initialized" => {
                 self.handle_notification_initialized(state);
                 // Notifications don't produce a result; the transport layer
@@ -244,5 +340,114 @@ mod tests {
         // `McpServer` is `Copy` + `Default`; a sanity check that we can
         // still construct it with the new constructor.
         let _ = server;
+    }
+
+    /// `handle_initialize` must advertise tools, resources, and prompts
+    /// capabilities so that spec-conformant clients render the full
+    /// server surface.
+    #[test]
+    fn initialize_advertises_tools_resources_and_prompts_capabilities() {
+        let server = McpServer::new();
+        let mut state = McpState::new(Arc::new(MockBackend::new()));
+        let result = server
+            .handle_initialize(&mut state, Some(&json!({})))
+            .expect("initialize succeeds");
+
+        let caps = result
+            .get("capabilities")
+            .and_then(|v| v.as_object())
+            .expect("capabilities is an object");
+
+        assert!(caps.contains_key("tools"), "tools capability advertised");
+        assert!(
+            caps.contains_key("resources"),
+            "resources capability advertised"
+        );
+        assert!(
+            caps.contains_key("prompts"),
+            "prompts capability advertised"
+        );
+    }
+
+    /// `resources/list` must return an empty `resources` array — paired
+    /// with the `resources` capability advertised in `initialize`, this
+    /// lets clients enumerate resources without a `-32601`.
+    #[test]
+    fn dispatch_resources_list_returns_empty_resources() {
+        let server = McpServer::new();
+        let mut state = McpState::new(Arc::new(MockBackend::new()));
+        let result = server
+            .dispatch(&mut state, "resources/list", None)
+            .expect("resources/list succeeds");
+        assert!(result["resources"].is_array());
+        assert_eq!(result["resources"].as_array().unwrap().len(), 0);
+    }
+
+    /// `resources/read` must validate the `uri` param and return a
+    /// spec-compliant empty `contents` array.
+    #[test]
+    fn dispatch_resources_read_returns_empty_contents() {
+        let server = McpServer::new();
+        let mut state = McpState::new(Arc::new(MockBackend::new()));
+        let result = server
+            .dispatch(
+                &mut state,
+                "resources/read",
+                Some(&json!({"uri": "hwledger://model/hf__org/name"})),
+            )
+            .expect("resources/read succeeds");
+        assert!(result["contents"].is_array());
+        assert_eq!(result["contents"].as_array().unwrap().len(), 0);
+    }
+
+    /// `resources/read` must reject a missing `uri` with `-32602`.
+    #[test]
+    fn dispatch_resources_read_rejects_missing_uri() {
+        let server = McpServer::new();
+        let mut state = McpState::new(Arc::new(MockBackend::new()));
+        let err = server
+            .dispatch(&mut state, "resources/read", Some(&json!({})))
+            .expect_err("missing uri must error");
+        assert_eq!(err.code(), -32602);
+    }
+
+    /// `prompts/list` must return an empty `prompts` array.
+    #[test]
+    fn dispatch_prompts_list_returns_empty_prompts() {
+        let server = McpServer::new();
+        let mut state = McpState::new(Arc::new(MockBackend::new()));
+        let result = server
+            .dispatch(&mut state, "prompts/list", None)
+            .expect("prompts/list succeeds");
+        assert!(result["prompts"].is_array());
+        assert_eq!(result["prompts"].as_array().unwrap().len(), 0);
+    }
+
+    /// `prompts/get` for a known-but-unregistered prompt should surface
+    /// a `Method not found` (-32601) error so clients can distinguish
+    /// "unknown prompt" from "valid prompt with empty messages".
+    #[test]
+    fn dispatch_prompts_get_errors_for_unknown_prompt() {
+        let server = McpServer::new();
+        let mut state = McpState::new(Arc::new(MockBackend::new()));
+        let err = server
+            .dispatch(
+                &mut state,
+                "prompts/get",
+                Some(&json!({"name": "missing"})),
+            )
+            .expect_err("unknown prompt must error");
+        assert_eq!(err.code(), -32601);
+    }
+
+    /// `prompts/get` must reject a missing `name` with `-32602`.
+    #[test]
+    fn dispatch_prompts_get_rejects_missing_name() {
+        let server = McpServer::new();
+        let mut state = McpState::new(Arc::new(MockBackend::new()));
+        let err = server
+            .dispatch(&mut state, "prompts/get", Some(&json!({})))
+            .expect_err("missing name must error");
+        assert_eq!(err.code(), -32602);
     }
 }
