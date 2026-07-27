@@ -40,3 +40,13 @@ coverage/
 *.tmp
 *.bak
 *.orig
+
+# TypeScript incremental build info
+*.tsbuildinfo
+
+# Claude Code worktrees (artifacts)
+.claude/worktrees/
+
+# Xcode build artifacts
+.build/
+*.xcworkspace/xcuserdata/
