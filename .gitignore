@@ -62,3 +62,7 @@ model-explorer-bootstrap-*.bundle/
 apps/**/src-tauri/gen/
 **/.runs/
 model-explorer-bootstrap-*.bundle/
+
+# Bench cockpit run output + git bundle scratch file
+apps/bench-matrix/.runs/
+model-explorer-bootstrap-*.bundle
