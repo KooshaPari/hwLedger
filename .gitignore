@@ -57,3 +57,8 @@ coverage/
 sidecars/bench-cockpit/
 **/.bench-cache/
 model-explorer-bootstrap-*.bundle/
+
+# Tauri generated schemas + one-off bootstrap bundles + .runs/
+apps/**/src-tauri/gen/
+**/.runs/
+model-explorer-bootstrap-*.bundle/
