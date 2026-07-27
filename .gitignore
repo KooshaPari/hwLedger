@@ -50,3 +50,10 @@ coverage/
 # Xcode build artifacts
 .build/
 *.xcworkspace/xcuserdata/
+
+# Compiled Xcode apps + scratch dirs
+*.app/
+**/.runs/
+sidecars/bench-cockpit/
+**/.bench-cache/
+model-explorer-bootstrap-*.bundle/
