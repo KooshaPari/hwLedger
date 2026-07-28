@@ -14,7 +14,9 @@ import {
   useCaseSchema,
 } from './schemas.js';
 import { UpstreamClient } from './upstream.js';
-import type { HealthResponse } from './contract.js';
+import { swaggerUI } from '@hono/swagger-ui';
+import type { HealthResponse } from './contract';
+import { getOpenApiSpec } from './openapi';
 
 /**
  * Hono app factory.
@@ -91,6 +93,11 @@ export function createApp(deps: AppDeps) {
     app.use('/v1/*', bearerAuth({ verifyToken: (t) => t === deps.apiKey }));
   }
 
+  // ---- OpenAPI / Swagger UI ----
+  // Spec served as JSON at /docs/openapi.json; Swagger UI at /docs
+  app.get('/docs/openapi.json', (c) => c.json(getOpenApiSpec()));
+  app.get('/docs', swaggerUI({ url: '/docs/openapi.json' }));
+
   // ---- error handling ----
   app.onError((err, c) => {
     if (err instanceof HTTPException) {
@@ -121,6 +128,11 @@ export function createApp(deps: AppDeps) {
     };
     return c.json(body);
   });
+
+  // ---- OpenAPI spec + Swagger UI (always public; auth is on /v1/* data routes) ----
+  // Mounted via .route() so the OpenAPI helper preserves the spec prefix.
+  app.get('/docs/openapi.json', (c) => c.json(getOpenApiSpec()));
+  app.get('/docs', swaggerUI({ url: '/docs/openapi.json' }));
 
   // ---- search ----
   app.post(
