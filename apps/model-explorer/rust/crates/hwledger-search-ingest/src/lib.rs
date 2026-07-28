@@ -17,6 +17,7 @@ pub mod error;
 pub mod expansion;
 pub mod huggingface;
 pub mod lazy_populate;
+pub mod models_dev;
 pub mod seed_builder;
 pub mod tree_parser;
 
