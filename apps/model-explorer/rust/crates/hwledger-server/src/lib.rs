@@ -30,6 +30,7 @@
 #![deny(missing_docs)]
 #![deny(rust_2018_idioms)]
 
+pub mod observability;
 pub mod routes;
 pub mod service;
 pub mod state;
@@ -55,6 +56,7 @@ pub fn router(state: AppState) -> Router {
         .merge(routes::similar::router())
         .merge(routes::for_use_case::router())
         .merge(routes::admin::router())
+        .layer(axum::middleware::from_fn(observability::attach_path_to_span))
         .layer(TraceLayer::new_for_http())
         .layer(
             CorsLayer::new()
