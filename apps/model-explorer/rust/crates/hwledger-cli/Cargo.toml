@@ -1,5 +1,5 @@
 [package]
-name = "hwledger-cli"
+name = "hwledger-explorer-cli"
 edition.workspace = true
 license.workspace = true
 version.workspace = true
@@ -8,7 +8,7 @@ publish.workspace = true
 description = "CLI front-end for the hwledger model-explorer search stack"
 
 [[bin]]
-name = "hwledger-cli"
+name = "hwledger-explorer-cli"
 path = "src/main.rs"
 
 [dependencies]

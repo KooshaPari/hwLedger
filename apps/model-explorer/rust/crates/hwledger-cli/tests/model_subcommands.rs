@@ -51,7 +51,7 @@ fn build_fixture_index(dir: &std::path::Path) {
 
 /// Locate the `hwledger-cli` binary built by Cargo.
 fn cli_bin() -> Command {
-    Command::cargo_bin("hwledger-cli").expect("binary built by cargo")
+    Command::cargo_bin("hwledger-explorer-cli").expect("binary built by cargo")
 }
 
 #[test]

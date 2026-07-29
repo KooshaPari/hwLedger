@@ -20,6 +20,7 @@ use std::sync::{Arc, OnceLock};
 use hwledger_search_core::{CandidateId, CoreError, RawModel, SourceAdapter};
 
 use crate::error::IngestError;
+use crate::rate_limit::{RateLimitPolicy, parse_retry_after};
 
 /// Default HF Hub base URL.
 const DEFAULT_HUB_URL: &str = "https://huggingface.co";
@@ -34,12 +35,17 @@ const ENV_HF_TOKEN: &str = "HF_TOKEN";
 const ADAPTER_NAME: &str = "huggingface";
 
 /// Concrete [`SourceAdapter`] for the HuggingFace Hub.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct HuggingFaceAdapter {
     base_url: String,
     token: Option<String>,
     client: reqwest::Client,
     runtime: Arc<OnceLock<tokio::runtime::Runtime>>,
+    /// Per-request rate-limit policy. When `Some`, every outbound HTTP call
+    /// is paced by `min_interval_ms` and 429s are retried up to `max_retries`.
+    policy: Option<RateLimitPolicy>,
+    /// Timestamp (unix seconds) of the last completed HTTP request.
+    last_request: std::sync::Mutex<u64>,
 }
 
 impl HuggingFaceAdapter {
@@ -55,12 +61,20 @@ impl HuggingFaceAdapter {
                 .build()
                 .expect("reqwest client builder with default config"),
             runtime: Arc::new(OnceLock::new()),
+            policy: None,
+            last_request: std::sync::Mutex::new(0),
         }
     }
 
     /// Builder-style setter that overrides the auth token.
     pub fn with_token(mut self, token: String) -> Self {
         self.token = Some(token);
+        self
+    }
+
+    /// Builder-style setter that configures rate limiting on outbound requests.
+    pub fn with_rate_limit(mut self, policy: RateLimitPolicy) -> Self {
+        self.policy = Some(policy);
         self
     }
 
@@ -107,6 +121,64 @@ impl HuggingFaceAdapter {
         }
     }
 
+    /// Rate-limited send with 429-retry-on-backoff. Respects `policy`
+    /// for inter-request pacing and Retry-After header on 429.
+    async fn send_with_retry(&self, req: reqwest::RequestBuilder) -> Result<reqwest::Response, IngestError> {
+        let policy = self.policy.unwrap_or(RateLimitPolicy::default());
+        let mut retries = 0u32;
+        loop {
+            // Enforce minimum interval between requests.
+            {
+                let now = std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap_or_default()
+                    .as_secs();
+                let mut last = self.last_request.lock().expect("lock poisoned");
+                let wait_ms = policy.min_interval_ms.saturating_sub(
+                    (now * 1000).saturating_sub(*last * 1000),
+                );
+                if wait_ms > 0 {
+                    drop(last);
+                    tokio::time::sleep(std::time::Duration::from_millis(wait_ms)).await;
+                }
+                // Re-acquire the lock to stamp the request time.
+                *self.last_request.lock().expect("lock poisoned") = std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap_or_default()
+                    .as_secs();
+            }
+
+            let resp = req.try_clone().expect("request must be cloneable")
+                .send()
+                .await
+                .map_err(|e| IngestError::http(e.to_string()))?;
+
+            if resp.status() == reqwest::StatusCode::TOO_MANY_REQUESTS {
+                retries += 1;
+                if retries > policy.max_retries {
+                    return Err(IngestError::RateLimited);
+                }
+                // Parse Retry-After header for adaptive backoff.
+                let retry_secs = resp.headers()
+                    .get("retry-after")
+                    .and_then(|v| v.to_str().ok())
+                    .and_then(|v| parse_retry_after(v, {
+                        std::time::SystemTime::now()
+                            .duration_since(std::time::UNIX_EPOCH)
+                            .unwrap_or_default()
+                            .as_secs()
+                    }))
+                    .map(|d| d.as_millis() as u64)
+                    .unwrap_or(policy.min_interval_ms);
+                tracing::warn!(retry_secs, retries, "huggingface: 429 rate-limited, backing off");
+                tokio::time::sleep(std::time::Duration::from_millis(retry_secs)).await;
+                continue;
+            }
+
+            return Ok(resp);
+        }
+    }
+
     /// Translate a transport failure into a typed [`IngestError`].
     fn classify(status: reqwest::StatusCode) -> IngestError {
         if status == reqwest::StatusCode::TOO_MANY_REQUESTS {
@@ -129,11 +201,7 @@ impl HuggingFaceAdapter {
 
         // 1. Metadata blob.
         let meta_url = self.model_url(&id.id);
-        let resp = self
-            .authed(self.client.get(&meta_url))
-            .send()
-            .await
-            .map_err(|e| IngestError::http(e.to_string()))?;
+        let resp = self.send_with_retry(self.authed(self.client.get(&meta_url))).await?;
         let status = resp.status();
         if !status.is_success() {
             return Err(Self::classify(status));
@@ -165,11 +233,7 @@ impl HuggingFaceAdapter {
 
         // 2. Tree listing.
         let tree_url = self.tree_url(&id.id);
-        let resp = self
-            .authed(self.client.get(&tree_url))
-            .send()
-            .await
-            .map_err(|e| IngestError::http(e.to_string()))?;
+        let resp = self.send_with_retry(self.authed(self.client.get(&tree_url))).await?;
         if resp.status().is_success() {
             let tree: serde_json::Value = resp
                 .json()
@@ -196,11 +260,7 @@ impl HuggingFaceAdapter {
             self.base_url.trim_end_matches('/'),
             id
         );
-        let resp = self
-            .authed(self.client.get(&url))
-            .send()
-            .await
-            .map_err(|e| IngestError::http(e.to_string()))?;
+        let resp = self.send_with_retry(self.authed(self.client.get(&url))).await?;
         let status = resp.status();
         if !status.is_success() {
             return Err(Self::classify(status));
@@ -213,11 +273,7 @@ impl HuggingFaceAdapter {
     /// Fetch the raw README card text.
     async fn fetch_card_async(&self, id: &str) -> Result<String, IngestError> {
         let url = self.card_url(id);
-        let resp = self
-            .authed(self.client.get(&url))
-            .send()
-            .await
-            .map_err(|e| IngestError::http(e.to_string()))?;
+        let resp = self.send_with_retry(self.authed(self.client.get(&url))).await?;
         if !resp.status().is_success() {
             return Err(IngestError::http(format!(
                 "card fetch returned {}",
@@ -276,7 +332,7 @@ impl SourceAdapter for HuggingFaceAdapter {
                 limit
             ),
         };
-        let resp = match self.block_on(self.authed(self.client.get(&url)).send()) {
+        let resp = match self.block_on(async { self.send_with_retry(self.authed(self.client.get(&url))).await }) {
             Ok(r) => r,
             Err(e) => {
                 tracing::warn!(error = %e, "huggingface list_candidates: send failed");
